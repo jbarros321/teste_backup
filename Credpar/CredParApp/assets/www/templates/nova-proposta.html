@@ -1,0 +1,253 @@
+<ion-view view-title="NOVA PROPOSTA" cache-view="false">
+
+	<ion-nav-buttons side="left">
+    	<button class="button button-icon button-clear icon ion-ios-arrow-back" style="color: white;" ng-click="goBack()">
+        </button>
+    </ion-nav-buttons>
+    
+    <ion-content class="has-header padding task-content background-login bottom0">
+    	<div style="padding: 10px;">
+    		<span>Informe os dados obrigatórios</span><span style="color: red">&nbsp;*</span>
+    	</div>
+       <div class="list">
+       	   <label class="item item-input" >
+		    <input type="text" placeholder="* NOME" ng-model="novaProposta.NOMEPAP">
+		  </label>
+       	   <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <input type="text" ng-restrict="^[0-9-]*$" placeholder="* CPF" ng-model="novaProposta.CGC_CPF">
+		  </label>
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <input type="text" placeholder="* IDENTIDADE" ng-model="novaProposta.RG">
+		  </label>
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <input type="text" placeholder="ORGÃO EMISSOR" ng-model="novaProposta.EMISSAORG">
+		  </label>
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <button 
+				 	ng-click="buscarEstadosRG()"
+					class="button button-small button-light button-select icon-right ion-android-arrow-dropdown" 
+		               modal-select options="estadosRG.options"
+		               modal-title="Estado"
+		               cancel-button="Cancelar"
+		               ng-model="estadosRG.selection"
+		               reset-button="Limpar valor"
+		               has-search="true"
+		               search-placeholder="Procurar"
+		               cancel-search-button="Limpar">
+					{{ estadosRG.selection.DESCRICAO || &apos;ESTADO EMISSOR DA RG&apos; }}
+					<div class="option">
+		   				{{ option.DESCRICAO }} <i class="radio-icon ion-checkmark"></i>
+					</div>
+				</button>
+		  </label>		  		  		  		  
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+		  	<span class="input-label" ng-if="!novaProposta.DATAEMISSAORG" style="color: #aaa; font-weight: 100;">DATA EMISSÃO IDENTIDADE</span> 
+		    <input class="textbox-n" type="date" ng-model="novaProposta.DATAEMISSAORG">
+		  </label>
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+		  	<span class="input-label" ng-if="!novaProposta.DTNASC" style="color: #aaa; font-weight: 100;">* DATA DE NASCIMENTO</span> 
+		    <input class="textbox-n" type="date"  ng-model="novaProposta.DTNASC">
+		  </label>
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+			  <button 
+				 	ng-click="buscarCidades()"
+					class="button button-small button-light button-select icon-right ion-android-arrow-dropdown" 
+		               modal-select options="cidades.options"
+		               modal-title="Cidade"  
+		               cancel-button="Cancelar"
+		               ng-model="cidades.selection" 
+		               reset-button="Limpar valor"
+		               has-search="true"
+		               search-placeholder="Procurar"
+		               cancel-search-button="Limpar">
+					{{ cidades.selection.NOMECID || &apos;NATURALIDADE&apos; }}
+					<div class="option">
+		   				{{ option.NOMECID }} <i class="radio-icon ion-checkmark"></i>
+					</div>
+				</button>
+		  </label>		         	  
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <input type="text" placeholder="* NOME CARTÃO" ng-model="novaProposta.NOMECARTAO">
+		  </label>		  
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <input type="text" placeholder="ENDEREÇO" ng-model="novaProposta.ENDERECO">
+		  </label>
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <input type="text" placeholder="NÚMERO" ng-model="novaProposta.NUMEND">
+		  </label>
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <input type="text" placeholder="BAIRRO" ng-model="novaProposta.NOMEBAI">
+		  </label>
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <input type="text" placeholder="COMPLEMENTO" ng-model="novaProposta.COMPLEMENTO">
+		  </label>
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <input type="number" placeholder="CEP" ng-model="novaProposta.CEP">
+		  </label>
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <input type="text" placeholder="* CIDADE" ng-model="novaProposta.NOMECID">
+		  </label>		  
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <button 
+				 	ng-click="buscarEstados()"
+					class="button button-small button-light button-select icon-right ion-android-arrow-dropdown" 
+		               modal-select options="estados.options"
+		               modal-title="Estado"  
+		               cancel-button="Cancelar"
+		               ng-model="estados.selection" 
+		               reset-button="Limpar valor"
+		               has-search="true"
+		               search-placeholder="Procurar"
+		               cancel-search-button="Limpar">
+					{{ estados.selection.DESCRICAO || &apos;ESTADO&apos; }}
+					<div class="option">
+		   				{{ option.DESCRICAO }} <i class="radio-icon ion-checkmark"></i>
+					</div>
+				</button>
+		  </label>
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <input type="text" placeholder="* NOME DA MÃE" ng-model="novaProposta.NOMEMAE">
+		  </label>
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <input type="text" placeholder="NOME DO PAI" ng-model="novaProposta.NOMEPAI">
+		  </label>
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <input type="text" placeholder="* TELEFONE CELULAR" ng-model="novaProposta.TELCELULAR">
+		  </label>		  		  		  
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <input type="text" placeholder="TELEFONE FIXO" ng-model="novaProposta.TELEFONE">
+		  </label>
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+               <input type="text" placeholder="* LOCAL DE TRABALHO" ng-model="novaProposta.AD_LOCALTRABALHO">
+           </label>
+           <label class="item item-input" style="border-top-color: #E29175 !important;">
+               <input type="text" placeholder="CARGO" ng-model="novaProposta.AD_CARGO">
+           </label>
+           <label class="item item-input" style="border-top-color: #E29175 !important;">
+           	   <span class="input-label" ng-if="!novaProposta.AD_TEMPOTRABALHO" style="color: #aaa; font-weight: 100;">TEMPO DE TRABALHO</span> 
+               <input class="textbox-n" type="date" ng-model="novaProposta.AD_TEMPOTRABALHO">
+           </label>
+           <label class="item item-input" style="border-top-color: #E29175 !important;">
+               <input type="text" placeholder="RENDA" ng-model="novaProposta.AD_RENDA">
+           </label>
+           <label class="item item-input" style="border-top-color: #E29175 !important;">
+               <input type="text" placeholder="TELEFONE TRABALHO" ng-model="novaProposta.AD_TELTRABALHO">
+           </label>
+			<label class="item item-input" style="border-top-color: #E29175 !important;">
+			  <button 
+					class="button button-small button-light button-select icon-right ion-android-arrow-dropdown" 
+		               modal-select options="estadoCivil.options"
+		               modal-title="Estado Civil"  
+		               cancel-button="Cancelar"
+		               ng-model="estadoCivil.selection" 
+		               reset-button="Limpar valor"
+		               has-search="false"
+		               cancel-search-button="Limpar">
+					{{ estadoCivil.selection.DESCRICAO || &apos;ESTADO CIVIL&apos; }}
+					<div class="option">
+		   				{{ option.DESCRICAO }} <i class="radio-icon ion-checkmark"></i>
+					</div>
+				</button>
+		  	</label>
+		  	<label class="item item-input" style="border-top-color: #E29175 !important;">
+               <input type="text" placeholder="CPF CONJUGE" ng-model="novaProposta.AD_CPFCONJUGE">
+           </label>
+           <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <input type="text" placeholder="NOME DO CÔNJUGE" ng-model="novaProposta.NOMECONJUGE">
+		  </label>		  
+           <label class="item item-input" style="border-top-color: #E29175 !important;">
+               <input type="text" placeholder="LOCAL DE TRABALHO CONJUGE" ng-model="novaProposta.AD_TRABALHOCONJUGE">
+           </label>
+           <label class="item item-input" style="border-top-color: #E29175 !important;">
+           		<span class="input-label" ng-if="!novaProposta.AD_TEMPOTRABCONJUGE" style="color: #aaa; font-weight: 100;">TEMPO DE TRABALHO CONJUGE</span> 
+               <input class="textbox-n" type="date" ng-model="novaProposta.AD_TEMPOTRABCONJUGE">
+           </label>
+           <label class="item item-input" style="border-top-color: #E29175 !important;">
+               <input type="text" placeholder="RENDA CONJUGE" ng-model="novaProposta.AD_RENDACONJUGE">
+           </label>           
+  		   <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <input type="text" placeholder="CELULAR DO CÔNJUGE" ng-model="novaProposta.CELULARCONJUGE">
+		  </label>
+
+           
+           <label class="item item-input" style="border-top-color: #E29175 !important;">
+               <input type="text" placeholder="* REFERENCIA PESSOAL 1" ng-model="novaProposta.AD_REFPESSOAL">
+           </label>
+           <label class="item item-input" style="border-top-color: #E29175 !important;">
+               <input type="text" placeholder="* TELEFONE REF PESSOAL 1" ng-model="novaProposta.AD_TELPESSOAL1">
+           </label>
+           <label class="item item-input" style="border-top-color: #E29175 !important;">
+               <input type="text" placeholder="* REFERENCIA PESSOAL 2" ng-model="novaProposta.AD_REFPESSOAL2">
+           </label>
+           <label class="item item-input" style="border-top-color: #E29175 !important;">
+               <input type="text" placeholder="* TELEFONE REF PESSOAL 2" ng-model="novaProposta.AD_TELREF2">
+           </label>
+		  				  
+           
+           
+           <label class="item item-input" style="border-top-color: #E29175 !important;">
+               <input type="text" placeholder="REFERENCIA COMERCIAL 1" ng-model="novaProposta.AD_REFCOMERCIAL1">
+           </label>
+           <label class="item item-input" style="border-top-color: #E29175 !important;">
+               <input type="text" placeholder="TELEFONE REF COMERCIAL 1" ng-model="novaProposta.AD_TELCOM1">
+           </label>
+           <label class="item item-input" style="border-top-color: #E29175 !important;">
+               <input type="text" placeholder="REFERENCIA COMERCIAL 2" ng-model="novaProposta.AD_REFCOMERCIAL2">
+           </label>
+           <label class="item item-input" style="border-top-color: #E29175 !important;">
+               <input type="text" placeholder="TELEFONE REF COMERCIAL 2" ng-model="novaProposta.AD_TELCOM2">
+           </label>
+           <label class="item item-input" style="border-top-color: #E29175 !important;">
+               <input type="text" placeholder="VALOR DA COMPRA" ng-model="novaProposta.AD_VALORCOMPRA">
+           </label>
+            <label class="item item-input" style="border-top-color: #E29175 !important;">
+			  <button 
+					class="button button-small button-light button-select icon-right ion-android-arrow-dropdown" 
+		               modal-select options="diaPagamento.options"
+		               modal-title="Dia de Pagamento"  
+		               cancel-button="Cancelar"
+		               ng-model="diaPagamento.selection" 
+		               reset-button="Limpar valor"
+		               has-search="false"
+		               cancel-search-button="Limpar">
+					{{ diaPagamento.selection.DESCRICAO || &apos;* DIA DE PAGAMENTO&apos; }}
+					<div class="option">
+		   				{{ option.DESCRICAO }} <i class="radio-icon ion-checkmark"></i>
+					</div>
+				</button>
+		  </label>		  		  
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <input type="text" placeholder="OBSERVAÇÕES" ng-model="novaProposta.OBSERVACOES">
+		  </label>
+		   <label class="item item-input" style="border-top-color: #E29175 !important;">
+		    <input type="text" placeholder="EMAIL" ng-model="novaProposta.EMAIL">
+		  </label>		  
+		  <label class="item item-input" style="border-top-color: #E29175 !important;">
+			  <button 
+					class="button button-small button-light button-select icon-right ion-android-arrow-dropdown" 
+		               modal-select options="sexo.options"
+		               modal-title="Sexo"  
+		               cancel-button="Cancelar"
+		               ng-model="sexo.selection" 
+		               reset-button="Limpar valor"
+		               has-search="false"
+		               cancel-search-button="Limpar">
+					{{ sexo.selection.DESCRICAO || &apos;SEXO&apos; }}
+					<div class="option">
+		   				{{ option.DESCRICAO }} <i class="radio-icon ion-checkmark"></i>
+					</div>
+				</button>
+		  </label>		  		 		
+           
+           
+		</div>
+
+		<div style="width: 100%; text-align: right;">
+			<button class="button btnAcessar" ng-click="salvarParceiroProspect()">
+			  Enviar Proposta
+			</button>
+		</div>
+		<div style="height: 160px;">
+        </div>
+    </ion-content>
+</ion-view>

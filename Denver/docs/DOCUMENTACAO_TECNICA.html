@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentação Técnica - Integração TSL Denver</title>
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #555;
+            margin-top: 25px;
+        }
+        h4 {
+            color: #666;
+            margin-top: 20px;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border-left: 4px solid #3498db;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            color: inherit;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        ul, ol {
+            margin: 10px 0;
+            padding-left: 30px;
+        }
+        li {
+            margin: 5px 0;
+        }
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #ecf0f1;
+            margin: 30px 0;
+        }
+        strong {
+            color: #2c3e50;
+        }
+        .toc {
+            background-color: #ecf0f1;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .toc ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .toc li {
+            margin: 5px 0;
+        }
+        .toc a {
+            color: #2c3e50;
+        }
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+        }
+    </style>
+    
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Documentação Técnica - Integração TSL Denver</h1>
+<br/>
+<h2>📋 Índice</h2>
+<br/>
+<ol>
+<li>[Visão Geral](#visão-geral)</li>
+<li>[Especificação de Interfaces](#especificação-de-interfaces)</li>
+<li>[Arquitetura do Projeto](#arquitetura-do-projeto)</li>
+<li>[Componentes Implementados](#componentes-implementados)</li>
+<li>[Queries e Estrutura de Dados](#queries-e-estrutura-de-dados)</li>
+<li>[Otimizações de Performance](#otimizações-de-performance)</li>
+<li>[Utilização de Utilitários Sankhya](#utilização-de-utilitários-sankhya)</li>
+<li>[Guia de Uso](#guia-de-uso)</li>
+<li>[Formatação e Regras](#formatação-e-regras)</li>
+<li>[Observações Importantes](#observações-importantes)</li>
+</ol>
+<br/>
+<hr/>
+<br/>
+<h2>🎯 Visão Geral</h2>
+<br/>
+<h3>Informações do Projeto</h3>
+<br/>
+<ul>
+<li>**Cliente**: Denver</li>
+<li>**Projeto**: Integração Total Service Logística (TSL)</li>
+<li>**Documento Base**: Interfaces Padrões WMS - TSL V1.2</li>
+<li>**Versão**: 1.0.0</li>
+<li>**Status**: ✅ **CONCLUÍDO**</li>
+</ul>
+<br/>
+<h3>Objetivo</h3>
+<br/>
+<p>Implementar integração completa entre o sistema Sankhya e o Total Service Logística (TSL), gerando arquivos de exportação no formato posicional conforme manual de interfaces padrões WMS versão 1.2, contemplando:</p>
+<br/>
+<ol>
+<li>**REC_IN** - Recebimento de Mercadorias Integrado</li>
+<li>**PED_IN** - Expedição de Mercadorias</li>
+</ol>
+<br/>
+<h3>Especificações Técnicas dos Arquivos</h3>
+<br/>
+<ul>
+<li>**Formato**: Arquivo texto posicional (campos fixos)</li>
+<li>**Encoding**: ANSI (Windows-1252)</li>
+<li>**Quebra de linha**: PC/Windows (CRLF - `\r\n`)</li>
+<li>**Separador de campos**: Espaço em branco ao final de cada campo</li>
+<li>**Codificação**: Posicional (cada campo possui posição e tamanho fixo)</li>
+</ul>
+<br/>
+<h3>Nomenclatura dos Arquivos</h3>
+<br/>
+<p>Formato: <code>{INTERFACE}_{CNPJ}_{TIMESTAMP}.txt</code></p>
+<br/>
+<p>Onde:</p>
+<ul>
+<li>**INTERFACE**: Tipo de interface (`REC_IN` ou `PED_IN`)</li>
+<li>**CNPJ**: CNPJ da empresa (14 dígitos, sem formatação)</li>
+<li>**TIMESTAMP**: Data e hora da criação no formato `yyyyMMddHHmmss`</li>
+</ul>
+<br/>
+<p>Exemplo:</p>
+<ul>
+<li>`REC_IN_12345678000190_20250101120000.txt`</li>
+<li>`PED_IN_12345678000190_20250101120000.txt`</li>
+</ul>
+<br/>
+<hr/>
+<br/>
+<h2>📊 Especificação de Interfaces</h2>
+<br/>
+<h3>REC_IN - Recebimento de Mercadorias Integrado</h3>
+<br/>
+<p><strong>Tamanho da linha</strong>: 619 caracteres</p>
+<br/>
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; margin: 10px 0;">
+<tr>
+<th>Campo</th>
+<th>Tamanho</th>
+<th>Tipo</th>
+<th>Obrigatório</th>
+<th>Descrição</th>
+</tr>
+<tr>
+<td>CNPJ</td>
+<td>15</td>
+<td>N</td>
+<td>S</td>
+<td>CNPJ da empresa (14 dígitos + espaço)</td>
+</tr>
+<tr>
+<td>Nota Fiscal</td>
+<td>13</td>
+<td>N</td>
+<td>S</td>
+<td>Número da nota fiscal</td>
+</tr>
+<tr>
+<td>Item da NF</td>
+<td>7</td>
+<td>N</td>
+<td>S</td>
+<td>Sequência do item na nota fiscal</td>
+</tr>
+<tr>
+<td>Número do Palete</td>
+<td>26</td>
+<td>AN</td>
+<td>N</td>
+<td>Número identificador do palete</td>
+</tr>
+<tr>
+<td>Código do Produto</td>
+<td>51</td>
+<td>AN</td>
+<td>S</td>
+<td>Código de referência do produto</td>
+</tr>
+<tr>
+<td>Identificador da caixa</td>
+<td>31</td>
+<td>AN</td>
+<td>N</td>
+<td>Identificador da caixa</td>
+</tr>
+<tr>
+<td>Peso da Caixa</td>
+<td>18</td>
+<td>N</td>
+<td>S</td>
+<td>Peso com 2 casas decimais (vírgula)</td>
+</tr>
+<tr>
+<td>Data de Produção</td>
+<td>11</td>
+<td>DT</td>
+<td>N</td>
+<td>Data formato DD/MM/YYYY</td>
+</tr>
+<tr>
+<td>Data de Vencimento</td>
+<td>11</td>
+<td>DT</td>
+<td>N</td>
+<td>Data formato DD/MM/YYYY</td>
+</tr>
+<tr>
+<td>Lote</td>
+<td>26</td>
+<td>AN</td>
+<td>N</td>
+<td>Código do lote</td>
+</tr>
+<tr>
+<td>Informação Complementar</td>
+<td>401</td>
+<td>AN</td>
+<td>N</td>
+<td>Informações adicionais</td>
+</tr>
+<tr>
+<td>Valor Unitário</td>
+<td>9</td>
+<td>N</td>
+<td>S</td>
+<td>Valor com 5 inteiros e 2 decimais (vírgula)</td>
+</tr>
+</table>
+<br/>
+<p><strong>Total</strong>: 619 caracteres</p>
+<br/>
+<h3>PED_IN - Expedição de Mercadorias</h3>
+<br/>
+<p><strong>Tamanho da linha</strong>: 232 caracteres</p>
+<br/>
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; margin: 10px 0;">
+<tr>
+<th>Campo</th>
+<th>Tamanho</th>
+<th>Tipo</th>
+<th>Obrigatório</th>
+<th>Descrição</th>
+</tr>
+<tr>
+<td>CNPJ</td>
+<td>15</td>
+<td>N</td>
+<td>S</td>
+<td>CNPJ da empresa (14 dígitos + espaço)</td>
+</tr>
+<tr>
+<td>Ordem de Frete</td>
+<td>21</td>
+<td>AN</td>
+<td>N</td>
+<td>Número da ordem de frete</td>
+</tr>
+<tr>
+<td>Número do Pedido</td>
+<td>13</td>
+<td>N</td>
+<td>S</td>
+<td>Número do pedido/nota fiscal</td>
+</tr>
+<tr>
+<td>Item do pedido</td>
+<td>7</td>
+<td>N</td>
+<td>S</td>
+<td>Sequência do item no pedido</td>
+</tr>
+<tr>
+<td>Código do produto</td>
+<td>51</td>
+<td>AN</td>
+<td>S</td>
+<td>Código de referência do produto</td>
+</tr>
+<tr>
+<td>Número do Palete</td>
+<td>26</td>
+<td>AN</td>
+<td>N</td>
+<td>Número identificador do palete</td>
+</tr>
+<tr>
+<td>Quantidade</td>
+<td>17</td>
+<td>N</td>
+<td>S</td>
+<td>Quantidade com 2 casas decimais (vírgula)</td>
+</tr>
+<tr>
+<td>Peso</td>
+<td>19</td>
+<td>N</td>
+<td>S</td>
+<td>Peso total com 2 casas decimais (vírgula)</td>
+</tr>
+<tr>
+<td>Data de Fabricação (DE)</td>
+<td>11</td>
+<td>DT</td>
+<td>N</td>
+<td>Data formato DD/MM/YYYY</td>
+</tr>
+<tr>
+<td>Data de Fabricação (ATÉ)</td>
+<td>11</td>
+<td>DT</td>
+<td>N</td>
+<td>Data formato DD/MM/YYYY</td>
+</tr>
+<tr>
+<td>Lote</td>
+<td>26</td>
+<td>AN</td>
+<td>N</td>
+<td>Código do lote</td>
+</tr>
+<tr>
+<td>CNPJ Cliente</td>
+<td>15</td>
+<td>N</td>
+<td>S</td>
+<td>CNPJ do cliente (14 dígitos + espaço)</td>
+</tr>
+</table>
+<br/>
+<p><strong>Total</strong>: 232 caracteres</p>
+<br/>
+<hr/>
+<br/>
+<h2>🏗️ Arquitetura do Projeto</h2>
+<br/>
+<h3>Estrutura de Diretórios</h3>
+<br/>
+<pre><code>Denver/
+├── Docs/
+│   ├── Documento - Plano de requisitos (Denver) (1).pdf
+│   └── Interfaces Padro_es WMS - TSL V1.2.pdf
+├── docs/
+│   └── DOCUMENTACAO_TECNICA.md          ✅ Este arquivo
+├── lib/
+│   ├── jape.jar
+│   ├── mge-modelcore.jar
+│   ├── sanutil.jar
+│   └── SankhyaW-extensions.jar
+├── pom.xml
+├── README.md
+├── REFATORACAO_PERFORMANCE.md
+├── REVISAO_QUERIES.md
+└── src/
+    └── br/com/denver/tsl/
+        ├── action/botaoAcao/
+        │   └── GerarArquivoTSL.java        ✅ Botão de ação principal
+        ├── model/dto/
+        │   ├── RecebimentoDTO.java         ✅ DTO para recebimentos
+        │   └── ExpedicaoDTO.java           ✅ DTO para expedições
+        ├── repository/
+        │   ├── AbstractTSLRepository.java  ✅ Repositório base
+        │   ├── RecebimentoRepository.java  ✅ Query de recebimentos
+        │   └── ExpedicaoRepository.java    ✅ Query de expedições
+        ├── service/
+        │   └── TSLService.java             ✅ Serviço principal
+        └── util/
+            ├── FileGenerator.java          ✅ Geração de arquivos
+            ├── TSLConstants.java           ✅ Constantes do projeto
+            └── TSLFormatter.java           ✅ Formatadores de campos</code></pre>
+<br/>
+<h3>Padrão Arquitetural</h3>
+<br/>
+<p>O projeto segue o padrão <strong>MVC (Model-View-Controller)</strong> adaptado para integração:</p>
+<br/>
+<ul>
+<li>**Model**: DTOs (`RecebimentoDTO`, `ExpedicaoDTO`)</li>
+<li>**Repository**: Camada de acesso a dados (queries SQL)</li>
+<li>**Service**: Lógica de negócio e orquestração</li>
+<li>**Action**: Camada de apresentação (botão de ação Sankhya)</li>
+<li>**Util**: Utilitários e constantes</li>
+</ul>
+<br/>
+<h3>Stack Tecnológico</h3>
+<br/>
+<ul>
+<li>**Java JDK 8**</li>
+<li>**Maven 3.x**</li>
+<li>**Sankhya Core** (via JARs locais)</li>
+<li>`SankhyaW-extensions.jar`</li>
+<li>`jape.jar`</li>
+<li>`mge-modelcore.jar`</li>
+<li>`sanutil.jar`</li>
+<li>**Oracle Database** (via JDBC do Sankhya)</li>
+</ul>
+<br/>
+<hr/>
+<br/>
+<h2>🔧 Componentes Implementados</h2>
+<br/>
+<h3>1. Action Layer</h3>
+<br/>
+<h4>`GerarArquivoTSL.java`</h4>
+<ul>
+<li>**Responsabilidade**: Interface com o usuário através de botão de ação</li>
+<li>**Funcionalidades**:</li>
+<li>Captura de NUNOTA e CODPARC do contexto</li>
+<li>Busca automática de lotes da nota (TGFITE)</li>
+<li>Processamento de múltiplos lotes (um arquivo por lote)</li>
+<li>Processamento automático de ambas interfaces (REC_IN e PED_IN)</li>
+<li>Tratamento de erros e mensagens de retorno</li>
+<li>Geração de ZIP com todos os arquivos</li>
+<li>**Parâmetros do Contexto**:</li>
+<li>`NUNOTA`: Número da nota fiscal (obrigatório)</li>
+<li>`CODPARC`: Código do parceiro/fornecedor (obrigatório para recebimentos)</li>
+<li>**Valores Fixos**:</li>
+<li>Tipo de interface: "TODOS" (sempre gera REC_IN e PED_IN)</li>
+<li>Caminho de exportação: Diretório temporário do sistema</li>
+</ul>
+<br/>
+<h3>2. Service Layer</h3>
+<br/>
+<h4>`TSLService.java`</h4>
+<ul>
+<li>**Responsabilidade**: Orquestração da geração de arquivos</li>
+<li>**Métodos**:</li>
+<li>`gerarArquivoRecebimento()`: Gera arquivo REC_IN</li>
+<li>`gerarArquivoExpedicao()`: Gera arquivo PED_IN</li>
+<li>`gerarLinhaRecebimento()`: Formata linha REC_IN</li>
+<li>`gerarLinhaExpedicao()`: Formata linha PED_IN</li>
+</ul>
+<br/>
+<h3>3. Repository Layer</h3>
+<br/>
+<h4>`AbstractTSLRepository.java`</h4>
+<ul>
+<li>**Responsabilidade**: Base para repositórios com lógica comum</li>
+<li>**Funcionalidades**:</li>
+<li>Execução de queries SQL</li>
+<li>Gestão de recursos (JDBC, ResultSet)</li>
+<li>Filtros de data</li>
+<li>Conversão de tipos</li>
+</ul>
+<br/>
+<h4>`RecebimentoRepository.java`</h4>
+<ul>
+<li>**Query**: Busca recebimentos (TIPMOV = 'C', STATUSNOTA = 'L')</li>
+<li>**Tabelas**: TGFCAB, TGFITE, TGFPRO, TSIEMP, TGFEST</li>
+<li>**Filtros**: CODPARC, LOTE, produtos ativos, estoque ativo</li>
+<li>**Métodos**:</li>
+<li>`buscarRecebimentosPorCodparcELote()`: Busca recebimentos por CODPARC e LOTE</li>
+<li>`buscarLotesPorNunota()`: Busca todos os lotes distintos de uma nota</li>
+</ul>
+<br/>
+<h4>`ExpedicaoRepository.java`</h4>
+<ul>
+<li>**Query**: Busca expedições (TIPMOV = 'V', STATUSNOTA = 'L')</li>
+<li>**Tabelas**: TGFCAB, TGFITE, TGFPRO, TGFPAR, TSIEMP, TGFEST</li>
+<li>**Filtros**: Data de movimento, produtos ativos, estoque ativo</li>
+</ul>
+<br/>
+<h3>4. Model Layer</h3>
+<br/>
+<h4>`RecebimentoDTO.java`</h4>
+<ul>
+<li>DTO para dados de recebimento</li>
+<li>Campos alinhados com interface REC_IN</li>
+</ul>
+<br/>
+<h4>`ExpedicaoDTO.java`</h4>
+<ul>
+<li>DTO para dados de expedição</li>
+<li>Campos alinhados com interface PED_IN</li>
+</ul>
+<br/>
+<h3>5. Util Layer</h3>
+<br/>
+<h4>`TSLConstants.java`</h4>
+<ul>
+<li>Constantes do projeto</li>
+<li>Tamanhos de linha, separadores, encoding</li>
+</ul>
+<br/>
+<h4>`TSLFormatter.java`</h4>
+<ul>
+<li>Formatadores para todos os campos</li>
+<li>Cache de espaços em branco</li>
+<li>ThreadLocal para formatadores de data</li>
+<li>Otimizações de performance</li>
+</ul>
+<br/>
+<h4>`FileGenerator.java`</h4>
+<ul>
+<li>Geração de arquivos TXT</li>
+<li>Buffer otimizado (32KB)</li>
+<li>Encoding Windows-1252</li>
+<li>Criação automática de diretórios</li>
+</ul>
+<br/>
+<hr/>
+<br/>
+<h2>💾 Queries e Estrutura de Dados</h2>
+<br/>
+<h3>Recebimento (REC_IN)</h3>
+<br/>
+<h4>Tabelas Utilizadas</h4>
+<ul>
+<li>`TGFCAB`: Cabeçalho de notas fiscais</li>
+<li>`TGFITE`: Itens de notas fiscais</li>
+<li>`TGFPRO`: Produtos</li>
+<li>`TSIEMP`: Empresas</li>
+<li>`TGFEST`: Estoque (para datas de fabricação/validade)</li>
+</ul>
+<br/>
+<h4>Query Principal</h4>
+<pre><code>SELECT 
+  REPLACE(REPLACE(REPLACE(REPLACE(EMP.CGC, '.', ''), '/', ''), '-', ''), ' ', '') AS CNPJ,
+  CAB.NUMNOTA AS NOTAFISCAL,
+  ITE.SEQUENCIA AS ITEMNOTA,
+  NVL(PRO.REFERENCIA, LPAD(TO_CHAR(PRO.CODPROD), 13, '0')) AS CODIGOPRODUTO,
+  NVL(PRO.PESOLIQ, 0) AS PESOCAIXA,
+  NVL(ITE.AD_DATAPRODUCAO, EST.DTFABRICACAO) AS DATAPRODUCAO,
+  NVL(ITE.AD_DATAVALIDADE, EST.DTVAL) AS DATAVENCIMENTO,
+  ITE.CONTROLE AS LOTE,
+  PRO.COMPLDESC AS INFOCOMPLEMENTAR,
+  NVL(ITE.VLRUNIT, 0) AS VALORUNITARIO,
+  PRO.AD_NUMEROPALETE AS NUMEROPALETE,
+  PRO.AD_IDENTIFICADORCAIXA AS IDENTIFICADORCAIXA
+FROM TGFCAB CAB
+INNER JOIN TGFITE ITE ON ITE.NUNOTA = CAB.NUNOTA
+INNER JOIN TGFPRO PRO ON PRO.CODPROD = ITE.CODPROD AND PRO.ATIVO = 'S'
+  AND PRO.AD_INTEGTOTALLOGISTICA = 'S'
+INNER JOIN TSIEMP EMP ON EMP.CODEMP = CAB.CODEMP
+INNER JOIN TGFEST EST ON EST.CODPROD = ITE.CODPROD 
+  AND EST.CODEMP = CAB.CODEMP 
+  AND EST.CONTROLE = ITE.CONTROLE
+  AND EST.CODLOCAL = ITE.CODLOCALORIG
+  AND EST.ATIVO = 'S'
+WHERE CAB.TIPMOV = 'C' AND CAB.STATUSNOTA = 'L'
+  AND EST.CONTROLE = :LOTE
+  AND EST.CODPARC = :CODPARC</code></pre>
+<br/>
+<h4>Filtros Adicionais</h4>
+<ul>
+<li>**CODPARC**: Código do parceiro/fornecedor (obrigatório)</li>
+<li>**LOTE**: Código do lote obtido de TGFITE (obrigatório)</li>
+<li>Produtos ativos: `PRO.ATIVO = 'S'`</li>
+<li>Produtos para integração: `PRO.AD_INTEGTOTALLOGISTICA = 'S'`</li>
+<li>Estoque ativo: `EST.ATIVO = 'S'`</li>
+<li>Join com TGFEST: `INNER JOIN` (obrigatório para recebimentos)</li>
+</ul>
+<br/>
+<h4>Campos Adicionais Utilizados</h4>
+<ul>
+<li>**AD_INTEGTOTALLOGISTICA**: Filtro para exportar apenas produtos marcados ('S')</li>
+<li>**AD_NUMEROPALETE**: Número do palete (campo adicional na TGFPRO)</li>
+<li>**AD_IDENTIFICADORCAIXA**: Identificador da caixa (campo adicional na TGFPRO)</li>
+</ul>
+<br/>
+<h4>Tratamento de Valores Nulos</h4>
+<ul>
+<li>**CODIGOPRODUTO**: `NVL(REFERENCIA, LPAD(TO_CHAR(CODPROD), 13, '0'))` - Fallback para CODPROD com zeros à esquerda</li>
+<li>**PESOCAIXA**: `NVL(PESOLIQ, 0)` - Fallback para zero</li>
+<li>**VALORUNITARIO**: `NVL(VLRUNIT, 0)` - Fallback para zero</li>
+</ul>
+<br/>
+<h3>Expedição (PED_IN)</h3>
+<br/>
+<h4>Tabelas Utilizadas</h4>
+<ul>
+<li>`TGFCAB`: Cabeçalho de notas fiscais</li>
+<li>`TGFITE`: Itens de notas fiscais</li>
+<li>`TGFPRO`: Produtos</li>
+<li>`TGFPAR`: Parceiros (clientes)</li>
+<li>`TSIEMP`: Empresas</li>
+<li>`TGFEST`: Estoque (para data de fabricação)</li>
+</ul>
+<br/>
+<h4>Query Principal</h4>
+<pre><code>SELECT 
+  REPLACE(REPLACE(REPLACE(REPLACE(EMP.CGC, '.', ''), '/', ''), '-', ''), ' ', '') AS CNPJ,
+  CAB.ORDEMCARGA AS ORDEMFRETE,
+  CAB.NUMNOTA AS NUMEROPEDIDO,
+  ITE.SEQUENCIA AS ITEMPEDIDO,
+  NVL(PRO.REFERENCIA, LPAD(TO_CHAR(PRO.CODPROD), 13, '0')) AS CODIGOPRODUTO,
+  ABS(ITE.QTDNEG) AS QUANTIDADE,
+  NVL(PRO.PESOLIQ, 0) * ABS(ITE.QTDNEG) AS PESO,
+  EST.DTFABRICACAO AS DATAFABRICACAODE,
+  EST.DTFABRICACAO AS DATAFABRICACAOATE,
+  ITE.CONTROLE AS LOTE,
+  REPLACE(REPLACE(REPLACE(REPLACE(NVL(PAR.CGC_CPF, ''), '.', ''), '/', ''), '-', ''), ' ', '') AS CNPJCLIENTE,
+  PRO.AD_NUMEROPALETE AS NUMEROPALETE
+FROM TGFCAB CAB
+INNER JOIN TGFITE ITE ON ITE.NUNOTA = CAB.NUNOTA
+INNER JOIN TGFPRO PRO ON PRO.CODPROD = ITE.CODPROD AND PRO.ATIVO = 'S'
+  AND PRO.AD_INTEGTOTALLOGISTICA = 'S'
+INNER JOIN TGFPAR PAR ON PAR.CODPARC = CAB.CODPARC
+INNER JOIN TSIEMP EMP ON EMP.CODEMP = CAB.CODEMP
+LEFT JOIN TGFEST EST ON EST.CODPROD = ITE.CODPROD 
+  AND EST.CODEMP = CAB.CODEMP 
+  AND ((EST.CONTROLE IS NULL AND ITE.CONTROLE IS NULL) OR EST.CONTROLE = ITE.CONTROLE)
+  AND EST.CODLOCAL = ITE.CODLOCALORIG
+  AND EST.ATIVO = 'S'
+WHERE CAB.TIPMOV = 'V' AND CAB.STATUSNOTA = 'L'</code></pre>
+<br/>
+<h4>Filtros Adicionais</h4>
+<ul>
+<li>Período: `CAB.DTNEG >= :DATAINI AND CAB.DTNEG <= :DATAFIM` (aplicado dinamicamente, Data de Negociação)</li>
+<li>Produtos ativos: `PRO.ATIVO = 'S'`</li>
+<li>Produtos para integração: `PRO.AD_INTEGTOTALLOGISTICA = 'S'` ⭐ **NOVO**</li>
+<li>Estoque ativo: `EST.ATIVO = 'S'`</li>
+</ul>
+<br/>
+<h4>Campos Adicionais Utilizados</h4>
+<ul>
+<li>**AD_INTEGTOTALLOGISTICA**: Filtro para exportar apenas produtos marcados ('S')</li>
+<li>**AD_NUMEROPALETE**: Número do palete (campo adicional na TGFPRO)</li>
+</ul>
+<br/>
+<h4>Tratamento de Valores Nulos</h4>
+<ul>
+<li>**CODIGOPRODUTO**: `NVL(REFERENCIA, LPAD(TO_CHAR(CODPROD), 13, '0'))` - Fallback para CODPROD com zeros à esquerda</li>
+<li>**PESO**: `NVL(PESOLIQ, 0) * ABS(QTDNEG)` - Fallback para zero na multiplicação</li>
+<li>**CNPJCLIENTE**: `NVL(CGC_CPF, '')` - Fallback para string vazia (formatação preenche com espaços)</li>
+</ul>
+<br/>
+<h3>Otimizações de Query</h3>
+<br/>
+<ol>
+<li>**Uso de REFERENCIA**: Prioriza `PRO.REFERENCIA` (código de barras/EAN) com fallback para `CODPROD` com zeros à esquerda (13 dígitos)</li>
+<li>**Filtro de Produtos Ativos**: Apenas produtos com `PRO.ATIVO = 'S'`</li>
+<li>**Filtro de Integração**: ⭐ **NOVO** - Apenas produtos com `PRO.AD_INTEGTOTALLOGISTICA = 'S'`</li>
+<li>**Join Otimizado com TGFEST**: Tratamento correto de NULL para comparação de lotes</li>
+<li>**ABS() para Quantidade**: Garante valores positivos mesmo em devoluções</li>
+<li>**Fallbacks de Valores Nulos**: Todos os campos obrigatórios têm tratamento adequado</li>
+</ol>
+<br/>
+<hr/>
+<br/>
+<h2>⚡ Otimizações de Performance</h2>
+<br/>
+<h3>Cache e Memória</h3>
+<br/>
+<ol>
+<li>**Cache de Espaços**</li>
+</ol>
+<ul>
+<li>`ConcurrentHashMap<Integer, String>` para strings de espaços</li>
+<li>`ConcurrentHashMap<Integer, char[]>` para arrays de caracteres</li>
+<li>Evita alocações repetidas</li>
+</ul>
+<br/>
+<ol>
+<li>**ThreadLocal para Formatadores**</li>
+</ol>
+<ul>
+<li>`SimpleDateFormat` por thread</li>
+<li>Evita sincronização e problemas de concorrência</li>
+<li>2 formatadores: data (dd/MM/yyyy) e timestamp (yyyyMMddHHmmss)</li>
+</ul>
+<br/>
+<ol>
+<li>**Pré-alocação de Collections**</li>
+</ol>
+<ul>
+<li>`ArrayList` com capacidade inicial de 1024</li>
+<li>Reduz realocações durante crescimento</li>
+</ul>
+<br/>
+<h3>Manipulação de Strings</h3>
+<br/>
+<ol>
+<li>**Arrays de Char Diretos**</li>
+</ol>
+<ul>
+<li>Uso de `char[]` para preenchimento</li>
+<li>`Arrays.fill()` para eficiência</li>
+<li>`getChars()` para cópia direta</li>
+</ul>
+<br/>
+<ol>
+<li>**StringBuilder Pré-dimensionado**</li>
+</ol>
+<ul>
+<li>Capacidade inicial igual ao tamanho final da linha</li>
+<li>Evita realocações durante construção</li>
+</ul>
+<br/>
+<ol>
+<li>**Pattern Compilado**</li>
+</ol>
+<ul>
+<li>Regex compilada uma única vez</li>
+<li>Reutilizada para limpeza de CNPJ/CPF</li>
+</ul>
+<br/>
+<h3>I/O Otimizado</h3>
+<br/>
+<ol>
+<li>**Buffer Aumentado**</li>
+</ol>
+<ul>
+<li>`BufferedWriter` com 32KB (32768 bytes)</li>
+<li>Reduz chamadas ao sistema operacional</li>
+</ul>
+<br/>
+<ol>
+<li>**Escrita Direta**</li>
+</ol>
+<ul>
+<li>Arrays de char para separadores de linha</li>
+<li>Evita criação de strings intermediárias</li>
+</ul>
+<br/>
+<ol>
+<li>**Try-with-Resources**</li>
+</ol>
+<ul>
+<li>Fechamento automático de recursos</li>
+<li>Garante liberação mesmo em caso de erro</li>
+</ul>
+<br/>
+<h3>Processamento de Dados</h3>
+<br/>
+<ol>
+<li>**Formatação Eficiente**</li>
+</ol>
+<ul>
+<li>Uso de `Locale.US` para números</li>
+<li>Conversão direta ponto/vírgula</li>
+<li>Validações mínimas</li>
+</ul>
+<br/>
+<ol>
+<li>**Validações Inline**</li>
+</ol>
+<ul>
+<li>Verificações apenas quando necessário</li>
+<li>Early return para casos nulos/vazios</li>
+</ul>
+<br/>
+<h3>Banco de Dados</h3>
+<br/>
+<ol>
+<li>**Queries Otimizadas**</li>
+</ol>
+<ul>
+<li>Uso adequado de `INNER JOIN` e `LEFT JOIN`</li>
+<li>Filtros aplicados no banco (WHERE)</li>
+<li>Índices nativos do Sankhya</li>
+</ul>
+<br/>
+<ol>
+<li>**Native SQL**</li>
+</ol>
+<ul>
+<li>Uso de `NativeSql` do Sankhya</li>
+<li>Performance máxima</li>
+<li>Parâmetros nomeados</li>
+</ul>
+<br/>
+<ol>
+<li>**Gestão de Recursos**</li>
+</ol>
+<ul>
+<li>Fechamento adequado em blocos `finally`</li>
+<li>Tratamento de exceções silencioso para cleanup</li>
+</ul>
+<br/>
+<hr/>
+<br/>
+<h2>🛠️ Utilização de Utilitários Sankhya</h2>
+<br/>
+<h3>Utilitários Utilizados</h3>
+<br/>
+<ol>
+<li>**StringUtils** (`com.sankhya.util.StringUtils`)</li>
+</ol>
+<ul>
+<li>`getNullAsEmpty()`: Trata valores nulos</li>
+<li>`isEmpty()`: Verifica strings vazias</li>
+<li>`isNotEmpty()`: Verifica strings não vazias</li>
+<li>`formatTimestamp()`: Formatação de datas/horas</li>
+</ul>
+<br/>
+<ol>
+<li>**BigDecimalUtil** (`com.sankhya.util.BigDecimalUtil`)</li>
+</ol>
+<ul>
+<li>`getValueOrZero()`: Converte BigDecimal para String com fallback para zero</li>
+<li>`valueOf()`: Converte valores para BigDecimal</li>
+</ul>
+<br/>
+<ol>
+<li>**TimeUtils** (`com.sankhya.util.TimeUtils`)</li>
+</ol>
+<ul>
+<li>`getNow()`: Obtém data/hora atual como Timestamp</li>
+</ul>
+<br/>
+<ol>
+<li>**JdbcWrapper** (`br.com.sankhya.jape.dao.JdbcWrapper`)</li>
+</ol>
+<ul>
+<li>Gerenciamento de conexões JDBC</li>
+<li>Sessões de banco de dados</li>
+</ul>
+<br/>
+<ol>
+<li>**NativeSql** (`br.com.sankhya.jape.sql.NativeSql`)</li>
+</ol>
+<ul>
+<li>Execução de queries SQL nativas</li>
+<li>Parâmetros nomeados</li>
+<li>Gestão de recursos</li>
+</ul>
+<br/>
+<ol>
+<li>**EntityFacadeFactory** (`br.com.sankhya.modelcore.util.EntityFacadeFactory`)</li>
+</ol>
+<ul>
+<li>Acesso ao DWF (Dynamic Web Framework)</li>
+<li>Facilita acesso a dados</li>
+</ul>
+<br/>
+<ol>
+<li>**AcaoRotinaJava** (`br.com.sankhya.extensions.actionbutton.AcaoRotinaJava`)</li>
+</ol>
+<ul>
+<li>Interface para botões de ação</li>
+<li>Integração com interface do Sankhya</li>
+</ul>
+<br/>
+<hr/>
+<br/>
+<h2>📖 Guia de Uso</h2>
+<br/>
+<h3>Instalação</h3>
+<br/>
+<ol>
+<li>**Compilar o projeto**:</li>
+</ol>
+<pre><code>cd Denver
+mvn clean package</code></pre>
+<br/>
+<ol>
+<li>**Copiar JAR gerado**:</li>
+</ol>
+<ul>
+<li>Localização: `target/integracao-tsl-1.0.0.jar`</li>
+<li>Destino: Diretório de extensões do Sankhya</li>
+</ul>
+<br/>
+<ol>
+<li>**Configurar Botão de Ação no Sankhya**:</li>
+</ol>
+<ul>
+<li>**Tela**: Configuração → Rotinas → Botões de Ação</li>
+<li>**Classe**: `br.com.denver.tsl.action.botaoAcao.GerarArquivoTSL`</li>
+<li>**Método**: `doAction`</li>
+<li>**Parâmetros do Contexto** (obtidos automaticamente da linha selecionada):</li>
+<li>`NUNOTA`: Número da nota fiscal (obrigatório)</li>
+<li>`CODPARC`: Código do parceiro/fornecedor (obrigatório para recebimentos)</li>
+</ul>
+<br/>
+<h3>Configuração de Parâmetros</h3>
+<br/>
+<p>Os parâmetros são obtidos automaticamente do contexto (linha selecionada):</p>
+<br/>
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; margin: 10px 0;">
+<tr>
+<th>Parâmetro</th>
+<th>Tipo</th>
+<th>Obrigatório</th>
+<th>Fonte</th>
+<th>Descrição</th>
+</tr>
+<tr>
+<td>`NUNOTA`</td>
+<td>BigDecimal</td>
+<td>Sim</td>
+<td>Contexto</td>
+<td>Número da nota fiscal</td>
+</tr>
+<tr>
+<td>`CODPARC`</td>
+<td>BigDecimal</td>
+<td>Sim (recebimentos)</td>
+<td>Contexto</td>
+<td>Código do parceiro/fornecedor</td>
+</tr>
+</table>
+<br/>
+<p><strong>Valores Fixos:</strong></p>
+<ul>
+<li>`TIPO_INTERFACE`: Fixo em "TODOS" (gera REC_IN e PED_IN automaticamente)</li>
+<li>`CAMINHO_EXPORTACAO`: Fixo no diretório temporário do sistema (`java.io.tmpdir`)</li>
+<li>`LOTE`: Obtido automaticamente da tabela `TGFITE` usando `NUNOTA`</li>
+</ul>
+<br/>
+<p><strong>Comportamento:</strong></p>
+<ul>
+<li>O sistema busca automaticamente todos os lotes distintos da nota (`TGFITE`)</li>
+<li>Para cada lote encontrado, gera um arquivo de recebimento separado</li>
+<li>Normalmente há apenas um lote por nota, mas o sistema suporta múltiplos lotes</li>
+</ul>
+<br/>
+<h3>Uso</h3>
+<br/>
+<ol>
+<li>Acessar a tela onde o botão foi configurado (ex: tela de notas fiscais)</li>
+<li>Selecionar uma linha com `NUNOTA` e `CODPARC` preenchidos</li>
+<li>Clicar no botão "Gerar Arquivo TSL"</li>
+<li>Aguardar processamento</li>
+<li>Verificar mensagem de retorno com localização dos arquivos e link para download do ZIP</li>
+</ol>
+<br/>
+<h3>Exemplo de Uso</h3>
+<br/>
+<p><strong>Contexto necessário:</strong></p>
+<ul>
+<li>Linha selecionada com `NUNOTA = 10392`</li>
+<li>Linha selecionada com `CODPARC = 1547`</li>
+</ul>
+<br/>
+<p><strong>Processamento:</strong></p>
+<ol>
+<li>Sistema busca lotes da nota: `SELECT DISTINCT ITE.CONTROLE FROM TGFITE ITE WHERE ITE.NUNOTA = 10392`</li>
+<li>Para cada lote encontrado, busca recebimentos: `... WHERE EST.CONTROLE = :LOTE AND EST.CODPARC = :CODPARC`</li>
+<li>Gera arquivo de recebimento para cada lote</li>
+<li>Gera arquivo de expedição (usando NUNOTA)</li>
+</ol>
+<br/>
+<p><strong>Resultado esperado</strong> (exemplo com 2 lotes):</p>
+<ul>
+<li>`REC_IN_12345678000190_20250131123045.txt` (lote 1)</li>
+<li>`REC_IN_12345678000190_20250131123046.txt` (lote 2)</li>
+<li>`PED_IN_12345678000190_20250131123047.txt`</li>
+<li>`TSL_20250131123048.zip` (todos os arquivos compactados)</li>
+</ul>
+<br/>
+<hr/>
+<br/>
+<h2>📝 Formatação e Regras</h2>
+<br/>
+<h3>Regras de Formatação</h3>
+<br/>
+<h4>Datas</h4>
+<ul>
+<li>**Formato**: `DD/MM/YYYY`</li>
+<li>**Exemplo**: `01/01/2025`</li>
+<li>**Campo vazio**: Preenchido com espaços</li>
+</ul>
+<br/>
+<h4>Números Decimais</h4>
+<ul>
+<li>**Separador decimal**: Vírgula (`,`)</li>
+<li>**Exemplo**: `125,50`</li>
+<li>**Valor Unitário**: 5 inteiros + 2 decimais (ex: `00125,50`)</li>
+<li>**Peso/Quantidade**: Formato livre com 2 decimais</li>
+</ul>
+<br/>
+<h4>CNPJ/CPF</h4>
+<ul>
+<li>**Formato**: Apenas números (14 dígitos)</li>
+<li>**Preenchimento**: Direita com espaços até 15 caracteres</li>
+<li>**Exemplo**: `12345678000190 ` (com espaço no final)</li>
+</ul>
+<br/>
+<h4>Campos Alfanuméricos</h4>
+<ul>
+<li>**Preenchimento**: Direita com espaços</li>
+<li>**Truncamento**: Se exceder tamanho, corta à direita</li>
+</ul>
+<br/>
+<h4>Campos Numéricos (sem decimal)</h4>
+<ul>
+<li>**Preenchimento**: Esquerda com zeros</li>
+<li>**Exemplo**: `0001234`</li>
+</ul>
+<br/>
+<h3>Validações</h3>
+<br/>
+<ol>
+<li>**Tamanho de Linha**</li>
+</ol>
+<ul>
+<li>REC_IN: Exatamente 619 caracteres</li>
+<li>PED_IN: Exatamente 232 caracteres</li>
+<li>Linhas com tamanho incorreto são descartadas</li>
+</ul>
+<br/>
+<ol>
+<li>**Campos Obrigatórios**</li>
+</ol>
+<ul>
+<li>CNPJ, Nota Fiscal, Item, Código Produto</li>
+<li>Validação via SQL (campos não nulos)</li>
+</ul>
+<br/>
+<ol>
+<li>**Formato de Datas**</li>
+</ol>
+<ul>
+<li>Validação automática no formato</li>
+<li>Campos nulos geram espaços em branco</li>
+</ul>
+<br/>
+<hr/>
+<br/>
+<h2>⚠️ Observações Importantes</h2>
+<br/>
+<h3>Dados do Banco</h3>
+<br/>
+<ol>
+<li>**Produtos Ativos**: Apenas produtos com `PRO.ATIVO = 'S'` são processados</li>
+<li>**Produtos para Integração**: ⭐ **NOVO** - Apenas produtos com `PRO.AD_INTEGTOTALLOGISTICA = 'S'` são exportados</li>
+<li>**Notas Liberadas**: Apenas notas com `STATUSNOTA = 'L'` são consideradas</li>
+<li>**Estoque Ativo**: Datas de fabricação/validade apenas de estoque ativo</li>
+<li>**Referência do Produto**: Prioriza `PRO.REFERENCIA`, fallback para `LPAD(TO_CHAR(PRO.CODPROD), 13, '0')` (13 dígitos com zeros à esquerda)</li>
+</ol>
+<br/>
+<h3>Campos Adicionais Necessários</h3>
+<br/>
+<p>O projeto utiliza os seguintes campos adicionais na tabela <code>TGFPRO</code>:</p>
+<br/>
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; margin: 10px 0;">
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Valores</th>
+<th>Descrição</th>
+</tr>
+<tr>
+<td>`AD_INTEGTOTALLOGISTICA`</td>
+<td>CHAR(1)</td>
+<td>'S', 'N' ou NULL</td>
+<td>Flag que indica se o produto deve ser exportado. Apenas produtos com 'S' são processados.</td>
+</tr>
+<tr>
+<td>`AD_NUMEROPALETE`</td>
+<td>VARCHAR2</td>
+<td>Texto (26 caracteres)</td>
+<td>Número identificador do palete (opcional, usado em REC_IN e PED_IN)</td>
+</tr>
+<tr>
+<td>`AD_IDENTIFICADORCAIXA`</td>
+<td>VARCHAR2</td>
+<td>Texto (31 caracteres)</td>
+<td>Identificador da caixa (opcional, usado apenas em REC_IN)</td>
+</tr>
+</table>
+<br/>
+<p><strong>⚠️ Importante</strong>: Os campos adicionais devem ser criados na tabela <code>TGFPRO</code> antes de usar o sistema. Produtos sem <code>AD_INTEGTOTALLOGISTICA = 'S'</code> não serão exportados.</p>
+<br/>
+<h3>Arquivos Gerados</h3>
+<br/>
+<ol>
+<li>**Encoding**: Windows-1252 (ANSI), não UTF-8</li>
+<li>**Quebra de Linha**: CRLF (`\r\n`)</li>
+<li>**Formato**: Posicional (campos fixos)</li>
+<li>**Validação**: Linhas com tamanho incorreto são ignoradas</li>
+</ol>
+<br/>
+<h3>Performance</h3>
+<br/>
+<ol>
+<li>**Grandes Volumes**: Sistema otimizado para processar grandes volumes</li>
+<li>**Memória**: Pré-alocação reduz uso de memória</li>
+<li>**I/O**: Buffer de 32KB otimiza escrita em disco</li>
+<li>**Cache**: Cache de strings reduz alocações</li>
+</ol>
+<br/>
+<h3>Limitações</h3>
+<br/>
+<ol>
+<li>**Recebimentos**: Requer `CODPARC` e `LOTE` válidos (obtidos automaticamente)</li>
+<li>**Empresa**: Processa apenas uma empresa por vez</li>
+<li>**Produtos para Integração**: Apenas produtos com `AD_INTEGTOTALLOGISTICA = 'S'` são exportados</li>
+<li>**Lotes**: Sistema busca automaticamente da tabela `TGFITE` usando `NUNOTA`</li>
+<li>**Múltiplos Lotes**: Suporta múltiplos lotes por nota (gera arquivo separado para cada lote)</li>
+<li>**Campos Adicionais**: Requer campos adicionais criados na tabela `TGFPRO`</li>
+</ol>
+<br/>
+<h3>Tratamento de Campos Obrigatórios</h3>
+<br/>
+<p>Todos os campos obrigatórios das interfaces têm tratamento de valores nulos:</p>
+<br/>
+<ul>
+<li>**Código do Produto**: Se `REFERENCIA` for NULL, usa `CODPROD` formatado com zeros à esquerda (13 dígitos)</li>
+<li>**Peso**: Se `PESOLIQ` for NULL, usa `0`</li>
+<li>**Valor Unitário**: Se `VLRUNIT` for NULL, usa `0`</li>
+<li>**CNPJ Cliente** (PED_IN): Se `CGC_CPF` for NULL, usa string vazia (formatador preenche com espaços)</li>
+</ul>
+<br/>
+<h3>Troubleshooting</h3>
+<br/>
+<h4>Nenhum registro encontrado</h4>
+<ul>
+<li>Verificar se `NUNOTA` e `CODPARC` estão presentes no contexto</li>
+<li>Verificar se existem lotes na nota: `SELECT DISTINCT ITE.CONTROLE FROM TGFITE ITE WHERE ITE.NUNOTA = [NUNOTA]`</li>
+<li>Verificar status das notas (`STATUSNOTA = 'L'`)</li>
+<li>Verificar produtos ativos (`PRO.ATIVO = 'S'`)</li>
+<li>⭐ **Verificar se produtos têm `AD_INTEGTOTALLOGISTICA = 'S'`** (campo adicional obrigatório)</li>
+<li>Verificar se existe estoque com `EST.CODPARC = [CODPARC]` e `EST.CONTROLE = [LOTE]`</li>
+<li>Verificar se campos adicionais foram criados na tabela `TGFPRO`</li>
+</ul>
+<br/>
+<h4>Arquivo não gerado</h4>
+<ul>
+<li>Verificar permissões no diretório de saída</li>
+<li>Verificar espaço em disco</li>
+<li>Verificar logs de erro</li>
+</ul>
+<br/>
+<h4>Dados incorretos</h4>
+<ul>
+<li>Verificar formato dos campos</li>
+<li>Verificar tamanho das linhas</li>
+<li>Verificar encoding do arquivo</li>
+</ul>
+<br/>
+<hr/>
+<br/>
+<h2>📚 Referências</h2>
+<br/>
+<ul>
+<li>**Manual TSL**: Interfaces Padrões WMS - TSL V1.2</li>
+<li>**Documento de Requisitos**: Documento - Plano de requisitos (Denver)</li>
+<li>**Sankhya**: Documentação oficial do Sankhya</li>
+<li>**JDK 8**: Oracle Java Documentation</li>
+</ul>
+<br/>
+<hr/>
+<br/>
+<p><strong>Versão</strong>: 1.1.0  </p>
+<p><strong>Última Atualização</strong>: 2025-12-02  </p>
+<p><strong>Status</strong>: ✅ CONCLUÍDO</p>
+<br/>
+<h3>Mudanças na Versão 1.1.0</h3>
+<br/>
+<ul>
+<li>✅ Recebimentos agora são buscados por `CODPARC` e `LOTE` (não mais por `NUNOTA`)</li>
+<li>✅ LOTE é obtido automaticamente da tabela `TGFITE` usando `NUNOTA`</li>
+<li>✅ Suporte a múltiplos lotes por nota (gera arquivo separado para cada lote)</li>
+<li>✅ Uso extensivo de SankhyaUtils (StringUtils, BigDecimalUtil, TimeUtils)</li>
+<li>✅ Otimização de código com redução de IFs desnecessários</li>
+<li>✅ Query de recebimento atualizada com `INNER JOIN` em `TGFEST` e filtros por `CODPARC` e `LOTE`</li>
+</ul>
+<br/>
+<br/>
+    </div>
+</body>
+</html>

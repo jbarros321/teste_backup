@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adicionar Conta Contábil</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 84% 4.9%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
+        }
+
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --primary: 210 40% 98%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 212.7 26.8% 83.9%;
+        }
+
+        /* Spinner for loading state */
+        .loader {
+            border: 4px solid hsl(var(--secondary));
+            border-radius: 50%;
+            border-top: 4px solid hsl(var(--primary));
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="w-full h-full bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+
+    <div id="main-container" class="w-full h-full flex items-center justify-center p-4">
+        <div class="w-full max-w-md">
+            <h2 class="text-2xl font-bold text-center mb-8 text-[hsl(var(--foreground))]">Adicionar Conta Contábil</h2>
+            <form id="conta-form" class="space-y-6">
+                <div>
+                    <label for="padrao-conta"
+                        class="block text-sm font-medium text-[hsl(var(--muted-foreground))] mb-1">Padrão Conta</label>
+                    <input id="padrao-conta" name="padrao-conta" type="text" required
+                        class="flex h-10 w-full rounded-md border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-2">
+                </div>
+                <div>
+                    <label for="sinal"
+                        class="block text-sm font-medium text-[hsl(var(--muted-foreground))] mb-1">Sinal</label>
+                    <input id="sinal" name="sinal" type="text" required placeholder="1 ou -1"
+                        class="flex h-10 w-full rounded-md border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-2">
+                    <p id="sinal-error" class="text-xs text-[hsl(var(--destructive))] mt-1.5 hidden">O valor do sinal
+                        deve ser exatamente '1' ou '-1'.</p>
+                </div>
+                <div>
+                    <button id="save-button" type="submit"
+                        class="mt-4 w-full flex items-center justify-center bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] rounded-md px-4 py-2 h-10 text-sm font-medium shadow-sm transition-colors hover:bg-[hsl(var(--primary))]/90 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))] focus:ring-offset-2 disabled:opacity-50">
+                        <span id="button-text">Salvar</span>
+                        <div id="button-loader" class="loader hidden"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const MITRA_UPDATE_EVENT_NAME = 'mitra-update-form-contabil';
+
+        function updateMitra() {
+            console.log("Sinal de update para [Form Conta Contábil] recebido. Disparando evento.");
+            document.body.dispatchEvent(new CustomEvent(MITRA_UPDATE_EVENT_NAME));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('conta-form');
+            const padraoContaInput = document.getElementById('padrao-conta');
+            const sinalInput = document.getElementById('sinal');
+            const saveButton = document.getElementById('save-button');
+            const buttonText = document.getElementById('button-text');
+            const buttonLoader = document.getElementById('button-loader');
+            const sinalError = document.getElementById('sinal-error');
+
+            let currentContext = null;
+
+            async function handleSave(event) {
+                event.preventDefault();
+                sinalError.classList.add('hidden');
+
+                const padraoContaValue = padraoContaInput.value.trim();
+                const sinalValue = sinalInput.value.trim();
+
+                if (!padraoContaValue || !sinalValue) {
+                    console.error("Campos obrigatórios não preenchidos.");
+                    return;
+                }
+
+                if (sinalValue !== '1' && sinalValue !== '-1') {
+                    sinalError.classList.remove('hidden');
+                    sinalInput.focus();
+                    return;
+                }
+
+                setLoading(true);
+
+                try {
+                    await setVariableMitra({
+                        name: componentData.varPadraoCtactb,
+                        content: padraoContaValue
+                    });
+                    await setVariableMitra({
+                        name: componentData.varSinal,
+                        content: sinalValue
+                    });
+
+                    if (currentContext === 'INCLUIDA') {
+                        const dbActionId = parseInt(componentData.dbActionSalvarIncluidaId, 10);
+                        await dbactionMitra(dbActionId);
+                    } else if (currentContext === 'EXCLUIDA') {
+                        const dbActionId = parseInt(componentData.dbActionSalvarExcluidaId, 10);
+                        await dbactionMitra(dbActionId);
+                    } else {
+                        // Este erro não deve mais ocorrer com a inicialização correta
+                        throw new Error(`Contexto inválido ou não definido: '${currentContext}'`);
+                    }
+
+                    if (typeof updateComponentsMitra === 'function') {
+                        await updateComponentsMitra({ all: true });
+                    }
+
+                    // A plataforma é responsável por fechar o modal após a conclusão da ação.
+
+                } catch (error) {
+                    console.error('Erro ao salvar conta contábil:', error);
+                    alert('Ocorreu um erro ao salvar: ' + error.message);
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            function setLoading(isLoading) {
+                if (isLoading) {
+                    saveButton.disabled = true;
+                    buttonText.classList.add('hidden');
+                    buttonLoader.classList.remove('hidden');
+                } else {
+                    saveButton.disabled = false;
+                    buttonText.classList.remove('hidden');
+                    buttonLoader.classList.add('hidden');
+                }
+            }
+
+            async function initializeComponent() {
+                try {
+                    const contextResult = await queryMitra({ query: `SELECT ${componentData.varTipoConta}` });
+                    if (contextResult && contextResult.data && contextResult.data[0] && contextResult.data[0][0]) {
+                        currentContext = contextResult.data[0][0];
+                    } else {
+                        throw new Error(`A variável de contexto '${componentData.varTipoConta}' não retornou um valor.`);
+                    }
+                } catch (error) {
+                    console.error("Erro ao inicializar o contexto:", error);
+                    const container = document.getElementById('main-container');
+                    if (container) {
+                        container.innerHTML = `<div class="p-8 text-center text-[hsl(var(--destructive))] bg-red-50 h-full w-full flex items-center justify-center rounded-lg border border-red-200">${error.message}</div>`;
+                    }
+                    return;
+                }
+
+                form.addEventListener('submit', handleSave);
+
+                document.body.addEventListener(MITRA_UPDATE_EVENT_NAME, () => {
+                    console.log('Evento de atualização recebido, mas nenhuma ação é necessária para este formulário.');
+                });
+            }
+
+            const waitForMitraAndInit = () => {
+                const maxWaitTime = 5000;
+                const intervalTime = 100;
+                const startTime = Date.now();
+
+                const checkInterval = setInterval(() => {
+                    if (window.componentData && window.componentData.varTipoConta) {
+                        clearInterval(checkInterval);
+                        initializeComponent();
+                    } else if (Date.now() - startTime > maxWaitTime) {
+                        clearInterval(checkInterval);
+                        console.error("Erro: As configurações do componente (componentData) não foram carregadas a tempo.");
+                        const container = document.getElementById('main-container');
+                        if (container) {
+                            container.innerHTML = `<div class="p-8 text-center text-[hsl(var(--destructive))] bg-red-50 h-full w-full flex items-center justify-center rounded-lg border border-red-200">Erro Crítico: As configurações do componente não foram carregadas da plataforma.</div>`;
+                        }
+                    }
+                }, intervalTime);
+            };
+
+            waitForMitraAndInit();
+        });
+    </script>
+</body>
+
+</html>

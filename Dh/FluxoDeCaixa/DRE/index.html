@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRE Gerencial</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Sora:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --background: 220 18% 97%;
+            --foreground: 220 20% 12%;
+            --primary: 221 83% 53%;
+            --primary-foreground: 0 0% 100%;
+            --secondary: 220 14% 93%;
+            --secondary-foreground: 220 15% 20%;
+            --muted: 220 14% 95%;
+            --muted-foreground: 220 10% 48%;
+            --accent: 220 14% 90%;
+            --accent-foreground: 220 15% 18%;
+            --destructive: 0 84% 60%;
+            --destructive-foreground: 0 0% 100%;
+            --border: 220 13% 86%;
+            --input: 220 13% 86%;
+            --ring: 221 83% 53%;
+            --radius: 0.5rem;
+
+            --receita-bg: 142 50% 95%;
+            --despesa-bg: 220 20% 96%;
+            --calculo-bg: 45 60% 95%;
+            --grupo-hover: 220 30% 91%;
+            --valor-receita: 142 65% 35%;
+            --valor-despesa: 0 72% 48%;
+            --valor-calculo: 220 20% 22%;
+            --total-receita: 142 65% 35%;
+            --total-geral: 220 20% 22%;
+
+            /* Button colors */
+            --btn-pdf: 0 72% 50%;
+            --btn-pdf-hover: 0 72% 43%;
+            --btn-excel: 142 65% 38%;
+            --btn-excel-hover: 142 65% 31%;
+            --btn-refresh: 220 15% 45%;
+            --btn-refresh-hover: 220 15% 35%;
+        }
+
+        .dark {
+            --background: 222 22% 9%;
+            --foreground: 0 0% 93%;
+            --primary: 217 91% 60%;
+            --primary-foreground: 222 22% 9%;
+            --secondary: 220 18% 16%;
+            --secondary-foreground: 0 0% 93%;
+            --muted: 220 18% 18%;
+            --muted-foreground: 220 12% 62%;
+            --accent: 220 18% 18%;
+            --accent-foreground: 0 0% 93%;
+            --border: 220 16% 22%;
+            --input: 220 16% 22%;
+            --ring: 217 91% 60%;
+            --receita-bg: 142 28% 16%;
+            --despesa-bg: 220 14% 17%;
+            --calculo-bg: 45 30% 17%;
+            --grupo-hover: 220 22% 25%;
+            --valor-receita: 142 65% 60%;
+            --valor-despesa: 0 72% 65%;
+            --valor-calculo: 220 15% 82%;
+            --total-receita: 142 65% 60%;
+            --total-geral: 220 15% 82%;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-family: 'Sora', system-ui, sans-serif;
+        }
+
+        /* ── Header ── */
+        #component-header {
+            background: linear-gradient(135deg, hsl(220 16% 22%) 0%, hsl(220 18% 17%) 100%);
+            border-bottom: 1px solid hsl(220 15% 13%);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+        }
+
+        .header-title {
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            letter-spacing: -0.01em;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .header-title svg {
+            opacity: 0.85;
+        }
+
+        /* ── Buttons ── */
+        .btn-base {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.45rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            transition: all 0.18s ease;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        }
+
+        .btn-pdf {
+            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+            color: #fff;
+        }
+
+        .btn-pdf:hover {
+            background: linear-gradient(135deg, #c53030 0%, #9b2c2c 100%);
+            box-shadow: 0 3px 12px rgba(197, 48, 48, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .btn-pdf:active {
+            transform: translateY(0);
+        }
+
+        .btn-excel {
+            background: linear-gradient(135deg, #276749 0%, #1c4d35 100%);
+            color: #fff;
+        }
+
+        .btn-excel:hover {
+            background: linear-gradient(135deg, #1c4d35 0%, #143825 100%);
+            box-shadow: 0 3px 12px rgba(28, 77, 53, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .btn-excel:active {
+            transform: translateY(0);
+        }
+
+        .btn-refresh {
+            background: rgba(255, 255, 255, 0.14);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            backdrop-filter: blur(4px);
+        }
+
+        .btn-refresh:hover {
+            background: rgba(255, 255, 255, 0.22);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            transform: translateY(-1px);
+        }
+
+        /* ── Table area ── */
+        #table-wrapper {
+            background: hsl(var(--background));
+        }
+
+        /* Garante que o thead sempre pinte acima do tbody ao rolar */
+        #dre-table thead {
+            position: relative;
+            z-index: 20;
+        }
+
+        #dre-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 16px rgba(30, 50, 100, 0.08), 0 1px 3px rgba(30, 50, 100, 0.06);
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: hsl(220 20% 18%);
+            color: #e8edf5;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            padding: 0.85rem 1rem;
+            border-bottom: 2px solid hsl(220 20% 28%);
+        }
+
+        thead th:first-child {
+            position: sticky;
+            left: 0;
+            top: 0;
+            z-index: 40;
+            background: hsl(220 20% 18%);
+            text-align: left;
+            font-family: 'Sora', sans-serif;
+            text-transform: none;
+            letter-spacing: 0;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        tbody td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: #fff;
+            box-shadow: 2px 0 6px rgba(0, 0, 0, 0.06);
+        }
+
+        tr[data-type="Receita"]>td:first-child {
+            background-color: hsl(var(--receita-bg));
+        }
+
+        tr[data-type="Despesa"]>td:first-child {
+            background-color: hsl(var(--despesa-bg));
+        }
+
+        tr[data-type="Cálculo"]>td:first-child {
+            background-color: hsl(var(--calculo-bg));
+        }
+
+        tr.font-bold:hover td:first-child {
+            background-color: hsl(var(--grupo-hover)) !important;
+        }
+
+        tr.font-bold {
+            border-left: 3px solid transparent;
+        }
+
+        tr.font-bold[data-type="Receita"] {
+            border-left-color: hsl(142 60% 45%);
+        }
+
+        tr.font-bold[data-type="Despesa"] {
+            border-left-color: hsl(0 72% 50%);
+        }
+
+        tr.font-bold[data-type="Cálculo"] {
+            border-left-color: hsl(45 80% 50%);
+        }
+
+        tbody tr:hover td {
+            background-color: hsl(220 40% 98%);
+        }
+
+        tbody tr.font-bold:hover td {
+            background-color: hsl(var(--grupo-hover));
+        }
+
+        /* Value colors */
+        .valor-receita {
+            color: hsl(var(--valor-receita));
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .valor-despesa {
+            color: hsl(var(--valor-despesa));
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .valor-calculo {
+            color: hsl(var(--valor-calculo));
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 500;
+        }
+
+        .total-receita {
+            color: hsl(var(--total-receita));
+            font-weight: 700;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .total-geral {
+            color: hsl(var(--total-geral));
+            font-weight: 800;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        /* Total column highlight - main table only */
+        #dre-table td:last-child,
+        #dre-table th:last-child {
+            background-color: hsl(220 20% 97%) !important;
+            border-left: 1px solid hsl(var(--border));
+        }
+
+        #dre-table thead th:last-child {
+            background: hsl(220 20% 14%) !important;
+            border-left: 1px solid hsl(220 20% 25%);
+        }
+
+        .toggle-icon svg {
+            stroke: currentColor;
+            stroke-width: 2.5;
+        }
+
+        /* Drilldown button */
+        .drill-btn {
+            margin-left: 6px;
+            color: hsl(220 15% 50%);
+            opacity: 0.7;
+            transition: opacity 0.15s, transform 0.15s;
+            display: inline-flex;
+        }
+
+        .drill-btn:hover {
+            opacity: 1;
+            transform: scale(1.2);
+            color: hsl(220 15% 30%);
+        }
+
+        /* Loader */
+        #loader {
+            background: hsl(var(--background));
+        }
+
+        .loader-ring {
+            width: 48px;
+            height: 48px;
+            border: 3px solid hsl(220 20% 88%);
+            border-top-color: hsl(var(--primary));
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ── MODAL ── */
+        #drill-modal .modal-card {
+            background: #ffffff;
+            color: #1e2b3c;
+            border-radius: 16px;
+            border: 1px solid #e4eaf3;
+            box-shadow: 0 24px 64px rgba(15, 25, 60, 0.22), 0 4px 16px rgba(15, 25, 60, 0.12);
+            overflow: hidden;
+        }
+
+        #drill-modal .modal-header {
+            background: linear-gradient(135deg, hsl(220 16% 22%) 0%, hsl(220 18% 17%) 100%);
+            border-bottom: 1px solid hsl(220 15% 13%);
+            padding: 1rem 1.25rem;
+        }
+
+        #drill-modal .modal-header h3 {
+            color: #fff;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        #drill-modal .modal-header .close-btn {
+            color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 50%;
+            padding: 4px;
+            transition: background 0.15s;
+        }
+
+        #drill-modal .modal-header .close-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        /* Modal small buttons */
+        .modal-btn-pdf {
+            background: linear-gradient(135deg, #e53e3e, #c53030);
+            color: #fff;
+            border-radius: 7px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.35rem 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: all 0.15s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 1px 4px rgba(197, 48, 48, 0.25);
+        }
+
+        .modal-btn-pdf:hover {
+            background: linear-gradient(135deg, #c53030, #9b2c2c);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(197, 48, 48, 0.35);
+        }
+
+        .modal-btn-excel {
+            background: linear-gradient(135deg, #276749, #1c4d35);
+            color: #fff;
+            border-radius: 7px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.35rem 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: all 0.15s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 1px 4px rgba(28, 77, 53, 0.25);
+        }
+
+        .modal-btn-excel:hover {
+            background: linear-gradient(135deg, #1c4d35, #143825);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(28, 77, 53, 0.35);
+        }
+
+        #drill-modal #drill-table thead th {
+            background: hsl(220 15% 94%);
+            color: hsl(220 20% 28%);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            border-bottom: 2px solid hsl(220 13% 85%);
+            padding: 0.7rem 1rem;
+            position: relative;
+        }
+
+        #drill-modal #drill-table tbody tr:hover td {
+            background-color: hsl(220 40% 98%);
+        }
+
+        #drill-modal #drill-table td {
+            color: hsl(220 20% 18%);
+            border-bottom: 1px solid hsl(220 13% 93%);
+            padding: 0.65rem 1rem;
+            font-family: 'Sora', sans-serif;
+            font-size: 0.82rem;
+        }
+
+        #drill-modal #drill-table td:last-child {
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 500;
+            background: transparent !important;
+            border-left: none;
+        }
+
+        #drill-modal #drill-table tr:last-child td {
+            background: hsl(221 83% 97%) !important;
+            color: hsl(221 70% 30%);
+            font-weight: 700;
+        }
+
+        /* Row animations */
+        tbody tr {
+            transition: background 0.12s ease;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: hsl(220 14% 80%);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: hsl(220 14% 65%);
+        }
+
+        #dre-table td,
+        #dre-table th {
+            page-break-inside: avoid;
+        }
+    </style>
+</head>
+
+<body class="h-full antialiased">
+    <div id="dre-container" class="h-full w-full flex flex-col">
+
+        <!-- Header -->
+        <div id="component-header" class="hidden p-3 px-5 flex justify-between items-center gap-3">
+            <div class="header-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <path d="M3 9h18M9 21V9" />
+                </svg>
+                DRE Gerencial
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button id="refresh-btn" title="Forçar atualização" class="btn-base btn-refresh">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10" />
+                        <polyline points="1 20 1 14 7 14" />
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                    </svg>
+                    Atualizar
+                </button>
+
+                <button id="export-pdf-btn" class="btn-base btn-pdf">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                    Exportar PDF
+                </button>
+
+                <button id="export-btn" class="btn-base btn-excel">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Exportar Excel
+                </button>
+            </div>
+        </div>
+
+        <!-- Loader -->
+        <div id="loader" class="hidden flex-grow flex items-center justify-center">
+            <div class="text-center">
+                <div class="loader-ring mx-auto"></div>
+                <p class="mt-5 text-sm font-medium" style="color: hsl(var(--muted-foreground))">Carregando dados do DRE…
+                </p>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div id="table-wrapper" class="hidden flex-grow overflow-auto p-4">
+            <table id="dre-table" class="min-w-full text-sm">
+                <thead>
+                    <tr>
+                        <th class="px-5 py-3.5 text-left min-w-[450px]">Descrição</th>
+                        <th class="px-4 py-3.5 text-right">Janeiro</th>
+                        <th class="px-4 py-3.5 text-right">Fevereiro</th>
+                        <th class="px-4 py-3.5 text-right">Março</th>
+                        <th class="px-4 py-3.5 text-right">Abril</th>
+                        <th class="px-4 py-3.5 text-right">Maio</th>
+                        <th class="px-4 py-3.5 text-right">Junho</th>
+                        <th class="px-4 py-3.5 text-right">Julho</th>
+                        <th class="px-4 py-3.5 text-right">Agosto</th>
+                        <th class="px-4 py-3.5 text-right">Setembro</th>
+                        <th class="px-4 py-3.5 text-right">Outubro</th>
+                        <th class="px-4 py-3.5 text-right">Novembro</th>
+                        <th class="px-4 py-3.5 text-right">Dezembro</th>
+                        <th class="px-4 py-3.5 text-right">Total ano</th>
+                    </tr>
+                </thead>
+                <tbody id="dre-tbody"></tbody>
+            </table>
+        </div>
+
+        <!-- Drill Modal -->
+        <div id="drill-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+            style="background-color: rgba(10,18,40,0.7); backdrop-filter: blur(3px);">
+            <div class="modal-card w-full max-w-4xl flex flex-col max-h-[80vh]">
+                <div class="modal-header flex justify-between items-center">
+                    <h3 id="drill-modal-title">Análise por Grupo de Produtos</h3>
+                    <div class="flex items-center gap-2">
+                        <button id="modal-export-pdf-btn" class="modal-btn-pdf" title="Exportar PDF">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                                <polyline points="10 9 9 9 8 9" />
+                            </svg>
+                            PDF
+                        </button>
+                        <button id="modal-export-excel-btn" class="modal-btn-excel" title="Exportar Excel">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            Excel
+                        </button>
+                        <button onclick="closeDrillModal()" class="close-btn transition-colors p-1.5 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-4 overflow-auto flex-grow" style="background:#fff;">
+                    <div id="drill-loader" class="hidden flex justify-center py-10">
+                        <div class="loader-ring"></div>
+                    </div>
+                    <table id="drill-table" class="w-full text-sm border-collapse hidden">
+                        <thead>
+                            <tr>
+                                <th class="text-left">Grupo de Produtos</th>
+                                <th class="text-right">Valor Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="drill-tbody"></tbody>
+                    </table>
+                    <div id="drill-empty" class="hidden text-center py-10 text-sm" style="color:#94a3b8;">
+                        Nenhum dado encontrado para esta linha no período.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // ─────────────────────────────────────────────
+        const MITRA_UPDATE_EVENT_NAME = 'mitra-update-dre-gerencial';
+
+        window.closeDrillModal = () => {
+            document.getElementById('drill-modal').classList.add('hidden');
+        };
+
+        window.openDrillModal = async (nodeId, nodeDesc, nodeTipo) => {
+            const modal = document.getElementById('drill-modal');
+            const title = document.getElementById('drill-modal-title');
+            const loader = document.getElementById('drill-loader');
+            const table = document.getElementById('drill-table');
+            const tbody = document.getElementById('drill-tbody');
+            const empty = document.getElementById('drill-empty');
+            const headerRow = table.querySelector('thead tr');
+            
+            title.textContent = `Análise Detalhada: ${nodeDesc}`;
+            modal.classList.remove('hidden');
+            loader.classList.remove('hidden');
+            table.classList.add('hidden');
+            empty.classList.add('hidden');
+            tbody.innerHTML = '';
+            
+            const codNat = nodeId.replace('N_', '').replace('IMP_', '');
+            const jdbcId = parseInt(window.componentData.jdbcId, 10) || 1;
+            const descUpper = nodeDesc.toUpperCase();
+            const tipoNorm = (nodeTipo || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+            const isProductView = tipoNorm === 'receita' || descUpper.includes('DEDUCO') || descUpper.includes('CUSTO');
+            const isImposto = nodeId.startsWith('IMP_');
+            const isCreditoPresumido = nodeId === 'N_CREDITO_PRESUMIDO';
+
+            // Ajusta o cabeçalho dinamicamente
+            if (isProductView && !descUpper.includes('FINANCEIR')) {
+                headerRow.innerHTML = `<th class="text-left">Grupo de Produtos</th><th class="text-right">Valor Total</th>`;
+            } else {
+                headerRow.innerHTML = `<th class="text-left">Data | Parceiro | Histórico</th><th class="text-right">Valor</th>`;
+            }
+
+            // Filtro de Natureza robusto para Grupos e Subgrupos
+            let natFilter = "";
+            if (nodeId.startsWith('G_')) {
+                natFilter = `C.CODNAT IN (SELECT CODNAT FROM DRE_GRUPOS_NATUREZAS WHERE ID_GRUPO = ${nodeId.replace('G_', '')})`;
+            } else if (nodeId.startsWith('S_')) {
+                natFilter = `C.CODNAT IN (SELECT CODNAT FROM DRE_GRUPOS_NATUREZAS WHERE ID_SUBGRUPO = ${nodeId.split('_').pop()})`;
+            } else {
+                natFilter = `C.CODNAT = '${codNat}'`;
+            }
+
+            let drillQuery = "";
+
+            if (isImposto) {
+                drillQuery = `
+            SELECT COALESCE(G.DESCRGRUPOPROD,'Sem Grupo') AS GRUPO, SUM(ABS(DIN.VALOR)) AS VALOR
+            FROM TGFDIN DIN JOIN TGFCAB C ON DIN.NUNOTA=C.NUNOTA
+            JOIN TGFITE ITE ON C.NUNOTA=ITE.NUNOTA AND DIN.SEQUENCIA=ITE.SEQUENCIA
+            JOIN TGFPRO PRO ON ITE.CODPROD=PRO.CODPROD
+            LEFT JOIN IMP_GRUPOPRODUTOS G ON PRO.CODGRUPOPROD=G.CODGRUPOPROD
+            JOIN TGFTOP T ON C.CODTIPOPER=T.CODTIPOPER AND C.DHTIPOPER=T.DHALTER
+            WHERE DIN.CODIMP='${codNat}' AND T.GOLSINAL=-1 AND C.TIPMOV='V' AND C.STATUSNOTA='L'
+              AND (:VAR_DATA_INICIO IS NULL OR :VAR_DATA_INICIO='' OR C.DTNEG>=:VAR_DATA_INICIO)
+              AND (:VAR_DATA_FIM IS NULL OR :VAR_DATA_FIM='' OR C.DTNEG<=:VAR_DATA_FIM)
+            GROUP BY G.DESCRGRUPOPROD ORDER BY VALOR DESC`;
+            } else if (isCreditoPresumido) {
+                title.textContent = `Análise por Origem: ${nodeDesc}`;
+                drillQuery = `
+            SELECT COALESCE(ORIGEM,'Outros') AS GRUPO, SUM(ABS(SOMAVALOR)) AS VALOR
+            FROM IMP_CREDITO_PRESUMIDO C
+            WHERE (:VAR_DATA_INICIO IS NULL OR :VAR_DATA_INICIO='' OR C.DTREF>=:VAR_DATA_INICIO)
+              AND (:VAR_DATA_FIM IS NULL OR :VAR_DATA_FIM='' OR C.DTREF<=:VAR_DATA_FIM)
+            GROUP BY ORIGEM ORDER BY VALOR DESC`;
+            } else if (codNat === '99998') {
+                drillQuery = `
+            SELECT COALESCE(G.DESCRGRUPOPROD,'Sem Grupo') AS GRUPO, SUM(ABS(C.CMV)) AS VALOR
+            FROM IMP_CMV_GRUPO C LEFT JOIN IMP_GRUPOPRODUTOS G ON C.CODGRUPOPROD=G.CODGRUPOPROD
+            WHERE (:VAR_DATA_INICIO IS NULL OR :VAR_DATA_INICIO='' OR C.MES_REF>=:VAR_DATA_INICIO)
+              AND (:VAR_DATA_FIM IS NULL OR :VAR_DATA_FIM='' OR C.MES_REF<=:VAR_DATA_FIM)
+            GROUP BY G.DESCRGRUPOPROD ORDER BY VALOR DESC`;
+            } else if (isProductView && !descUpper.includes('FINANCEIR')) {
+                drillQuery = `
+            SELECT COALESCE(G.DESCRGRUPOPROD,'Sem Grupo') AS GRUPO,
+                   SUM(ABS(ITE.VLRTOT-ITE.VLRDESC+ITE.VLRIPI+ITE.VLRSUBST)) AS VALOR
+            FROM IMP_IMP_CAB C JOIN IMP_IMP_ITE ITE ON C.NUNOTA=ITE.NUNOTA
+            LEFT JOIN IMP_GRUPOPRODUTOS G ON ITE.GRUPO=G.CODGRUPOPROD
+            WHERE ${natFilter} AND C.STATUSNOTA='L'
+              AND (:VAR_DATA_INICIO IS NULL OR :VAR_DATA_INICIO='' OR C.DTNEG>=:VAR_DATA_INICIO)
+              AND (:VAR_DATA_FIM IS NULL OR :VAR_DATA_FIM='' OR C.DTNEG<=:VAR_DATA_FIM)
+            GROUP BY G.DESCRGRUPOPROD ORDER BY VALOR DESC`;
+            } else {
+                // NOVA FUNÇÃO: Detalhamento por Título Financeiro
+                drillQuery = `
+            SELECT 
+                CONCAT(DATE_FORMAT(DTNEG, '%d/%m/%Y'), ' | ', COALESCE(NOMEPARC, 'Sem Parceiro'), ' | ', COALESCE(HISTORICO, '')) AS TITULO,
+                SUM(ABS(VALOR)) AS VALOR
+            FROM IMP_FINANCEIRO_DRE C
+            WHERE ${natFilter}
+              AND (:VAR_DATA_INICIO IS NULL OR :VAR_DATA_INICIO='' OR C.DTNEG>=:VAR_DATA_INICIO)
+              AND (:VAR_DATA_FIM IS NULL OR :VAR_DATA_FIM='' OR C.DTNEG<=:VAR_DATA_FIM)
+            GROUP BY TITULO ORDER BY DTNEG DESC, VALOR DESC`;
+            }
+
+            try {
+                const result = await queryMitra({ query: drillQuery, jdbcId });
+                loader.classList.add('hidden');
+                if (result && result.data && result.data.length > 0) {
+                    table.classList.remove('hidden');
+                    let html = '';
+                    let total = 0;
+                    result.data.forEach(row => {
+                        const grupo = row[0];
+                        const valor = parseFloat(row[1]) || 0;
+                        total += valor;
+                        html += `<tr class="transition-colors">
+                    <td>${grupo}</td>
+                    <td class="text-right font-mono">${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                </tr>`;
+                    });
+                    html += `<tr>
+                <td>TOTAL</td>
+                <td class="text-right font-mono">${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            </tr>`;
+                    tbody.innerHTML = html;
+                } else {
+                    empty.classList.remove('hidden');
+                }
+            } catch (e) {
+                console.error("Erro ao buscar dados por grupo:", e);
+                loader.classList.add('hidden');
+                empty.textContent = "Erro ao carregar os dados. Verifique o console.";
+                empty.classList.remove('hidden');
+            }
+        };
+
+        function exportModalToExcel() {
+            const table = document.getElementById('drill-table');
+            const title = document.getElementById('drill-modal-title').textContent || 'Drilldown_Export';
+            if (!table || table.classList.contains('hidden')) { alert('Não há dados para exportar.'); return; }
+            const wb = XLSX.utils.table_to_book(table, { sheet: "Detalhes" });
+            XLSX.writeFile(wb, `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.xlsx`);
+        }
+
+        async function exportModalToPDF() {
+            const table = document.getElementById('drill-table');
+            const title = document.getElementById('drill-modal-title').textContent || 'Análise Detalhada';
+            const btn = document.getElementById('modal-export-pdf-btn');
+            const orig = btn.innerHTML;
+            if (!table || table.classList.contains('hidden')) { alert('Não há dados para exportar.'); return; }
+            btn.disabled = true;
+            btn.innerHTML = `<svg class="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>`;
+            try {
+                const canvas = await html2canvas(table, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                const margin = 15;
+                pdf.setFontSize(14);
+                pdf.text(title, margin, margin);
+                const imgW = pdf.internal.pageSize.getWidth() - margin * 2;
+                const imgH = (canvas.height * imgW) / canvas.width;
+                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin, margin + 8, imgW, imgH);
+                pdf.save(`${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`);
+            } catch (e) {
+                console.error(e);
+                alert("Erro ao gerar PDF.");
+            } finally {
+                btn.innerHTML = orig;
+                btn.disabled = false;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const loader = document.getElementById('loader');
+            const tableWrapper = document.getElementById('table-wrapper');
+            const componentHeader = document.getElementById('component-header');
+            const exportBtn = document.getElementById('export-btn');
+            const exportPdfBtn = document.getElementById('export-pdf-btn');
+            const refreshBtn = document.getElementById('refresh-btn');
+            const tbody = document.getElementById('dre-tbody');
+            const container = document.getElementById('dre-container');
+            const modalExportPdfBtn = document.getElementById('modal-export-pdf-btn');
+            const modalExportExcelBtn = document.getElementById('modal-export-excel-btn');
+
+            loader.classList.remove('hidden');
+
+            const MONTHS = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+            const TOTAL_COL = 'TOTAL_ANO';
+            const ALL_COLS = [...MONTHS, TOTAL_COL];
+            const COL_TO_DATA = { SET: 'SETEMBRO', OUT: 'OUTUBRO' };
+            const dataColName = (col) => COL_TO_DATA[col] || col;
+            const fmt = (v) => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const iconPlus = () => `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+            const iconMinus = () => `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+
+            function exportToExcel() {
+                const table = document.getElementById('dre-table');
+                if (!table) return;
+                const wb = XLSX.utils.table_to_book(table, { sheet: "DRE_Gerencial" });
+                XLSX.writeFile(wb, 'DRE_Gerencial.xlsx');
+            }
+
+            async function exportToPDF() {
+                const btn = document.getElementById('export-pdf-btn');
+                const orig = btn.innerHTML;
+                btn.innerHTML = `<svg class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg> Gerando…`;
+                btn.disabled = true;
+                const tw = document.getElementById('table-wrapper');
+                const origScroll = tw.scrollLeft;
+                tw.scrollLeft = 0;
+                try {
+                    const canvas = await html2canvas(document.getElementById('dre-table'), {
+                        scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff',
+                        logging: false, scrollX: 0, scrollY: 0,
+                        width: document.getElementById('dre-table').scrollWidth,
+                        height: document.getElementById('dre-table').scrollHeight
+                    });
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+                    const imgW = 297, pageH = 210;
+                    let imgH = (canvas.height * imgW) / canvas.width;
+                    let heightLeft = imgH, pos = 0;
+                    pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, pos, imgW, imgH);
+                    heightLeft -= pageH;
+                    while (heightLeft >= 0) {
+                        pos = heightLeft - imgH;
+                        pdf.addPage();
+                        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, pos, imgW, imgH);
+                        heightLeft -= pageH;
+                    }
+                    pdf.save('DRE_Gerencial.pdf');
+                } catch (e) {
+                    console.error(e); alert("Erro ao gerar PDF.");
+                } finally {
+                    btn.innerHTML = orig; btn.disabled = false; tw.scrollLeft = origScroll;
+                }
+            }
+
+            exportBtn.addEventListener('click', exportToExcel);
+            exportPdfBtn.addEventListener('click', exportToPDF);
+            if (modalExportPdfBtn) modalExportPdfBtn.addEventListener('click', exportModalToPDF);
+            if (modalExportExcelBtn) modalExportExcelBtn.addEventListener('click', exportModalToExcel);
+
+            refreshBtn.addEventListener('click', () => loadAndRenderDRE());
+
+            tbody.addEventListener('click', (e) => {
+                const toggler = e.target.closest('[data-toggle-id]');
+                if (!toggler) return;
+                const groupId = toggler.dataset.toggleId;
+                const children = document.querySelectorAll(`tr[data-parent-id='${groupId}']`);
+                if (!children.length) return;
+                const isExpanding = children[0].classList.contains('hidden');
+                const icon = toggler.querySelector('.toggle-icon');
+                children.forEach(child => {
+                    child.classList.toggle('hidden');
+                    if (!isExpanding) {
+                        document.querySelectorAll(`tr[data-parent-id='${child.dataset.id}']`).forEach(gc => gc.classList.add('hidden'));
+                        const ci = child.querySelector('.toggle-icon');
+                        if (ci) ci.innerHTML = iconPlus();
+                    }
+                });
+                if (icon) icon.innerHTML = isExpanding ? iconMinus() : iconPlus();
+            });
+
+            async function loadAndRenderDRE() {
+                try {
+                    loader.classList.remove('hidden');
+                    tableWrapper.classList.add('hidden');
+                    componentHeader.classList.add('hidden');
+                    tbody.innerHTML = '';
+
+                    if (!window.componentData?.structureQuery || !window.componentData?.dataQuery || !window.componentData?.jdbcId) {
+                        throw new Error("Variáveis de configuração (structureQuery, dataQuery, jdbcId) não encontradas.");
+                    }
+
+                    const jdbcId = parseInt(window.componentData.jdbcId, 10);
+                    const [structureResult, dataResult] = await Promise.all([
+                        queryMitra({ query: window.componentData.structureQuery, jdbcId }),
+                        queryMitra({ query: window.componentData.dataQuery, jdbcId }),
+                    ]);
+
+                    const dataMap = new Map();
+                    const dataHeaders = dataResult.headers.map(h => h.name.toUpperCase());
+                    const dataIdIdx = dataHeaders.indexOf('ID');
+                    if (dataIdIdx === -1) throw new Error("A 'dataQuery' deve retornar uma coluna 'ID'.");
+                    dataResult.data.forEach(row => {
+                        const obj = {};
+                        dataHeaders.forEach((h, i) => { obj[h] = row[i]; });
+                        dataMap.set(String(obj.ID), obj);
+                    });
+
+                    const sHeaders = structureResult.headers.map(h => h.name.toUpperCase());
+                    const cm = {
+                        ID: sHeaders.indexOf('ID'), DESCRICAO: sHeaders.indexOf('DESCRICAO'), PAI: sHeaders.indexOf('PAI'),
+                        IS_GROUP: sHeaders.indexOf('IS_GROUP'), TIPO: sHeaders.indexOf('TIPO'), ORDEM: sHeaders.indexOf('ORDEM'),
+                        FORMULA: sHeaders.indexOf('FORMULA'),
+                    };
+                    ['ID', 'DESCRICAO', 'PAI', 'IS_GROUP', 'TIPO'].forEach(col => {
+                        if (cm[col] === -1) throw new Error(`structureQuery deve retornar a coluna: ${col}`);
+                    });
+
+                    const nodes = new Map();
+                    const rootNodes = [];
+                    structureResult.data.forEach(row => {
+                        const node = {
+                            id: String(row[cm.ID]), descricao: row[cm.DESCRICAO],
+                            pai: row[cm.PAI] != null ? String(row[cm.PAI]) : null,
+                            isGroup: row[cm.IS_GROUP] == '1' || row[cm.IS_GROUP] === true,
+                            tipo: row[cm.TIPO] || 'Despesa',
+                            ordem: cm.ORDEM !== -1 ? (Number(row[cm.ORDEM]) || 0) : 0,
+                            formula: cm.FORMULA !== -1 && row[cm.FORMULA] ? String(row[cm.FORMULA]).trim() : null,
+                            children: [], values: {}, _calculated: false
+                        };
+                        ALL_COLS.forEach(c => { node.values[c] = 0; });
+                        nodes.set(node.id, node);
+                    });
+
+                    nodes.forEach(node => {
+                        if (node.pai && nodes.has(node.pai)) nodes.get(node.pai).children.push(node);
+                        else rootNodes.push(node);
+                    });
+
+                    const markDrillDown = (node, isTargetGroup, level = 0) => {
+                        const desc = (node.descricao || '').toUpperCase();
+                        const tipoNorm = (node.tipo || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                        const isExcluded = node.id.startsWith('IMP_') || node.id === 'N_CREDITO_PRESUMIDO';
+                        
+                        const isProductTarget = isTargetGroup || tipoNorm === 'receita' || 
+                            desc.includes('RECEITA OPERACIONAL BRUTA') || desc.includes('DEDUÇÕES') || 
+                            desc.includes('DEDUCOES') || desc.includes('CUSTO DA MERCADORIA');
+
+                        const isFinanceTarget = desc.includes('DESPESAS OPERACIONAIS') || 
+                            desc.includes('ADMINISTRATIVAS') || desc.includes('COMERCIAIS') || 
+                            desc.includes('INVESTIMENTOS') || desc.includes('OUTRAS DESPESAS');
+
+                        delete node.canDrillDown;
+
+                        if (!isExcluded) {
+                            if (!node.isGroup) {
+                                node.canDrillDown = true;
+                            } else if (isFinanceTarget || isProductTarget || level === 0) {
+                                node.canDrillDown = true;
+                            }
+                        }
+                        node.children.forEach(c => markDrillDown(c, isTargetGroup || isProductTarget, level + 1));
+                    };
+                    rootNodes.forEach(n => markDrillDown(n, false, 0));
+
+                    nodes.forEach(node => {
+                        if (!node.isGroup) {
+                            const d = dataMap.get(node.id);
+                            if (d) {
+                                MONTHS.forEach(m => { node.values[m] = parseFloat(d[dataColName(m).toUpperCase()]) || 0; });
+                                node.values[TOTAL_COL] = parseFloat(d[TOTAL_COL]) || 0;
+                            }
+                            node._calculated = true;
+                        }
+                    });
+
+                    const findNodeByRef = (refId) => nodes.get('G_' + refId) || nodes.get(String(refId));
+
+                    const aggregateGroup = (node) => {
+                        if (node._calculated) return;
+                        if (!node.isGroup || node.formula) { node._calculated = true; return; }
+                        node.children.forEach(child => aggregateGroup(child));
+                        ALL_COLS.forEach(col => {
+                            node.values[col] = node.children.reduce((sum, child) => {
+                                if (child.descricao && child.descricao.toUpperCase().includes('ICMS RET S/ VENDAS E TRANSFERENCI')) return sum;
+                                return sum + (child.values[col] || 0);
+                            }, 0);
+                        });
+                        node._calculated = true;
+                    };
+                    nodes.forEach(node => { if (node.isGroup && !node.formula) aggregateGroup(node); });
+
+                    let formulaNodes = Array.from(nodes.values()).filter(n => n.formula);
+                    let safetyCounter = 0;
+                    const MAX_ITERATIONS = formulaNodes.length + 5;
+                    while (formulaNodes.length > 0 && safetyCounter < MAX_ITERATIONS) {
+                        let solvedInThisPass = false;
+                        for (let i = formulaNodes.length - 1; i >= 0; i--) {
+                            const node = formulaNodes[i];
+                            const deps = (node.formula.match(/\[(\d+)\]/g) || []).map(m => m.replace(/[\[\]]/g, ''));
+                            const allDepsReady = deps.every(depId => {
+                                const depNode = findNodeByRef(depId);
+                                return depNode && depNode._calculated;
+                            });
+                            if (allDepsReady) {
+                                ALL_COLS.forEach(col => {
+                                    const expr = node.formula.replace(/\[(\d+)\]/g, (_, id) => {
+                                        const target = findNodeByRef(id);
+                                        return target ? `(${target.values[col] || 0})` : '(0)';
+                                    });
+                                    try {
+                                        const safeExpr = expr.replace(/[^-()\d/*+.]/g, '');
+                                        const result = new Function(`"use strict"; return ${safeExpr};`)();
+                                        node.values[col] = isFinite(result) ? result : 0;
+                                    } catch (e) { node.values[col] = 0; }
+                                });
+                                node._calculated = true;
+                                formulaNodes.splice(i, 1);
+                                solvedInThisPass = true;
+                            }
+                        }
+                        if (!solvedInThisPass && formulaNodes.length > 0) {
+                            throw new Error(`Dependência circular nos nós: ${formulaNodes.map(n => n.id).join(', ')}`);
+                        }
+                        safetyCounter++;
+                    }
+
+                    const allNodesList = Array.from(nodes.values());
+                    const findNodeByText = (terms) => allNodesList.find(n => {
+                        if (!n.descricao) return false;
+                        const d = n.descricao.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                        return terms.some(t => d.includes(t.toUpperCase()));
+                    });
+                    const lairNode = findNodeByText(['LAIR', 'LUCRO ANTES', 'RESULTADO ANTES DOS TRIBUTOS']);
+                    const creditoPresumidoNode = findNodeByText(['CREDITO PRESUMIDO']);
+                    const irpjNode = findNodeByText(['IRPJ']);
+                    const csllNode = findNodeByText(['CSLL']);
+
+                    if (lairNode && creditoPresumidoNode && irpjNode && csllNode) {
+                        ALL_COLS.forEach(col => {
+                            const base = (lairNode.values[col] || 0) - Math.abs(creditoPresumidoNode.values[col] || 0);
+                            irpjNode.values[col] = base > 250000 ? base * 0.24 : base > 0 ? base * 0.15 : 0;
+                            csllNode.values[col] = base > 0 ? base * 0.10 : 0;
+                        });
+                        irpjNode._calculated = true;
+                        csllNode._calculated = true;
+                        nodes.forEach(node => {
+                            if (node.id !== irpjNode.id && node.id !== csllNode.id && (node.isGroup || node.formula))
+                                node._calculated = false;
+                        });
+                        nodes.forEach(node => { if (node.isGroup && !node.formula && !node._calculated) aggregateGroup(node); });
+                    }
+
+                    let html = '';
+                    const renderNode = (node, level, parentId = null) => {
+                        const hasChildren = node.isGroup && node.children.length > 0;
+                        const tipoNorm = (node.tipo || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                        const padStyle = `padding-left:${level > 0 ? 8 + (level - 1) * 22 : 4}px`;
+                        let rowCls = 'border-b border-border transition-colors duration-100';
+                        if (parentId) rowCls += ' hidden';
+                        if (node.isGroup) {
+                            rowCls += ' font-bold';
+                            rowCls += tipoNorm === 'receita' ? ' bg-[hsl(var(--receita-bg))]'
+                                : tipoNorm === 'calculo' ? ' bg-[hsl(var(--calculo-bg))]'
+                                    : ' bg-[hsl(var(--despesa-bg))]';
+                            rowCls += ' hover:bg-[hsl(var(--grupo-hover))]';
+                        }
+                        const valCls = tipoNorm === 'receita' ? 'valor-receita'
+                            : tipoNorm === 'calculo' ? 'valor-calculo'
+                                : 'valor-despesa';
+                        const totalCls = tipoNorm === 'receita' ? 'total-receita'
+                            : tipoNorm === 'calculo' ? 'total-geral'
+                                : valCls;
+
+                        html += `
+                    <tr data-id="${node.id}" data-type="${node.tipo}" ${parentId ? `data-parent-id="${parentId}"` : ''} class="${rowCls}">
+                        <td class="p-3 border-r border-border/30">
+                            <div class="flex items-center" style="${padStyle}">
+                                ${hasChildren
+                                ? `<button data-toggle-id="${node.id}" class="mr-2.5 p-1 rounded-md hover:bg-black/8 transition-colors flex-shrink-0"><span class="toggle-icon">${iconPlus()}</span></button>`
+                                : `<span class="inline-block w-8 mr-2.5 flex-shrink-0"></span>`}
+                                <span class="${node.isGroup ? 'font-semibold' : 'text-foreground/90'} text-[0.82rem]">${node.descricao}</span>
+                                ${node.canDrillDown ? `<button onclick="openDrillModal('${node.id}','${node.descricao.replace(/'/g, "\\'")}','${node.tipo}')" class="drill-btn ml-2 flex-shrink-0" title="Ver por Grupo de Produtos"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>` : ''}
+                            </div>
+                        </td>
+                        ${MONTHS.map(m => `<td class="px-4 py-2.5 text-right text-[0.78rem] ${valCls}">${fmt(node.values[m])}</td>`).join('')}
+                        <td class="px-4 py-2.5 text-right text-[0.78rem] ${totalCls}">${fmt(node.values[TOTAL_COL])}</td>
+                    </tr>`;
+
+                        if (hasChildren) {
+                            node.children.sort((a, b) => a.ordem - b.ordem).forEach(child => renderNode(child, level + 1, node.id));
+                        }
+                    };
+
+                    rootNodes.sort((a, b) => a.ordem - b.ordem).forEach(n => renderNode(n, 0));
+                    tbody.innerHTML = html;
+
+                    loader.classList.add('hidden');
+                    tableWrapper.classList.remove('hidden');
+                    componentHeader.classList.remove('hidden');
+
+                } catch (error) {
+                    console.error("Erro ao construir DRE:", error);
+                    loader.classList.add('hidden');
+                    componentHeader.classList.add('hidden');
+                    container.innerHTML = `
+                <div class="p-10 text-center h-full flex items-center justify-center" style="color:#b91c1c; background:#fef2f2;">
+                    <div>
+                        <p class="text-xl font-bold mb-2">Erro Crítico</p>
+                        <p class="text-sm">${error.message}</p>
+                    </div>
+                </div>`;
+                }
+            }
+
+            document.body.addEventListener(MITRA_UPDATE_EVENT_NAME, () => loadAndRenderDRE());
+
+            const waitForMitraAndInit = () => {
+                const start = Date.now();
+                const timer = setInterval(() => {
+                    if (window.componentData?.structureQuery && window.componentData?.dataQuery) {
+                        clearInterval(timer);
+                        loadAndRenderDRE();
+                    } else if (Date.now() - start > 5000) {
+                        clearInterval(timer);
+                        container.innerHTML = `
+                    <div class="p-10 text-center h-full flex items-center justify-center" style="color:#b91c1c; background:#fef2f2;">
+                        <div>
+                            <p class="text-xl font-bold mb-2">Erro Crítico</p>
+                            <p class="text-sm">Configurações do componente não foram carregadas.</p>
+                        </div>
+                    </div>`;
+                    }
+                }, 100);
+            };
+
+            waitForMitraAndInit();
+        });
+    </script>
+</body>
+
+</html>

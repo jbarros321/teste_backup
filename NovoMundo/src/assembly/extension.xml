@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.1.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.1.0 
+          http://maven.apache.org/xsd/assembly-2.1.0.xsd">
+    
+    <id>extension</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    
+    <includeBaseDirectory>false</includeBaseDirectory>
+    
+    <fileSets>
+        <!-- Incluir arquivos de configuracao -->
+        <fileSet>
+            <directory>datadictionary</directory>
+            <outputDirectory>datadictionary</outputDirectory>
+            <includes>
+                <include>**/*</include>
+            </includes>
+        </fileSet>
+        
+        <fileSet>
+            <directory>dbscripts</directory>
+            <outputDirectory>dbscripts</outputDirectory>
+            <includes>
+                <include>**/*</include>
+            </includes>
+        </fileSet>
+        
+        <fileSet>
+            <directory>ejb</directory>
+            <outputDirectory>ejb</outputDirectory>
+            <includes>
+                <include>**/*</include>
+            </includes>
+        </fileSet>
+        
+        <fileSet>
+            <directory>web</directory>
+            <outputDirectory>web</outputDirectory>
+            <includes>
+                <include>**/*</include>
+            </includes>
+        </fileSet>
+        
+        <!-- Incluir extension.xml -->
+        <fileSet>
+            <directory>.</directory>
+            <outputDirectory>.</outputDirectory>
+            <includes>
+                <include>extension.xml</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+    
+    <!-- Incluir JAR compilado -->
+    <files>
+        <file>
+            <source>target/hnzimp-tiny.jar</source>
+            <outputDirectory>ejb</outputDirectory>
+            <destName>hnzimp-tiny.jar</destName>
+        </file>
+    </files>
+    
+</assembly>

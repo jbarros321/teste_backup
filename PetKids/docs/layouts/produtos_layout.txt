@@ -1,0 +1,386 @@
+Layout de Extração DI
+Neogrid
+Versão 5.1
+
+Copyright © NEOGRID S/A. Todos os direitos reservados.
+É proibida a reprodução ou transmissão de qualquer parte deste
+documento sem autorização escrita da Neogrid S/A.
+www.neogrid.eom
+
+Índice
+
+1. APRESENTAÇÃO
+
+3
+
+2.
+
+3
+
+DEFINIÇÕES PARA GERAÇÃO DO ARQUIVO
+2.1
+
+Dados numéricos
+
+4
+
+2.2
+
+Dados Alfanuméricos
+
+5
+
+3.
+
+ESTRUTURA
+
+5
+
+4.
+
+DESCRIÇÃO DO PADRÃO NEOGRID – PRODUTOS
+
+5
+
+5.
+
+DETALHAMENTO DOS CAMPOS
+
+6
+
+5.1
+
+Cabeçalho
+
+6
+
+5.2
+
+Produtos
+
+6
+
+www.neogrid.eom
+
+1. APRESENTAÇÃO
+
+Neste documento apresentamos o layout do arquivo utilizado na coleta dos
+dados junto aos distribuidores, para implementação do sistema de informações
+gerenciais para distribuidores. Ressaltamos que este mesmo formato de layout deverá
+ser utilizado para integração com diversas indústrias/fornecedores diferentes e não
+apenas para um projeto específico. Neste caso, deverão ser gerados cinco arquivos:
+Vendedores, Clientes, Produtos, Vendas e Estoque. Nos arquivos de cadastros
+(Vendedores, Clientes e Produtos), devem ser enviados todos os dados da filial,
+independente das indústrias envolvidas nos projetos. Nos arquivos de movimentos,
+(Vendas e Estoque) deve ser enviado um arquivo para cada indústria.
+
+Solicitar à empresa terceirizada (ou setor de TI interno) responsável pelo
+desenvolvimento técnico deste layout, que seja previsto a opção da escolha da
+indústria/fornecedor no momento da geração dos arquivos de vendas e estoque, desta
+forma, caso sua distribuidora inicie algum novo projeto com outra indústria, não será
+necessária nenhuma intervenção da equipe de TI.
+
+Neste documento, estão detalhadas as informações a respeito do layout do arquivo de
+Produtos.
+
+DEFINIÇÕES PARA GERAÇÃO DO ARQUIVO
+
+• O arquivo deverá ser gerado no formato Flat File eom separadores PIPE ( | ), utilizando
+o eritério Delimitado para identifiear as eolunas no arquivo.
+• O distribuidor poderá transmitir diariamente os arquivos com os dados necessários,
+podendo ser enviados somente dados de inclusão ou atualização, as informações serão
+substituídas, sendo consideradas somente a ultima atualização no portal:
+Observação: Existindo a necessidade de envio diário, verificar a capacidade do sistema
+responsável pela extração agendar de forma automática a geração das informações, sem
+a necessidade de intervenção manual diária.
+
+O arquivo deverá ser gerado utilizando Enconding padrão ANSI.
+
+www.neogrid.eom
+
+• O padrão de quebra de linha a ser utilizado deverá ser PC/Windows.
+• Cada arquivo deverá conter dados de somente uma filial do distribuidor.
+• O arquivo deverá eonter informações de todo o cadastro de produtos da filial, para
+cada indústria envolvida nos projetos com a NeoGrid.
+• Caso haja necessidade, segue sugestão de identificadores para a nomenclatura do
+arquivo:
+Exemplo: MascaraDocumento_99999999999999_AAAAMMDDHHMMSS.txt
+Onde:
+“MascaraDocumento” é a identificação do tipo de doeumento Ex.: RELPRO
+“99999999999999” é o código de CNPJ da filial do distribuidor; “AAAAMMDDHHMMSS”
+é a data e hora da criação do arquivo.
+
+Onde:
+AAAA = ano
+MM = mês
+DD = dia
+HH = hora
+MM = minuto
+SS = sequencial
+
+2.1 Dados numéricos
+
+No caso de campo não obrigatório, e não havendo a disponibilidade do dado,
+não deve ser preenchido, embora o campo deva existir separado por PIPE.
+O ponto decimal deverá estar representado, os valores, portanto, deverão ser
+informados considerando a quantidade de casas decimais. Se o campo for numérico,
+mas não solicitar informações decimais não é necessário à apresentação do ponto
+decimal.
+
+www.neogrid.eom
+
+Exemplo:
+Valor Unitário Tipo (N), Dec(02)
+Considerando o valor unitário R$125,00
+Preencher o campo com 125.00
+Os valores devem ser representados como positivos (não incluir sinal “-“ ou “+”).
+
+2.2 Dados Alfanuméricos
+
+Para os dados alfanuméricos não utilizar caracteres acentuados (tipo: Ç, Á, Ê, ete.) ou
+caracteres especiais (tipo: \, @,#, ete.). No caso de campo não obrigatório, e não havendo a
+disponibilidade do dado, não deve ser preenchido, embora o campo deva existir separado
+por PIPE.
+
+3. ESTRUTURA
+
+CABEÇALHO
+PRODUTOS
+
+4. DESCRIÇÃO DO PADRÃO NEOGRID – PRODUTOS
+
+A coluna “Tam” das tabelas a seguir evidencia o tamanho máximo do campo e a
+coluna “Dec”, quantos dígitos equivalem às casas decimais deste tamanho total.
+Os campos apontados como “S” na coluna “Obrig” deverão sempre conter
+informação, salvo casos em que ela não exista.
+
+www.neogrid.eom
+
+Registro 01 - CABEÇALHO (uma úniea oeorrêneia)
+
+Obrig Tipo Tam Dee
+
+Tipo de Registro
+
+S
+
+AN 02
+
+Identificação
+
+S
+
+AN 06
+
+Versão
+
+S
+
+AN 03
+
+Número do Relatório
+
+S
+
+AN 20
+
+Data - Hora de Emissão do Documento
+
+S
+
+DT
+
+12
+
+CNPJ do Emissor do Relatório
+
+S
+
+N
+
+14
+
+CNPJ do Destinatário do Relatório
+
+S
+
+N
+
+14
+
+Registro 02 – PRODUTOS (de uma a N oeorrêneias)
+
+Obrig Tipo Tam Dee
+
+Tipo de registro
+
+S
+
+AN 02
+
+CNPJ da Indústria/Fornecedor
+
+S
+
+N
+
+Código Item
+
+S
+
+AN 20
+
+Código Produto
+
+S
+
+AN 14
+
+Tipo Item
+
+S
+
+AN 02
+
+Quantidade Produto Embalagem
+
+S
+
+N
+
+10
+
+05
+
+Preço Tabela Unidade
+
+S
+
+N
+
+10
+
+02
+
+Descrição Interna do Item
+
+S
+
+AN 100
+
+Status Produto
+
+S
+
+AN 02
+
+www.neogrid.eom
+
+14
+
+5. DETALHAMENTO DOS CAMPOS
+5.1 Cabeçalho
+Registro obrigatório que ocorre apenas uma vez.
+
+TIPO REGISTRO
+Informação fixa: 01.
+
+IDENTIFICAÇÃO
+Informação fixa: RELPRO
+
+VERSÃO
+Informação fixa: 051
+
+NÚMERO DO RELATÓRIO
+Número de referência do documento/mensagem, designado pelo emissor.
+
+DATA - HORA DE EMISSÃO DO DOCUMENTO
+Data e hora de geração do arquivo de Relatório de Produtos. O formato de data utilizado
+é: AAAAMMDDHHMM.
+
+CNPJ DO EMISSOR DO RELATÓRIO
+Identificação através do número do CNPJ da filial do distribuidor que esta emitindo o
+Relatório de Produtos.
+
+CNPJ DO DESTINATÁRIO DO RELATÓRIO
+Identificação através do CNPJ da empresa que esta recebendo o Relatório de Produtos.
+Informação Fixa: 03887830009046
+
+www.neogrid.eom
+
+5.2 Produtos
+Registro obrigatório que pode ocorrer N vezes.
+
+TIPO DE REGISTRO
+Informação fixa: 02.
+
+CNPJ DA INDÚSTRIA/FORNECEDOR
+Identificação através do número do CNPJ da indústria/fornecedor.
+
+CÓDIGO ITEM
+Código interno de identificação do produto.
+
+CÓDIGO PRODUTO
+Código de barras da menor unidade de consumo, conforme sistema da indústria.
+
+TIPO ITEM
+Informa o tipo do item conforme tabela abaixo:
+
+Código
+
+Deserição do Código
+
+01
+
+Regular
+
+02
+
+Promocional
+
+QUANTIDADE PRODUTO EMBALAGEM
+Indica a quantidade de unidades do produto que a embalagem contém.
+Sabendo que o distribuidor pode compor distintas embalagens, é necessário informar
+neste campo a quantidade de produtos (fator) contida nesta.
+
+Exemplo: Adesivos ADESIVOS NEOGRID (SKU XXXXXX) pode ser vendida em embalagens
+de 6 unidades, pelo código interno 123. Informa-se a quantidade de 6 unidades do produto
+na embalagem.
+
+www.neogrid.eom
+
+Observação Importante: Exceção para o Pack Promocional, pois nestes easos o fator a
+ser considerado como quantidade de unidades na embalagem deverá ser sempre 1
+(UM).
+
+Exemplo: Pack Promocional Adesivos NeoGrid – Pague2 Leve 3. Informar código do Pack
+no campo de código do produto e informar quantidade 1 (UM) neste campo de
+quantidades na embalagem.
+
+PREÇO TABELA UNIDADE
+Preço cadastrado para venda do código de barras da menor unidade de consumo.
+
+DESCRIÇÃO INTERNA DO ITEM
+Informa a descrição do produto relacionado ao código interno de identificação.
+
+www.neogrid.eom
+
+STATUS PRODUTO
+
+Informa se o produto em questão está Ativo ou Inativo no distribuidor
+
+Código
+
+Deserição do Código
+
+01
+
+Ativo
+
+02
+
+Inativo
+
+www.neogrid.eom
+
+

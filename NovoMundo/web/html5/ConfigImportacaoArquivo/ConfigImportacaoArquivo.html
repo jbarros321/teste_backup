@@ -1,0 +1,12 @@
+<sk-application ng-controller="ConfigImportacaoArquivoController as ctrl">
+    <sk-dynaform sk-id="ctrl.dynaformID"
+        sk-entity-name="ImportacaoArquivoConfig"
+        sk-on-dynaform-loaded="ctrl.onDynaformLoaded(dynaform, dataset)">
+        <dynaform-importacao-arquivo-config>
+    		<sk-right-top-bar>
+    			<button default ng-click="ctrl.alterarLancador()" tooltip="Altera o lancador da tela para que seja apresentado o botao de importar arquivo" tooltip-placement="bottom">Alterar para importacao</button>
+    			<button default ng-click="ctrl.voltarLancador()" tooltip="Altera o lancador da tela para o formato padrao" tooltip-placement="bottom">Voltar para padrao</button>
+    		</sk-right-top-bar>
+    	</dynaform-importacao-arquivo-config>
+    </sk-dynaform>
+</sk-application>

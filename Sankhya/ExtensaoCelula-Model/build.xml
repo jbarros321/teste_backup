@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="ExtensaoCelula-Model" default="geral" basedir=".">
+   
+   <property name="eclipse.home" value="D:\sk-java\eclipse"/>
+   <property name="extensionName" value="extCelula-ejb.jar"/>
+   <property name="templates.dir" value="${api_sankhya}\templates\"/>
+   
+   <target name="geral" description="Gera o pacote necessário para o ExtensaoCelula-Model.">
+      	<jar destfile="${extensionName}">
+		   	<zipfileset dir="build/META-INF" prefix="META-INF">
+		   		<include name="*.*"/>
+		   	</zipfileset>
+		   	<zipfileset dir="bin">
+		   		<include name="**/*.*"/>
+		   		<exclude name="META-INF/*.*"/>
+		   	</zipfileset>
+	   	</jar>
+	    <echo>Copiando arquivos...</echo>
+   		<copy verbose="true" file="${basedir}/${extensionName}" todir="${default.jboss}/deploy" />
+   	
+   		<echo>Montando pasta para exportar a extensão...</echo>
+   		<mkdir dir="${basedir}/extBuild/web" />
+   		<mkdir dir="${basedir}/extBuild/lib" />
+   		<mkdir dir="${basedir}/extBuild/ejb" />
+   		<copy verbose="true" file="${basedir}/${extensionName}" todir="${basedir}/extBuild/ejb" />
+   		<copy verbose="true" file="${basedir}/${extensionName}" todir="D:/sk-java/SkwExtensionTools/build-extensao/ejb" />
+   	
+   	  	<delete file="${basedir}/${extensionName}"></delete>
+   </target>
+
+   	<target name="interfaces" description="Gera as interfaces EJB necessárias para a extensão do Desenvolvimento Java.">
+   	   <delete dir="${basedir}/ejbsrc"></delete>
+   		<delete file="${basedir}/build/META-INF/ejb-jar.xml">
+		</delete>
+		<delete file="${basedir}/build/META-INF/jboss.xml">
+		</delete>
+   	   <ant dir="${basedir}" antfile="${basedir}/xdoclet-build.xml"></ant>
+   	</target>
+</project>

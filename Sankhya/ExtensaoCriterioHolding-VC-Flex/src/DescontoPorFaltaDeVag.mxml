@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<controls:DefaultSankhyaApplication preloader="br.com.sankhya.controls.managers.CustomPreloader"   
+	xmlns:compactpanel="br.com.sankhya.controls.compactpanel.*"
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:ui="br.com.sankhya.db.ui.*" 
+	xmlns:controls="br.com.sankhya.controls.*" 
+	xmlns:db="br.com.sankhya.db.*"
+	xmlns:dwf="br.com.sankhya.dwf.*"
+	xmlns:descontados="br.com.sankhya.extensions.desconto.vag.*"
+	layout="vertical"
+	implements="br.com.sankhya.db.IDataGridColumnVisitor, br.com.sankhya.db.IDBCriteriaProvider"
+	creationComplete="creationComplete()"
+	initialize="{init()}">
+	
+	<mx:Script>
+		<![CDATA[
+		import mx.controls.dataGridClasses.DataGridColumn;
+		import mx.collections.ArrayCollection;
+
+		import br.com.sankhya.util.http.ServiceProxy;
+		import br.com.sankhya.db.DBObserverAdapter;
+		import br.com.sankhya.db.IDBCriteriaProvider;
+		import br.com.sankhya.db.IDBCriteria;
+		import br.com.sankhya.db.DBCriteria;
+		import br.com.sankhya.db.DBCriteriaProviderAdapter;
+		import br.com.sankhya.db.DBCriteriaParameter;
+		import br.com.sankhya.db.IMetadataInterceptor;
+		import br.com.sankhya.db.IDBDataSet;
+		import br.com.sankhya.db.IDBDataSetField;
+		import br.com.sankhya.db.DBDataSet;
+		import br.com.sankhya.db.SorterUtils;
+		import br.com.sankhya.db.IDBDataSet;
+		import br.com.sankhya.util.datetime.DateUtil;
+		import br.com.sankhya.util.http.ServiceProxy;
+		import br.com.sankhya.util.MessageUtils;
+		import br.com.sankhya.util.StringUtils;
+
+		private function init():void{
+		}
+
+		public function creationComplete():void{
+			var criteriaProviderAdapter:DBCriteriaProviderAdapter = new DBCriteriaProviderAdapter();
+			criteriaProviderAdapter.getCriteriaImpl = getCriteriaDescontoVAG;
+
+			dsViewDescontoVag.addDBCriteriaProvider(criteriaProviderAdapter);
+			dsViewTitulosReferenteVag.addDBCriteriaProvider(this);
+
+			var dataSetObserver:DBObserverAdapter = new DBObserverAdapter();
+			dataSetObserver.refreshedImp = function():void{
+				btnFechamentoDescVag.enabled = dsViewDescontoVag.size() > 0;
+			}
+
+			dsViewDescontoVag.addObserver(dataSetObserver);
+		}
+
+		public function getCriteriaDescontoVAG():IDBCriteria{
+			var expressao:String;
+			var params:Array = new Array();
+
+			expressao = "this.DIASEMATRASO > 0";
+
+			if(!StringUtils.isEmpty(pesqParceiro.value)  && !StringUtils.isEmpty(pesqUnidade.value) ){
+				expressao += " AND (this.CODPARC = ? AND this.CODCENCUS = ?)";
+				params.push(new DBCriteriaParameter(DBCriteriaParameter.TYPE_NUMBER, pesqParceiro.value));
+				params.push(new DBCriteriaParameter(DBCriteriaParameter.TYPE_NUMBER, pesqUnidade.value));
+			}else if(!StringUtils.isEmpty(pesqParceiro.value)){
+				expressao += " AND this.CODPARC = ?";
+				params.push(new DBCriteriaParameter(DBCriteriaParameter.TYPE_NUMBER, pesqParceiro.value));
+			}else if(!StringUtils.isEmpty(pesqUnidade.value)){
+				expressao += " AND this.CODCENCUS = ?";
+				params.push(new DBCriteriaParameter(DBCriteriaParameter.TYPE_NUMBER, pesqUnidade.value));
+			}
+
+			return new DBCriteria(expressao, params);	
+		}
+
+		public function getCriteria():IDBCriteria{
+			var expressao:String;
+			var params:Array = new Array();
+
+			expressao = "VGFFRV.CODPARC IN (SELECT DISTINCT CODPARC FROM TGFPAR WHERE CODPARC = ? OR CODPARCMATRIZ = ?)";
+
+			params.push(new DBCriteriaParameter(DBCriteriaParameter.TYPE_NUMBER, dsViewDescontoVag.getFieldValueAsString("CODPARC")));
+			params.push(new DBCriteriaParameter(DBCriteriaParameter.TYPE_NUMBER, dsViewDescontoVag.getFieldValueAsString("CODPARC")));
+
+			return new DBCriteria(expressao, params);
+		}
+
+		public function isCriteriaProviderLoaded(callThisOnLoad:Function):Boolean {
+			return true;
+		}	
+
+		private function fechamentoDoDescontoVag():void{
+			var contratos:String = "";
+
+			for each(var contrato:Object in dbDataGridDescontoFaltaVag.dataProvider){
+				if("" == contratos){
+					contratos += contrato.NUMCONTRATO;					
+				}else{
+					contratos += "," + contrato.NUMCONTRATO;
+				}
+			}
+
+			var paramsElem:XML = <params/>;
+			paramsElem.@codParceiro = pesqParceiro.value;
+			paramsElem.@codUnidade = pesqUnidade.value;
+			paramsElem.@contratos = contratos;
+
+			ServiceProxy.callService(
+				"2a3rateioHolding@DescontoVagSP.fechamentoDescontos",
+				paramsElem,
+				function(args:*, response:XML):void {
+						MessageUtils.showInfo(MessageUtils.TITLE_INFORMATION, "Todos os descontos filtrados foram registrados!");
+				},
+				true
+			);
+		}
+
+		private function alterarFiltro():void{
+			abaDemostracaoDescontados.codParcFiltro = pesqParceiro.value;
+			abaDemostracaoDescontados.codUnidadeFiltro = pesqUnidade.value;
+		}
+
+		public function visitColumn(dgc:DataGridColumn):void{
+			if('NUFIN' == dgc.dataField){
+				dgc.width = 100;
+			}else if('DTNEG-DTVENC-VLRDESDOB-DESCONTADO'.indexOf(dgc.dataField)> -1){
+				dgc.width = 250;
+			}
+		}
+
+		public function visitColumnGridFaltaVag(dgc:DataGridColumn):void{
+			if('CODDESCRICAONAT-CODNOMEPARC-CODNOMEPARCMATRIZ'.indexOf(dgc.dataField)> -1){
+				dgc.width = 180;
+			}else{
+				dgc.width = 120;
+			}
+
+			if('Parceiro_NOMEPARC'.indexOf(dgc.dataField)> -1){
+				dgc.visible = false;
+			}
+			
+			if('CentroResultado_DESCRCENCUS'.indexOf(dgc.dataField)> -1){
+				dgc.headerText = 'Descrição Unidade';
+			}
+		}
+		]]>
+	</mx:Script>
+	<db:DBDataSet id="dsViewDescontoVag" entity="ViewDescontoVAG" providerName="mge@CRUDServiceProvider" orderBy="this.NUMCONTRATO">
+		<db:designFields>
+			<db:Field pattern="*"/>
+		</db:designFields>
+	</db:DBDataSet>
+
+	<db:DBDataSet id="dsViewTitulosReferenteVag" entity="ViewFinanceiroRepasseVisita" parentDataSet="{dsViewDescontoVag}" providerName="mge@CRUDServiceProvider">
+		<db:designFields>
+			<db:Field pattern="*"/>
+		</db:designFields>
+	</db:DBDataSet>
+
+	<mx:VBox width="100%" height="100%">
+		<controls:GradienteBox width="100%">
+			<mx:VBox width="100%" height="100%">
+				<ui:EntityForm id="entityFormAnexo" dataSet="{dsViewDescontoVag}" width="100%" height="100%" paddingBottom="1">	
+					<ui:DBFormItem label="Parceiro:" fieldName="CODPARC" paddingBottom="1">
+						<ui:DBPesquisa id="pesqParceiro" entityName="Parceiro" fieldName="CODPARC" change="{alterarFiltro()}"/>
+					</ui:DBFormItem>
+					<ui:DBFormItem label="Unidade:" fieldName="CODCENCUS">
+						<ui:DBPesquisa id="pesqUnidade" entityName="CentroResultado" fieldName="CODCENCUS" change="{alterarFiltro()}"/>
+					</ui:DBFormItem>
+				</ui:EntityForm>
+			</mx:VBox>
+		</controls:GradienteBox>
+		<mx:TabNavigator id="tabNavigator" width="100%" height="100%" creationPolicy="all" paddingTop="4">
+			<mx:VBox width="100%" height="100%" label="Geral">
+				<mx:VDividedBox width="100%" height="100%">
+					<mx:VBox width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5">
+						<controls:GradienteBox  width="100%" direction="vertical" horizontalGap="4" verticalAlign="middle">
+							<mx:VBox width="100%" height="100%">
+								<mx:HBox width="100%">
+									<controls:GridConfig id="gridConfigDescontoFaltaVag" configName="{DefaultSankhyaApplication.getInstance().getApplicationResourceID() + '.gradeDescontoVisita'}" targetGrid="{dbDataGridDescontoFaltaVag}" visible="{true}"/>
+									<mx:VRule height="20"/>
+									<ui:DBGridPrinter dataSet="{dsViewDescontoVag}" entityName="ViewDescontoVAG" targetGrid="{dbDataGridDescontoFaltaVag}" title="Contratos com VAG atrasada"/>
+									<mx:VRule height="20"/>
+									<ui:DBPersonalizedFilter 
+										id="filtro"
+										dataSet="{dsViewDescontoVag}"
+										resourceID="{getApplicationResourceID()+ '.filtroGeralVag'}"
+										showApplyButton="true"
+										/>
+									
+									<mx:VRule height="20"/>
+									<mx:Button id="btnFechamentoDescVag" label="Fechamento" toolTip="Fechamento Desconto por VAG" buttonMode="true" styleName="btnFinalizarOperacao" click="fechamentoDoDescontoVag()"/>
+									<mx:HBox horizontalAlign="right" width="100%">
+										<controls:RowsCounter id="rowsCounterGridSintetico" visible="{true}" includeInLayout="{true}" sourceList="{dbDataGridDescontoFaltaVag}"/>  
+										
+									</mx:HBox>
+								</mx:HBox>
+							</mx:VBox>
+						</controls:GradienteBox>
+						<mx:DividedBox width="100%" height="100%">
+							<ui:DBDataGrid id="dbDataGridDescontoFaltaVag" dataSet="{dsViewDescontoVag}" width="100%" height="100%">
+								<ui:columnVisitor>
+									<db:ColumnVisitorAdapter columnVisitImp="{visitColumnGridFaltaVag}"/>
+								</ui:columnVisitor>
+							</ui:DBDataGrid>
+						</mx:DividedBox>
+					</mx:VBox>
+					<mx:VBox width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+						<mx:HBox width="100%" verticalAlign="middle" horizontalGap="5" paddingBottom="0" paddingLeft="0" paddingRight="0" paddingTop="0">
+							<mx:HBox width="100%" horizontalAlign="left">
+								<controls:GridConfig id="gridConfigTitulosReferenteVag" configName="{DefaultSankhyaApplication.getInstance().getApplicationResourceID() + '.gradeTitulosVisita'}" targetGrid="{dbGridTitulosReferenteVag}" visible="{true}"/>
+								<mx:VRule height="20"/>
+								<ui:DBGridPrinter dataSet="{dsViewTitulosReferenteVag}" entityName="ViewFinanceiroRepasseVisita" targetGrid="{dbGridTitulosReferenteVag}" title="Títulos Referentes à Mensalidade"/>
+								
+								<mx:VRule height="20"/>
+								<ui:DBLabel text="Títulos Referentes à Mensalidade" fontWeight="bold" fontSize="10"/>
+							</mx:HBox>
+							<mx:HBox width="100%" horizontalAlign="right">
+								<controls:RowsCounter sourceList="{dbGridTitulosReferenteVag}" />
+							</mx:HBox>
+						</mx:HBox>
+						<mx:HRule width="100%"/>
+						<mx:DividedBox width="100%" height="100%">
+							<ui:DBDataGrid id="dbGridTitulosReferenteVag" dataSet="{dsViewTitulosReferenteVag}"	width="100%" height="100%">
+								<ui:columnVisitor>
+									<db:ColumnVisitorAdapter columnVisitImp="{visitColumn}"/>
+								</ui:columnVisitor>
+							</ui:DBDataGrid>
+						</mx:DividedBox>
+					</mx:VBox>
+				</mx:VDividedBox>
+			</mx:VBox>
+			<descontados:abaDemonstracaoDescontados id="abaDemostracaoDescontados"/>
+		</mx:TabNavigator>
+	</mx:VBox>
+</controls:DefaultSankhyaApplication>

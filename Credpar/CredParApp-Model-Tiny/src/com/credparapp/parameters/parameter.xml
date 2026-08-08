@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE parameters >
+<parameters group-name="credparapp.conf" data-source="br.com.sankhya.modelcore.util.MGECoreParameter">
+	
+	<parameter
+		name="credpar.email.contato"
+		key="CREDPAREMAILCON"
+		type="string"
+		cacheable="false"
+		required="false" 
+		default="contato@credpar.com.br"
+		description="E-mail de contato Credpar"/>
+		
+	<parameter
+		name="credpar.ignora.top.bordero.extrato"
+		key="IGNTOPBORDEXT"
+		type="string"
+		cacheable="false"
+		required="false" 
+		default=""
+		description="Tops a desconsiderar no extrato de vendas e borderô "/>
+		
+	<parameter
+		name="credpar.agendamento.consulta.produto.operadora"
+		key="CREDCONPROOPE"
+		type="string"
+		cacheable="false"
+		required="false" 
+		default="0 23 * * *"
+		description="Agendamento para consulta de pro. oper. celular"/>
+</parameters>

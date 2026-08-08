@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <!-- ... -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Fluxo de Caixa</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: transparent;
+            /* evita halo cinza nas quinas */
+
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+
+<body class="h-full w-full">
+
+    <div id="main-container" class="h-full w-full flex flex-col bg-white overflow-hidden"
+        style="border-radius: 16px; background-clip: padding-box;">
+        <!-- Container da Tabela com Rolagem -->
+        <div id="table-wrapper" class="flex-grow overflow-auto">
+            <!-- O conteúdo da tabela ou estados (loading/error/empty) será renderizado aqui -->
+        </div>
+    </div>
+
+    <script>
+        const MITRA_UPDATE_EVENT_NAME = 'mitra-update-cashflow-report';
+
+        function updateMitra() {
+            console.log("Sinal de update para [Fluxo de Caixa] recebido. Disparando evento.");
+            document.body.dispatchEvent(new CustomEvent(MITRA_UPDATE_EVENT_NAME));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const mainContainer = document.getElementById('main-container');
+            const tableWrapper = document.getElementById('table-wrapper');
+
+            // --- BORDER CONTROL (igual ao Card do React) ---
+            // showBorder: "false" => sem borda; qualquer outro valor => borda 1px #D0D5DD
+            const applyBorderFromConfig = () => {
+                const showBorder = String(window.componentData?.showBorder ?? "").trim().toLowerCase();
+                if (!mainContainer) return;
+
+                // sempre mantém o arredondamento
+                mainContainer.style.borderRadius = "16px";
+
+                if (showBorder === "false") {
+                    mainContainer.style.border = "0";
+                } else {
+                    mainContainer.style.border = "1px solid #D0D5DD";
+                }
+            };
+            applyBorderFromConfig();
+
+            // ICON HELPER
+            const createLucideIcons = (options = {}) => {
+                if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                    try {
+                        lucide.createIcons(options);
+                    } catch (e) {
+                        console.error("Lucide icon creation failed:", e);
+                    }
+                }
+            };
+
+            // RENDER HELPERS
+            const renderLoading = (wrapper) => {
+                wrapper.innerHTML = `
+                    <div class="h-full w-full flex items-center justify-center text-gray-500">
+                        <div class="text-center">
+                            <svg class="animate-spin h-8 w-8 text-gray-400 mx-auto mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            <p class="font-medium">Carregando dados...</p>
+                        </div>
+                    </div>`;
+            };
+
+            const renderError = (wrapper, message) => {
+                wrapper.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center bg-red-50 text-red-700 p-6 rounded-lg">
+                        <i data-lucide="alert-triangle" class="w-12 h-12 mb-4 text-red-500"></i>
+                        <h3 class="text-lg font-semibold text-red-800">Erro ao Carregar Relatório</h3>
+                        <p class="text-sm text-center mt-1 max-w-md">${message}</p>
+                    </div>`;
+                createLucideIcons();
+            };
+
+            const renderEmpty = (wrapper) => {
+                wrapper.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center bg-gray-50 text-gray-500 p-6 rounded-lg">
+                        <i data-lucide="inbox" class="w-12 h-12 mb-4 text-gray-400"></i>
+                        <h3 class="text-lg font-semibold text-gray-700">Nenhuma Movimentação Encontrada</h3>
+                        <p class="text-sm text-center mt-1">A consulta não retornou dados para o período selecionado.</p>
+                    </div>`;
+                createLucideIcons();
+            };
+
+            // GENERAL HELPERS
+            const formatNumber = (num) => {
+                if (typeof num !== 'number' || isNaN(num)) return '0';
+                return Math.round(num).toLocaleString(window.componentData?.numberLocale || 'pt-BR');
+            };
+
+            const parseDate = (dateStr) => {
+                if (!dateStr || typeof dateStr !== 'string') return new Date(0);
+                const [day, month, year] = dateStr.split('/');
+                return new Date(`${year}-${month}-${day}T00:00:00Z`);
+            };
+
+            const parsePtBrNumber = (numStr) => {
+                if (typeof numStr !== 'string') return parseFloat(numStr) || 0;
+                const cleanStr = numStr.replace(/\./g, '').replace(',', '.');
+                return parseFloat(cleanStr) || 0;
+            };
+
+            // --- GRID (TABLE) LOGIC ---
+            const renderTable = (data) => {
+                const { dates, rows } = data;
+
+                let firstColStyle = '';
+                if (window.componentData && componentData.firstColumnWidthPx) {
+                    const width = parseInt(componentData.firstColumnWidthPx, 10);
+                    if (!isNaN(width) && width > 0) firstColStyle = `style="min-width: ${width}px;"`;
+                }
+
+                let numberColStyle = '';
+                if (window.componentData && componentData.numberColumnWidthPx) {
+                    const width = parseInt(componentData.numberColumnWidthPx, 10);
+                    if (!isNaN(width) && width > 0) numberColStyle = `style="min-width: ${width}px;"`;
+                }
+
+                let headerHTML = '<tr>';
+                headerHTML += `<th class="sticky top-0 left-0 z-30 bg-gray-100 p-2 text-left text-sm font-semibold text-gray-600 border-b border-r border-gray-200" ${firstColStyle}>Natureza NV2</th>`;
+                dates.forEach(date => {
+                    headerHTML += `<th class="sticky top-0 z-10 bg-gray-100 p-2 text-center text-sm font-semibold text-gray-600 border-b border-gray-200" ${numberColStyle}>${date}</th>`;
+                });
+                headerHTML += '</tr>';
+
+                let rowStyle = '';
+                if (window.componentData && componentData.rowHeightPx) {
+                    const height = parseInt(componentData.rowHeightPx, 10);
+                    if (!isNaN(height) && height > 0) {
+                        rowStyle = `style="height: ${height}px;"`;
+                    }
+                }
+
+                let bodyHTML = '';
+                rows.forEach(row => {
+                    const isExpandable = row.type === 'summary';
+                    const isDetail = row.type === 'detail-in' || row.type === 'detail-out';
+                    let rowClasses = "group";
+                    if (isDetail) rowClasses += " hidden";
+                    let labelClasses = "sticky left-0 z-20 bg-white group-hover:bg-gray-50 p-2 text-sm font-medium text-gray-800 border-b border-r border-gray-200 whitespace-nowrap";
+                    let valueClasses = "p-2 text-right text-sm font-semibold border-b border-gray-200";
+                    if (row.label === 'Saldo Final') {
+                        labelClasses += " font-bold";
+                        valueClasses += " bg-gray-50 font-bold";
+                    } else if (isDetail) {
+                        labelClasses += " pl-8 text-gray-600 font-normal";
+                        valueClasses += " text-gray-600 font-normal";
+                    }
+
+                    bodyHTML += `<tr class="${rowClasses}" ${rowStyle} ${isDetail ? `data-group="${row.group}"` : ''} ${isExpandable ? `data-toggle="${row.group}"` : ''}>`;
+                    bodyHTML += `<td class="${labelClasses}" ${firstColStyle}>`;
+                    if (isExpandable) {
+                        bodyHTML += `<div class="flex items-center gap-2 cursor-pointer">
+                                        <i data-lucide="plus-circle" class="w-4 h-4 text-gray-400 expand-icon"></i>
+                                        <span>${row.label}</span>
+                                     </div>`;
+                    } else if (isDetail) {
+                        const escapedLabel = row.label.replace(/"/g, '&quot;');
+                        bodyHTML += `<div class="flex items-center">
+                                       <i data-lucide="arrow-right-circle" data-natureza="${escapedLabel}" class="w-3.5 h-3.5 text-gray-400 hover:text-blue-600 cursor-pointer inline-block mr-2 modal-trigger-btn flex-shrink-0"></i>
+                                       <span>${row.label}</span>
+                                    </div>`;
+                    }
+                    else { bodyHTML += row.label; }
+                    bodyHTML += '</td>';
+                    row.values.forEach(value => {
+                        const isNegative = value < 0;
+                        const textColor = isNegative ? 'text-red-600' : 'text-gray-900';
+                        bodyHTML += `<td class="${valueClasses} ${textColor}" ${numberColStyle}>${formatNumber(value)}</td>`;
+                    });
+                    bodyHTML += `</tr>`;
+                });
+                tableWrapper.innerHTML = `
+                    <table class="w-full border-collapse text-xs">
+                        <thead class="bg-gray-100">${headerHTML}</thead>
+                        <tbody id="cashflow-body">${bodyHTML}</tbody>
+                    </table>`;
+                createLucideIcons();
+
+                const tableBody = document.getElementById('cashflow-body');
+                if (tableBody) {
+                    tableBody.addEventListener('click', async (e) => {
+                        const trigger = e.target.closest('.modal-trigger-btn');
+                        if (!trigger) return;
+
+                        if (!componentData || !componentData.screenIdDetalhes) {
+                            console.error("screenIdDetalhes não está configurado em componentData.");
+                            return;
+                        }
+
+                        const nomeDaNatureza = trigger.dataset.natureza;
+                        if (!nomeDaNatureza) return;
+
+                        try {
+                            const query = `SELECT CODNAT FROM (SELECT CODNAT FROM Natureza WHERE DESCRNAT = '${nomeDaNatureza.replace(/'/g, "''")}') WHERE ROWNUM <= 1`;
+                            const result = await queryMitra({ query: query, jdbcId: componentData.jdbcId });
+
+                            if (result && result.data && result.data.length > 0 && result.data[0][0]) {
+                                const codnat = result.data[0][0];
+                                if (codnat) {
+                                    await setVariableMitra({ name: ':VAR_NATUREZA_CLICADA', content: String(codnat) });
+
+                                    const screenId = parseInt(componentData.screenIdDetalhes, 10);
+                                    if (!isNaN(screenId)) {
+                                        await modalMitra({ id: screenId, width: 100, height: 100 });
+                                    } else {
+                                        console.error("componentData.screenIdDetalhes não é um ID de tela válido.");
+                                    }
+                                }
+                            } else {
+                                console.warn(`Nenhum CODNAT encontrado para a natureza: ${nomeDaNatureza}`);
+                            }
+                        } catch (error) {
+                            console.error("Erro ao abrir modal de detalhes da natureza:", error);
+                        }
+                    });
+                }
+
+                document.querySelectorAll('[data-toggle]').forEach(toggler => {
+                    toggler.addEventListener('click', () => {
+                        const group = toggler.dataset.toggle;
+                        const icon = toggler.querySelector('.expand-icon');
+                        const detailRows = document.querySelectorAll(`tr[data-group="${group}"]`);
+                        const isExpanded = icon.getAttribute('data-lucide') === 'minus-circle';
+                        if (isExpanded) {
+                            icon.setAttribute('data-lucide', 'plus-circle');
+                            detailRows.forEach(row => row.classList.add('hidden'));
+                        } else {
+                            icon.setAttribute('data-lucide', 'minus-circle');
+                            detailRows.forEach(row => row.classList.remove('hidden'));
+                        }
+                        createLucideIcons({ nodes: [icon] });
+                    });
+                });
+            };
+
+            const processData = (saldoInicialRes, entradasDiariasRes, saidasDiariasRes, outrasMovRes, saldoFinalRes) => {
+                const allDates = new Set();
+                const saldoInicialMap = new Map();
+                const movimentacoesMap = new Map(); // Dia -> Natureza -> {receitas, despesas}
+                const outrasMovMap = new Map();
+                const saldoFinalMap = new Map();
+                const naturezas = { in: new Set(), out: new Set() };
+
+                const mapCols = (headers) => {
+                    const map = {};
+                    headers.forEach((h, i) => map[h.name.toUpperCase()] = i);
+                    return map;
+                };
+
+                // Process Saldo Inicial
+                const siCols = mapCols(saldoInicialRes.headers);
+                saldoInicialRes.data.forEach(row => {
+                    const dia = row[siCols['DIA']];
+                    const valor = parsePtBrNumber(row[siCols['SALDO_BANCARIO']]);
+                    if (dia) { allDates.add(dia); saldoInicialMap.set(dia, valor); }
+                });
+
+                // Process Outras Movimentações
+                const omCols = mapCols(outrasMovRes.headers);
+                outrasMovRes.data.forEach(row => {
+                    const dia = row[omCols['DIA']];
+                    const valor = parsePtBrNumber(row[omCols['OUTRAS_MOVIMENTACOES']]);
+                    if (dia) { allDates.add(dia); outrasMovMap.set(dia, valor); }
+                });
+
+                // Process Saldo Final
+                const sfCols = mapCols(saldoFinalRes.headers);
+                saldoFinalRes.data.forEach(row => {
+                    const dia = row[sfCols['DIA']];
+                    const valor = parsePtBrNumber(row[sfCols['SALDO_FINAL']]);
+                    if (dia) { allDates.add(dia); saldoFinalMap.set(dia, valor); }
+                });
+
+                // Process Entradas Diárias
+                const entCols = mapCols(entradasDiariasRes.headers);
+                entradasDiariasRes.data.forEach(row => {
+                    const dia = row[entCols['DIA']];
+                    const natureza = row[entCols['NOME_NATUREZA']];
+                    if (!dia || !natureza) return;
+
+                    const receitas = parsePtBrNumber(row[entCols['RECEITAS']]);
+                    allDates.add(dia);
+
+                    if (!movimentacoesMap.has(dia)) {
+                        movimentacoesMap.set(dia, new Map());
+                    }
+                    if (!movimentacoesMap.get(dia).has(natureza)) {
+                        movimentacoesMap.get(dia).set(natureza, { receitas: 0, despesas: 0 });
+                    }
+                    if (receitas > 0) {
+                        naturezas.in.add(natureza);
+                        movimentacoesMap.get(dia).get(natureza).receitas += receitas;
+                    }
+                });
+
+                // Process Saídas Diárias
+                const saiCols = mapCols(saidasDiariasRes.headers);
+                saidasDiariasRes.data.forEach(row => {
+                    const dia = row[saiCols['DIA']];
+                    const natureza = row[saiCols['NOME_NATUREZA']];
+                    if (!dia || !natureza) return;
+
+                    const despesas = parsePtBrNumber(row[saiCols['DESPESAS']]);
+                    allDates.add(dia);
+
+                    if (!movimentacoesMap.has(dia)) {
+                        movimentacoesMap.set(dia, new Map());
+                    }
+                    if (!movimentacoesMap.get(dia).has(natureza)) {
+                        movimentacoesMap.get(dia).set(natureza, { receitas: 0, despesas: 0 });
+                    }
+                    if (despesas > 0) {
+                        naturezas.out.add(natureza);
+                        movimentacoesMap.get(dia).get(natureza).despesas += despesas;
+                    }
+                });
+
+                if (allDates.size === 0) {
+                    renderEmpty(tableWrapper);
+                    return;
+                }
+
+                const sortedDates = Array.from(allDates).sort((a, b) => parseDate(a) - parseDate(b));
+                const sortedNaturezasIn = Array.from(naturezas.in).sort();
+                const sortedNaturezasOut = Array.from(naturezas.out).sort();
+
+                const tableRows = [];
+
+                tableRows.push({ label: 'Saldo Inicial', type: 'info', values: sortedDates.map(d => saldoInicialMap.get(d) || 0) });
+
+                const totalEntradasDiarias = sortedDates.map(date => {
+                    const movsDoDia = movimentacoesMap.get(date);
+                    if (!movsDoDia) return 0;
+                    let total = 0;
+                    for (const mov of movsDoDia.values()) {
+                        total += mov.receitas;
+                    }
+                    return total;
+                });
+                tableRows.push({ label: 'Fluxo de Entradas', type: 'summary', group: 'in', values: totalEntradasDiarias });
+                sortedNaturezasIn.forEach(nat => {
+                    const values = sortedDates.map(date => movimentacoesMap.get(date)?.get(nat)?.receitas || 0);
+                    tableRows.push({ label: nat, type: 'detail-in', group: 'in', values });
+                });
+
+                const totalSaidasDiarias = sortedDates.map(date => {
+                    const movsDoDia = movimentacoesMap.get(date);
+                    if (!movsDoDia) return 0;
+                    let total = 0;
+                    for (const mov of movsDoDia.values()) {
+                        total += mov.despesas;
+                    }
+                    return total * -1; // Saídas devem ser negativas no relatório
+                });
+                tableRows.push({ label: 'Fluxo de Saídas', type: 'summary', group: 'out', values: totalSaidasDiarias });
+                sortedNaturezasOut.forEach(nat => {
+                    const values = sortedDates.map(date => (movimentacoesMap.get(date)?.get(nat)?.despesas || 0) * -1);
+                    tableRows.push({ label: nat, type: 'detail-out', group: 'out', values });
+                });
+
+                tableRows.push({ label: 'Outras Movimentações', type: 'info', values: sortedDates.map(d => outrasMovMap.get(d) || 0) });
+
+                tableRows.push({ label: 'Saldo Final', type: 'total', values: sortedDates.map(d => saldoFinalMap.get(d) || 0) });
+
+                renderTable({ dates: sortedDates, rows: tableRows });
+            };
+
+            async function fetchAndRenderData() {
+                if (!window.componentData) {
+                    renderError(tableWrapper, "Objeto de configuração (componentData) não encontrado.");
+                    return;
+                }
+                const { querySaldoInicialDiario, queryEntradasDiarias, querySaidasDiarias, queryOutrasMovDiarias, querySaldoFinalDiario } = componentData;
+                if (!querySaldoInicialDiario || !queryEntradasDiarias || !querySaidasDiarias || !queryOutrasMovDiarias || !querySaldoFinalDiario) {
+                    renderError(tableWrapper, "Uma ou mais queries de configuração diária não foram encontradas (componentData).");
+                    return;
+                }
+                renderLoading(tableWrapper);
+                try {
+                    const [saldoInicialRes, entradasDiariasRes, saidasDiariasRes, outrasMovRes, saldoFinalRes] = await Promise.all([
+                        queryMitra({ query: querySaldoInicialDiario, jdbcId: componentData.jdbcId }),
+                        queryMitra({ query: queryEntradasDiarias, jdbcId: componentData.jdbcId }),
+                        queryMitra({ query: querySaidasDiarias, jdbcId: componentData.jdbcId }),
+                        queryMitra({ query: queryOutrasMovDiarias, jdbcId: componentData.jdbcId }),
+                        queryMitra({ query: querySaldoFinalDiario, jdbcId: componentData.jdbcId })
+                    ]);
+
+                    if (!saldoInicialRes || !entradasDiariasRes || !saidasDiariasRes || !outrasMovRes || !saldoFinalRes) {
+                        throw new Error("Uma ou mais queries retornaram uma resposta nula.");
+                    }
+                    processData(saldoInicialRes, entradasDiariasRes, saidasDiariasRes, outrasMovRes, saldoFinalRes);
+                } catch (error) {
+                    console.error("Falha ao buscar dados:", error);
+                    renderError(tableWrapper, error.message || "Ocorreu um erro inesperado.");
+                }
+            }
+
+            // --- INITIALIZATION & MAIN CONTROL ---
+            const initializeComponent = () => {
+                document.body.addEventListener(MITRA_UPDATE_EVENT_NAME, fetchAndRenderData);
+                fetchAndRenderData(); // Carga inicial
+            };
+
+            const waitForMitraAndInit = () => {
+                const maxWaitTime = 5000;
+                const intervalTime = 100;
+                const startTime = Date.now();
+                const checkInterval = setInterval(() => {
+                    if (window.componentData && componentData.querySaldoInicialDiario && componentData.queryEntradasDiarias && componentData.querySaidasDiarias && componentData.queryOutrasMovDiarias && componentData.querySaldoFinalDiario && componentData.screenIdDetalhes) {
+                        clearInterval(checkInterval);
+                        // reaplica borda após configs carregarem (caso showBorder venha depois)
+                        try { applyBorderFromConfig(); } catch (e) { }
+                        initializeComponent();
+                    } else if (Date.now() - startTime > maxWaitTime) {
+                        clearInterval(checkInterval);
+                        const errorMsg = "Erro Crítico: As configurações do componente (queries ou dependências) não foram carregadas da plataforma a tempo.";
+                        console.error(errorMsg);
+                        renderError(document.getElementById('main-container'), errorMsg);
+                    }
+                }, intervalTime);
+            };
+
+            waitForMitraAndInit();
+        });
+    </script>
+</body>
+
+</html>

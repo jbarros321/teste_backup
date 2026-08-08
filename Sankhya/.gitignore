@@ -1,0 +1,34 @@
+.vscode
+.settings
+
+.svn
+**/.svn
+
+### Java ###
+# Compiled class file
+*.class
+
+ejbsrc/
+
+### Eclipse ###
+.metadata
+.sonarlint
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+apache-jmeter-2.7
+local.properties
+.settings/
+.loadpath
+.metadata/
+.recommenders/
+RemoteSystemsTempFiles/
+
+**/mgeliv-model.jar
+**/testsoutput
+
+
+

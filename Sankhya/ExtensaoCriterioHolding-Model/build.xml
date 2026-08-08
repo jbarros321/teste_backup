@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="ExtensaoCriterioHolding-Model" default="geral" basedir=".">
+   
+   <property name="eclipse.home" value="D:\Developer\eclipse"/>
+   <property name="templates.dir" value="D:\Developer\templates-xdt"/>
+   <property name="home.skjava" value="D:\sk-java"/>
+   
+   <target name="geral" description="Gera o pacote EJB">
+   		<mkdir dir="${basedir}/extBuild/ejb" />
+      	<jar destfile="${basedir}/extBuild/ejb/extCriterioHolding-ejb.jar">
+		   	<zipfileset dir="build/META-INF" prefix="META-INF">
+		   		<include name="*.*"/>
+		   	</zipfileset>
+		   	<zipfileset dir="bin">
+		   		<include name="**/*.*"/>
+		   		<exclude name="META-INF/*.*"/>
+		   	</zipfileset>
+	   	</jar>
+   </target>
+
+   	<target name="interfaces" description="Gera as interfaces EJB necessárias para a extensão do Desenvolvimento Java.">
+   	   <delete dir="${basedir}/ejbsrc"></delete>
+   	   <ant dir="${basedir}" antfile="${basedir}/xdoclet-build.xml"></ant>
+   	</target>
+
+	<target name="Copiar JAR pro JBoss" description="Copia o model para o Jboss - Necessário reiniciar o servidor.">
+		<copy todir="${default.jboss}/deploy">
+			<fileset dir="${basedir}/extBuild/ejb" includes="**/*">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+	</target>
+	
+	<target name="Copiar JAR pro SkWExtensionTool" description="Copia o model para o SkWExtensionTool">
+		<copy todir="${home.skjava}\SkwExtensionTool\build-extensao\ejb">
+			<fileset dir="${basedir}/extBuild/ejb" includes="**/*">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+	</target>
+</project>

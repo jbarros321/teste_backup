@@ -1,0 +1,89 @@
+<ion-view view-title="CREDPAR" cache-view="false"> <!-- ion-nav-buttons
+	side="left"--> <!-- <button class="button button-icon button-clear icon ion-ios-arrow-back" -->
+<!-- 	ng-click="doLogout()" style="color: white;"></button> --> <!-- </ion-nav-buttons> ion-content class="has-header padding task-content background-login centralizeScroll"  -->
+<ion-content class="top0 background-login bottom0">
+
+<div class="row row-center" ng-style="{'height': windowHeight}">
+	<div class="col">
+		<div style="margin-bottom: 10px; text-align: center;">
+			<span class="fontHome">Olá, {{nomeB2B}}</span>
+		</div>
+		<div>
+			<div class="row">
+				<div class="col col-33">
+					<div ng-click="goToAutorizacao($event)">
+						<div class="btn-home-top">
+							<div class="autorizacao-vendas-img"></div>
+						</div>
+						<div class="btn-home-bottom">
+							<span>Autorização de Venda</span>
+						</div>
+					</div>
+				</div>
+				<div class="col col-33">
+					<div ng-click="goToProposta($event)">
+						<div class="btn-home-top">
+							<div class="proposta-cartao-img"></div>
+						</div>
+						<div class="btn-home-bottom">
+							<span>Proposta de Cartão</span>
+						</div>
+					</div>
+				</div>
+				<div class="col col-33" ng-if="data.acessoApp == 'E' || data.acessoApp == 'T'">
+					<div ng-click="goToExtrato($event)">
+						<div class="btn-home-top">
+							<div class="extrato-vendas-img"></div>
+						</div>
+						<div class="btn-home-bottom">
+							<span>Extrato de Vendas</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col col-33" ng-if="data.acessoApp == 'B' || data.acessoApp == 'T'">
+					<div
+						ng-click="goToBordero($event)">
+						<div class="btn-home-top">
+							<div class="bordero-pagamento-img"></div>
+						</div>
+						<div class="btn-home-bottom">
+							<span>Borderô de Pagamento</span>
+						</div>
+					</div>
+				</div>
+				<div class="col col-33">
+
+					<div ng-click="goToOndeComprar()">
+						<div class="btn-home-top">
+							<div class="onde-comprar-img"></div>
+						</div>
+						<div class="btn-home-bottom">
+							<span>Onde Comprar</span>
+						</div>
+					</div>
+				</div>
+				<div class="col col-33">
+					<div id="divAlterarSenha" ng-click="goToAlterarSenha($event)">
+						<div class="btn-home-top">
+							<div class="alterar-senha-img"></div>
+						</div>
+						<div class="btn-home-bottom">
+							<span>Alterar</br> Senha
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div ng-if="acessoApp === 'E' ||  acessoApp === 'B'"
+				style="width: 200px; height: 123px; display: inline-block;"></div>
+
+			<div ng-if="acessoApp === 'T' "
+				style="width: 100px; height: 123px; display: inline-block;"></div>
+
+		</div>
+	</div>
+</ion-content> </ion-view>

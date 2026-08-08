@@ -1,0 +1,788 @@
+import { useEffect, useRef, useState } from 'react';
+import {
+  BookOpen, Bot, Brain, CheckCircle2, ChevronDown, Compass, FlaskConical, Layers,
+  Lightbulb, ListChecks, Lock, Mail, MessageCircle, Phone, Rocket, Send, ShieldCheck,
+  Sparkles, TrendingUp, Users, Workflow, XCircle, ArrowDown,
+} from 'lucide-react';
+import ThemeToggle from '../components/ThemeToggle';
+
+/* ============================================================
+   Tela de Documentação Funcional — Playground e Agentes
+   Público-alvo: gestores (sem linguagem técnica)
+   ============================================================ */
+
+const SECTIONS = [
+  { id: 'introducao', label: 'Introdução', icon: BookOpen },
+  { id: 'playground', label: 'O que é o Playground', icon: FlaskConical },
+  { id: 'agentes', label: 'O que são os Agentes', icon: Bot },
+  { id: 'ia', label: 'A Inteligência por trás', icon: Brain },
+  { id: 'capacidades', label: 'Capacidades da Plataforma', icon: Sparkles },
+  { id: 'niveis', label: 'Níveis de Utilização', icon: Layers },
+  { id: 'permissoes', label: 'Permissões e Poderes de Uso', icon: ShieldCheck },
+  { id: 'logica', label: 'Como Tudo Funciona', icon: Workflow },
+  { id: 'comunicacao', label: 'WhatsApp, Telegram e E-mail', icon: Send },
+  { id: 'limitacoes', label: 'Limitações', icon: Lock },
+  { id: 'boas-praticas', label: 'Boas Práticas', icon: ListChecks },
+  { id: 'casos-de-uso', label: 'Casos de Uso por Área', icon: Compass },
+  { id: 'beneficios', label: 'Benefícios para a Empresa', icon: TrendingUp },
+] as const;
+
+/* ---------- Blocos visuais reutilizáveis ---------- */
+
+function SectionTitle({ icon: Icon, kicker, title }: { icon: any; kicker: string; title: string }) {
+  return (
+    <div className="mb-6">
+      <div className="flex items-center gap-2 mb-2">
+        <span
+          className="w-9 h-9 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: 'var(--color-primary-bg)', color: 'var(--color-primary)' }}
+        >
+          <Icon size={18} />
+        </span>
+        <span
+          className="text-[11px] font-semibold uppercase tracking-widest"
+          style={{ color: 'var(--color-primary)' }}
+        >
+          {kicker}
+        </span>
+      </div>
+      <h2 className="text-2xl md:text-3xl font-bold" style={{ color: 'var(--color-text)' }}>{title}</h2>
+    </div>
+  );
+}
+
+function P({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[15px] leading-relaxed mb-4" style={{ color: 'var(--color-text)' }}>
+      {children}
+    </p>
+  );
+}
+
+function Card({ title, icon: Icon, accent, children }: { title: string; icon?: any; accent?: string; children: React.ReactNode }) {
+  const color = accent || 'var(--color-primary)';
+  return (
+    <div
+      className="rounded-xl p-5 shadow-sm h-full"
+      style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+    >
+      <div className="flex items-center gap-2.5 mb-2.5">
+        {Icon && (
+          <span
+            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+            style={{ backgroundColor: 'color-mix(in srgb, ' + color + ' 12%, transparent)', color }}
+          >
+            <Icon size={16} />
+          </span>
+        )}
+        <h4 className="font-semibold text-[15px]" style={{ color: 'var(--color-text)' }}>{title}</h4>
+      </div>
+      <div className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{children}</div>
+    </div>
+  );
+}
+
+function CheckItem({ children, negative }: { children: React.ReactNode; negative?: boolean }) {
+  return (
+    <li className="flex items-start gap-2.5 mb-2.5">
+      {negative
+        ? <XCircle size={17} className="mt-0.5 shrink-0" style={{ color: '#dc2626' }} />
+        : <CheckCircle2 size={17} className="mt-0.5 shrink-0" style={{ color: 'var(--color-primary)' }} />}
+      <span className="text-sm leading-relaxed" style={{ color: 'var(--color-text)' }}>{children}</span>
+    </li>
+  );
+}
+
+function Callout({ title, children, tone = 'info' }: { title: string; children: React.ReactNode; tone?: 'info' | 'warn' }) {
+  const color = tone === 'warn' ? '#d97706' : 'var(--color-primary)';
+  return (
+    <div
+      className="rounded-xl p-4 my-5"
+      style={{
+        backgroundColor: 'color-mix(in srgb, ' + color + ' 8%, var(--color-surface))',
+        borderLeft: '4px solid ' + color,
+      }}
+    >
+      <p className="font-semibold text-sm mb-1" style={{ color: 'var(--color-text)' }}>{title}</p>
+      <div className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{children}</div>
+    </div>
+  );
+}
+
+function Capability({ nome, oQueFaz, comoFunciona, beneficio, exemplo }: {
+  nome: string; oQueFaz: string; comoFunciona: string; beneficio: string; exemplo: string;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div
+      className="rounded-xl overflow-hidden transition-all"
+      style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+    >
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left"
+      >
+        <span className="font-semibold text-[15px]" style={{ color: 'var(--color-text)' }}>{nome}</span>
+        <ChevronDown
+          size={18}
+          className={`shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          style={{ color: 'var(--color-text-secondary)' }}
+        />
+      </button>
+      {open && (
+        <div className="px-4 pb-4 grid gap-3 md:grid-cols-2 animate-fadeIn">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--color-primary)' }}>O que faz</p>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{oQueFaz}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--color-primary)' }}>Como funciona</p>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{comoFunciona}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--color-primary)' }}>Benefícios</p>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{beneficio}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--color-primary)' }}>Exemplo real</p>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{exemplo}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FlowStep({ n, title, desc, last }: { n: number; title: string; desc: string; last?: boolean }) {
+  return (
+    <div className="flex flex-col items-center text-center">
+      <div
+        className="rounded-xl px-5 py-4 w-full max-w-md shadow-sm"
+        style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+      >
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <span
+            className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+            style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
+          >
+            {n}
+          </span>
+          <span className="font-semibold text-[15px]" style={{ color: 'var(--color-text)' }}>{title}</span>
+        </div>
+        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{desc}</p>
+      </div>
+      {!last && <ArrowDown size={20} className="my-2" style={{ color: 'var(--color-primary)' }} />}
+    </div>
+  );
+}
+
+/* ---------- Dados das capacidades (seção 5) ---------- */
+
+const CAPACIDADES: Array<{ nome: string; oQueFaz: string; comoFunciona: string; beneficio: string; exemplo: string }> = [
+  {
+    nome: 'Criação de documentos e atas',
+    oQueFaz: 'Produz documentos completos a partir de uma descrição: atas de reunião, comunicados, relatórios, procedimentos internos.',
+    comoFunciona: 'Você descreve o que precisa (assunto, pontos principais, tom desejado) e a plataforma redige o documento pronto para revisão.',
+    beneficio: 'Elimina a "página em branco" — o gestor parte de um rascunho de qualidade em segundos, em vez de começar do zero.',
+    exemplo: 'Após uma reunião de diretoria, você cola suas anotações soltas e pede: "gere a ata formal desta reunião com decisões e responsáveis". Em instantes a ata está pronta.',
+  },
+  {
+    nome: 'Geração de propostas comerciais e contratos',
+    oQueFaz: 'Monta propostas e minutas de contrato seguindo o padrão e as regras da sua empresa.',
+    comoFunciona: 'Você informa cliente, escopo, valores e condições. A plataforma estrutura o documento com introdução, escopo, cronograma e condições comerciais.',
+    beneficio: 'Padroniza as propostas de toda a equipe comercial e reduz o tempo de resposta ao cliente de dias para minutos.',
+    exemplo: 'Um vendedor fecha uma negociação por telefone e pede: "gere a proposta para a Empresa X com estes itens e 10% de desconto". A proposta sai no padrão da empresa.',
+  },
+  {
+    nome: 'Resumos e análise de documentos (PDFs, planilhas, textos)',
+    oQueFaz: 'Lê documentos extensos e devolve o essencial: pontos-chave, riscos, prazos, valores e pendências.',
+    comoFunciona: 'Você envia ou cola o conteúdo do documento e pergunta o que quiser sobre ele — a plataforma lê tudo e responde com base no conteúdo.',
+    beneficio: 'Um contrato de 40 páginas vira um resumo de 10 linhas com os pontos de atenção destacados.',
+    exemplo: 'O jurídico recebe um contrato de fornecedor e pede: "resuma este contrato e liste cláusulas que representam risco para nós".',
+  },
+  {
+    nome: 'Análise de indicadores e dados de negócio',
+    oQueFaz: 'Consulta os dados disponíveis no sistema (vendas, pedidos, metas) e responde perguntas de negócio com números reais.',
+    comoFunciona: 'Você pergunta em linguagem natural ("como estão as vendas deste mês por região?") e a plataforma busca os dados autorizados e monta a resposta, inclusive com painéis visuais no Playground.',
+    beneficio: 'O gestor obtém respostas sem depender de relatórios prontos ou da equipe de dados.',
+    exemplo: 'O gerente comercial pergunta: "quais clientes compraram menos neste trimestre em relação ao anterior?" e recebe a lista com valores.',
+  },
+  {
+    nome: 'Criação de e-mails e respostas padronizadas',
+    oQueFaz: 'Redige e-mails profissionais, respostas a clientes e comunicados com o tom adequado.',
+    comoFunciona: 'Você explica a situação e o objetivo; a plataforma redige a mensagem pronta para envio ou ajuste.',
+    beneficio: 'Comunicação mais rápida, consistente e sem erros de escrita.',
+    exemplo: '"Escreva um e-mail cordial cobrando o retorno da proposta enviada há 10 dias, sem parecer agressivo."',
+  },
+  {
+    nome: 'Correção e melhoria de textos',
+    oQueFaz: 'Revisa ortografia, gramática, clareza e tom de qualquer texto.',
+    comoFunciona: 'Cole o texto e peça a revisão — pode pedir também para deixar mais formal, mais curto ou mais persuasivo.',
+    beneficio: 'Todos os materiais saem com qualidade profissional, independente de quem escreveu.',
+    exemplo: 'Antes de enviar um comunicado para toda a empresa, o RH pede: "revise e deixe este texto mais claro e acolhedor".',
+  },
+  {
+    nome: 'FAQs, documentações e base de conhecimento',
+    oQueFaz: 'Transforma o conhecimento da empresa em materiais organizados: perguntas frequentes, manuais de processo, guias de integração de novos funcionários.',
+    comoFunciona: 'Você fornece as informações brutas (ou conversa sobre o processo) e a plataforma organiza tudo em formato de consulta fácil.',
+    beneficio: 'O conhecimento deixa de estar "na cabeça das pessoas" e passa a estar documentado e acessível.',
+    exemplo: 'O coordenador descreve como funciona o processo de reembolso e pede: "transforme isso em um FAQ para os funcionários".',
+  },
+  {
+    nome: 'Atendimento e suporte automático',
+    oQueFaz: 'Um Agente pode responder dúvidas repetitivas de clientes ou funcionários seguindo as regras que você definir.',
+    comoFunciona: 'Você configura um Agente com as instruções e informações do seu negócio; ele responde às perguntas de forma consistente, a qualquer hora.',
+    beneficio: 'Respostas imediatas 24 horas por dia e equipe liberada para casos que exigem atenção humana.',
+    exemplo: 'Um Agente de suporte interno responde dúvidas sobre políticas de RH, benefícios e procedimentos sem que ninguém precise ser interrompido.',
+  },
+  {
+    nome: 'Classificação e extração de dados',
+    oQueFaz: 'Lê documentos ou mensagens e extrai as informações importantes de forma organizada (nomes, valores, datas, categorias).',
+    comoFunciona: 'Você define o que precisa extrair e a plataforma devolve os dados estruturados, prontos para uso.',
+    beneficio: 'Elimina digitação manual e erros de transcrição.',
+    exemplo: 'O financeiro cola o texto de vários boletos e pede: "extraia fornecedor, valor e vencimento de cada um em formato de tabela".',
+  },
+  {
+    nome: 'Organização de tarefas e acompanhamento de processos',
+    oQueFaz: 'Ajuda a estruturar planos de ação, listas de tarefas, cronogramas e acompanhamentos periódicos.',
+    comoFunciona: 'No Playground você monta o plano interativamente; com um Agente agendado, o acompanhamento acontece sozinho, no ritmo que você definir.',
+    beneficio: 'Nada cai no esquecimento — o acompanhamento vira rotina automática.',
+    exemplo: 'Um Agente verifica toda manhã os pedidos pendentes de aprovação e envia o resumo para o gestor responsável.',
+  },
+  {
+    nome: 'Fluxogramas e desenho de processos',
+    oQueFaz: 'Descreve e organiza visualmente as etapas de um processo da empresa.',
+    comoFunciona: 'Você explica o processo em palavras e a plataforma monta a representação organizada das etapas, decisões e responsáveis.',
+    beneficio: 'Processos claros para toda a equipe, úteis em treinamentos e auditorias.',
+    exemplo: '"Monte o fluxo do nosso processo de aprovação de compras, da requisição ao pagamento."',
+  },
+  {
+    nome: 'Geração de conteúdo e materiais de apoio',
+    oQueFaz: 'Cria textos para apresentações, roteiros de reunião, materiais de treinamento e comunicação interna.',
+    comoFunciona: 'Você informa o público, o objetivo e os pontos principais; a plataforma produz o material estruturado.',
+    beneficio: 'Materiais de qualidade produzidos em uma fração do tempo habitual.',
+    exemplo: '"Crie o roteiro de uma apresentação de 15 minutos sobre os resultados do trimestre para a diretoria."',
+  },
+  {
+    nome: 'Painéis e telas interativas (Playground)',
+    oQueFaz: 'Cria painéis visuais com indicadores, gráficos e tabelas a partir de um pedido em linguagem natural.',
+    comoFunciona: 'No Playground, você descreve o painel que deseja ("um painel de vendas por marca com os 10 maiores clientes") e a tela é gerada ao lado, pronta para visualização.',
+    beneficio: 'Protótipos de painéis gerenciais em minutos, sem projeto técnico.',
+    exemplo: 'O gerente pede: "crie um painel com faturamento por mês, por vendedor e por estado" e visualiza o resultado na hora.',
+  },
+];
+
+/* ---------- Página ---------- */
+
+export default function DocumentacaoPage() {
+  const [active, setActive] = useState<string>('introducao');
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  useEffect(() => {
+    observerRef.current?.disconnect();
+    const observer = new IntersectionObserver(
+      entries => {
+        const visible = entries.filter(e => e.isIntersecting);
+        if (visible.length > 0) {
+          const top = visible.reduce((a, b) => (a.boundingClientRect.top < b.boundingClientRect.top ? a : b));
+          setActive(top.target.id);
+        }
+      },
+      { rootMargin: '-20% 0px -65% 0px' }
+    );
+    SECTIONS.forEach(s => {
+      const el = document.getElementById(s.id);
+      if (el) observer.observe(el);
+    });
+    observerRef.current = observer;
+    return () => observer.disconnect();
+  }, []);
+
+  function goTo(id: string) {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  return (
+    <div className="min-h-screen pb-24 md:pb-10" style={{ backgroundColor: 'var(--color-bg)' }}>
+      {/* Hero */}
+      <header
+        className="px-5 md:px-10 pt-10 pb-12"
+        style={{
+          background: 'linear-gradient(135deg, var(--color-primary-bg) 0%, var(--color-bg) 70%)',
+          borderBottom: '1px solid var(--color-border)',
+        }}
+      >
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span
+                  className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
+                >
+                  <BookOpen size={20} />
+                </span>
+                <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--color-primary)' }}>
+                  Guia do Gestor
+                </span>
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold mb-3" style={{ color: 'var(--color-text)' }}>
+                Playground e Agentes
+              </h1>
+              <p className="text-base md:text-lg max-w-2xl leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                Tudo o que a plataforma é capaz de realizar, explicado em linguagem de negócios:
+                o que é cada recurso, quando usar, quais os limites e como extrair o máximo valor
+                para a sua área — sem necessidade de conhecimento técnico.
+              </p>
+            </div>
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-6xl mx-auto px-5 md:px-10 mt-8 flex gap-10">
+        {/* Índice lateral (desktop) */}
+        <aside className="hidden lg:block w-64 shrink-0">
+          <nav className="sticky top-6">
+            <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--color-text-secondary)' }}>
+              Nesta página
+            </p>
+            {SECTIONS.map(({ id, label, icon: Icon }) => {
+              const isActive = active === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => goTo(id)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors mb-0.5"
+                  style={{
+                    backgroundColor: isActive ? 'var(--color-nav-hover)' : 'transparent',
+                    color: isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+                  }}
+                >
+                  <Icon size={15} strokeWidth={isActive ? 2.3 : 1.8} />
+                  <span className={`text-[13px] ${isActive ? 'font-semibold' : 'font-medium'}`}>{label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </aside>
+
+        {/* Conteúdo */}
+        <main className="flex-1 min-w-0">
+          {/* 1. Introdução */}
+          <section id="introducao" className="scroll-mt-6 mb-14">
+            <SectionTitle icon={BookOpen} kicker="Visão geral" title="Uma plataforma que trabalha com você" />
+            <P>
+              Esta plataforma coloca à disposição da sua equipe dois recursos complementares:
+              o <strong>Playground</strong>, um espaço para criar, experimentar e obter respostas na hora,
+              e os <strong>Agentes</strong>, assistentes que trabalham de forma contínua seguindo instruções
+              definidas por você. Nos dois casos, quem faz o trabalho pesado é uma
+              <strong> Inteligência Artificial avançada</strong>, capaz de entender pedidos escritos em
+              português comum e transformá-los em resultados concretos: análises, documentos, painéis,
+              acompanhamentos e comunicações.
+            </P>
+            <P>
+              Pense na diferença assim: o Playground é como <strong>conversar com um analista muito rápido</strong> —
+              você pede, ele entrega, você refina. Os Agentes são como <strong>contratar um assistente dedicado </strong>
+              que já sabe o que fazer, faz sempre do mesmo jeito e não esquece de nada — inclusive nos horários
+              que você determinar.
+            </P>
+            <Callout title="Para quem é este guia">
+              Gerentes de Projetos, Gerentes Comerciais, Coordenadores e Gestores de Negócios.
+              Nenhum conhecimento técnico é necessário para ler este documento ou para usar a plataforma.
+            </Callout>
+          </section>
+
+          {/* 2. Playground */}
+          <section id="playground" className="scroll-mt-6 mb-14">
+            <SectionTitle icon={FlaskConical} kicker="Seção 2" title="O que é o Playground" />
+            <P>
+              O Playground é o <strong>ambiente de criação e experimentação</strong> da plataforma.
+              É onde você conversa com a Inteligência Artificial para tirar dúvidas, analisar dados,
+              criar documentos e — um diferencial importante — <strong>gerar telas e painéis visuais </strong>
+              que aparecem ao lado da conversa, prontos para visualização. Cada conversa fica salva como
+              um "estudo", que você pode reabrir, continuar e evoluir a qualquer momento.
+            </P>
+            <div className="grid md:grid-cols-2 gap-4 mb-5">
+              <Card title="Qual é a finalidade" icon={Rocket}>
+                Experimentar ideias com custo zero de risco: testar uma análise, montar um painel de indicadores,
+                rascunhar um processo ou validar um conceito antes de transformá-lo em algo permanente para a empresa.
+              </Card>
+              <Card title="Quem pode utilizar" icon={Users}>
+                Qualquer usuário com acesso à plataforma. Não é preciso saber programar nem conhecer termos técnicos —
+                basta escrever o que deseja, como escreveria uma mensagem para um colega.
+              </Card>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="rounded-xl p-5" style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                <p className="font-semibold mb-3 text-[15px]" style={{ color: 'var(--color-text)' }}>Quando o Playground é recomendado</p>
+                <ul>
+                  <CheckItem>Explorar dados e indicadores de forma livre ("como estão as vendas por região?")</CheckItem>
+                  <CheckItem>Criar rapidamente um painel visual para uma reunião</CheckItem>
+                  <CheckItem>Testar uma ideia de automação antes de transformá-la em um Agente</CheckItem>
+                  <CheckItem>Produzir documentos, análises e textos pontuais</CheckItem>
+                  <CheckItem>Validar um processo novo com resultados reais antes de oficializá-lo</CheckItem>
+                </ul>
+              </div>
+              <div className="rounded-xl p-5" style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                <p className="font-semibold mb-3 text-[15px]" style={{ color: 'var(--color-text)' }}>Quando ele não é o melhor caminho</p>
+                <ul>
+                  <CheckItem negative>Tarefas que precisam acontecer sozinhas, todos os dias, sem alguém pedir — para isso existem os Agentes</CheckItem>
+                  <CheckItem negative>Processos oficiais que exigem sempre o mesmo comportamento — o Playground é um espaço de criação, não de rotina</CheckItem>
+                  <CheckItem negative>Comunicações automáticas com clientes por WhatsApp, Telegram ou e-mail — isso é papel dos Agentes com canais configurados</CheckItem>
+                </ul>
+              </div>
+            </div>
+            <Callout title="Resumindo em uma frase">
+              O Playground é o laboratório: experimente, valide e refine. Quando o resultado for bom e precisar
+              se repetir, transforme a receita em um Agente.
+            </Callout>
+          </section>
+
+          {/* 3. Agentes */}
+          <section id="agentes" className="scroll-mt-6 mb-14">
+            <SectionTitle icon={Bot} kicker="Seção 3" title="O que são os Agentes" />
+            <P>
+              Um Agente é um <strong>assistente digital com identidade, missão e rotina próprias</strong>.
+              Diferente de uma conversa comum — em que você pergunta e a resposta vale para aquele momento —
+              o Agente <strong>guarda suas instruções permanentemente</strong> e as executa de forma consistente,
+              quantas vezes for preciso, inclusive de forma agendada, sem que ninguém precise pedir.
+            </P>
+            <div className="grid md:grid-cols-3 gap-4 mb-5">
+              <Card title="Identidade" icon={Bot}>
+                Cada Agente tem nome, descrição e uma "missão" — o conjunto de regras e orientações que definem
+                como ele deve se comportar, o que analisar e como responder.
+              </Card>
+              <Card title="Rotina" icon={Workflow}>
+                O Agente pode ter uma tarefa agendada: por exemplo, "toda manhã às 8h, verifique os pedidos
+                pendentes e envie um resumo". Ele cumpre o horário sozinho, todos os dias.
+              </Card>
+              <Card title="Comunicação" icon={Send}>
+                O resultado do trabalho pode ser entregue por Telegram, E-mail e WhatsApp — desde que esses
+                canais tenham sido configurados previamente (veja a seção de comunicação).
+              </Card>
+            </div>
+            <P><strong>Qual a diferença entre um Agente e uma conversa comum?</strong></P>
+            <div className="overflow-x-auto mb-5">
+              <table className="w-full text-sm rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
+                <thead>
+                  <tr style={{ backgroundColor: 'var(--color-surface-2)' }}>
+                    <th className="text-left px-4 py-3 font-semibold" style={{ color: 'var(--color-text)' }}>Conversa comum (Chat / Playground)</th>
+                    <th className="text-left px-4 py-3 font-semibold" style={{ color: 'var(--color-text)' }}>Agente</th>
+                  </tr>
+                </thead>
+                <tbody style={{ backgroundColor: 'var(--color-surface)' }}>
+                  {[
+                    ['Você precisa pedir cada vez', 'Trabalha sozinho no horário agendado'],
+                    ['As instruções valem para aquela conversa', 'As instruções ficam gravadas e valem sempre'],
+                    ['Resultado fica na tela', 'Resultado pode ser enviado por WhatsApp, Telegram e e-mail'],
+                    ['Ideal para explorar e criar', 'Ideal para rotinas e processos que se repetem'],
+                  ].map(([a, b], i) => (
+                    <tr key={i} style={{ borderTop: '1px solid var(--color-border)' }}>
+                      <td className="px-4 py-3" style={{ color: 'var(--color-text-secondary)' }}>{a}</td>
+                      <td className="px-4 py-3" style={{ color: 'var(--color-text-secondary)' }}>{b}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <P>
+              <strong>Como um Agente automatiza processos:</strong> você descreve a rotina uma única vez —
+              "verifique os pedidos parados há mais de 3 dias, identifique os clientes afetados e envie o resumo
+              para o gerente" — e o Agente repete esse trabalho no ritmo definido (a cada 30 minutos, a cada 2 horas,
+              diariamente às 8h, como preferir). Ele segue as regras da sua empresa porque <strong>as regras fazem
+              parte da missão dele</strong>: se a política é "nunca prometer desconto acima de 5%", isso entra nas
+              instruções e ele respeita sempre.
+            </P>
+            <p className="font-semibold mb-3 text-[15px]" style={{ color: 'var(--color-text)' }}>Exemplos reais de Agentes por área</p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-2">
+              {[
+                ['Atendimento ao cliente', 'Responde dúvidas frequentes com base nas políticas da empresa, 24h por dia.'],
+                ['Pré-venda', 'Qualifica interessados: coleta necessidade, porte e urgência antes de passar ao vendedor.'],
+                ['Pós-venda', 'Acompanha a satisfação após a entrega e sinaliza clientes em risco.'],
+                ['Cobrança', 'Monitora títulos vencidos e prepara lembretes de cobrança em tom adequado.'],
+                ['Financeiro', 'Resume diariamente as movimentações e destaca pagamentos fora do padrão.'],
+                ['RH', 'Responde dúvidas sobre benefícios, férias e políticas internas.'],
+                ['Análise de documentos', 'Lê contratos e propostas recebidas e entrega o resumo com pontos de atenção.'],
+                ['Geração de propostas', 'Monta propostas comerciais no padrão da empresa a partir dos dados da negociação.'],
+                ['Suporte interno', 'Orienta a equipe sobre processos e sistemas internos, reduzindo interrupções.'],
+              ].map(([t, d]) => (
+                <Card key={t} title={t}>{d}</Card>
+              ))}
+            </div>
+          </section>
+
+          {/* 4. IA */}
+          <section id="ia" className="scroll-mt-6 mb-14">
+            <SectionTitle icon={Brain} kicker="Seção 4" title="A Inteligência Artificial por trás de tudo" />
+            <P>
+              Toda a inteligência do Playground e dos Agentes é fornecida por <strong>modelos avançados de
+              Inteligência Artificial</strong> — a mesma categoria de tecnologia que hoje lidera o mercado mundial.
+              É essa IA que entende o que você escreve, raciocina sobre o pedido e produz o resultado.
+            </P>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-5">
+              {[
+                ['Interpretar solicitações', 'Entende pedidos escritos em português do dia a dia, mesmo informais.'],
+                ['Compreender contexto', 'Considera o histórico da conversa e as informações do seu negócio.'],
+                ['Gerar respostas', 'Produz textos, análises e conclusões completas e organizadas.'],
+                ['Analisar documentos', 'Lê contratos, propostas, planilhas e relatórios extensos.'],
+                ['Resumir conteúdos', 'Transforma material longo no essencial, sem perder pontos importantes.'],
+                ['Criar textos', 'Redige e-mails, propostas, atas, comunicados e materiais de apoio.'],
+                ['Responder perguntas', 'Consulta os dados autorizados e responde com números reais.'],
+                ['Tomar decisões guiadas', 'Decide o próximo passo com base nas regras e instruções recebidas.'],
+                ['Executar fluxos definidos', 'Segue processos previamente descritos, etapa por etapa.'],
+              ].map(([t, d]) => (
+                <Card key={t} title={t} icon={Sparkles}>{d}</Card>
+              ))}
+            </div>
+            <Callout title="A regra de ouro da qualidade">
+              O resultado da IA depende diretamente de três coisas: <strong>a qualidade das instruções</strong> que
+              você fornece, <strong>as informações disponíveis</strong> para ela consultar e <strong>as regras
+              definidas</strong> para o Agente. Quanto mais contexto você der — objetivo, público, exemplos,
+              restrições — melhor será a entrega. Um pedido vago gera uma resposta genérica; um pedido bem
+              explicado gera um resultado profissional.
+            </Callout>
+          </section>
+
+          {/* 5. Capacidades */}
+          <section id="capacidades" className="scroll-mt-6 mb-14">
+            <SectionTitle icon={Sparkles} kicker="Seção 5" title="Capacidades da Plataforma" />
+            <P>
+              A lista abaixo detalha as principais capacidades disponíveis hoje. Clique em cada item para ver
+              o que faz, como funciona, os benefícios e um exemplo real de uso.
+            </P>
+            <div className="space-y-2.5">
+              {CAPACIDADES.map(c => <Capability key={c.nome} {...c} />)}
+            </div>
+            <P>
+              <span style={{ color: 'var(--color-text-secondary)' }}>
+                Estas são as capacidades mais utilizadas — a plataforma não se limita a elas. Se a sua necessidade
+                envolve interpretar informações, produzir conteúdo ou acompanhar processos, muito provavelmente
+                ela pode ser atendida. Na dúvida, teste no Playground.
+              </span>
+            </P>
+          </section>
+
+          {/* 6. Níveis */}
+          <section id="niveis" className="scroll-mt-6 mb-14">
+            <SectionTitle icon={Layers} kicker="Seção 6" title="Níveis de Utilização" />
+            <P>
+              A plataforma pode ser adotada em três níveis, do individual ao corporativo. Cada nível traz mais
+              valor — e também mais responsabilidade sobre a qualidade das instruções e a organização dos Agentes.
+            </P>
+            <div className="grid md:grid-cols-3 gap-4">
+              <Card title="Uso Individual" icon={Users} accent="#0ea5e9">
+                <p className="mb-2"><strong style={{ color: 'var(--color-text)' }}>O que é:</strong> um usuário utiliza o Playground e seus próprios Agentes para as atividades pessoais de trabalho — análises, textos, organização.</p>
+                <p className="mb-2"><strong style={{ color: 'var(--color-text)' }}>Vantagens:</strong> ganho imediato de produtividade, liberdade total para experimentar, aprendizado rápido.</p>
+                <p><strong style={{ color: 'var(--color-text)' }}>Responsabilidades:</strong> revisar os resultados antes de usá-los em decisões e não compartilhar informações sensíveis sem necessidade.</p>
+              </Card>
+              <Card title="Uso Departamental" icon={Users} accent="#8b5cf6">
+                <p className="mb-2"><strong style={{ color: 'var(--color-text)' }}>O que é:</strong> um setor (comercial, financeiro, RH) adota Agentes para automatizar atividades da área, como acompanhamento de pedidos ou cobranças.</p>
+                <p className="mb-2"><strong style={{ color: 'var(--color-text)' }}>Vantagens:</strong> padronização do trabalho da equipe, rotinas que não dependem de pessoas específicas, respostas consistentes.</p>
+                <p><strong style={{ color: 'var(--color-text)' }}>Responsabilidades:</strong> definir um responsável pelas instruções dos Agentes do setor e mantê-las atualizadas quando os processos mudarem.</p>
+              </Card>
+              <Card title="Uso Corporativo" icon={Users} accent="#f59e0b">
+                <p className="mb-2"><strong style={{ color: 'var(--color-text)' }}>O que é:</strong> vários departamentos utilizam Agentes compartilhados, com canais de comunicação integrados e processos interligados.</p>
+                <p className="mb-2"><strong style={{ color: 'var(--color-text)' }}>Vantagens:</strong> conhecimento centralizado, visão única dos processos, escala — o mesmo Agente serve dezenas de pessoas.</p>
+                <p><strong style={{ color: 'var(--color-text)' }}>Responsabilidades:</strong> governança — regras claras de quem cria, edita e publica Agentes, e revisão periódica do que está em operação.</p>
+              </Card>
+            </div>
+          </section>
+
+          {/* 7. Permissões */}
+          <section id="permissoes" className="scroll-mt-6 mb-14">
+            <SectionTitle icon={ShieldCheck} kicker="Seção 7" title="Permissões e Poderes de Uso" />
+            <P>
+              Nem todo usuário precisa (nem deve) ter os mesmos poderes. A plataforma trabalha com dois grandes
+              perfis de acesso, e as ações disponíveis dependem das <strong>regras definidas pela sua empresa</strong>:
+            </P>
+            <div className="grid md:grid-cols-2 gap-4 mb-5">
+              <Card title="Gestores e administradores da plataforma" icon={ShieldCheck}>
+                Podem <strong style={{ color: 'var(--color-text)' }}>criar</strong> novos Agentes,{' '}
+                <strong style={{ color: 'var(--color-text)' }}>editar</strong> nome, missão, agenda e canais,{' '}
+                <strong style={{ color: 'var(--color-text)' }}>publicar</strong> Agentes para uso da equipe,{' '}
+                <strong style={{ color: 'var(--color-text)' }}>compartilhar</strong> estudos do Playground e{' '}
+                <strong style={{ color: 'var(--color-text)' }}>excluir</strong> Agentes que criaram.
+                Os Agentes padrão da plataforma são protegidos e não podem ser excluídos.
+              </Card>
+              <Card title="Usuários da operação" icon={Users}>
+                Podem <strong style={{ color: 'var(--color-text)' }}>utilizar</strong> os Agentes disponíveis
+                (conversar, disparar execuções, consultar o histórico) e trabalhar livremente no Playground
+                com seus próprios estudos. Não alteram a configuração dos Agentes compartilhados — isso garante
+                que as rotinas oficiais não sejam modificadas por engano.
+              </Card>
+            </div>
+            <Callout title="Importante">
+              A distribuição exata desses poderes é uma decisão da empresa. A recomendação é simples: quem entende
+              o processo define as instruções; quem executa o dia a dia utiliza. Mudanças em Agentes que atendem
+              várias pessoas devem passar por um responsável.
+            </Callout>
+          </section>
+
+          {/* 8. Lógica */}
+          <section id="logica" className="scroll-mt-6 mb-14">
+            <SectionTitle icon={Workflow} kicker="Seção 8" title="Como Tudo Funciona (a lógica, passo a passo)" />
+            <P>
+              Por trás de qualquer pedido — no Playground ou em um Agente — o caminho é sempre o mesmo.
+              Entender esse fluxo ajuda a escrever pedidos melhores e a saber o que esperar:
+            </P>
+            <div className="my-6">
+              <FlowStep n={1} title="Você escreve a solicitação" desc="Em português comum: uma pergunta, um pedido de análise, uma tarefa. No caso do Agente, a solicitação já está gravada na missão dele." />
+              <FlowStep n={2} title="A Inteligência Artificial interpreta" desc="Ela entende o objetivo, identifica o que precisa ser feito e em que ordem." />
+              <FlowStep n={3} title="Consulta as informações disponíveis" desc="Busca os dados autorizados no sistema (vendas, pedidos, indicadores) e considera o contexto da conversa." />
+              <FlowStep n={4} title="Executa as regras definidas" desc="Aplica as instruções e políticas da empresa que fazem parte da missão — tom de voz, limites, critérios de decisão." />
+              <FlowStep n={5} title="Gera o resultado" desc="Uma resposta, um painel, um documento ou uma mensagem enviada pelos canais configurados." />
+              <FlowStep n={6} title="Você valida" desc="O gestor confere o resultado, pede ajustes se necessário e decide como usá-lo. A palavra final é sempre humana." last />
+            </div>
+            <Callout title="Um ciclo que melhora com o uso">
+              Cada ajuste que você pede ("seja mais resumido", "inclua a comparação com o mês anterior") refina o
+              resultado seguinte. Nos Agentes, esses aprendizados podem ser incorporados à missão — e valem para sempre.
+            </Callout>
+          </section>
+
+          {/* 9. Comunicação */}
+          <section id="comunicacao" className="scroll-mt-6 mb-14">
+            <SectionTitle icon={Send} kicker="Seção 9" title="Comunicação: WhatsApp, Telegram e E-mail" />
+            <P>
+              Os Agentes podem entregar o resultado do trabalho diretamente onde as pessoas estão:
+              no <strong>WhatsApp</strong>, no <strong>Telegram</strong> e por <strong>E-mail</strong> —
+              e é possível combinar mais de um canal no mesmo Agente. Um resumo de vendas pode chegar
+              todo dia às 8h no WhatsApp do gerente e, ao mesmo tempo, por e-mail para a diretoria.
+            </P>
+            <div className="grid md:grid-cols-3 gap-4 mb-5">
+              <Card title="E-mail" icon={Mail} accent="#0ea5e9">
+                O canal mais simples de ativar: basta informar os destinatários (e um assunto, se desejar).
+                O envio usa o serviço de e-mail da própria plataforma — não exige nenhum cadastro externo.
+              </Card>
+              <Card title="Telegram" icon={Send} accent="#8b5cf6">
+                Além de receber os resultados, permite <strong style={{ color: 'var(--color-text)' }}>conversar com o Agente</strong>:
+                você manda uma pergunta pelo Telegram e ele responde por lá. Requer uma configuração inicial
+                simples (criação de um "bot" e identificação de quem pode conversar com ele).
+              </Card>
+              <Card title="WhatsApp" icon={Phone} accent="#16a34a">
+                Envia mensagens para os números definidos. Requer uma configuração prévia junto à Meta
+                (empresa dona do WhatsApp), que fornece as credenciais oficiais de envio. É um processo
+                de cadastro, não de programação.
+              </Card>
+            </div>
+            <Callout title="Atenção: os canais não funcionam automaticamente" tone="warn">
+              A plataforma <strong>oferece a capacidade</strong> de integração com esses canais, mas eles precisam
+              ser <strong>configurados antes do primeiro uso</strong>, respeitando as políticas e requisitos de cada
+              serviço (especialmente o WhatsApp, que exige cadastro oficial junto à Meta). Essa configuração é feita
+              uma única vez por canal, pela equipe responsável pela implantação ou pelo administrador da plataforma.
+              Sem ela, o Agente continua funcionando normalmente pela tela — apenas não envia mensagens externas.
+            </Callout>
+            <P>
+              <strong>Como as mensagens se comportam:</strong> execuções agendadas e disparos manuais enviam o
+              resultado para <strong>todos os canais configurados</strong> no Agente. Conversas iniciadas pelo
+              Telegram são respondidas apenas no próprio Telegram — como uma conversa normal.
+            </P>
+          </section>
+
+          {/* 10. Limitações */}
+          <section id="limitacoes" className="scroll-mt-6 mb-14">
+            <SectionTitle icon={Lock} kicker="Seção 10" title="Limitações: o que a IA não faz sozinha" />
+            <P>
+              Transparência gera confiança. Tão importante quanto saber o que a plataforma faz é saber
+              o que ela <strong>não faz por conta própria</strong>:
+            </P>
+            <div className="rounded-xl p-5" style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+              <ul>
+                <CheckItem negative><strong>Não adivinha informações.</strong> Se um dado não foi informado nem está disponível no sistema, a IA não o inventa — ela precisa que alguém forneça.</CheckItem>
+                <CheckItem negative><strong>Não toma decisões sem regras.</strong> O Agente decide apenas dentro dos critérios definidos na missão. Sem regra definida, ele pergunta ou apresenta opções — não age por conta própria.</CheckItem>
+                <CheckItem negative><strong>Não acessa sistemas não autorizados.</strong> A IA enxerga apenas as informações que a empresa liberou para ela. Nada além disso.</CheckItem>
+                <CheckItem negative><strong>Não envia mensagens sem configuração.</strong> WhatsApp, Telegram e e-mail só funcionam depois da configuração prévia de cada canal.</CheckItem>
+                <CheckItem negative><strong>Não tem acesso automático aos dados da empresa.</strong> O acesso é concedido de forma controlada, área por área, pelos responsáveis.</CheckItem>
+                <CheckItem negative><strong>Depende das permissões concedidas.</strong> Cada usuário e cada Agente atua dentro do seu nível de acesso.</CheckItem>
+                <CheckItem negative><strong>Depende das integrações existentes.</strong> A IA só consulta as fontes de dados que foram conectadas à plataforma.</CheckItem>
+              </ul>
+            </div>
+            <Callout title="Por que isso é bom">
+              Essas limitações são propositais: garantem que a IA trabalhe com segurança, dentro das regras da
+              empresa, sem surpresas. O controle permanece sempre com as pessoas.
+            </Callout>
+          </section>
+
+          {/* 11. Boas práticas */}
+          <section id="boas-praticas" className="scroll-mt-6 mb-14">
+            <SectionTitle icon={ListChecks} kicker="Seção 11" title="Boas Práticas" />
+            <div className="grid md:grid-cols-2 gap-4">
+              {[
+                ['Sempre forneça contexto', 'Diga o objetivo, o público e a situação. "Escreva um e-mail" gera algo genérico; "escreva um e-mail para um cliente estratégico que atrasou o pagamento pela primeira vez" gera algo certeiro.', Lightbulb],
+                ['Descreva claramente o objetivo', 'Comece pelo resultado desejado: "quero uma tabela comparando X e Y" funciona melhor do que uma descrição vaga do problema.', Compass],
+                ['Evite solicitações genéricas', 'Pedidos amplos demais ("me ajude com vendas") geram respostas amplas demais. Quanto mais específico o pedido, melhor a entrega.', XCircle],
+                ['Mantenha os Agentes organizados', 'Cada Agente deve ter uma responsabilidade clara. Um Agente que "faz tudo" acaba não fazendo nada bem.', Layers],
+                ['Nomeie os Agentes corretamente', 'O nome deve dizer o que o Agente faz: "Resumo Diário de Pedidos" é melhor que "Agente 2". Facilita a vida de toda a equipe.', Bot],
+                ['Revise respostas importantes', 'Para decisões relevantes — propostas, comunicações a clientes, análises para diretoria — sempre valide o resultado antes de usar.', CheckCircle2],
+                ['Atualize as instruções quando o processo mudar', 'Se a política de desconto ou o fluxo de aprovação mudou, atualize a missão do Agente no mesmo dia. Agente com instrução velha produz resultado velho.', RefreshIcon],
+                ['Comece pequeno e evolua', 'Valide a ideia no Playground, crie o Agente com um escopo enxuto e vá ampliando conforme a confiança aumenta.', Rocket],
+              ].map(([t, d, I]: any) => (
+                <Card key={t} title={t} icon={I}>{d}</Card>
+              ))}
+            </div>
+          </section>
+
+          {/* 12. Casos de uso */}
+          <section id="casos-de-uso" className="scroll-mt-6 mb-14">
+            <SectionTitle icon={Compass} kicker="Seção 12" title="Casos de Uso por Área" />
+            <P>Exemplos práticos de como cada área pode usar o Playground e os Agentes desde a primeira semana:</P>
+            <div className="grid md:grid-cols-2 gap-4">
+              {[
+                ['Gerente Comercial', ['Acompanhar oportunidades e clientes com queda de compra, com alertas automáticos', 'Gerar propostas comerciais no padrão da empresa em minutos', 'Responder clientes com agilidade usando textos revisados e no tom certo', 'Receber no WhatsApp, toda manhã, o resumo dos pedidos pendentes']],
+                ['Gerente de Projetos', ['Acompanhar cronogramas e receber alertas de atividades em risco', 'Gerar documentação de projeto (atas, status reports, planos de ação)', 'Controlar atividades e pendências com resumos periódicos automáticos', 'Registrar reuniões: anotações soltas viram atas formais na hora']],
+                ['Financeiro', ['Analisar pagamentos e destacar movimentações fora do padrão', 'Gerar lembretes e textos de cobrança em tom profissional', 'Resumir as movimentações do dia em um relatório automático por e-mail', 'Extrair dados de documentos (valores, vencimentos) sem digitação manual']],
+                ['RH', ['Responder dúvidas de funcionários sobre benefícios e políticas, sem interrupções', 'Gerar documentos: comunicados, descrições de vaga, materiais de integração', 'Organizar processos seletivos com resumos padronizados de candidatos', 'Transformar políticas internas em FAQs claros para a equipe']],
+                ['Compras', ['Comparar propostas de fornecedores lado a lado, com prós e contras', 'Analisar condições comerciais e identificar pontos de negociação', 'Gerar pedidos e comunicações padronizadas para fornecedores', 'Acompanhar prazos de entrega com alertas automáticos']],
+                ['Jurídico', ['Revisar documentos e apontar cláusulas de risco', 'Resumir contratos extensos nos pontos que interessam à decisão', 'Padronizar minutas e comunicações formais', 'Manter uma base de consulta das políticas contratuais da empresa']],
+              ].map(([area, items]: any) => (
+                <div key={area} className="rounded-xl p-5" style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                  <p className="font-semibold mb-3 text-[15px]" style={{ color: 'var(--color-text)' }}>{area}</p>
+                  <ul>
+                    {items.map((it: string) => <CheckItem key={it}>{it}</CheckItem>)}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* 13. Benefícios */}
+          <section id="beneficios" className="scroll-mt-6 mb-14">
+            <SectionTitle icon={TrendingUp} kicker="Seção 13" title="Benefícios para a Empresa" />
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+              {[
+                ['Redução do tempo operacional', 'Tarefas que levavam horas — relatórios, propostas, resumos — passam a levar minutos.'],
+                ['Aumento da produtividade', 'Cada pessoa entrega mais, com o mesmo esforço, apoiada por um assistente incansável.'],
+                ['Padronização dos processos', 'O mesmo pedido gera o mesmo padrão de resultado, independente de quem pediu.'],
+                ['Melhoria da qualidade das entregas', 'Textos revisados, análises completas e documentos profissionais como regra, não exceção.'],
+                ['Redução de erros', 'Menos digitação manual, menos esquecimentos, menos retrabalho.'],
+                ['Maior velocidade nas respostas', 'Clientes e equipes recebem retorno em minutos, não em dias.'],
+                ['Melhor aproveitamento das equipes', 'Pessoas deixam o trabalho repetitivo para a IA e focam no que exige julgamento humano.'],
+                ['Centralização do conhecimento', 'Regras e processos ficam registrados nas missões dos Agentes — não se perdem quando alguém sai.'],
+                ['Automação de tarefas repetitivas', 'Acompanhamentos, resumos e alertas acontecem sozinhos, no horário certo, todos os dias.'],
+              ].map(([t, d]) => (
+                <Card key={t} title={t} icon={TrendingUp}>{d}</Card>
+              ))}
+            </div>
+            <div
+              className="rounded-xl p-6 text-center"
+              style={{ background: 'linear-gradient(135deg, var(--color-primary-bg), var(--color-surface))', border: '1px solid var(--color-border)' }}
+            >
+              <MessageCircle size={28} className="mx-auto mb-3" style={{ color: 'var(--color-primary)' }} />
+              <p className="font-semibold text-lg mb-1" style={{ color: 'var(--color-text)' }}>Por onde começar?</p>
+              <p className="text-sm max-w-xl mx-auto" style={{ color: 'var(--color-text-secondary)' }}>
+                Abra o <strong>Playground</strong> e faça um pedido real do seu dia a dia — uma análise, um painel,
+                um documento. Quando encontrar algo que valha a pena repetir, transforme em um <strong>Agente</strong> com
+                agenda e canais de entrega. Em poucos dias, a rotina trabalha para você.
+              </p>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+/* Ícone auxiliar para boas práticas (evita import extra) */
+function RefreshIcon(props: any) {
+  return <Workflow {...props} />;
+}

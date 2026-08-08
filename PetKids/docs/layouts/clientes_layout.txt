@@ -1,0 +1,553 @@
+Layout de Extração
+Relatório de Cliente DI Neogrid
+
+Versão 5.0
+
+Copyright © NEOGRID S/A. Todos os direitos reservados.
+É proibida a reprodução ou transmissão de qualquer parte deste
+documento sem autorização escrita da Neogrid S/A.
+
+Índice
+
+1.
+
+APRESENTAÇÃO .................................................................................................................................................. 3
+
+2.
+
+DEFINIÇÕES PARA GERAÇÃO DO ARQUIVO ................................................................................................ 3
+
+2.1
+
+Da dos numéricos ............................................................................................................................................. 4
+
+2.2
+
+Da dos Alfanuméricos....................................................................................................................................... 4
+
+3.
+
+ESTRUTURA .......................................................................................................................................................... 5
+
+4.
+
+DESCRIÇÃO DO PADRÃ O NEO GRID – CLIENTES ..................................................................................... 5
+
+5.
+
+DETALHAM ENTO DOS CAM POS .................................................................................................................... 5
+
+5.1
+
+Cabeçalho .......................................................................................................................................................... 5
+
+5.2
+
+Clientes.............................................................................................................................................................. 6
+
+www.neogrid.com
+
+1.
+
+APRESENTAÇÃO
+Neste documento apresentamos o layout do arquivo utilizado na coleta dos dados
+
+junto aos distribuidores, para implementação do sistema de informações gerenciais para
+distribuidores.
+Ressaltamos que este mesmo formato de layout deverá ser utilizado para integração com
+diversas indústrias/fornecedores diferentes e não apenas para um projeto específico. Neste
+caso, deverão ser gerados cinco arquivos: Vendedores, Clientes, Produtos, Vendas e
+Estoque. Nos arquivos de cadastros (Vendedores, Clientes e Produtos), devem ser enviados
+todos os dados da filial, independente das indústrias envolvidas nos projetos. Nos arquivos
+de movimentos, (Vendas e Estoque) deve ser enviado um arquivo para cada indústria.
+Solicitar à empresa terceirizada (ou setor de TI interno) responsável pelo
+desenvolvimento técnico deste layout, que seja previsto a opção da escolha da
+indústria/fornecedor no momento da geração dos arquivos de vendas e estoque, desta
+forma, caso sua distribuidora inicie algum novo projeto com outra indústria, não será
+necessária nenhuma intervenção da equipe de TI.
+Neste documento, estão detalhadas as informações a respeito do layout do arquivo de
+Clientes.
+2.
+
+DEFINIÇÕES PARA GERAÇÃO DO ARQUIVO
+
+•
+
+O arquivo deverá ser gerado no formato Flat File com separadores PIPE ( | ), utilizando o
+
+critério Delimitado para identificar as colunas no arquivo.
+•
+
+O distribuidor poderá transmitir diariamente os arquivos com os dados necessários,
+
+podendo ser enviados somente dados de inclusão ou atualização, as informações serão
+substituídas, sendo consideradas somente a última atualização no portal:
+
+Observação: Existindo a necessidade de envio diário, verificar a capacidade do sistema
+responsável pela extração agendar de forma automática a geração das informações,
+sem a necessidade de intervenção manual diária.
+•
+
+O arquivo deverá ser gerado utilizando Enconding padrão ANSI.
+
+www.neogrid.com
+
+•
+
+O padrão de quebra de linha a ser utilizado deverá ser PC/Windows.
+
+•
+
+Cada arquivo deverá conter dados de somente uma filial do distribuidor.
+
+•
+
+O arquivo deverá conter informações de todo o cadastro de clientes da filial,
+
+independente das indústrias envolvidas nos projetos com a NeoGrid.
+•
+
+Caso haja necessidade, segue sugestão de identificadores para a nomenclatura do
+
+arquivo:
+Exemplo: MascaraDocumento_99999999999999_AAAAMMDDHHMMSS.tx t
+Onde:
+“MascaraDocumento” é a identificação do tipo de documento Ex.: RELCLI
+“99999999999999” é o CNPJ da filial do distribuidor;
+“AAAAMMDDHHM MSS” é a data e hora da criação do arquivo.
+Onde:
+AAAA = ano
+MM = mês
+DD = dia
+HH = hora
+MM = minuto
+SS = sequencial
+
+2.1 Dados numéricos
+No caso de campo não obrigatório, e não havendo a disponibilidade do dado, não
+deve ser preenchido, embora o campo deva existir separado por PIPE.
+2.2 Dados Alfanuméricos
+Para os dados alfanuméricos não utilizar caracteres acentuados (tipo: Ç, Á, Ê, etc.) ou
+caracteres especiais (tipo: \, @,#, etc.). No caso de campo não obrigatório, e não havendo a
+disponibilidade do dado, não deve ser preenchido, embora o campo deva existir separado
+por PIPE.
+
+www.neogrid.com
+
+3.
+
+ESTRUTURA
+CABEÇALHO
+CLIENTES
+
+4.
+
+DESCRIÇÃO DO PADRÃO NEOGRID – CLIENTES
+
+A coluna “Tam” das tabelas a seguir evidencia o tamanho máximo do campo e a coluna
+“Dec”, quantos dígitos equivalem às casas decimais deste tamanho total.
+Os campos apontados como “S” na coluna “Obrig” deverão sempre conter
+informação, salvo casos em que ela não exista.
+
+5.
+
+Registro 01 - CABEÇALHO (uma única ocorrência)
+Tipo de Registro
+Identificação
+Versão
+Número do Relatório
+Data - Hora de Emissão do Documento
+CNPJ do Emissor do Relatório
+CNPJ do Destinatário do Relatório
+
+Obrig
+S
+S
+S
+S
+S
+S
+S
+
+Tipo Tam Dec
+AN 02
+AN 06
+AN 03
+AN 20
+DT
+12
+N
+14
+N
+14
+
+Registro 02 – CLIENTES (de uma a N ocorrências)
+Tipo de registro
+Código cliente
+CEP Cliente
+UF Cliente
+Cidade Cliente
+Endereço Cliente
+Bairro Cliente
+Nome Cliente
+Código Segmento Cliente
+Frequência Visita
+Telefone Cliente
+Contato Cliente
+
+Obrig
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+
+Tipo Tam Dec
+AN 02
+AN 20
+N
+08
+AN 02
+AN 100
+AN 100
+AN 50
+AN 100
+AN 03
+AN 02
+AN 20
+AN 50
+
+DETALHAMENTO
+
+DOS CAMPOS
+
+5.1 Cabeçalho
+Registro obrigatório que ocorre apenas uma vez no arquivo.
+TIPO REGISTRO
+Informação fixa: 01
+
+www.neogrid.com
+
+IDENTIFICAÇÃO
+Informação fixa: RELCLI
+VERSÃO
+Informação fixa: 050
+NÚMERO DO RELATÓRIO
+Número de referência do documento/mensagem, designado pelo emissor.
+DATA - HORA DE EMISSÃO DO DOCUMENTO
+Data e hora de geração do arquivo de Relatório de Clientes. O formato de data utilizado é:
+AAAAMMDDHHMM.
+CNPJ DO EMISSOR DO RELATÓRIO
+Identificação através do número do CNPJ da filial do distribuidor que está emitindo o
+Relatório de Clientes.
+CNPJ DO DESTINATÁRIO DO RELATÓRIO
+Identificação através do CNPJ da empresa que esta recebendo o Relatório de Clientes.
+Informação Fixa: 03887830009046
+
+5.2 Clientes
+Registro obrigatório que pode ocorrer N vezes, apresentando uma nova linha para
+cada cliente cadastrado.
+TIPO REGISTRO
+Informação fixa: 02
+CÓDIGO CLIENTE
+Código de identificação do cliente (CNPJ) que efetuou a compra.
+Caso a informação for CPF, devido à LGPD, encaminhar o código interno cadastrado no sistema do
+distribuidor.
+CEP CLIENTE
+Código de identificação de endereçamento postal do cliente. Deverão ser informados
+somente os números do código CEP, sem traços, nem barras.
+UF CLIENTE
+Sigla da identificação da unidade federativa do cliente.
+CIDADE CLIENTE
+Cidade do cliente.
+ENDEREÇO CLIENTE
+Caso a informação for de uma pessoa física (CPF), devido à LGPD, fixar informação
+como “Pessoa Física”.
+
+www.neogrid.com
+
+BAIRRO CLIENTE
+Bairro do cliente.
+NOME CLIENTE
+Nome da pessoa jurídica que efetuou a compra.
+Caso a informação for de uma pessoa física (CPF), devido à LGPD, fixar informação como “Pessoa
+Física”.
+CÓDIGO SEGMENTO CLIENTE
+Código da classificação de cliente por segmentação conforme tabela abaixo.
+.
+Código
+
+Descrição do Código
+
+Código
+
+Descrição do Código
+
+102 ACESSORIOS DE MODA
+
+AS – SEM QUANTIDADE DE
+CHECK OUT
+189 AS - 1 CHECK-OUT
+
+103 ACOUGUE
+
+190 AS - 2 CHECK-OUTS
+
+104 ADEGA/DIST. DE BEBIDAS
+
+191 AS - 3 CHECK-OUTS
+
+105 AEROPORTO
+
+192 AS - 4 CHECK-OUTS
+
+106 AGROPECUARIA
+
+193 AS - 5 CHECK-OUTS
+
+107 AMBULANTE
+
+194 AS - 6 CHECK-OUTS
+
+109 ARMAZEM
+110 ARTESANATOS
+
+195 AS - 7 CHECK-OUTS
+196 AS - 8 CHECK-OUTS
+
+111 ASSOCIACOES E COLONIAS
+
+197 AS - 9 CHECK-OUTS
+
+100 ACADEMIAS
+
+183
+
+198 AS - MAIS 9 CHECK-OUTS
+
+Código
+
+Descrição do Código
+
+Código
+
+Descrição do Código
+
+199 ATACADO BALCÃO
+116 ATACAREJO
+
+153 FLORICULTURA
+154 FRUTEIRA
+
+115 ATC GRANDE PORTE
+
+155 GOVERNO – Licitação
+
+113 ATC MEDIO PORTE
+
+156 GRAFICAS
+
+114 ATC PEQUENO PORTE
+
+157 HOSPITAIS
+
+118 AUTO PECAS/VEICULOS
+
+158 HOTEIS/MOTEIS
+
+119 BANCAS / QUIOSQUES
+
+159 IGREJAS/FUN ERARIAS
+
+120 BAR
+
+160 INDUSTRIA
+
+108 BAZAR
+
+161 INFORMATICA / TECNOLOGIA
+
+101 BICICLETARIAS
+
+139 INSTITUICAO DE ENSINO
+
+126 BOMBONIERE / DOCERIAS
+
+184 INSTITUIÇÕES FINANCEIRAS
+
+127 BORDADEIRA
+
+121 LANCHONETES
+
+128 BOUTIQUE
+
+162 LOCADORAS
+
+131 CAFETERIA
+
+167 LOJA DE ARTIGOS ESPORTIVOS
+
+132 CALCADOS
+133 CANTINAS
+
+129 LOJA DE BRINQUEDOS
+164 LOJA DE CONVENIENCIA
+
+www.neogrid.com
+
+134 CASH & CARRY
+
+165 LOJA DE DEPARTAMENTO
+
+135 CHURRASCARIA
+
+166 LOJA DE MOVEIS
+
+136 CINEMAS
+
+163 LOJA INFANTIL
+
+137 CLINICAS
+
+168 MERCADO E MINI MERCADO
+
+138 CLUBES
+140 CONFECCOES
+
+200 MERCEARIA
+124 OTICA
+
+141 CONSUMIDOR FINAL
+
+169 OUTROS
+
+117 COOPERATIVA
+
+170 PADARIA
+
+143 COPISTA
+150 CORPORATIVO
+
+171 PADARIA E CONFEITARIA
+123 PAPELARIA
+
+144 COZINHA INDUSTRIAL
+
+172 PASTELARIA
+
+145 DISTRIBUIDOR
+
+173 PEQUENOS ATCS E DISTS
+
+146 E-COMMERCE
+147 ENTIDADE FILANTROPICA
+
+174 PIZZARIA
+122 RESTAURANTE
+
+187 EQUIPE VENDAS - ATACADO
+
+176 RODOVIARIA
+
+188 EQUIPE VENDAS - VAREJO
+
+130 SALAO DE BELEZA
+
+Código Descrição do Código
+125 ESTUDIO FOTOGRAFICO
+
+Código Descrição do Código
+142 SERVICOS
+
+148 EVENTOS/FESTAS
+
+177 SORVETERIA
+
+149 EXPORTACAO
+
+175 TABACARIA
+
+151 FARMACIAS E DROGARIAS
+FERRAGENS/MAT DE
+152 CONSTRUÇÃO
+
+186 TELEVENDAS
+
+Código
+
+Descrição do Código
+BANCAS / QUIOSQUES
+900 (RODOVIARIA)
+BANCAS / QUIOSQUES
+901
+(AEROPORTO)
+
+112 VAREJO
+
+Código
+
+Descrição do Código
+
+907 LANCHONETES (REDES)
+908 LANCHONETES (RODOVIARIA)
+
+902 CAFETERIA (RODOVIARIA)
+
+909 LOJA DE CONVENIÊN CIA (REDES)
+910 RESTAURANTE (AEROPORTO)
+
+903 CAFETERIA (AEROPORTO)
+904 CAFETERIA (REDES)
+FARMACIAS E DROGARIAS
+905
+(REDES)
+906 LANCHONETES (AEROPORTO)
+
+www.neogrid.com
+
+911 RESTAURANTE (REDES)
+912 RESTAURANTE (RODOVIARIA)
+913 CATERING
+
+FREQUÊNCIA VISITA
+Indica a frequência de visita aplicada ao cliente, conforme estrutura do distribuidor.
+O campo deve ser preenchido com os códigos abaixo:
+Código
+
+Descrição do Código
+
+01
+
+Mensal
+
+02
+
+Quinzenal
+
+03
+
+Semanal
+
+04
+
+Outros
+
+TELEFONE CLIENTE
+Telefone do cliente que efetuou a compra.
+Caso a informação for de uma pessoa física (CPF), devido à LGPD, fixar informação como “Pessoa
+Física”.
+CONTATO CLIENTE
+Contato do cliente que efetuou a compra.
+Caso a informação for de uma pessoa física (CPF), devido à LGPD, fixar informação como
+“Pessoa Física”..
+
+www.neogrid.com
+
+

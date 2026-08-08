@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lançamentos por Nota</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 84% 4.9%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
+        }
+
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --primary: 210 40% 98%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 212.7 26.8% 83.9%;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+
+        .view-screen {
+            transition: opacity 0.25s ease-in-out;
+        }
+
+        /* PARCEIROS */
+        .parceiro-card {
+            transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+        }
+
+        .parceiro-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .avatar-circle {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        /* CRITÉRIOS */
+        .criterio-card {
+            background: hsl(var(--background));
+            border: 1px solid hsl(var(--border));
+            border-left: 4px solid hsl(217, 91%, 60%);
+            border-radius: 10px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            transition: box-shadow 0.15s, transform 0.1s, border-color 0.15s;
+        }
+
+        .criterio-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .criterio-card.manual {
+            border-left-color: hsl(38, 92%, 50%);
+        }
+
+        .criterio-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .criterio-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: hsl(217, 91%, 95%);
+            color: hsl(217, 91%, 40%);
+        }
+
+        .dark .criterio-icon {
+            background: hsl(217, 50%, 20%);
+            color: hsl(217, 91%, 75%);
+        }
+
+        .criterio-card.manual .criterio-icon {
+            background: hsl(38, 92%, 93%);
+            color: hsl(38, 80%, 35%);
+        }
+
+        .dark .criterio-card.manual .criterio-icon {
+            background: hsl(38, 50%, 18%);
+            color: hsl(38, 92%, 65%);
+        }
+
+        .criterio-nome {
+            font-size: 13px;
+            font-weight: 600;
+            color: hsl(var(--foreground));
+            line-height: 1.3;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .criterio-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            white-space: nowrap;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        .badge-criterio {
+            background: hsl(217, 91%, 95%);
+            color: hsl(217, 91%, 30%);
+        }
+
+        .dark .badge-criterio {
+            background: hsl(217, 50%, 20%);
+            color: hsl(217, 91%, 75%);
+        }
+
+        .badge-manual {
+            background: hsl(38, 92%, 93%);
+            color: hsl(38, 80%, 30%);
+        }
+
+        .dark .badge-manual {
+            background: hsl(38, 50%, 18%);
+            color: hsl(38, 92%, 65%);
+        }
+
+        .criterio-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .criterio-row-label {
+            color: hsl(var(--muted-foreground));
+        }
+
+        .criterio-row-value {
+            font-weight: 500;
+            font-family: 'Courier New', monospace;
+        }
+
+        .criterio-total-row {
+            border-top: 1px dashed hsl(var(--border));
+            padding-top: 9px;
+            margin-top: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .criterio-total-row>span:first-child {
+            color: hsl(var(--muted-foreground));
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 0.05em;
+        }
+
+        .criterio-total-row .value {
+            color: hsl(142, 50%, 30%);
+            font-size: 15px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .dark .criterio-total-row .value {
+            color: hsl(142, 50%, 70%);
+        }
+
+        /* RESUMO CRITÉRIOS */
+        .criterios-summary-bar {
+            background: hsl(142, 50%, 22%);
+            border: 1px solid hsl(142, 50%, 18%);
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .dark .criterios-summary-bar {
+            background: hsl(142, 40%, 18%);
+            border-color: hsl(142, 40%, 25%);
+        }
+
+        /* KPI CARDS */
+        .kpi-card {
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .kpi-card-label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .kpi-card-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
+            line-height: 1;
+            margin-top: 4px;
+        }
+
+        .kpi-card-sub {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 2px;
+        }
+
+        .kpi-entrada {
+            background: #166534;
+            border: 2px solid #14532d;
+            color: #ffffff;
+        }
+
+        .kpi-entrada::before {
+            background: #4ade80;
+        }
+
+        .kpi-entrada .kpi-icon {
+            color: #86efac;
+        }
+
+        .kpi-saida {
+            background: #7f1d1d;
+            border: 2px solid #6b1a1a;
+            color: #ffffff;
+        }
+
+        .kpi-saida::before {
+            background: #f87171;
+        }
+
+        .kpi-saida .kpi-icon {
+            color: #fca5a5;
+        }
+
+        .kpi-saldo {
+            background: #1e3a8a;
+            border: 2px solid #1e3070;
+            color: #ffffff;
+        }
+
+        .kpi-saldo::before {
+            background: #60a5fa;
+        }
+
+        .kpi-saldo .kpi-icon {
+            color: #93c5fd;
+        }
+
+        /* TABELA */
+        .items-table-wrapper {
+            border: 1px solid hsl(var(--border));
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+        }
+
+        #notas-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        #notas-table thead {
+            background: #1e293b;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        #notas-table thead th {
+            padding: 13px 16px;
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        #notas-table thead th:first-child {
+            color: #e2e8f0;
+            padding-left: 20px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        #notas-table thead th:not(:first-child) {
+            text-align: right;
+        }
+
+        #notas-table thead th:last-child {
+            padding-right: 20px;
+        }
+
+        #notas-table tbody tr {
+            transition: background 0.12s;
+            border-bottom: 1px solid hsl(var(--border));
+        }
+
+        #notas-table tbody tr:nth-child(odd) {
+            background: hsl(var(--background));
+        }
+
+        #notas-table tbody tr:nth-child(even) {
+            background: hsl(210, 40%, 98%);
+        }
+
+        .dark #notas-table tbody tr:nth-child(even) {
+            background: hsl(217, 25%, 8%);
+        }
+
+        #notas-table tbody tr:hover {
+            background: hsl(217, 91%, 97%) !important;
+        }
+
+        .dark #notas-table tbody tr:hover {
+            background: hsl(217, 32%, 15%) !important;
+        }
+
+        #notas-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .table-cell-produto {
+            padding: 12px 16px 12px 20px;
+            font-weight: 600;
+            color: hsl(var(--foreground));
+            border-left: 4px solid transparent;
+            transition: border-color 0.12s;
+        }
+
+        #notas-table tbody tr:hover .table-cell-produto {
+            border-left-color: #3b82f6;
+        }
+
+        .table-cell-num {
+            padding: 12px 16px;
+            text-align: right;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 13px;
+            color: hsl(var(--foreground));
+        }
+
+        .table-cell-num:last-child {
+            padding-right: 20px;
+        }
+
+        .perc-cell {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .perc-bar-bg {
+            width: 48px;
+            height: 5px;
+            background: hsl(var(--border));
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .perc-bar-fill {
+            height: 100%;
+            background: #3b82f6;
+            border-radius: 3px;
+            min-width: 2px;
+        }
+
+        #notas-table tfoot tr {
+            background: #1e293b;
+        }
+
+        #notas-table tfoot td {
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #e2e8f0;
+            text-align: right;
+        }
+
+        #notas-table tfoot td:first-child {
+            padding-left: 20px;
+            text-align: left;
+            font-size: 11px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #94a3b8;
+            border-left: 4px solid #3b82f6;
+        }
+
+        #notas-table tfoot td:last-child {
+            padding-right: 20px;
+        }
+
+        /* GRÁFICO */
+        .chart-card {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 20px 24px;
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .chart-title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .chart-eyebrow {
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin: 0;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .chart-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .chart-legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .chart-legend-line {
+            width: 18px;
+            height: 3px;
+            border-radius: 2px;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .chart-canvas-wrapper {
+            position: relative;
+            height: 280px;
+            width: 100%;
+        }
+
+        .chart-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #1e293b;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chart-footer-left {
+            font-size: 11px;
+            color: #475569;
+        }
+
+        .chart-footer-right {
+            font-size: 11px;
+            color: #475569;
+            font-family: 'Courier New', monospace;
+        }
+
+        .chart-pico-value {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .chart-axis-label-left {
+            font-size: 10px;
+            color: #22c55e;
+            letter-spacing: 0.04em;
+        }
+
+        .chart-axis-label-right {
+            font-size: 10px;
+            color: #60a5fa;
+            letter-spacing: 0.04em;
+            text-align: right;
+        }
+
+        .chart-axis-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+
+<body class="font-sans antialiased">
+
+    <div id="loader" class="absolute inset-0 bg-white/80 dark:bg-black/80 z-50 flex items-center justify-center hidden">
+        <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+            viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+            </path>
+        </svg>
+    </div>
+
+    <div id="main-container" class="w-full h-full p-4 sm:p-6 lg:p-8 box-border">
+
+        <!-- PASSO 1: Seleção de Parceiros -->
+        <div id="parceiros-view" class="view-screen h-full flex flex-col opacity-0">
+            <header class="mb-6">
+                <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Seleção de Parceiro</h1>
+                <p class="text-muted-foreground mt-1">Escolha um parceiro para ver os lançamentos.</p>
+            </header>
+            <div id="parceiros-grid"
+                class="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 overflow-y-auto content-start">
+            </div>
+        </div>
+
+        <!-- PASSO 2: Seleção de Mês -->
+        <div id="meses-view" class="view-screen h-full flex-col opacity-0 hidden">
+            <header class="mb-6 flex items-center">
+                <button id="back-to-parceiros"
+                    class="mr-4 p-2 rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="h-5 w-5">
+                        <path d="M19 12H5" />
+                        <path d="m12 19-7-7 7-7" />
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-bold tracking-tight" id="meses-title"></h1>
+                    <p class="text-muted-foreground mt-1">Selecione o período desejado.</p>
+                </div>
+            </header>
+            <div id="meses-grid"
+                class="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 overflow-y-auto content-start">
+            </div>
+        </div>
+
+        <!-- PASSO 3: Tabela de Notas -->
+        <div id="notas-view" class="view-screen h-full flex flex-col opacity-0 hidden">
+            <header class="mb-5 flex items-center justify-between flex-wrap gap-3">
+                <div class="flex items-center">
+                    <button id="back-to-meses"
+                        class="mr-4 p-2 rounded-md hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="h-5 w-5">
+                            <path d="M19 12H5" />
+                            <path d="m12 19-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <div>
+                        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Lançamentos por Nota</h1>
+                        <p class="text-muted-foreground mt-1" id="notas-subtitle"></p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="view-items-btn"
+                        class="inline-flex items-center gap-2 bg-amber-500 text-white rounded-md px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="8" x2="21" y1="6" y2="6" />
+                            <line x1="8" x2="21" y1="12" y2="12" />
+                            <line x1="8" x2="21" y1="18" y2="18" />
+                            <line x1="3" x2="3.01" y1="6" y2="6" />
+                            <line x1="3" x2="3.01" y1="12" y2="12" />
+                            <line x1="3" x2="3.01" y1="18" y2="18" />
+                        </svg>
+                        Ver Itens Movimentados
+                    </button>
+                    <button id="add-manual-btn"
+                        class="inline-flex items-center gap-2 bg-indigo-600 text-white rounded-md px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14" />
+                            <path d="M12 5v14" />
+                        </svg>
+                        Lançamento Manual
+                    </button>
+                    <button id="export-excel-btn"
+                        class="inline-flex items-center gap-2 bg-green-600 text-white rounded-md px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                            <polyline points="16 6 12 2 8 6" />
+                            <line x1="12" x2="12" y1="2" y2="15" />
+                        </svg>
+                        Exportar Itens
+                    </button>
+                    <button id="export-notas-btn"
+                        class="inline-flex items-center gap-2 bg-teal-600 text-white rounded-md px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                            <polyline points="16 6 12 2 8 6" />
+                            <line x1="12" x2="12" y1="2" y2="15" />
+                        </svg>
+                        Exportar Notas
+                    </button>
+                    <button id="generate-pdf-btn"
+                        class="inline-flex items-center gap-2 bg-blue-600 text-white rounded-md px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" x2="8" y1="13" y2="13" />
+                            <line x1="16" x2="8" y1="17" y2="17" />
+                            <line x1="10" x2="8" y1="9" y2="9" />
+                        </svg>
+                        Gerar PDF
+                    </button>
+                </div>
+            </header>
+
+            <!-- KPIs -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                <div id="kpi-saldo-inicial-card" class="kpi-card"
+                    style="background:#6d28d9; border:2px solid #5b21b6; color:#ffffff;">
+                    <div class="kpi-card-label"><svg class="kpi-icon" xmlns="http://www.w3.org/2000/svg" width="15"
+                            height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                            style="color:#ddd6fe;">
+                            <path d="m16 16 2 2 4-4" />
+                            <path
+                                d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14" />
+                            <path d="M16.5 9.4 7.55 4.24" />
+                            <path d="m3.29 7 8.55 5.06a2 2 0 0 0 2.11-.1L18 9" />
+                        </svg>Saldo Inicial do Período</div>
+                    <p id="kpi-saldo-inicial" class="kpi-card-value">0,00 Kg</p>
+                    <p class="kpi-card-sub">Saldo no início do período selecionado</p>
+                </div>
+                <div class="kpi-card kpi-entrada">
+                    <div class="kpi-card-label"><svg class="kpi-icon" xmlns="http://www.w3.org/2000/svg" width="15"
+                            height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                            <polyline points="17 6 23 6 23 12" />
+                        </svg>Entradas (ERP)</div>
+                    <p id="kpi-entradas" class="kpi-card-value">0,00 Kg</p>
+                    <p class="kpi-card-sub">Total de peso recebido no período</p>
+                </div>
+                <div class="kpi-card kpi-saida">
+                    <div class="kpi-card-label"><svg class="kpi-icon" xmlns="http://www.w3.org/2000/svg" width="15"
+                            height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
+                            <polyline points="17 18 23 18 23 12" />
+                        </svg>Saídas (ERP)</div>
+                    <p id="kpi-saidas" class="kpi-card-value">0,00 Kg</p>
+                    <p class="kpi-card-sub">Total de peso expedido no período</p>
+                </div>
+                <div class="kpi-card kpi-saldo">
+                    <div class="kpi-card-label"><svg class="kpi-icon" xmlns="http://www.w3.org/2000/svg" width="15"
+                            height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="12" x2="12" y1="2" y2="22" />
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                        </svg>Saldo (ERP)</div>
+                    <p id="kpi-saldo" class="kpi-card-value">0,00 Kg</p>
+                    <p class="kpi-card-sub">Saldo atual em estoque</p>
+                </div>
+                <div id="kpi-saldo-historico-card" class="kpi-card"
+                    style="background:#4c1d95;border:2px solid #3b0764;color:#ffffff;">
+                    <div class="kpi-card-label"><svg class="kpi-icon" xmlns="http://www.w3.org/2000/svg" width="15"
+                            height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                            style="color:#c4b5fd;">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                            <path d="M3 3v5h5" />
+                        </svg>Saldo Líquido (Histórico)</div>
+                    <p id="kpi-saldo-historico" class="kpi-card-value">0,00 Kg</p>
+                    <p class="kpi-card-sub">Volume total armazenado até o período</p>
+                </div>
+                <div id="kpi-pico-periodo-card" class="kpi-card"
+                    style="background:#b45309;border:2px solid #92400e;color:#ffffff;">
+                    <div class="kpi-card-label"><svg class="kpi-icon" xmlns="http://www.w3.org/2000/svg" width="15"
+                            height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                            style="color:#fcd34d;">
+                            <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+                        </svg>Pico do Período</div>
+                    <p id="kpi-pico-periodo" class="kpi-card-value">0,00 Kg</p>
+                    <p id="kpi-pico-data" class="kpi-card-sub">Maior saldo atingido no período</p>
+                </div>
+            </div>
+
+            <!-- Gráfico de Evolução de Saldo — EIXO DUPLO -->
+            <div id="chart-container" class="chart-card mb-6 hidden">
+                <div class="chart-header">
+                    <div class="chart-title-group">
+                        <p class="chart-eyebrow">Evolução do Saldo</p>
+                        <h3 class="chart-title" id="chart-period-label">Período selecionado</h3>
+                    </div>
+                    <div class="chart-legend">
+                        <span class="chart-legend-item">
+                            <span class="chart-legend-dot" style="background:#22c55e;"></span>Entrada
+                        </span>
+                        <span class="chart-legend-item">
+                            <span class="chart-legend-dot" style="background:#f87171;"></span>Saída
+                        </span>
+                        <span class="chart-legend-item">
+                            <span class="chart-legend-line" style="background:#60a5fa;"></span>Saldo acumulado
+                        </span>
+                        <span class="chart-legend-item">
+                            <span
+                                style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;flex-shrink:0;border:2px solid #fbbf24;"></span>Pico
+                        </span>
+                    </div>
+                </div>
+                <!-- Labels dos eixos -->
+                <div class="chart-axis-row">
+                    <span class="chart-axis-label-left">← Mov. diária (Kg)</span>
+                    <span class="chart-axis-label-right">Saldo acumulado (Kg) →</span>
+                </div>
+                <div class="chart-canvas-wrapper">
+                    <canvas id="saldoChart" role="img"
+                        aria-label="Gráfico combinado: barras de entrada e saída diárias com linha de saldo acumulado"></canvas>
+                </div>
+                <div class="chart-footer">
+                    <span class="chart-footer-left">Base: ERP · Dados do período selecionado</span>
+                    <span class="chart-footer-right">Pico: <span id="chart-pico-label"
+                            class="chart-pico-value">—</span></span>
+                </div>
+            </div>
+
+            <!-- Critérios Vinculados -->
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-base font-semibold">Critérios Vinculados</h3>
+                    <span class="text-xs text-muted-foreground">Base: Pico do período</span>
+                </div>
+                <div id="criterios-projetados-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+                <div id="criterios-projetados-empty-state"
+                    class="hidden rounded-lg border border-dashed p-8 text-center text-muted-foreground text-sm">Nenhum
+                    critério projetado para o período.</div>
+            </div>
+
+            <!-- Lançamentos Manuais -->
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-base font-semibold">Lançamentos Manuais</h3>
+                </div>
+                <div id="lancamentos-manuais-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+                <div id="lancamentos-manuais-empty-state"
+                    class="hidden rounded-lg border border-dashed p-8 text-center text-muted-foreground text-sm">Nenhum
+                    lançamento manual encontrado para o período.</div>
+            </div>
+
+            <!-- Total Projetado -->
+            <div class="mb-6">
+                <div id="criterios-summary" class="criterios-summary-bar mt-3 hidden">
+                    <span class="text-sm font-semibold" style="color:#d1fae5">Total Projetado</span>
+                    <span id="criterios-total-val" class="text-base font-bold font-mono" style="color:#ffffff">R$
+                        0,00</span>
+                </div>
+            </div>
+
+            <!-- Tabela de Itens -->
+            <div class="flex items-center justify-between mb-3 border-b border-border pb-2">
+                <h3 class="text-base font-semibold text-foreground">Resumo de Itens Movimentados</h3><span
+                    id="table-row-count"
+                    class="text-xs text-muted-foreground bg-secondary rounded-full px-3 py-1 font-medium"></span>
+            </div>
+            <div class="flex-1 items-table-wrapper overflow-auto">
+                <table class="w-full" id="notas-table">
+                    <thead>
+                        <tr>
+                            <th class="text-left">Produto</th>
+                            <th>Entrada (Kg)</th>
+                            <th>Saída (Kg)</th>
+                            <th>Saldo Líquido (Kg)</th>
+                            <th>Saldo Real (Kg)</th>
+                            <th>Valor Total (R$)</th>
+                            <th>Representação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="notas-table-body"></tbody>
+                    <tfoot id="notas-table-foot" class="hidden">
+                        <tr>
+                            <td>Total geral</td>
+                            <td id="tfoot-entrada">—</td>
+                            <td id="tfoot-saida">—</td>
+                            <td id="tfoot-saldo">—</td>
+                            <td id="tfoot-saldo-real">—</td>
+                            <td id="tfoot-valor">—</td>
+                            <td id="tfoot-perc">—</td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <div id="notas-empty-state"
+                    class="hidden p-10 flex items-center justify-center text-muted-foreground text-sm"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MITRA_UPDATE_EVENT_NAME = 'mitra-update-lancamentos-view';
+        function updateMitra() {
+            document.body.dispatchEvent(new CustomEvent(MITRA_UPDATE_EVENT_NAME));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const loader = document.getElementById('loader');
+            const views = {
+                parceiros: document.getElementById('parceiros-view'),
+                meses: document.getElementById('meses-view'),
+                notas: document.getElementById('notas-view')
+            };
+            const grids = {
+                parceiros: document.getElementById('parceiros-grid'),
+                meses: document.getElementById('meses-grid')
+            };
+            const tableBody = document.getElementById('notas-table-body');
+            const emptyStateContainer = document.getElementById('notas-empty-state');
+
+            let saldoChartInstance = null;
+            let notasRenderToken = 0;
+            let state = {
+                parceiroId: null, parceiroNome: null,
+                mesId: null, mesNome: null,
+                exportProdutos: [], exportCriterios: []
+            };
+
+            const showLoader = () => loader.classList.remove('hidden');
+            const hideLoader = () => loader.classList.add('hidden');
+
+            const formatCurrency = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseFloat(v) || 0);
+            const formatTon = (v) => (parseFloat(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) + ' Ton';
+            const formatKg = (v) => (parseFloat(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Kg';
+            const formatPercentage = (v) => (parseFloat(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %';
+
+            const AVATAR_PALETTES = [
+                { bg: 'hsl(217,91%,93%)', fg: 'hsl(217,91%,25%)' },
+                { bg: 'hsl(142,76%,92%)', fg: 'hsl(142,50%,22%)' },
+                { bg: 'hsl(38,92%,92%)', fg: 'hsl(38,80%,28%)' },
+                { bg: 'hsl(330,80%,93%)', fg: 'hsl(330,60%,28%)' },
+                { bg: 'hsl(271,81%,93%)', fg: 'hsl(271,60%,28%)' },
+                { bg: 'hsl(174,62%,90%)', fg: 'hsl(174,50%,22%)' },
+            ];
+            const getInitials = (n) => n.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+            const getPalette = (i) => AVATAR_PALETTES[i % AVATAR_PALETTES.length];
+
+            const navigateTo = async (viewName) => {
+                showLoader();
+                Object.values(views).forEach(v => v.classList.add('hidden', 'opacity-0'));
+                try {
+                    if (viewName === 'parceiros') await fetchAndRenderParceiros();
+                    else if (viewName === 'meses') await fetchAndRenderMeses();
+                    else if (viewName === 'notas') await fetchAndRenderNotas();
+                    views[viewName].classList.remove('hidden');
+                    setTimeout(() => views[viewName].classList.remove('opacity-0'), 50);
+                } catch (e) { console.error(e); } finally { hideLoader(); }
+            };
+
+            const createEmptyState = (msg) => `<div class="col-span-full flex items-center justify-center h-full text-muted-foreground p-10 text-sm">${msg}</div>`;
+
+            const fetchAndRenderParceiros = async () => {
+                const result = await queryMitra({ query: componentData.queryParceiros });
+                grids.parceiros.innerHTML = '';
+                if (!result?.data?.length) { grids.parceiros.innerHTML = createEmptyState("Nenhum parceiro encontrado."); return; }
+                const hdr = {
+                    id: result.headers.findIndex(h => h.name.toUpperCase() === 'ID'),
+                    nome: result.headers.findIndex(h => h.name.toUpperCase() === 'NOME'),
+                };
+                result.data.forEach((row, idx) => {
+                    const id = row[hdr.id], nome = row[hdr.nome];
+                    grids.parceiros.innerHTML += `
+                        <div data-id="${id}" data-name="${nome}" class="parceiro-card flex flex-col items-center justify-center p-5 text-center border rounded-xl cursor-pointer bg-background hover:border-primary">
+                            <div class="avatar-circle mb-3" style="background:${getPalette(idx).bg};color:${getPalette(idx).fg}">${getInitials(nome)}</div>
+                            <span class="font-medium text-sm leading-tight text-foreground">${nome}</span>
+                        </div>`;
+                });
+            };
+
+            const fetchAndRenderMeses = async () => {
+                document.getElementById('meses-title').textContent = state.parceiroNome;
+                const result = await queryMitra({ query: componentData.queryMeses });
+                grids.meses.innerHTML = '';
+                if (!result?.data?.length) { grids.meses.innerHTML = createEmptyState("Nenhum período encontrado para este parceiro."); return; }
+                const hdr = {
+                    id: result.headers.findIndex(h => h.name.toUpperCase() === 'ID'),
+                    periodo: result.headers.findIndex(h => h.name.toUpperCase() === 'PERIODO'),
+                };
+                result.data.forEach(row => {
+                    grids.meses.innerHTML += `
+                        <div data-id="${row[hdr.id]}" data-name="${row[hdr.periodo]}" class="mes-card flex flex-col items-center justify-center p-5 text-center border rounded-xl cursor-pointer bg-background hover:border-primary hover:shadow-sm transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-8 w-8 mb-2 text-blue-500"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                            <span class="font-medium text-sm text-foreground leading-tight">${row[hdr.periodo]}</span>
+                        </div>`;
+                });
+            };
+
+            const fetchAndRenderNotas = async () => {
+                /* Token de renderização: se outra execução começar (ex.: evento de update disparado
+                   em duplicidade após salvar lançamento manual), a execução antiga vira obsoleta
+                   e para de escrever no DOM — evita cards duplicados por corrida. */
+                const renderToken = ++notasRenderToken;
+                const isStale = () => renderToken !== notasRenderToken;
+
+                document.getElementById('notas-subtitle').textContent = `${state.parceiroNome} — ${state.mesNome}`;
+                state.exportProdutos = []; state.exportCriterios = [];
+
+                /* KPIs */
+                try {
+                    const r = await queryMitra({ query: componentData.queryTotaisErp });
+                    if (isStale()) return;
+                    const d = r?.data?.[0] || [];
+                    const h = {
+                        entradas: r.headers.findIndex(h => h.name.toUpperCase() === 'ENTRADAS'),
+                        saidas: r.headers.findIndex(h => h.name.toUpperCase() === 'SAIDAS'),
+                        saldo: r.headers.findIndex(h => h.name.toUpperCase() === 'SALDO'),
+                    };
+                    document.getElementById('kpi-entradas').textContent = formatKg(d[h.entradas]);
+                    document.getElementById('kpi-saidas').textContent = formatKg(d[h.saidas]);
+                    document.getElementById('kpi-saldo').textContent = formatKg(d[h.saldo]);
+                } catch (e) { console.error("Erro ao buscar totais ERP:", e); }
+
+                try {
+                    const r = await queryMitra({ query: componentData.querySaldoInicial });
+                    if (isStale()) return;
+                    document.getElementById('kpi-saldo-inicial').textContent = formatKg(r?.data?.[0]?.[0]);
+                } catch (e) { console.error("Erro ao buscar saldo inicial:", e); }
+
+                try {
+                    const r = await queryMitra({ query: componentData.querySaldoHistorico });
+                    if (isStale()) return;
+                    document.getElementById('kpi-saldo-historico').textContent = formatKg(r?.data?.[0]?.[0]);
+                } catch (e) { console.error("Erro ao buscar saldo histórico:", e); }
+
+                try {
+                    const r = await queryMitra({ query: componentData.queryPicoPeriodo });
+                    if (isStale()) return;
+                    if (r?.data?.[0]) {
+                        const [v, d] = r.data[0];
+                        document.getElementById('kpi-pico-periodo').textContent = formatKg(v);
+                        document.getElementById('kpi-pico-data').textContent = d === 'Saldo Inicial' ? d : `Atingido em: ${d}`;
+                    }
+                } catch (e) { console.error("Erro ao buscar pico do período:", e); }
+
+                /* ===== GRÁFICO EIXO DUPLO ===== */
+                const chartContainer = document.getElementById('chart-container');
+                try {
+                    const chartResult = await queryMitra({ query: componentData.queryEvolucaoSaldo });
+                    if (isStale()) return;
+                    if (chartResult?.data?.length > 0) {
+                        const H = {
+                            dia: chartResult.headers.findIndex(h => h.name.toUpperCase() === 'DIA'),
+                            saldo: chartResult.headers.findIndex(h => h.name.toUpperCase() === 'SALDO'),
+                            entrada: chartResult.headers.findIndex(h => h.name.toUpperCase() === 'ENTRADA'),
+                            saida: chartResult.headers.findIndex(h => h.name.toUpperCase() === 'SAIDA'),
+                            saldoLiquido: chartResult.headers.findIndex(h => h.name.toUpperCase() === 'SALDO_LIQUIDO'),
+                            isPico: chartResult.headers.findIndex(h => h.name.toUpperCase() === 'IS_PICO'),
+                        };
+
+                        const labels = chartResult.data.map(r => r[H.dia]);
+                        const saldoData = chartResult.data.map(r => parseFloat(r[H.saldo] || 0));
+                        const entradaData = chartResult.data.map(r => parseFloat(r[H.entrada] || 0));
+                        const saidaData = chartResult.data.map(r => parseFloat(r[H.saida] || 0));
+                        const saldoLiquidoData = chartResult.data.map(r => parseFloat(r[H.saldoLiquido] || 0));
+
+                        const picoIdx = chartResult.data.findIndex(r => r[H.isPico] == '1');
+                        const picoIdxFinal = picoIdx >= 0 ? picoIdx : saldoData.indexOf(Math.max(...saldoData));
+
+                        const pointRadius = saldoData.map((_, i) => i === picoIdxFinal ? 7 : 3);
+                        const pointBorderW = saldoData.map((_, i) => i === picoIdxFinal ? 2.5 : 1.5);
+                        const pointBgColor = saldoData.map((_, i) => i === picoIdxFinal ? '#f59e0b' : '#60a5fa');
+                        const pointBorderColor = saldoData.map((_, i) => i === picoIdxFinal ? '#fbbf24' : '#3b82f6');
+                        const pointHoverR = saldoData.map((_, i) => i === picoIdxFinal ? 9 : 5);
+
+                        document.getElementById('chart-period-label').textContent = state.mesNome || 'Período selecionado';
+                        document.getElementById('chart-pico-label').textContent = formatKg(saldoData[picoIdxFinal]);
+
+                        if (saldoChartInstance) saldoChartInstance.destroy();
+
+                        const ctx = document.getElementById('saldoChart').getContext('2d');
+                        saldoChartInstance = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels,
+                                datasets: [
+                                    { type: 'bar', label: 'Entrada', data: entradaData, backgroundColor: 'rgba(34,197,94,0.85)', borderColor: '#16a34a', borderWidth: 1, borderRadius: 4, borderSkipped: false, yAxisID: 'yMov', order: 3, barPercentage: 0.55, categoryPercentage: 0.7 },
+                                    { type: 'bar', label: 'Saída', data: saidaData, backgroundColor: 'rgba(248,113,113,0.85)', borderColor: '#dc2626', borderWidth: 1, borderRadius: 4, borderSkipped: false, yAxisID: 'yMov', order: 3, barPercentage: 0.55, categoryPercentage: 0.7 },
+                                    { type: 'line', label: 'Saldo', data: saldoData, borderColor: '#60a5fa', backgroundColor: 'rgba(59,130,246,0.08)', fill: true, tension: 0.35, borderWidth: 2.5, pointRadius: pointRadius, pointBackgroundColor: pointBgColor, pointBorderColor: pointBorderColor, pointBorderWidth: pointBorderW, pointHoverRadius: pointHoverR, yAxisID: 'ySaldo', order: 1 }
+                                ]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false, animation: { duration: 550, easing: 'easeOutQuart' }, interaction: { mode: 'index', intersect: false },
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: {
+                                        backgroundColor: '#1e293b', borderColor: '#334155', borderWidth: 1, titleColor: '#94a3b8', bodyColor: '#f1f5f9', titleFont: { size: 12, weight: '600' }, bodyFont: { size: 12, family: 'Courier New', weight: '500' }, padding: 12, cornerRadius: 8, displayColors: true, boxWidth: 10, boxHeight: 10,
+                                        callbacks: {
+                                            label: (ctx) => {
+                                                const v = ctx.parsed.y || 0;
+                                                const isPicoTooltip = ctx.dataset.label === 'Saldo' && ctx.dataIndex === picoIdxFinal;
+                                                const label = ctx.dataset.label + ': ' + formatKg(v);
+                                                return isPicoTooltip ? '⭐ ' + label + ' (Pico)' : label;
+                                            },
+                                            footer: (items) => {
+                                                const idx = items[0].dataIndex;
+                                                const liq = saldoLiquidoData[idx];
+                                                if (liq !== 0) return `Mov. líquida: ${formatKg(liq)}`;
+                                                return null;
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    x: { grid: { display: false }, border: { color: '#1e293b' }, ticks: { color: '#64748b', font: { size: 11 }, maxRotation: 45, autoSkip: true, maxTicksLimit: 12 } },
+                                    yMov: { type: 'linear', position: 'left', beginAtZero: true, grid: { color: 'rgba(51,65,85,0.5)', lineWidth: 1 }, border: { dash: [4, 4], color: 'transparent' }, ticks: { color: '#4ade80', font: { size: 10 }, callback: (v) => v.toLocaleString('pt-BR', { maximumFractionDigits: 0, notation: 'compact' }) + ' Kg' } },
+                                    ySaldo: { type: 'linear', position: 'right', beginAtZero: false, grid: { drawOnChartArea: false }, border: { color: '#1e3a5f' }, ticks: { color: '#60a5fa', font: { size: 10 }, callback: (v) => v.toLocaleString('pt-BR', { maximumFractionDigits: 0, notation: 'compact' }) + ' Kg' } }
+                                },
+                                layout: { padding: { top: 8, right: 4 } }
+                            }
+                        });
+                        chartContainer.classList.remove('hidden');
+                    } else { chartContainer.classList.add('hidden'); }
+                } catch (err) { console.error("Erro ao renderizar gráfico:", err); chartContainer.classList.add('hidden'); }
+
+                /* Critérios */
+                const summaryBar = document.getElementById('criterios-summary');
+                const projetadosGrid = document.getElementById('criterios-projetados-grid');
+                const projetadosEmpty = document.getElementById('criterios-projetados-empty-state');
+                const manuaisGrid = document.getElementById('lancamentos-manuais-grid');
+                const manuaisEmpty = document.getElementById('lancamentos-manuais-empty-state');
+                let somaCriterios = 0, hasProjetados = false, hasManuais = false;
+                let projetadosHtml = '', manuaisHtml = '';
+
+                const ICONE_CRITERIO = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>`;
+                const ICONE_MANUAL = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>`;
+
+                try {
+                    const r = await queryMitra({ query: componentData.queryCriteriosProjetados });
+                    if (isStale()) return;
+                    if (r?.data?.length > 0) {
+                        hasProjetados = true;
+                        const cH = { criterio: 0, tipoValor: 1, tipoCalculo: 2, valorUnitario: 3, quantidadeBase: 4, valorTotal: 5 };
+                        r.data.forEach(row => {
+                            const vt = parseFloat(row[cH.valorTotal]) || 0;
+                            somaCriterios += vt;
+                            const isPerc = row[cH.tipoValor] === 'Percentual';
+                            const isValorDeclarado = row[cH.tipoCalculo] === 'Valor Declarado';
+                            let valorUnitarioDisplay = isPerc ? `${(parseFloat(row[cH.valorUnitario]) || 0).toLocaleString('pt-BR')}%` : `${formatCurrency(row[cH.valorUnitario])}/Ton`;
+                            let baseLabelDisplay = `${isPerc ? 'Base (Valor)' : 'Quantidade'} (${row[cH.tipoCalculo]})`;
+                            let baseValueDisplay = isPerc ? formatCurrency(row[cH.quantidadeBase]) : formatTon(row[cH.quantidadeBase]);
+                            if (isValorDeclarado) {
+                                valorUnitarioDisplay = `${(parseFloat(row[cH.valorUnitario]) || 0).toLocaleString('pt-BR')}%`;
+                                baseLabelDisplay = `Quantidade (Valor Declarado)`;
+                                baseValueDisplay = formatCurrency(row[cH.quantidadeBase]);
+                            }
+                            projetadosHtml += `<div class="criterio-card">
+                                <div class="criterio-card-header">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <div class="criterio-icon">${ICONE_CRITERIO}</div>
+                                        <div class="criterio-nome" title="${row[cH.criterio] || ''}">${row[cH.criterio] || '—'}</div>
+                                    </div>
+                                    <span class="criterio-badge badge-criterio">Critério</span>
+                                </div>
+                                <div class="criterio-row"><span class="criterio-row-label">Valor unitário</span><span class="criterio-row-value">${valorUnitarioDisplay}</span></div>
+                                <div class="criterio-row"><span class="criterio-row-label">${baseLabelDisplay}</span><span class="criterio-row-value">${baseValueDisplay}</span></div>
+                                <div class="criterio-total-row"><span>Total</span><span class="value">${formatCurrency(vt)}</span></div></div>`;
+                        });
+                    }
+                } catch (e) { console.error("Erro ao buscar critérios projetados:", e); }
+
+                try {
+                    const r = await queryMitra({ query: componentData.queryManuais });
+                    if (isStale()) return;
+                    if (r?.data?.length > 0) {
+                        hasManuais = true;
+                        const mH = { id: 0, criterio: 1, valorTotal: 4 };
+                        r.data.forEach(row => {
+                            const vt = parseFloat(row[mH.valorTotal]) || 0;
+                            somaCriterios += vt;
+                            manuaisHtml += `<div class="criterio-card manual">
+                                <div class="criterio-card-header">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <div class="criterio-icon">${ICONE_MANUAL}</div>
+                                        <div class="criterio-nome" title="${row[mH.criterio] || ''}">${row[mH.criterio] || '—'}</div>
+                                    </div>
+                                    <div class="flex items-center flex-shrink-0"><span class="criterio-badge badge-manual">Manual</span>
+                                    <button class="delete-manual-btn text-red-500 hover:text-red-700 ml-2 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/40" title="Excluir lançamento" data-item-id="${row[mH.id]}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" y2="17" x2="10"/><line x1="14" y1="11" y2="17" x2="14"/></svg>
+                                    </button></div></div>
+                                <div class="criterio-total-row !mt-auto"><span>Total</span><span class="value">${formatCurrency(vt)}</span></div></div>`;
+                        });
+                    }
+                } catch (e) { console.error("Erro ao buscar lançamentos manuais:", e); }
+
+                /* Atribuição única (substitui o conteúdo em vez de anexar) — mesmo que duas
+                   execuções concluam, o resultado final nunca duplica cards. */
+                projetadosGrid.innerHTML = projetadosHtml;
+                manuaisGrid.innerHTML = manuaisHtml;
+                projetadosEmpty.classList.toggle('hidden', hasProjetados);
+                manuaisEmpty.classList.toggle('hidden', hasManuais);
+                summaryBar.classList.toggle('hidden', !(hasProjetados || hasManuais));
+                document.getElementById('criterios-total-val').textContent = formatCurrency(somaCriterios);
+
+                /* Tabela */
+                try {
+                    const result = await queryMitra({ query: componentData.queryItensConsolidados });
+                    if (isStale()) return;
+                    tableBody.innerHTML = '';
+                    if (!result?.data?.length) {
+                        emptyStateContainer.innerHTML = createEmptyState("Nenhum item movimentado ou em estoque neste período.");
+                        emptyStateContainer.classList.remove('hidden'); document.getElementById('notas-table').classList.add('hidden'); return;
+                    }
+                    emptyStateContainer.classList.add('hidden'); document.getElementById('notas-table').classList.remove('hidden');
+                    const hdr = { produto: 0, entrada: 1, saida: 2, saldo: 3, saldoReal: 4, valor: 5 };
+                    let totals = { ent: 0, sai: 0, sld: 0, sldReal: 0, val: 0, perc: 0, sldTotalPositivo: result.data.reduce((acc, row) => acc + (parseFloat(row[hdr.saldo]) > 0 ? parseFloat(row[hdr.saldo]) : 0), 0) };
+                    let rowsHtml = '';
+                    result.data.forEach(row => {
+                        const [ent, sai, sld, sldReal, val] = [parseFloat(row[hdr.entrada]) || 0, parseFloat(row[hdr.saida]) || 0, parseFloat(row[hdr.saldo]) || 0, parseFloat(row[hdr.saldoReal]) || 0, parseFloat(row[hdr.valor]) || 0];
+                        const prc = totals.sldTotalPositivo > 0 && sld > 0 ? (sld / totals.sldTotalPositivo) * 100 : 0;
+                        totals.ent += ent; totals.sai += sai; totals.sld += sld; totals.sldReal += sldReal; totals.val += val; totals.perc += prc;
+                        rowsHtml += `<tr>
+                            <td class="table-cell-produto">${row[hdr.produto]}</td>
+                            <td class="table-cell-num text-green-600 dark:text-green-400">${formatKg(ent)}</td>
+                            <td class="table-cell-num text-red-600 dark:text-red-400">${formatKg(sai)}</td>
+                            <td class="table-cell-num font-bold">${formatKg(sld)}</td>
+                            <td class="table-cell-num text-blue-600 dark:text-blue-400 font-bold">${formatKg(sldReal)}</td>
+                            <td class="table-cell-num">${formatCurrency(val)}</td>
+                            <td class="table-cell-num"><div class="perc-cell"><div class="perc-bar-bg"><div class="perc-bar-fill" style="width:${prc}%"></div></div><span style="min-width:58px;text-align:right">${formatPercentage(prc)}</span></div></td>
+                        </tr>`;
+                    });
+                    tableBody.innerHTML = rowsHtml;
+                    document.getElementById('notas-table-foot').classList.remove('hidden');
+                    document.getElementById('tfoot-entrada').textContent = formatKg(totals.ent);
+                    document.getElementById('tfoot-saida').textContent = formatKg(totals.sai);
+                    document.getElementById('tfoot-saldo').textContent = formatKg(totals.sld);
+                    document.getElementById('tfoot-saldo-real').textContent = formatKg(totals.sldReal);
+                    document.getElementById('tfoot-valor').textContent = formatCurrency(totals.val);
+                    document.getElementById('tfoot-perc').textContent = formatPercentage(100);
+                } catch (e) { console.error("Erro ao buscar itens consolidados:", e); }
+            };
+
+            const initializeComponent = async () => {
+                document.body.addEventListener('click', async (e) => {
+                    const parceiroCard = e.target.closest('.parceiro-card');
+                    if (parceiroCard) {
+                        state.parceiroId = parceiroCard.dataset.id;
+                        state.parceiroNome = parceiroCard.dataset.name;
+                        await setVariableMitra({ name: ':VAR_PARCEIRO_SELECIONADO', content: state.parceiroId });
+                        navigateTo('meses'); return;
+                    }
+                    const mesCard = e.target.closest('.mes-card');
+                    if (mesCard) {
+                        const [startDate, endDate] = mesCard.dataset.id.split('|');
+                        if (!startDate || !endDate) { console.error("ID de período inválido"); return; }
+                        state.mesId = mesCard.dataset.id;
+                        state.mesNome = mesCard.dataset.name;
+                        await setVariableMitra({ name: ':VAR_PERIODO_INICIO', content: startDate });
+                        await setVariableMitra({ name: ':VAR_PERIODO_FIM', content: endDate });
+                        navigateTo('notas'); return;
+                    }
+                    if (e.target.closest('#back-to-parceiros')) { navigateTo('parceiros'); return; }
+                    if (e.target.closest('#back-to-meses')) { navigateTo('meses'); return; }
+                    if (e.target.closest('#view-items-btn')) { await modalMitra({ id: parseInt(componentData.modalItensErpId, 10), width: 80, height: 90 }); return; }
+                    if (e.target.closest('#add-manual-btn')) {
+                        try {
+                            await formMitra({ id: 8 });
+                            if (typeof updateComponentsMitra === 'function') await updateComponentsMitra({ all: true });
+                        } catch (err) { console.error('Erro com formulário de lançamento manual:', err); }
+                        return;
+                    }
+                    if (e.target.closest('#export-excel-btn')) {
+                        const wb = XLSX.utils.book_new();
+                        const table = document.getElementById('notas-table');
+                        if (table && table.querySelector('tbody tr')) XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(table), "Resumo de Itens");
+                        const projetadosCards = document.querySelectorAll('#criterios-projetados-grid .criterio-card');
+                        if (projetadosCards.length > 0) {
+                            const data = Array.from(projetadosCards).map(c => ({ 'Critério': c.querySelector('.criterio-nome')?.textContent.trim() || '', 'Tipo': 'Critério Projetado', 'Valor Unitário': c.querySelectorAll('.criterio-row-value')[0]?.textContent.trim() || '', 'Base de Cálculo': c.querySelectorAll('.criterio-row-value')[1]?.textContent.trim() || '', 'Valor Total': c.querySelector('.criterio-total-row .value')?.textContent.trim() || '' }));
+                            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "Critérios Projetados");
+                        }
+                        const manuaisCards = document.querySelectorAll('#lancamentos-manuais-grid .criterio-card');
+                        if (manuaisCards.length > 0) {
+                            const data = Array.from(manuaisCards).map(c => ({ 'Critério': c.querySelector('.criterio-nome')?.textContent.trim() || '', 'Tipo': 'Lançamento Manual', 'Valor Total': c.querySelector('.criterio-total-row .value')?.textContent.trim() || '' }));
+                            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "Lançamentos Manuais");
+                        }
+                        if (wb.SheetNames.length > 0) XLSX.writeFile(wb, `Lancamentos_${state.parceiroNome || 'Parceiro'}_${state.mesNome || 'Periodo'}.xlsx`.replace(/[^a-zA-Z0-9.\-_]/g, '_'));
+                        return;
+                    }
+                    if (e.target.closest('#export-notas-btn')) {
+                        showLoader();
+                        try {
+                            if (typeof XLSX === 'undefined') {
+                                alert('A biblioteca de exportação (XLSX) não foi carregada.');
+                                hideLoader();
+                                return;
+                            }
+
+                            const exportQuery = `
+                                WITH MOVIMENTOS_POR_NOTA AS (
+                                    SELECT G.NUNOTA, G.NUMNOTA, G.DATA_ENTREGA AS DT_MOV, G.CODPARC, 'Entrada' AS TIPO_MOVIMENTO, I.PESO_ITEM, I.PESO_ITEM_LIQ
+                                    FROM (SELECT * FROM GESTAO_NOTAS_APROVACAO) G
+                                    JOIN IMP_ITENS_NOTAS_APRV I ON G.NUNOTA = I.NUNOTA
+                                    WHERE G.CODPARC = :VAR_PARCEIRO_SELECIONADO AND G.DATA_ENTREGA BETWEEN :VAR_PERIODO_INICIO AND :VAR_PERIODO_FIM AND G.ENTREGUE = 1
+                                    UNION ALL
+                                    SELECT N.NUNOTA, N.NUMNOTA, N.DTNEG AS DT_MOV, N.CODPARC, 'Saída' AS TIPO_MOVIMENTO, N.PESO_ITEM, N.PESO_ITEM_LIQ
+                                    FROM IMP_NOTAS_ARMAZ N
+                                    WHERE N.CODPARC = :VAR_PARCEIRO_SELECIONADO AND N.DTNEG BETWEEN :VAR_PERIODO_INICIO AND :VAR_PERIODO_FIM AND N.ATUALESTOQUE = 1
+                                ),
+                                TIPO_PESO_CORRETO AS (
+                                    SELECT V.CODPARC, TA.TIPO_PESO FROM VINCULO_PARCEIRO_TIPO V JOIN TIPO_ARMAZENAGEM TA ON V.ID_TIPO_ARMAZENAGEM = TA.ID
+                                    WHERE V.CODPARC = :VAR_PARCEIRO_SELECIONADO ORDER BY V.ID DESC LIMIT 1
+                                )
+                                SELECT
+                                    P.NOMEPARC AS "Parceiro",
+                                    M.NUNOTA AS "Numero Unico",
+                                    M.NUMNOTA AS "Numero Nota",
+                                    DATE_FORMAT(M.DT_MOV, '%d/%m/%Y') AS "Data",
+                                    M.TIPO_MOVIMENTO AS "Tipo de Movimento",
+                                    SUM(CASE WHEN TPC.TIPO_PESO = 'Líquido' THEN M.PESO_ITEM_LIQ ELSE M.PESO_ITEM END) AS "Peso Total (Kg)"
+                                FROM MOVIMENTOS_POR_NOTA M
+                                JOIN IMP_PACEIRO P ON M.CODPARC = P.CODPARC
+                                JOIN TIPO_PESO_CORRETO TPC ON M.CODPARC = TPC.CODPARC
+                                GROUP BY P.NOMEPARC, M.NUNOTA, M.NUMNOTA, M.DT_MOV, M.TIPO_MOVIMENTO
+                                ORDER BY M.DT_MOV, M.NUNOTA
+                            `;
+
+                            const result = await queryMitra({ query: exportQuery });
+
+                            if (!result || !result.data || result.data.length === 0) {
+                                alert('Nenhuma nota encontrada para exportar com os filtros atuais.');
+                                hideLoader();
+                                return;
+                            }
+
+                            const headers = result.headers.map(h => h.name);
+                            const jsonData = result.data.map(row => {
+                                const rowObject = {};
+                                headers.forEach((header, index) => {
+                                    rowObject[header] = row[index];
+                                });
+                                return rowObject;
+                            });
+
+                            const wb = XLSX.utils.book_new();
+                            const ws = XLSX.utils.json_to_sheet(jsonData);
+                            XLSX.utils.book_append_sheet(wb, ws, "Lançamentos por Nota");
+
+                            XLSX.writeFile(wb, `Lancamentos_por_Nota_${state.parceiroNome || 'Parceiro'}_${state.mesNome || 'Periodo'}.xlsx`.replace(/[^a-zA-Z0-9.\-_]/g, '_'));
+
+                        } catch (err) {
+                            console.error("Erro ao exportar notas:", err);
+                            alert('Ocorreu um erro ao gerar o arquivo Excel: ' + (err.message || 'Erro desconhecido.'));
+                        } finally {
+                            hideLoader();
+                        }
+                        return;
+                    }
+                    if (e.target.closest('#generate-pdf-btn')) { await modalMitra({ id: 13, width: 90, height: 95 }); return; }
+                    if (e.target.closest('.delete-manual-btn')) {
+                        const btn = e.target.closest('.delete-manual-btn');
+                        try {
+                            await setVariableMitra({ name: ':VAR_ITEM_DEL_ID', content: btn.dataset.itemId });
+                            await dbactionMitra(parseInt(componentData.dbActionDeleteItemId, 10));
+                            if (typeof updateComponentsMitra === 'function') await updateComponentsMitra({ all: true });
+                        } catch (err) { console.error('Erro ao deletar lançamento manual:', err); }
+                        return;
+                    }
+                });
+                document.body.addEventListener(MITRA_UPDATE_EVENT_NAME, () => {
+                    if (!views.notas.classList.contains('hidden')) fetchAndRenderNotas();
+                });
+                await navigateTo('parceiros');
+            };
+
+            const waitForMitraAndInit = () => {
+                const maxWait = 5000, interval = 100, start = Date.now();
+                const check = setInterval(() => {
+                    if (window.componentData?.queryParceiros) {
+                        clearInterval(check); initializeComponent();
+                    } else if (Date.now() - start > maxWait) {
+                        clearInterval(check);
+                        document.body.innerHTML = `<div class=\"p-8 text-center text-red-700 bg-red-50 h-full flex items-center justify-center\">Erro Crítico: As configurações do componente não foram carregadas da plataforma.</div>`;
+                    }
+                }, interval);
+            };
+            waitForMitraAndInit();
+        });
+    </script>
+</body>
+
+</html>

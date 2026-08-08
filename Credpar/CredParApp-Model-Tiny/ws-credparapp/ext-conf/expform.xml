@@ -1,0 +1,12 @@
+<export-info>
+  <nome>CredParApp</nome>
+  <descricao>Aplicativo Credpar</descricao>
+  <versao>6.6</versao>
+  <plataforma-minima>3.10</plataforma-minima>
+  <parceiro-id>647</parceiro-id>
+  <parceiro-nome>Sankhya Gestão de Negócios</parceiro-nome>
+  <modulo-padrao />
+  <numos>1056075</numos>
+  <salt>2a3bfbfa21c34677b715d374fc72d414</salt>
+  <license-resources />
+</export-info>

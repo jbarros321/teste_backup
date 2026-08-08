@@ -1,0 +1,53 @@
+<ion-view view-title="Autorização de Venda" cache-view="false">
+
+	<ion-nav-buttons side="left">
+    	<button class="button button-icon button-clear icon ion-ios-arrow-back" ng-click="goBack()">
+        </button>
+    </ion-nav-buttons>
+    
+    <ion-content class="has-header has-footer padding task-content background-login" >
+        <button class="button buttonGradient borderStyle" ng-click="gerarParcelas()">
+		  GERAR PARCELAS
+		</button>
+        <button class="button buttonGradient" ng-click="incluirAutorizacao()">
+		  CONFIRMAR AUTORIZAÇÃO
+		</button>
+		<div class="row">
+			<div class="col">
+				<span>Nº parcelas</span> 
+			</div>
+			<div class="col">
+				<span>Valor da parcela</span> 
+			</div>
+			<div class="col">
+				<span>Vencimento</span> 
+			</div>
+		</div>
+		<ion-list>
+	        <ion-item ng-repeat="parcela in parcelas">
+	        	<div class="row" ng-if="parcela.NROPARCELA != null">
+	                <div class="col">
+	                	<b><span ng-if="parcela.NROPARCELA != null">
+	                				Nro Parcela: {{ parcela.NROPARCELA }}</span> </b>                	
+	                </div>
+	                <div class="col">
+	                	<span ng-if="parcela.VALORPARCELA != null">
+	                				<b>Valor:</b> {{ parcela.VALORPARCELA }}</span>                 	
+	                </div >
+	                <div class="col">
+	                	<span ng-if="parcela.DTVENCIMENTO != null">
+	                				<b>Dt Venc.:</b> {{ parcela.DTVENCIMENTO }}</span>                 	
+	                </div>
+                </div>
+	        </ion-item>
+        </ion-list>
+        <div class="row" style="margin-bottom: 10px;">
+			<div class="col">
+				<span>CÓDIGO DA AUTORIZAÇÃO: </span> 
+			</div>
+			<div class="col">
+				<span>XXXXXXXXXX</span> 
+			</div>
+		</div>
+    </ion-content>
+</ion-view>

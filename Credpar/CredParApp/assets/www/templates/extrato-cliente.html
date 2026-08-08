@@ -1,0 +1,64 @@
+<ion-view view-title="EXTRATO" cache-view="false">
+
+	<ion-nav-buttons side="left">
+    	<button class="button button-icon button-clear icon ion-ios-arrow-back" style="color: white;" ng-click="goBack()">
+        </button>
+    </ion-nav-buttons>
+    
+    <ion-content class="has-header padding task-content background-login">
+    	<div class="loading-spinner" ng-if="showLoading">
+			<div class="spinner"></div>
+		</div>
+		<div class="empty-data" ng-if="showError && !showLoading">
+			<div class="icon-panel">
+				<i class="icon ion-sad-outline"></i>
+			</div>
+            <span class="text-info" ng-if="data.mensagem == null">Não foi possível obter as informações. Verifique sua conexão com a internet.</span>
+            <span class="text-info" ng-if="data.mensagem != null">{{data.mensagem}}</span>
+        </div>
+	    <div class="center-panel" ng-if="!showError && !showLoading">
+    	
+	    	<div class="row">
+	    		<div class="col col-60">
+	    			<span class="nomero-cartao-extrato">CARTÃO</span><span class="nomero-cartao-extrato bold">{{data.numeroCartao}}</span>
+	    			<br>Valor disponível: R$ {{data.valorDisponivelFormatado}}
+	    			<br>{{data.percUsado}}% do limite utilizado
+	    		</div>
+	    		<div class="col col-40">
+	    			<canvas id="doughnut" class="chart chart-doughnut"
+					  chart-data="valores" chart-labels="labels" chart-colors="colors">
+					</canvas> 
+	    		</div>
+	    	</div>
+
+	    	<div class="row" ng-if="data.itens.length == 0" style="padding: 30px; text-align: center;">
+				Você não possui valores em aberto
+	    	</div>
+
+	    	<div class="row" ng-repeat="item in data.itens.item" style="padding-bottom: 0px;">
+	    		<div class="col col-10 item-linha-esquerda">
+	    			<div class="item-linha-superior"></div>
+	    			<div class="item-circulo"></div>
+	    			<div class="item-linha-inferior"></div>
+		    	</div>
+	    		<div class="col col-60 item-compra">
+	    			<span class='bold'>{{item.local}}</span><br>Parcela {{item.parcela}}/{{item.parcelaTotal}}<br>R${{item.valor}}
+	    		</div>
+	    		<div class="col col-30 text-right item-data">
+	    			{{item.data}}
+	    		</div>
+	    	</div>
+
+			<div class="row" style="margin-top: 25px;">
+	    		<div class="col col-67 col-offset-33">
+					<div class="borderStyle btnAcessar align-center saldo" style="display: flex; width: 100%;">
+			    		<div class="col col-33">Total</div>
+			    		<div class="col col-67 text-right">R$ {{data.valorUsadoFormatado}}</div>
+			    	</div>
+		    	</div>
+	    	</div>
+    	</div>
+    	<div style="height: 125px;">
+    	</div>
+    </ion-content>
+</ion-view>

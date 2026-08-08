@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<controls:DraggablePopUpBox 
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:controls="br.com.sankhya.controls.*"
+	xmlns:ui="br.com.sankhya.db.ui.*"
+	xmlns:dwf="br.com.sankhya.dwf.*"
+	creationComplete="creationComplete()"
+>
+<mx:Script>
+	<![CDATA[
+		private var _onSaveFunction:Function;
+
+		private function creationComplete():void{
+			executante.setFocus();
+			executante.doubleClickEnabled = false;
+			
+			addEventListener(KeyboardEvent.KEY_UP, keyDownFn);
+		}
+		
+		private function keyDownFn(event:KeyboardEvent):void{
+			if (event.keyCode == Keyboard.ENTER) {
+				okClick();				
+			}
+		}
+		
+		public function clear():void {
+			if (executante) {
+				executante.value = "";
+			}
+		}
+		
+		public function set onSave(f:Function):void{
+			_onSaveFunction = f;
+		}
+		
+		override public function show(p:Point, fixed:Boolean = false):void {
+			super.show(p, fixed);
+			
+			executante.setFocus();
+		}
+		
+		private function okClick():void{
+			if(_onSaveFunction != null){
+				var props:Object = new Object();
+				props.codExecutante = executante.value;
+				props.nomeExecutante = executante.descriptionInput;
+				
+				_onSaveFunction(props);
+			}
+		}
+	]]>
+</mx:Script>
+	<mx:Form>
+		<mx:FormItem required="true" label="Executante:">
+			<dwf:Pesquisa id="executante" entityName="Usuario" fieldName="CODUSU"/> 
+		</mx:FormItem>
+	</mx:Form>
+	<mx:HBox>
+		<mx:Button label="Adicionar" click="okClick()" buttonMode="true"/>
+		<mx:Button label="Fechar" click="hide()" buttonMode="true"/>
+	</mx:HBox>
+</controls:DraggablePopUpBox>

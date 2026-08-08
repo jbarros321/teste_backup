@@ -1,0 +1,65 @@
+<ion-view view-title="EXTRATO DE VENDAS" cache-view="false">
+
+	<ion-nav-buttons side="left">
+    	<button class="button button-icon button-clear icon ion-ios-arrow-back" style="color: white;" ng-click="goBack()">
+        </button>
+    </ion-nav-buttons>
+    
+    <ion-content class="background-login" ng-class="{'top0': extratos == null, 'bottom0' : extratos == null}">
+        <div class="row row-center" ng-if="extratos == null || extratos == undefined" ng-style="{'height': windowHeight}" >  
+            <div class="col" style="text-align: center;">                
+                    <span class="fontHome">Sem registros de vendas para o período selecionado</span>
+             </div>   
+        </div>
+
+        <ion-list type="list-inset" ng-if="extratos != null && extratos != undefined">
+            <ion-item ng-repeat="extrato in extratos" style="padding: 5px !important;background: transparent; border-color: #D85904;">
+                
+                <div>    
+                    
+                        <div style="display: inline-block; width: 100%;width: 100%;">
+                            <div style="display: inline-block;float: left;" ng-if="extrato.CONTRATO != null">
+                                <b><span>{{extrato.CONTRATO}}</span></b>                   
+                            </div>
+                            <div style="display: inline-block;float: right" ng-if="extrato.VALOR != null">
+                                <b><span>R$ {{extrato.VALOR}}</span></b>                     
+                            </div>
+                        </div>                                    
+                </div>        
+
+                <div>         
+                    <div style="display: inline-block; width: 100%;">
+                        <div style="float: left;" ng-if="extrato.NOMEPARC != null">
+                            <span>{{extrato.NOMEPARC}}</span> 
+                        </div>                                    
+                    </div>
+                </div>        
+                <div>
+                    <div style="display: inline-block; width: 100%;">
+                        <div style="margin-bottom: 5px;" ng-if="extrato.DTVENDA != null">
+                            <span>Vend.: {{extrato.DTVENDA}}</span>
+                        </div>
+                    </div>
+                </div> 
+                <div>
+                    <div style="display: inline-block; width: 100%;">
+                        <div style="margin-bottom: 5px;" ng-if="extrato.PLANO != null">
+                            <span>{{extrato.PLANO}}</span>
+                        </div>
+                    </div>
+                </div> 
+                
+            </ion-item>
+        </ion-list>       
+        <div class ="btnAcessar" ng-if="extratos != null" style="position: relative;float: right;margin-right: 10px;width: 200px;    margin-top: 5px; padding: 2px;"> 
+            <div style="display: inline; vertical-align: middle;     margin-left: 5px;">
+                <span>Total</span>
+            </div>
+            <div style="display: inline; vertical-align: middle;     float: right; margin-right: 5px; ">
+                <span>R$ {{totalExtrato}}</span>
+            </div>
+        </div>
+        <div style="height: 120px;">
+        </div>
+    </ion-content>
+</ion-view>

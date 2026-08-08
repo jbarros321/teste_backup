@@ -1,0 +1,7 @@
+formImportarId =7 
+modalDetalhesId = 28
+modalItensErpId = 29
+modalRelatorioId = 13
+dbActionCreateHeaderId = 56
+dbActionDeleteItemId = 58
+formManualId = 8 

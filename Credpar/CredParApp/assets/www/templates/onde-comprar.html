@@ -1,0 +1,58 @@
+<ion-view view-title="Onde Comprar" cache-view="false"> 
+	
+	
+	<ion-nav-buttons side="left">
+    	<button class="button button-icon button-clear icon ion-ios-arrow-back" style="color: white;" ng-click="goBack()">
+        </button>
+    </ion-nav-buttons> <ion-content class="top0 bottom0">
+<div class="row row-center" ng-style="{'height': auto}"
+	style="padding-top: 10%;">
+	<div class="col">
+		<div class="box-shadow">
+			<div style="clear: both; margin-right: 50%; margin-bottom: 22px; margin-top: 15%">
+				<label> 
+					<input type="radio" ng-model="choice" ng-value="'cidade'" ng-click="statusValue('cidade')"> Cidade
+				</label> 
+				<label> 
+					<input type="radio" ng-model="choice" ng-value="'segmento'" ng-click="statusValue('segmento')"> Segmento
+				</label>
+			</div>
+			
+			<div style="width: 156px; float: right">
+				<button class="btnBuscar" src="img/lupa.png" 	ng-click="buscaCidadeSegmentos()"></button>
+			</div>
+			<div ng-if="choice == 'cidade'"style="width: 60px;">
+				<input type="text" class="inputDescricao" placeholder="Digite a Cidade" ng-model="data.descricao">
+			</div>
+			<div ng-if="choice == 'segmento'" style="width: 60px;">
+				<input type="text" class="inputDescricao" placeholder="Digite o Segmento" ng-model="data.descricao">
+			</div>
+			
+			<div class="label" style="text-align:left;">
+				<span  ng-repeat="label in title" class="breadcrumb">
+					<label >
+						<span>{{label}} </span>
+					</label>
+				</span>
+			</div>
+			
+			<div  style="margin-top:5px;">
+				<ion-scroll style="height: 250px;">
+					<ion-list> 
+						<ion-item  class="topOndeComprar" ng-repeat="parceiro in actualNode" style="padding: 5px !important;white-space: normal;text-align: left;">
+							<div ng-click="goChildren(parceiro.children, parceiro.label)" style="margin-top: 12px;">
+								<span> {{ parceiro.label }} </span>
+								<span ng-if="i == 3"  class="ondeChegar" style="display:-webkit-box;"> {{ parceiro.labelLast }} </span>
+								<button   ng-if="i == 3" class="button buttonGradient borderStyle"  style="margin-top: 2%;margin-right: 232%; width: 124px;" ng-click="gpsOpen(parceiro.label)">Tra&#231;ar rota</button>
+							</div>
+						</ion-item>
+					</ion-list>
+				</ion-scroll>
+				<div>
+					<button ng-if="i > 0" class="button buttonGradient borderStyle"	style="margin-top: 2%;margin-right: 232%; width: 124px;" ng-click="goToback()">Voltar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</ion-content>
+</ion-view>

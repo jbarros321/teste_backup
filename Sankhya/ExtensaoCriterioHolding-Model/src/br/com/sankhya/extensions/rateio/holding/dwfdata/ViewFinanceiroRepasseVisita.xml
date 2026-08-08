@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE entity>
+
+<entity name="ViewFinanceiroRepasseVisita" main-object="ViewFinanceiroRepasseVisita"
+	commit-type="B" isView="true">
+	<runtime max-results="500" timeout="20" load-on-find="true" />
+	<entity-key>
+		<key-member field="NUFIN" />
+	</entity-key>
+</entity>
+

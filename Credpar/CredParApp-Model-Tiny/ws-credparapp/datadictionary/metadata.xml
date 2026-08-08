@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<metadata>
+  <tables>
+    <table name="TSICADSERV" sequenceType="A" sequenceField="CODSERV">
+      <description><![CDATA[Cadastro de Servidor]]></description>
+    </table>
+    <table name="TGFCOMP" sequenceType="A" sequenceField="CODCOMP">
+      <description><![CDATA[TABLE TGFCOMP]]></description>
+    </table>
+  </tables>
+  <fields>
+    <field name="CODSERV" table="TSICADSERV" dataType="I" presentationType="P" calculated="N" allowSearch="N" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="0">
+      <description><![CDATA[Cód. Servidor]]></description>
+    </field>
+    <field name="NOMESERV" table="TSICADSERV" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="1">
+      <description><![CDATA[Nome do Servidor]]></description>
+    </field>
+    <field name="PORTSERVER" table="TSICADSERV" dataType="I" presentationType="P" calculated="N" allowSearch="N" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="3">
+      <description><![CDATA[Porta do Servidor]]></description>
+    </field>
+    <field name="IPSERV" table="TSICADSERV" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="2">
+      <description><![CDATA[IP]]></description>
+    </field>
+    <field name="INTERNOCREDPAR" table="TGFPAR" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="100">
+      <description><![CDATA[Interno]]></description>
+    </field>
+    <field name="ATIVO" table="TSICADSERV" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="4">
+      <description><![CDATA[Ativo]]></description>
+    </field>
+    <field name="NOMEPARC" table="TGFCOMP" dataType="S" presentationType="P" calculated="N" allowSearch="S" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="2">
+      <description><![CDATA[Parceiro]]></description>
+    </field>
+    <field name="ACESSOAPP" table="TGFCTT" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="39">
+      <description><![CDATA[Acesso App]]></description>
+    </field>
+    <field name="SEGMENTO" table="TGFCOMP" dataType="S" presentationType="P" calculated="N" allowSearch="S" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="2">
+      <description><![CDATA[Segmento]]></description>
+    </field>
+    <field name="CODCID" table="TGFCOMP" dataType="I" presentationType="P" calculated="N" allowSearch="S" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="1">
+      <description><![CDATA[Cód Cidade]]></description>
+    </field>
+    <field name="TELEFONE" table="TGFCOMP" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="4">
+      <description><![CDATA[Telefone]]></description>
+    </field>
+    <field name="ENDERECO" table="TGFCOMP" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="3">
+      <description><![CDATA[Endereço]]></description>
+    </field>
+    <field name="CODCOMP" table="TGFCOMP" dataType="I" presentationType="P" calculated="N" allowSearch="S" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="0">
+      <description><![CDATA[Código Compra]]></description>
+    </field>
+  </fields>
+  <fieldProperties>
+    <prop table="TGFPAR" field="INTERNOCREDPAR" name="visivel"><![CDATA[N]]></prop>
+    <prop table="TGFCOMP" field="SEGMENTO" name="useSelectDistinct"><![CDATA[true]]></prop>
+  </fieldProperties>
+  <fieldOptions>
+    <option table="TSICADSERV" field="ATIVO" value="N"><![CDATA[Não]]></option>
+    <option table="TSICADSERV" field="ATIVO" value="S"><![CDATA[Sim]]></option>
+    <option table="TGFCTT" field="ACESSOAPP" value="B"><![CDATA[Borderô]]></option>
+    <option table="TGFCTT" field="ACESSOAPP" value="N"><![CDATA[Nenhum]]></option>
+    <option table="TGFCTT" field="ACESSOAPP" value="E"><![CDATA[Extrato]]></option>
+    <option table="TGFCTT" field="ACESSOAPP" value="T"><![CDATA[Todos]]></option>
+  </fieldOptions>
+  <instances>
+    <instance name="CADSERV" tableName="TSICADSERV">
+      <description><![CDATA[Cadastro de Servidor]]></description>
+    </instance>
+    <instance name="OndeComprar" tableName="TGFCOMP">
+      <description><![CDATA[Instância onde comprar]]></description>
+    </instance>
+  </instances>
+  <relationShip>
+    <relation fromEntity="OndeComprar" toEntity="Cidade" type="I" insert="N" update="N" remove="N">
+      <fields>
+        <field localName="CODCID" targetName="CODCID" />
+      </fields>
+    </relation>
+  </relationShip>
+  <controls>
+    <control name="br.com.sankhya.CadastrodeServidores" type="MN" childrenType="PL">
+      <description><![CDATA[Cadastro de Servidores]]></description>
+      <url><![CDATA[${dynaform:CADSERV}]]></url>
+      <properties>
+        <resourceID><![CDATA[br.com.sankhya.CADSERV]]></resourceID>
+        <contexto><![CDATA[credparapp]]></contexto>
+      </properties>
+    </control>
+    <control name="br.com.sankhya.OndeComprar" type="MN" childrenType="PL">
+      <description><![CDATA[Onde Comprar]]></description>
+      <url><![CDATA[${dynaform:OndeComprar}]]></url>
+      <properties>
+        <resourceID><![CDATA[br.com.sankhya.fin.cad.ondeComprar]]></resourceID>
+        <contexto><![CDATA[mgefin]]></contexto>
+      </properties>
+    </control>
+  </controls>
+  <controlRelations>
+    <ctrlRelationship fromCtrl="1413" toCtrl="br.com.sankhya.OndeComprar" />
+    <ctrlRelationship fromCtrl="4019" toCtrl="br.com.sankhya.CadastrodeServidores" />
+  </controlRelations>
+</metadata>
+

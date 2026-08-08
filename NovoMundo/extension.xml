@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<extension>
+  <id>ImportacaoArquivo</id>
+  <description>Importação de Arquivos</description>
+  <version>1.01</version>
+  <platform-min-version>3.17</platform-min-version>
+  <build-timestamp>29/06/2023 22:04:56</build-timestamp>
+  <vendor>
+    <id>12791</id>
+    <name>Handz Tecnologia</name>
+  </vendor>
+  <license-by-resource>
+    <default-module />
+  </license-by-resource>
+  <ui-mashups />
+  <signature>01dbea83deb45d4fba60fd6f46e5e571</signature>
+</extension>
+

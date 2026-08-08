@@ -1,0 +1,16 @@
+SpeechRecognition
+pyaudio
+edge-tts
+pygame-ce
+pyautogui
+requests
+sounddevice
+numpy
+setuptools
+pyttsx3
+psutil
+pygetwindow
+pyrect
+comtypes
+pycaw
+pywin32

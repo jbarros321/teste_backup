@@ -1,0 +1,27 @@
+ATA DE ALINHAMENTO ESTRATÉGICO - PROJETO DRE (OPET)
+
+ASSUNTO: Reestruturação de Filtros de Projetos e Regras de Apresentação de Naturezas no DRE.
+
+1. OBJETIVO DO ALINHAMENTO
+Definir a estratégia para execução de filtros por projetos de forma otimizada e estabelecer uma nova política de exibição de dados nas telas de DRE da OPET.
+
+2. PONTOS ALINHADOS EM REUNIÃO
+- Status dos Filtros: Os filtros estratégicos de projetos JÁ FORAM INTEGRALMENTE APLICADOS nas telas de DRE, garantindo o resultado e performance nas consultas filtradas.
+- Próximo Passo - Regras das Naturezas: O DRE passará por uma reestruturação para exibir EXCLUSIVAMENTE as Naturezas que estão devidamente vinculadas à estrutura contábil/financeira da empresa.
+
+3. ANÁLISE DE IMPACTO E TEMPO HÁBIL
+Após análise técnica da estrutura atual, foi identificado que esta alteração demanda um tempo hábil considerável para execução. Isso se deve à necessidade de:
+- Reestruturação da base de apresentação dos dados no DRE.
+- Ajustes nas queries SQL e lógicas de agrupamento para respeitar os novos vínculos de naturezas.
+- Validação integral dos filtros de projetos para garantir que a visão estratégica reflita a realidade financeira.
+- Validação em Paralelo: Simultaneamente à reestruturação, está sendo realizada a validação técnica dos dados apresentados nas telas para identificar divergências ou inconsistências.
+
+4. PRÓXIMOS PASSOS
+- Concentrar esforço na reestruturação exclusiva das Naturezas vinculadas.
+- Alinhamento de Valores: Agendar reunião com Adriana para alinhar e validar pontos específicos sobre alguns valores apresentados após a reestruturação.
+- Entrega definitiva do novo visual estratégico do DRE.
+
+---
+Data: 01/04/2026
+Status: Filtros de Projetos Concluídos. Em fase de Reestruturação das Regras de Naturezas.
+Solicitante: OPET

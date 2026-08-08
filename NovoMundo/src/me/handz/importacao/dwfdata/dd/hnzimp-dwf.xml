@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE metadata-provider >
+<metadata-provider name="hnzimp-dwf" parent="mge-dwf" data-source="java:/MGEDS" batch-fetch-size="200" verbose="false" event-listener="br.com.sankhya.modelcore.dwfdata.DynamicEntityLoader" use-ejb="false">
+	<container-config entity-cache-max-idle="1800" entity-cache-max-size="5000" instance-cache-max-size="2000" commit-type-d-refresh-rate="120"/>
+	
+	<descriptor name="ImportacaoArquivoConfig" location="me/handz/importacao/dwfdata/dd/ImportacaoArquivoConfig.xml"/>
+	<descriptor name="ImportacaoArquivoLog" location="me/handz/importacao/dwfdata/dd/ImportacaoArquivoLog.xml"/>
+</metadata-provider>

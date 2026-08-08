@@ -1,0 +1,148 @@
+<project name="CredParApp-VC">
+	
+	<property name="warName" value="credparapp.war" />
+	
+	<path id="project.class.path">
+		<pathelement location="${basedir}\src" />
+		<pathelement location="build/WEB-INF/classes" />
+		<fileset dir="${api_outros}" includes="*.jar" />
+		<fileset dir="${api_sankhya}" includes="sankhya-gwt.jar" />
+		<fileset dir="${gwt.sdk}" includes="gwt-*.jar" />
+		<fileset dir="${gwt.sdk}" includes="validation-*.jar" />
+	</path>	
+	
+	<target name="gwtc" description="GWT compile to JavaScript" >
+		<java failonerror="true" fork="true" classname="br.com.sankhyagwt.dev.SnkGWTCompiler">
+			<classpath>
+				<pathelement location="src" />
+				<path refid="project.class.path" />
+			</classpath>
+			<!-- add jvmarg -Xss16M or similar if you see a StackOverflowError -->
+			<jvmarg value="-Xmx1024M" />
+			<!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
+			<arg value="-war" />
+			<arg value="build" />
+			<arg value="-draftCompile" />
+			<arg value="-XdisableCastChecking" />
+			<arg value="-localWorkers" />
+			<arg value="4" />
+			<arg value="-logLevel" />
+			<arg value="INFO" />
+			<arg value="-moduleSrc" />
+			<arg value="src" />
+			<!--arg value="com.handz.datamining.gwt" /-->
+			<!--arg value="br.com.sankhya.mge.core.gwt.Workspace" /-->
+			<!--arg value="br.com.sankhya.mge.core.gwt.Dashboard" /-->
+			<!--arg value="br.com.sankhya.mge.core.gwt.DashboardPlayer" /-->
+		</java>
+			
+		<delete dir="${basedir}/build/WEB-INF/deploy/" />
+			
+	</target>
+	
+	<target name="atualizacao_OUTROS_pacote_aberto" description="atualiza pacote aberto - arquivos: .JS .PNG .GIF .JPG .CSS .HTML .JSP .XML - NAO eh necessario reiniciar o servidor">
+		<echo>Atualizando arquivos .JS .PNG .GIF .JPG .CSS .HTML .JSP em ${jboss.default}\deploy\${warName}\ </echo>
+		<copy todir="${default.jboss.sal}/deploy/${warName}" failonerror="true" verbose="true">
+			<fileset dir="${basedir}/build">
+				<include name="**/*.js" />
+				<include name="**/*.png" />
+				<include name="**/*.gif" />
+				<include name="**/*.jpg" />
+				<include name="**/*.css" />
+				<include name="**/*.html" />
+				<include name="**/*.jsp" />
+				<include name="**/*.xml" />
+				<include name="**/*.include" />
+				<include name="**/*.parameters" />
+				<include name="**/*.body" />
+			</fileset>
+		</copy>
+		<copy todir="${default.jboss.sal}/deploy/${warName}/WEB-INF/classes" failonerror="true" verbose="true">
+			<fileset dir="${basedir}/src">
+				<include name="**/*.jstemplate" />
+				<include name="**/*.properties" />
+			</fileset>
+		</copy>
+	</target>
+	
+	<target name="Enviar WAR para gerar extensao" depends="z-createtmp,z-copyflex">
+		<copy todir="tmp">
+			<fileset dir="${basedir}/build" includes="**/*"/>
+		</copy>
+		<copy todir="tmp">
+			<fileset dir="${basedir}" includes="META-INF/**/*"/>
+		</copy>
+		<copy todir="tmp/WEB-INF/classes">
+			<fileset dir="${basedir}/bin" includes="**/*"/>
+		</copy>
+		
+		<delete file="${basedir}/../CredParApp-Model-Tiny/ws-credparapp/web/${warName}" failonerror="false" />
+		
+		<jar destfile="${basedir}/../CredParApp-Model-Tiny/ws-credparapp/web/${warName}">
+			<zipfileset dir="tmp" includes="**/*"/>
+		</jar>
+		
+		<delete dir="tmp" />
+		
+		<echo message="WAR para extensao disponivel em ${basedir}/../CredParApp-Model-Tiny/ws-credparapp/web/${warName}. ${line.separator}Apos enviar tambem o JAR(EJBs) e as libs, utilize o Skw Extension Tool para gerar sua extensao." />
+	</target>
+	
+	<target name="Deploy WAR" depends="z-createtmp,z-copyflex">
+		<copy todir="tmp">
+			<fileset dir="${basedir}/build" includes="**/*"/>
+		</copy>
+		<copy todir="tmp">
+			<fileset dir="${basedir}" includes="META-INF/**/*"/>
+		</copy>
+		<copy todir="tmp/WEB-INF/classes">
+			<fileset dir="${basedir}/bin" includes="**/*"/>
+		</copy>
+		<delete dir="${jboss.default}/deploy/${warName}" />
+		<copy todir="${jboss.default}/deploy/${warName}">
+			<fileset dir="tmp" includes="**/*"/>
+		</copy>
+		<delete dir="tmp" />
+		
+		<echo message="Feito deploy no servidor de aplicacoes em ${jboss.default}/deploy/${warName}" />
+	</target>
+	
+	<target name="Deploy Flex" if="flex.present" depends="z-check-flex">		
+		<copy todir="${jboss.default}/deploy/${warName}/flex" failonerror="true" verbose="true">
+			<fileset dir="${basedir}-Flex\bin">
+				<include name="*.swf" />
+			</fileset>
+		</copy>
+		
+		<echo message="Feito deploy dos arquivos *.swf de ${basedir}-Flex\bin para ${jboss.default}/deploy/${warName}/flex"/>
+	</target>
+	
+	<target name="z-createtmp">
+		<mkdir dir="tmp" />
+	</target>
+	
+	<target name="z-copyflex" if="flex.present" depends="z-check-flex">
+		<copy todir="tmp/flex">
+			<fileset dir="${basedir}-Flex/bin/">
+				<include name="*.swf"/>
+			</fileset>
+		</copy>
+		<copy todir="tmp/flex">
+			<fileset dir="${basedir}/build/">
+				<include name="**/*.parameters"/>
+			</fileset>
+		</copy>
+	</target>
+	
+	<target name="z-check-ant" unless="eclipse.home">
+		<echo message="Propriedades requeridas nao disponiveis (rode este ANT dentro da mesma JRE do seu Eclipse). ${line.separator}Botao direito no ant>Run As...>Ant Build...>Aba JRE>Marcar opcao 'Run in the same JRE as the workspace'." />
+	</target>
+	
+	<target name="z-check-flex" unless="flex.present" depends="z-check-is-flex-present">
+		<echo message="Projeto ${project_name}-Flex nao encontrado." />
+	</target>
+	
+	<target name="z-check-is-flex-present">
+	    <available file="${basedir}-Flex" type="dir" property="flex.present"/>
+	</target>
+	
+</project>

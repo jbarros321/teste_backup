@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:dwf="br.com.sankhya.dwf.*"
+	xmlns:ui="br.com.sankhya.db.ui.*"
+	xmlns:db="br.com.sankhya.db.*"
+	xmlns:dynaform="br.com.sankhya.db.dynaform.*"
+	xmlns:controls="br.com.sankhya.controls.*"
+	paddingTop="10"
+	paddingLeft="10"
+	paddingBottom="10"
+	paddingRight="10"
+	creationComplete="creationCompleteHandler()"
+	width="100%"
+	implements="br.com.sankhya.db.dynaform.IDynaformRecursiveVisitor, 
+	br.com.sankhya.db.IMetadataInterceptor,
+	br.com.sankhya.db.dynaform.IDynaformPersonalizedFilterVisitor,
+	br.com.sankhya.controls.ISanDataControls"
+	>
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.controls.dataGridClasses.DataGridColumn;
+			import mx.core.UIComponent;
+			import mx.utils.StringUtil;
+			
+			import br.com.sankhya.controls.DefaultSankhyaApplication;
+			import br.com.sankhya.controls.ISanDataControls;
+			import br.com.sankhya.controls.timelinediagram.TimeLineLane;
+			import br.com.sankhya.db.DBCriteria;
+			import br.com.sankhya.db.DBCriteriaParameter;
+			import br.com.sankhya.db.DBCriteriaProviderAdapter;
+			import br.com.sankhya.db.DBDataSet;
+			import br.com.sankhya.db.DBObserverAdapter;
+			import br.com.sankhya.db.IDBCriteria;
+			import br.com.sankhya.db.IDBCriteriaProvider;
+			import br.com.sankhya.db.IDBDataSet;
+			import br.com.sankhya.db.IDBDataSetField;
+			import br.com.sankhya.db.IDataGridColumnBuilder;
+			import br.com.sankhya.db.IMetadataInterceptor;
+			import br.com.sankhya.db.dynaform.IDynaformPersonalizedFilterVisitor;
+			import br.com.sankhya.db.dynaform.IDynaformRecursiveVisitor;
+			import br.com.sankhya.db.ui.DBDoubleFacePanel;
+			import br.com.sankhya.db.ui.DBPersonalizedFilter;
+			import br.com.sankhya.db.ui.DBTextInput;
+			import br.com.sankhya.util.MessageUtils;
+			import br.com.sankhya.util.datetime.SanDate;
+			
+			private var _properties:Object;
+			private var _resourceID:String;
+			private var _dsTarefas:DBDataSet;
+			private var _isCreate:Boolean = false;
+			
+			public static const POPUP_ID:String = "EDICAO_TAREFA_CRONOGRAMA";
+			
+			[Bindable]
+			private var _enableEdition:Boolean = false;
+			[Bindable]
+			private var _tarefaErro:Boolean = false;
+			[Bindable]
+			private var _needRefreshSchedule:Boolean = false;
+			[Bindable]
+			private var _pendingToSave:Boolean;
+			
+			public function set resourceID(id:String):void{
+				_resourceID = id;
+			}
+			
+			public function set isErrorTask(b:Boolean):void{
+				_tarefaErro = b; 
+			}
+			
+			public function set enableEdition(b:Boolean):void {
+				_enableEdition = b;
+			}
+			
+			public function set needRefreshSchedule(b:Boolean):void {
+				_needRefreshSchedule = b;
+			}
+			
+			public function get needRefreshSchedule():Boolean {
+				return _needRefreshSchedule;
+			}
+			
+			public function creationCompleteHandler():void{
+				_isCreate = true;
+				_pendingToSave = false;
+				loadProperties();
+				dynaformTarefas.loadMetadata();
+			}
+			
+			public function loadProperties():void{
+				if(_properties != null && _isCreate){
+					lblDescricao.text = _properties.descricao;
+					
+					var dp:ArrayCollection = new ArrayCollection(_properties.lanes);
+					dp.filterFunction = function(item:TimeLineLane):Boolean{
+						return item.getDynamicProperty("CODUSU") != null;
+					};
+					dp.refresh();
+					
+					comboExecutante.dataProvider = dp;
+					
+					var s:SanDate = _properties.inicio as SanDate;
+					var e:SanDate = _properties.fim as SanDate;
+					dtInicio.selectedDate = (s == null ? null : s.buildDate());
+					dtFim.selectedDate = (e == null ? null : e.buildDate());
+					
+					comboExecutante.selectedItem = _properties.currentLane;
+				}
+			}
+			
+			public function setDataSet(dynaform:Dynaform, ds:IDBDataSet):void {
+				if(dynaformTarefas.entityName == "TCSSBLD") {
+					var criteria:DBCriteriaProviderAdapter = new DBCriteriaProviderAdapter();
+					criteria.getCriteriaImpl = getCriteria;
+					
+					_dsTarefas = ds as DBDataSet;
+					_dsTarefas.metadataInterceptor = this;
+					_dsTarefas.addDBCriteriaProvider(criteria);
+					_dsTarefas.refresh();
+					
+					var observer:DBObserverAdapter = new DBObserverAdapter();
+					observer.dataSavedImp = function(record:Object):void{
+						needRefreshSchedule = true;
+					};
+					
+					observer.insertionModeActivatedImp = function() {
+						_dsTarefas.setFieldValue("NUMOS",parseInt(_properties.numOS));
+						_dsTarefas.setFieldValue("NUMSPRINT",parseInt(_properties.numSprint));
+						_dsTarefas.setFieldValue("CICLO",new String(_properties.ciclo));
+					};
+					_dsTarefas.addObserver(observer);
+				}
+			}
+			
+			public function getCriteria():IDBCriteria{
+				var criteriaOutrosImpostos:DBCriteria = new DBCriteria();
+				var numOS:String = _properties.numOS;
+				var numSprint:String = _properties.numSprint;
+				var ciclo:String = _properties.ciclo;
+				
+				if(numOS != null && numSprint != null){
+					criteriaOutrosImpostos.expression = " this.NUMOS = ? AND this.NUMSPRINT = ?";
+					criteriaOutrosImpostos.parameters = [new DBCriteriaParameter("N", numOS), new DBCriteriaParameter("N", numSprint)];
+				}
+				
+				
+				return criteriaOutrosImpostos;
+			}
+			
+			public function get dataValue():Object {
+				var props:Object = new Object();
+				props.startDate = new SanDate(dtInicio.selectedDate);
+				props.endDate = new SanDate(dtFim.selectedDate);
+				props.selectedLane = comboExecutante.selectedItem;
+				
+				return props;
+			}
+			
+			public function set dataValue(value:Object):void {
+				_properties = value;
+				loadProperties();
+				refresh();
+			}
+			
+			private function refresh():void{
+				if (_dsTarefas != null) {
+					_dsTarefas.refresh();					
+				}
+			}
+			
+			private function abrirSprintBacklog():void {
+				var numOS:String = _properties.numOS;
+				var numSprint:String = _properties.numSprint;
+				
+				if(numOS && numSprint){
+					DefaultSankhyaApplication.openApp("br.com.sankhya.menu.adicional.TCSSBL", {NUMOS: numOS, NUMSPRINT: numSprint});
+				}
+			}
+			
+			private function abrirOS():void {
+				var numOS:String = _properties.numOS;
+
+				if(numOS){
+					DefaultSankhyaApplication.openApp("br.com.sankhya.os.mov.OrdemServico", {NUMOS: numOS, NUMITEM: -1});
+				}
+			}
+			
+			private function abrirTriagem():void {
+				var numOS:String = _properties.numOS;
+				
+				if(numOS){
+					DefaultSankhyaApplication.openApp("br.com.sankhya.menu.adicional.INDTRIAMAN", {NUMOS: numOS});
+				}
+			}
+			
+			private function onChangeToSave():void{
+				_pendingToSave = true;
+			}
+			
+			public function interceptField(field:IDBDataSetField, entityElem:XML, dataSet:IDBDataSet):IDBDataSetField{
+				var entityName:String = entityElem.@name;
+				var fieldName:String = field.name;
+				
+				if(entityName == "TCSSBLD"){
+					if (fieldName == "NUMOS" || fieldName == "NUMSPRINT" || fieldName == "NUMTAREFA") {
+						field.visibleAttribute = "N";
+					}
+				} else if (entityName == "Usuario") {
+					if (fieldName == "NOMEUSU") {
+						field.description = "Nome Usuário";
+						field.width = 200;
+					}
+				}
+				
+				return field;
+			}
+			
+			public function visitPersonalizedFilter(dbPersonalized:DBPersonalizedFilter, dynaform:Dynaform):void {
+				dbPersonalized.includeInLayout = false;
+				dbPersonalized.visible = false;
+			}
+		]]>
+	</mx:Script>
+	<mx:Label id="lblDescricao" fontWeight="bold" fontSize="14" width="380"/>
+	<mx:HBox horizontalGap="10">
+		<mx:FormItem required="true" label="{resourceManager.getString('Servico:GerenciaRecursos','frmInicio')}:">
+			<controls:DateInput id="dtInicio" enabled="{_enableEdition}" change="{onChangeToSave()}"/>
+		</mx:FormItem>
+		<mx:FormItem required="true" label="{resourceManager.getString('Servico:GerenciaRecursos','frmFim')}:">
+			<controls:DateInput id="dtFim" enabled="{_enableEdition}" change="{onChangeToSave()}"/>
+		</mx:FormItem>
+	</mx:HBox>
+	<mx:FormItem label="Executante:">
+		<controls:SearchCombo id="comboExecutante" labelField="{resourceManager.getString('Servico:GerenciaRecursos','s_cbDescrip')}" width="290" enabled="{_enableEdition}" change="{onChangeToSave()}"/>
+	</mx:FormItem>
+	<mx:HBox includeInLayout="{!_tarefaErro}" visible="{!_tarefaErro}" horizontalGap="2">
+		<controls:SanLinkButton id="viewOS_ciclo" text="Visualizar OS" click="abrirOS()" color="0x0000FF"/>
+		<mx:VRule height="{viewOS_ciclo.height}"></mx:VRule>
+		<controls:SanLinkButton text="Visualizar OS no Ciclo de Backlog" click="abrirSprintBacklog()" color="0x0000FF" includeInLayout="{!_tarefaErro}" visible="{!_tarefaErro}"/>
+	</mx:HBox>
+	<mx:HBox includeInLayout="{_tarefaErro}" visible="{_tarefaErro}" horizontalGap="2">
+		<controls:SanLinkButton id="viewOS" text="Visualizar OS" click="abrirOS()" color="0x0000FF"/>
+		<mx:VRule height="{viewOS.height}"></mx:VRule>
+		<controls:SanLinkButton text="Visualizar Triagem" click="abrirTriagem()" color="0x0000FF"/>
+	</mx:HBox>
+	<mx:VBox verticalGap="0" width="100%" height="300" includeInLayout="{!_tarefaErro}" visible="{!_tarefaErro}">
+		<dynaform:Dynaform 
+			id="dynaformTarefas" 
+			entityName="TCSSBLD" 
+			width="100%" 
+			height="100%" 
+			dynaformRecursiveVisitor="{this}"
+			initialFaceIndex="{DBDoubleFacePanel.GRID_FACE}"
+			personalizedFilterVisitor="{this}"
+			helperClassName="br.com.sankhya.extensions.celula.dynaform.CronogramaDynaformHelper"
+			>
+		</dynaform:Dynaform>
+	</mx:VBox>
+	
+</mx:VBox>

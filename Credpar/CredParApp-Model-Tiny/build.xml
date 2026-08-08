@@ -1,0 +1,39 @@
+<project name="CredParApp-Model-Tiny" basedir=".">
+
+	
+	<property name="lower_project_name" value="credparapp" />
+	<property name="jarFile" value="${basedir}/ws-credparapp/ejb/${lower_project_name}.jar"/>
+	<property name="jboss.default.cred2" value="C:/sk-java/AS/jboss-4.0.5.GA-cred/server/default"/>
+	<property name="jboss.default.cred" value="C:/sk-java/AS/jboss-4.0.5.GA/server/default"/>
+	
+		
+	<property environment="env"/>
+	<property name="temp" value="${env.TEMP}" />
+	
+	<target name="1 - Gerar interface EJBs" depends="z-check-ant" if="eclipse.home">
+		<delete dir="${basedir}/ejbsrc" />
+		<ant dir="${basedir}" antfile="${basedir}/xdoclet-build.xml" />
+		<echo message="ATENCAO!!! Interfaces geradas em ${project_name}/ejbsrc. Atualize o pacote ${project_name} (refresh) ANTES de gerar o JAR." />
+	</target>
+	
+	<target name="2 - Gerar JAR" depends="z-check-ant" if="eclipse.home">
+		<delete file="${jarFile}" />
+		<jar destfile="${jarFile}">
+			<zipfileset dir="build/META-INF" prefix="META-INF">
+				<include name="*.*"/>
+			</zipfileset>
+			<zipfileset dir="bin" includes="**/*.*"/>
+		</jar>
+		<echo message="JAR criado." />
+	</target>
+	
+	<target name="3 - Deploy JAR" depends="z-check-ant,2 - Gerar JAR" if="eclipse.home">
+		<echo message="Fazendo deploy do JAR ${jarFile} para o servidor de aplicacoes."/>
+		<copy file="${jarFile}" todir="${jboss.default.cred}/deploy/"></copy>
+	</target>
+	
+	<target name="z-check-ant" unless="eclipse.home">
+		<echo message="Propriedades requeridas nao disponiveis (rode este ANT dentro da mesma JRE do seu Eclipse). ${line.separator}Botao direito no ant>Run As...>Ant Build...>Aba JRE>Marcar opcao 'Run in the same JRE as the workspace'." />
+	</target>
+	
+</project>

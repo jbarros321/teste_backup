@@ -1,0 +1,2 @@
+select  AD_PERCMENSAS, AD_PERCMEN, AD_PERCMENUSU   
+from TCSFLD where codfld = :CODFLD

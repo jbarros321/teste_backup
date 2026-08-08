@@ -1,0 +1,39 @@
+<ion-view view-title="ALTERAR SENHA" cache-view="false"> 
+
+	<ion-nav-buttons side="left">
+    	<button class="button button-icon button-clear icon ion-ios-arrow-back" style="color: white;" ng-click="goBack()">
+        </button>
+    </ion-nav-buttons>
+    	
+<ion-content class="top0 bottom0">
+	<div class="row row-center" ng-style="{'height': windowHeight}" style="padding-top: 70px;">
+		<div class="col">		
+			<div style="margin: auto; width: 250px;">
+				<div><span style="font-size: 19px;">Senha Atual</span></div>
+			    <label class="item item-input" style="border-radius: 6px;">
+			     	<input type="password" ng-model="dadosSenha.SENHAATUAL"/>
+			    </label>
+			    <div>
+			    	<hr class="hrAlterarSenha"></hr>
+			    </div>
+			    <div style="margin-top: 10px;"><span style="font-size: 19px;">Nova Senha</span></div>
+			    <label class="item item-input" style="border-radius: 6px;">
+			     	<input type="password" ng-model="dadosSenha.NOVASENHA"/>
+			    </label>
+			    <div style="margin-top: 10px;"><span style="font-size: 19px;">Confirmar Nova Senha</span></div>
+			    <label class="item item-input" style="border-radius: 6px;">
+			     	<input type="password" ng-model="dadosSenha.CONFNOVASENHA"/>
+			    </label>
+			    <div style="text-align: center;">
+				    <button class="button btnAcessar" style="margin-top: 10px;" ng-click="alterarSenha()">
+				  		Alterar Senha
+					</button>
+				</div>
+				<div style="height: 40px;">
+        		</div>
+			</div>
+	
+		</div>
+	</div>
+</ion-content> 
+</ion-view>

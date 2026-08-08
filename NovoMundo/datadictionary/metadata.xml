@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<metadata>
+  <tables>
+    <table name="TIMPORTCONF" sequenceType="M">
+      <description><![CDATA[Configuração Telas Importação]]></description>
+    </table>
+    <table name="TIMPORTLOG" sequenceType="A" sequenceField="SEQUENCIA">
+      <description><![CDATA[Importação Arquivo Log]]></description>
+    </table>
+  </tables>
+  <fields>
+    <field name="FAZERAPOSLER" table="TIMPORTCONF" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="11">
+      <description><![CDATA[Fazer após ler arquivo]]></description>
+    </field>
+    <field name="DIRETORIOGRAVAR" table="TIMPORTCONF" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="10">
+      <description><![CDATA[Diretório gravar cópia]]></description>
+    </field>
+    <field name="DIRETORIOLER" table="TIMPORTCONF" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="9">
+      <description><![CDATA[Diretório ler arquivos]]></description>
+    </field>
+    <field name="IDTELA" table="TIMPORTLOG" dataType="S" presentationType="P" calculated="N" allowSearch="S" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="0">
+      <description><![CDATA[IS Tela]]></description>
+    </field>
+    <field name="SEQUENCIA" table="TIMPORTLOG" dataType="I" presentationType="P" calculated="N" allowSearch="N" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="1">
+      <description><![CDATA[Sequência]]></description>
+    </field>
+    <field name="NOMEARQUIVO" table="TIMPORTLOG" dataType="S" presentationType="P" calculated="N" allowSearch="S" allowDefault="S" visibleOnSearch="S" isPresentation="N" order="4">
+      <description><![CDATA[Nome Arquivo]]></description>
+    </field>
+    <field name="TIPO" table="TIMPORTLOG" dataType="S" presentationType="P" calculated="N" allowSearch="S" allowDefault="S" visibleOnSearch="S" isPresentation="N" order="5">
+      <description><![CDATA[Tipo]]></description>
+    </field>
+    <field name="DHIMPORTACAO" table="TIMPORTLOG" dataType="H" presentationType="P" calculated="N" allowSearch="N" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="3">
+      <description><![CDATA[Data Importação]]></description>
+    </field>
+    <field name="MENSAGEM" table="TIMPORTLOG" dataType="S" presentationType="P" calculated="N" allowSearch="S" allowDefault="S" visibleOnSearch="S" isPresentation="N" order="2">
+      <description><![CDATA[Mensagem]]></description>
+    </field>
+    <field name="TIPOARQ" table="TIMPORTCONF" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="8">
+      <description><![CDATA[Tipo de Arquivo]]></description>
+    </field>
+    <field name="STPFINAL" table="TIMPORTCONF" dataType="S" presentationType="P" calculated="N" allowSearch="S" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="6">
+      <description><![CDATA[Procedure final da importação]]></description>
+    </field>
+    <field name="NOMEIMPORT" table="TIMPORTCONF" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="2">
+      <description><![CDATA[Nome da importação]]></description>
+    </field>
+    <field name="CAMPOARQUIVO" table="TIMPORTCONF" dataType="S" presentationType="P" calculated="N" allowSearch="S" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="3">
+      <description><![CDATA[Campo conteúdo do arquivo]]></description>
+    </field>
+    <field name="CAMPONOME" table="TIMPORTCONF" dataType="S" presentationType="P" calculated="N" allowSearch="S" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="4">
+      <description><![CDATA[Campo nome do arquivo]]></description>
+    </field>
+    <field name="EVENTOANT" table="TIMPORTCONF" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="5">
+      <description><![CDATA[Evento anterior]]></description>
+    </field>
+    <field name="USAIMP" table="TIMPORTCONF" dataType="S" presentationType="P" calculated="S" allowSearch="N" allowDefault="N" visibleOnSearch="N" isPresentation="N" order="0">
+      <description><![CDATA[Tela utiliza importação]]></description>
+      <expression><![CDATA[return $col_EVENTOANT == null ? "NAO" : "SIM";]]></expression>
+    </field>
+    <field name="STPLINHA" table="TIMPORTCONF" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="7">
+      <description><![CDATA[Procedure de linha]]></description>
+    </field>
+    <field name="INSTANCIA" table="TIMPORTCONF" dataType="S" presentationType="P" calculated="N" allowSearch="S" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="1">
+      <description><![CDATA[Nome da instância]]></description>
+    </field>
+    <field name="IDTELA" table="TIMPORTCONF" dataType="S" presentationType="P" calculated="N" allowSearch="S" allowDefault="N" visibleOnSearch="S" isPresentation="N" order="0">
+      <description><![CDATA[Id da tela]]></description>
+    </field>
+  </fields>
+  <fieldProperties>
+    <prop table="TIMPORTCONF" field="INSTANCIA" name="requerido"><![CDATA[S]]></prop>
+    <prop table="TIMPORTCONF" field="EVENTOANT" name="visivel"><![CDATA[N]]></prop>
+    <prop table="TIMPORTCONF" field="USAIMP" name="readOnly"><![CDATA[S]]></prop>
+  </fieldProperties>
+  <fieldOptions>
+    <option table="TIMPORTCONF" field="USAIMP" value="SIM"><![CDATA[Sim]]></option>
+    <option table="TIMPORTCONF" field="USAIMP" value="NAO"><![CDATA[Não]]></option>
+    <option table="TIMPORTCONF" field="TIPOARQ" value="UTF8"><![CDATA[UTF-8]]></option>
+    <option table="TIMPORTCONF" field="TIPOARQ" value="ISO88591"><![CDATA[ISO-8859-1]]></option>
+    <option table="TIMPORTCONF" field="FAZERAPOSLER" value="EXCLUIR"><![CDATA[Excluir arquivo]]></option>
+    <option table="TIMPORTCONF" field="FAZERAPOSLER" value="RENOMEAR"><![CDATA[Renomear]]></option>
+    <option table="TIMPORTCONF" field="FAZERAPOSLER" value="MOVER"><![CDATA[Mover p/ diretório gravar cópia]]></option>
+  </fieldOptions>
+  <instances>
+    <instance name="ImportacaoArquivoConfig" tableName="TIMPORTCONF">
+      <description><![CDATA[Configuração Telas Importação]]></description>
+    </instance>
+    <instance name="ImportacaoArquivoLog" tableName="TIMPORTLOG">
+      <description><![CDATA[Importação Arquivo Log]]></description>
+    </instance>
+  </instances>
+  <relationShip>
+    <relation fromEntity="ImportacaoArquivoConfig" toEntity="ImportacaoArquivoLog" type="I" insert="N" update="N" remove="N">
+      <fields>
+        <field localName="IDTELA" targetName="IDTELA" />
+      </fields>
+    </relation>
+  </relationShip>
+  <controls>
+    <control name="br.com.sankhya.importacao.arquivos" type="MN" childrenType="MN">
+      <description><![CDATA[Configuração Importação de Arquivos]]></description>
+      <url><![CDATA[/hnzimp/ConfigImportacaoArquivo.flex?mgeSession=${mge.session.id}&resourceID=${resourceID}]]></url>
+      <properties>
+        <resourceID><![CDATA[br.com.sankhya.hnzimp.cfg.configuracao.importacao]]></resourceID>
+        <contexto><![CDATA[hnzimp]]></contexto>
+      </properties>
+    </control>
+  </controls>
+  <controlRelations>
+    <ctrlRelationship fromCtrl="br.com.sankhya.core.cfg.Avançado" toCtrl="br.com.sankhya.importacao.arquivos" />
+  </controlRelations>
+</metadata>
+

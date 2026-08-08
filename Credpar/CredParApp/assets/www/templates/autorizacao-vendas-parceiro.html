@@ -1,0 +1,155 @@
+<ion-view view-title="AUTORIZAÇÃO DE VENDAS" class="background-login" cache-view="false">
+
+	<ion-nav-buttons side="left">
+    	<button class="button button-icon button-clear icon ion-ios-arrow-back" style="color: white;" ng-click="goBack()">
+        </button>
+    </ion-nav-buttons>
+    
+    	
+    
+    <script id="popUp-Parceiros.html" type="text/ng-template" class="teste">
+		<ion-header-bar class="bar-orange bar bar-header">
+      		<h1 class="title">Pesquisa Clientes</h1>
+    	</ion-header-bar>
+		<ion-content>
+    		<ion-list>	      
+	        	<ion-item href="#" ng-repeat="parceiro in parceiros" style="padding: 5px !important;white-space: normal;text-align: left;" ng-click="selectParc($event,parceiro)">
+                	<div> 
+                		<span ng-if="parceiro.NOMEPARC != null" style="white-space: normal;">
+                				<b>Nome Cliente:</b> {{ parceiro.NOMEPARC }}</span>                 	
+                	</div>
+                	<div>
+	                	<span ng-if="parceiro.DTCAD != null">
+                				<b>Data:</b> {{ parceiro.DTCAD }}</span>                 	
+     	           </div>
+	    	    </ion-item>
+	   		</ion-list>
+		</ion-content>
+		<ion-footer-bar name="footer">
+			<div style="text-align: right; width: 100%;">
+				<button class="button btnAcessar" style="bottom: 0; right: 0;margin: 3px;" ng-click="closePopUp()">Fechar</button>
+			</div>
+        </ion-footer-bar>
+	</script>
+	
+	
+	 <script id="popUp-valida-senha.html" type="text/ng-template" class="teste">
+		<ion-header-bar class="bar-orange bar bar-header">
+      		<h1 class="title">SENHA DO CLIENTE PARA AUTORIZAÇÃO</h1>
+    	</ion-header-bar>
+		<ion-content>
+                	<div style="margin-top: 5px; margin-left:5px; text-align: left;">  
+                	    <b>Nome Cliente:</b> {{nomeParceiro}}</span>                 	
+                	</div>
+					<div style="margin-top: 10px; margin-left:22px; text-align: left;">  
+                	    <b>Nome CPF:</b> {{CGC_CPF}}</span>                 	
+                	</div>
+					<div style="margin-top: 10px; margin-left:5px; text-align: left;"> 
+                		<b>Senha:</b></span>                 	
+                	</div>
+					<div  style= "margin-left:5px; width:175px;"> 
+                		<input type="password" ng-model="$root.senhaAutorizacao"  placeholder="Digite sua senha">        	
+                	</div>
+		</ion-content>
+		<ion-footer-bar name="footer">
+			<div style="text-align: right; width: 100%;">
+				<button class="button btnAcessar" style="bottom: 0; right: 0;margin: 3px;" ng-click="closePopUp()">FECHAR</button>
+			</div>
+			<div>
+				<button id ="btnConfirmVerificaSenha" class="button btnAcessar" style="bottom: 0; right: 0;margin: 3px;" ng-click="incluirAutorizacao()">AUTORIZAR</button>
+			</div>
+        </ion-footer-bar>
+	</script>
+	
+	
+    <ion-content class="has-header has-footer padding task-content background-login">
+		 <div class="item item-input" style="border-width: 2px;border-color: #939598;border-radius: 6px;">
+		    <input type="text" ng-restrict="^[0-9-]*$" placeholder="Digite o número do cartão ou CPF" ng-model="autorizacaoParc.CARTAO_CGC_CPF" ng-enter="buscarParceiros()">
+		    <button class="button button-stable " style="background-color: transparent;" ng-click="buscarParceiros()">
+		  		<i class="search_40x40-img"></i>
+			</button>
+		 </div>
+		 <div style="margin-top: 10px; text-align: left;" ng-if="parceiroSelecionado.NOMEPARC != null">
+		 	<span >
+             	<b>Cliente:&nbsp;</b> {{ parceiroSelecionado.NOMEPARC }}
+             </span>                 	
+		 </div>
+		 <div style="text-align: left;" ng-if="parceiroSelecionado.CGC_CPF != null">
+		 	<span >
+             	<b>CPF:&nbsp;</b> {{ parceiroSelecionado.CGC_CPF }}
+             </span>                 	
+		 </div>		 		 
+		 <label class="item item-input" style="margin-top: 15px;">
+		 	<span class="input-label" ng-if="!autorizacaoParc.DATA" style="color: #aaa; font-weight: 100;">DATA DO PRIMEIRO VENCIMENTO</span> 
+		 	<input type="date" ng-model="autorizacaoParc.DATA" style="width: 200px;"  placeholder="DATA DO PRIMEIRO VENCIMENTO" ng-change="changeValueAuto()">		 	
+		 </label>
+		 <label class="item item-input" style="margin-top: 5px;">
+			 <button 
+			 	ng-click="buscarNegociacao()"
+				class="button button-small button-light button-select icon-right ion-android-arrow-dropdown" 
+	               modal-select options="tiposNeg.options"
+	               modal-title="Tipos de Negociação"  
+	               cancel-button="Cancelar"
+	               ng-model="tiposNeg.selection" 
+	               reset-button="Limpar valor"
+	               has-search="true"
+	               search-placeholder="Procurar"
+	               cancel-search-button="Limpar">
+				{{ tiposNeg.selection.DESCRTIPVENDA || &apos;PLANO DE VENDA&apos; }}
+				<div class="option">
+	   				{{ option.DESCRTIPVENDA }} <i class="radio-icon ion-checkmark"></i>
+				</div>
+			</button>
+		</label>
+		<label class="item item-input" style="margin-top: 5px;">
+		    <input type="number" step="0.01" placeholder="VALOR TOTAL" ng-model="autorizacaoParc.VALORTOTAL" ng-change="changeValueAuto()">
+		</label>
+		<div style="margin-top: 26px;" class="row">
+			<div class="col">				
+				<button id="btnGerarParcelas" class="button buttonGradient borderStyle"  style="width: 100%; height:100%;font-size: 13px;font-weight: bold;" ng-click="gerarParcelas()">
+				  PARCELAR
+				</button>
+			</div>
+			<div class="col">
+				<button id="btnConfirmar" class="button buttonGradient borderStyle" style="width: 100%;  height:100%; font-size: 13px;font-weight: bold;" ng-click="showPopUpVerificaSenha()">
+				  AUTORIZAR
+				</button>
+			</div>				
+				
+		</div>
+		<div class="row" style="font-weight: bold;color: white;border-radius: 6px 6px 0px 0px;background-color: #D85909;margin-top: 10px;" ng-if="parcelas != null">
+			  <div class="col"><span>Nº Parcelas</span></div>
+			  <div class="col"><span>Valor Parcela</span></div>
+			  <div class="col"><span>Vencimento</span></div>
+		</div>
+		<ion-list>	       
+	        <ion-item ng-repeat="parcela in parcelas" style="padding: 6px !important;">
+	        	<div class="row">
+	                <div class="col">
+	                	<b><span ng-if="parcela.NROPARCELA != null">
+	                				{{ parcela.NROPARCELA }}</span> </b>                	
+	                </div>
+	                <div class="col">
+	                	<span ng-if="parcela.VALORPARCELA != null">
+	                				R$ {{ parcela.VALORPARCELA }}</span>
+	                </div>				                 	
+	                <div class="col">
+	                	<span ng-if="parcela.DTVENCIMENTO != null">
+	                				{{ parcela.DTVENCIMENTO }}
+           				</span>                 	
+	                </div>
+                </div>
+	        </ion-item>
+        </ion-list>
+        <div class="row" style="font-weight: bold;color: white;background-color: #D85909;" ng-if="parcelas != null">
+			<div style="display: inline-block;">
+				<span>CÓDIGO DA AUTORIZAÇÃO: </span> 
+			</div>
+			<div style="display: inline-block; margin-left: 30px;">
+				<span ng-if="autorizacaoParc.nroAutorizacao != null">{{autorizacaoParc.nroAutorizacao}}</span> 
+			</div>
+		</div>
+		<div style="height: 95px;">
+		</div>
+    </ion-content>
+</ion-view>

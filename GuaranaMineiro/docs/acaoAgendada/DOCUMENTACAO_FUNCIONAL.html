@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>DOCUMENTACAO_FUNCIONAL</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<h1
+id="documentacao-funcional---consulta-automatica-de-comprovantes-de-entrega">Documentacao
+Funcional - Consulta Automatica de Comprovantes de Entrega</h1>
+<h2 id="indice">Indice</h2>
+<ol type="1">
+<li><a href="#visão-geral">Visão Geral</a></li>
+<li><a href="#objetivos-do-sistema">Objetivos do Sistema</a></li>
+<li><a href="#requisitos-funcionais">Requisitos Funcionais</a></li>
+<li><a href="#requisitos-não-funcionais">Requisitos
+Não-Funcionais</a></li>
+<li><a href="#regras-de-negócio">Regras de Negócio</a></li>
+<li><a href="#fluxos-de-processo">Fluxos de Processo</a></li>
+<li><a href="#casos-de-uso">Casos de Uso</a></li>
+<li><a href="#configuração-do-sistema">Configuração do Sistema</a></li>
+<li><a href="#monitoramento-e-relatórios">Monitoramento e
+Relatórios</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ol>
+<h2 id="visão-geral">Visão Geral</h2>
+<h3 id="descrição-do-sistema">Descrição do Sistema</h3>
+<p>O sistema de <strong>Consulta Automática de Comprovantes de
+Entrega</strong> é uma funcionalidade que busca automaticamente
+comprovantes de entrega na plataforma Performaxxi para veículos que
+possuem ordem de carga no dia atual, armazenando essas informações no
+sistema Sankhya para consulta e auditoria.</p>
+<h3 id="problema-a-ser-resolvido">Problema a Ser Resolvido</h3>
+<p>Atualmente, os comprovantes de entrega precisam ser consultados
+manualmente na plataforma Performaxxi, gerando: - Perda de tempo na
+consulta manual - Possibilidade de esquecimento de consultas - Falta de
+histórico centralizado no sistema Sankhya - Dificuldade de auditoria e
+rastreabilidade</p>
+<h3 id="benefícios-esperados">Benefícios Esperados</h3>
+<ul>
+<li><strong>Automatização</strong>: Eliminação de consultas manuais</li>
+<li><strong>Centralização</strong>: Comprovantes disponíveis no sistema
+Sankhya</li>
+<li><strong>Rastreabilidade</strong>: Histórico completo de
+consultas</li>
+<li><strong>Eficiência</strong>: Processamento automático em horários
+programados</li>
+</ul>
+<h2 id="objetivos-do-sistema">Objetivos do Sistema</h2>
+<h3 id="objetivo-principal">Objetivo Principal</h3>
+<p>Automatizar a consulta e armazenamento de comprovantes de entrega da
+plataforma Performaxxi no sistema Sankhya.</p>
+<h3 id="objetivos-específicos">Objetivos Específicos</h3>
+<ol type="1">
+<li>Consultar automaticamente comprovantes para veículos com ordem de
+carga</li>
+<li>Armazenar comprovantes no banco de dados do Sankhya</li>
+<li>Registrar logs de execução para auditoria</li>
+<li>Notificar em caso de erros na execução</li>
+</ol>
+<h2 id="requisitos-funcionais">Requisitos Funcionais</h2>
+<h3 id="rf01---consulta-automática-de-veículos">RF01 - Consulta
+Automática de Veículos</h3>
+<p><strong>Descrição</strong>: O sistema deve identificar
+automaticamente veículos que possuem ordem de carga no dia atual.</p>
+<p><strong>Critérios de Aceitação</strong>: - Consultar apenas veículos
+com ordem de carga preenchida - Considerar apenas registros do dia atual
+- Processar todos os veículos encontrados</p>
+<h3 id="rf02---consulta-de-comprovantes-na-performaxxi">RF02 - Consulta
+de Comprovantes na Performaxxi</h3>
+<p><strong>Descrição</strong>: Para cada veículo identificado, o sistema
+deve consultar os comprovantes de entrega na plataforma Performaxxi.</p>
+<p><strong>Critérios de Aceitação</strong>: - Consultar comprovantes por
+veículo individualmente - Utilizar data, ID do rastreador, classe e
+conjunto como parâmetros - Processar resposta da API Performaxxi</p>
+<h3 id="rf03---armazenamento-de-comprovantes">RF03 - Armazenamento de
+Comprovantes</h3>
+<p><strong>Descrição</strong>: Os comprovantes obtidos devem ser
+armazenados na tabela AD_COMPROVANTES.</p>
+<p><strong>Critérios de Aceitação</strong>: - Salvar código da entrega -
+Salvar identificador do cliente - Salvar URL de acesso ao comprovante -
+Registrar data e hora da execução - Marcar status como “PROCESSADO”</p>
+<h3 id="rf04---registro-de-logs">RF04 - Registro de Logs</h3>
+<p><strong>Descrição</strong>: O sistema deve registrar logs detalhados
+de todas as execuções.</p>
+<p><strong>Critérios de Aceitação</strong>: - Registrar início e fim da
+execução - Contar total de veículos processados - Contar total de
+comprovantes encontrados - Registrar duração da execução - Logar erros
+específicos por veículo</p>
+<h3 id="rf05---notificação-de-erros">RF05 - Notificação de Erros</h3>
+<p><strong>Descrição</strong>: Em caso de erro na execução, o sistema
+deve enviar notificação por email.</p>
+<p><strong>Critérios de Aceitação</strong>: - Enviar email para
+suporte@guaranamineiro.com.br - Incluir detalhes do erro - Incluir tempo
+de execução - Incluir ID de correlação</p>
+<h2 id="requisitos-não-funcionais">Requisitos Não-Funcionais</h2>
+<h3 id="rnf01---performance">RNF01 - Performance</h3>
+<ul>
+<li><strong>Tempo de execução</strong>: Máximo de 5 minutos por
+execução</li>
+<li><strong>Timeout de API</strong>: 60 segundos por consulta</li>
+<li><strong>Processamento</strong>: Suporte a até 100 veículos por
+execução</li>
+</ul>
+<h3 id="rnf02---disponibilidade">RNF02 - Disponibilidade</h3>
+<ul>
+<li><strong>Disponibilidade</strong>: 99% de uptime</li>
+<li><strong>Execução</strong>: Automática conforme cronograma
+configurado</li>
+<li><strong>Retry</strong>: 3 tentativas em caso de erro</li>
+</ul>
+<h3 id="rnf03---segurança">RNF03 - Segurança</h3>
+<ul>
+<li><strong>Autenticação</strong>: Credenciais seguras para API
+Performaxxi</li>
+<li><strong>Logs</strong>: Registro de auditoria de todas as
+operações</li>
+<li><strong>Permissões</strong>: Acesso restrito a usuários
+autorizados</li>
+</ul>
+<h3 id="rnf04---escalabilidade">RNF04 - Escalabilidade</h3>
+<ul>
+<li><strong>Volume</strong>: Suporte a crescimento de 50% no número de
+veículos</li>
+<li><strong>Concorrência</strong>: Execução única por vez</li>
+<li><strong>Armazenamento</strong>: Retenção de dados por 90 dias</li>
+</ul>
+<h2 id="regras-de-negócio">Regras de Negócio</h2>
+<h3 id="rn01---critério-de-seleção-de-veículos">RN01 - Critério de
+Seleção de Veículos</h3>
+<ul>
+<li>Apenas veículos com campo ORDEMCARGA preenchido</li>
+<li>Apenas registros com data de negociação igual ao dia atual</li>
+<li>Excluir veículos já processados com sucesso no mesmo dia</li>
+</ul>
+<h3 id="rn02---formato-de-dados">RN02 - Formato de Dados</h3>
+<ul>
+<li>Data deve estar no formato YYYY-MM-DD para API</li>
+<li>Classe deve ser sempre “ENTREGA”</li>
+<li>Conjunto deve ser sempre “COMPROVANTES”</li>
+</ul>
+<h3 id="rn03---tratamento-de-erros">RN03 - Tratamento de Erros</h3>
+<ul>
+<li>Erro em um veículo não deve interromper processamento dos
+demais</li>
+<li>Logs de erro devem ser registrados por veículo</li>
+<li>Email de notificação apenas para erros críticos</li>
+</ul>
+<h3 id="rn04---retenção-de-dados">RN04 - Retenção de Dados</h3>
+<ul>
+<li>Comprovantes: Retenção mínima de 90 dias</li>
+<li>Logs de execução: Retenção mínima de 90 dias</li>
+<li>Limpeza automática de dados antigos</li>
+</ul>
+<h2 id="fluxos-de-processo">Fluxos de Processo</h2>
+<h3 id="fluxo-principal---execução-automática">Fluxo Principal -
+Execução Automática</h3>
+<pre class="mermaid"><code>flowchart TD
+    A[Início da Execução Agendada] --&gt; B[Gerar ID de Correlação]
+    B --&gt; C[Consultar Veículos com Ordem de Carga]
+    C --&gt; D{Encontrou Veículos?}
+    D --&gt;|Não| E[Registrar Log: Nenhum Veículo]
+    D --&gt;|Sim| F[Para Cada Veículo]
+    F --&gt; G[Consultar Comprovantes na Performaxxi]
+    G --&gt; H{Consulta Bem-sucedida?}
+    H --&gt;|Não| I[Registrar Erro do Veículo]
+    H --&gt;|Sim| J{Tem Comprovantes?}
+    J --&gt;|Não| K[Registrar: Sem Comprovantes]
+    J --&gt;|Sim| L[Salvar Comprovantes no Banco]
+    I --&gt; M[Próximo Veículo]
+    K --&gt; M
+    L --&gt; M
+    M --&gt; N{Ainda Há Veículos?}
+    N --&gt;|Sim| F
+    N --&gt;|Não| O[Gerar Relatório Final]
+    O --&gt; P[Registrar Log de Execução]
+    P --&gt; Q[Fim da Execução]
+    E --&gt; Q</code></pre>
+<h3 id="fluxo-de-tratamento-de-erro">Fluxo de Tratamento de Erro</h3>
+<pre class="mermaid"><code>flowchart TD
+    A[Erro Detectado] --&gt; B[Registrar Erro no Log]
+    B --&gt; C{Erro Crítico?}
+    C --&gt;|Sim| D[Enviar Email de Notificação]
+    C --&gt;|Não| E[Continuar Processamento]
+    D --&gt; F[Incluir Detalhes do Erro]
+    F --&gt; G[Incluir ID de Correlação]
+    G --&gt; H[Enviar para Suporte]
+    E --&gt; I[Próxima Operação]
+    H --&gt; I</code></pre>
+<h2 id="casos-de-uso">Casos de Uso</h2>
+<h3 id="cu01---execução-automática-de-consulta">CU01 - Execução
+Automática de Consulta</h3>
+<p><strong>Ator Principal</strong>: Sistema (Ação Agendada)</p>
+<p><strong>Pré-condições</strong>: - Sistema Sankhya em funcionamento -
+Conexão com API Performaxxi disponível - Tabela AD_COMPROVANTES
+criada</p>
+<p><strong>Fluxo Principal</strong>: 1. Sistema inicia execução no
+horário agendado 2. Sistema consulta veículos com ordem de carga do dia
+3. Para cada veículo encontrado: 1. Sistema consulta comprovantes na
+Performaxxi 2. Sistema salva comprovantes no banco de dados 4. Sistema
+registra log de execução 5. Sistema finaliza execução</p>
+<p><strong>Fluxo Alternativo</strong>: - 3a. Se erro na consulta:
+registrar erro e continuar próximo veículo - 4a. Se erro crítico: enviar
+notificação por email</p>
+<p><strong>Pós-condições</strong>: - Comprovantes salvos no banco de
+dados - Log de execução registrado - Notificação enviada (se houver erro
+crítico)</p>
+<h3 id="cu02---consulta-manual-de-comprovantes">CU02 - Consulta Manual
+de Comprovantes</h3>
+<p><strong>Ator Principal</strong>: Usuário do Sistema</p>
+<p><strong>Pré-condições</strong>: - Usuário autenticado no sistema -
+Comprovantes já processados pelo sistema automático</p>
+<p><strong>Fluxo Principal</strong>: 1. Usuário acessa consulta de
+comprovantes 2. Usuário filtra por data, veículo ou cliente 3. Sistema
+exibe lista de comprovantes 4. Usuário seleciona comprovante desejado 5.
+Sistema exibe detalhes do comprovante 6. Usuário acessa URL do
+comprovante (se necessário)</p>
+<h2 id="configuração-do-sistema">Configuração do Sistema</h2>
+<h3 id="configuração-de-agendamento">Configuração de Agendamento</h3>
+<p><strong>Localização</strong>: Administração ? Agendamento ? Ações
+Agendadas</p>
+<p><strong>Parâmetros de Configuração</strong>: - <strong>Nome</strong>:
+“Comprovantes de Entrega - Performaxxi” - <strong>Frequência</strong>:
+Diária - <strong>Horário</strong>: 08:00 (configurável) -
+<strong>Timeout</strong>: 300 segundos - <strong>Tentativas</strong>: 3
+- <strong>Intervalo entre tentativas</strong>: 5 minutos</p>
+<h3 id="configuração-da-api-performaxxi">Configuração da API
+Performaxxi</h3>
+<p><strong>Parâmetros Necessários</strong>: - <strong>URL Base</strong>:
+https://www.performaxxi.com.br - <strong>Endpoint</strong>:
+/API.REST/comprovantes-entrega - <strong>Autenticação</strong>: Basic
+Auth - <strong>Timeout de Conexão</strong>: 30 segundos -
+<strong>Timeout de Leitura</strong>: 60 segundos</p>
+<h3 id="configuração-de-notificações">Configuração de Notificações</h3>
+<p><strong>Email de Notificação</strong>: -
+<strong>Destinatário</strong>: suporte@guaranamineiro.com.br -
+<strong>Assunto</strong>: “[ERRO] Comprovantes de Entrega - [ID]” -
+<strong>Formato</strong>: HTML - <strong>Conteúdo</strong>: Detalhes do
+erro, tempo de execução, ID de correlação</p>
+<h2 id="monitoramento-e-relatórios">Monitoramento e Relatórios</h2>
+<h3 id="dashboard-de-monitoramento">Dashboard de Monitoramento</h3>
+<p><strong>Métricas Disponíveis</strong>: - Última execução realizada -
+Total de veículos processados - Total de comprovantes encontrados -
+Tempo médio de execução - Taxa de sucesso - Status da última
+execução</p>
+<h3 id="relatórios-disponíveis">Relatórios Disponíveis</h3>
+<p><strong>Relatório Diário</strong>: - Resumo de execuções do dia -
+Veículos processados - Comprovantes encontrados - Erros ocorridos</p>
+<p><strong>Relatório Semanal</strong>: - Estatísticas de performance -
+Tendências de crescimento - Análise de erros</p>
+<p><strong>Relatório Mensal</strong>: - Análise de qualidade - Sugestões
+de melhorias - Métricas de disponibilidade</p>
+<h3 id="consultas-de-monitoramento">Consultas de Monitoramento</h3>
+<p><strong>Consultar Últimas Execuções</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> AD_ACAO_AGENDADA_LOG</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> DATA_EXECUCAO <span class="kw">DESC</span>;</span></code></pre></div>
+<p><strong>Consultar Comprovantes do Dia</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> AD_COMPROVANTES</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> DATA_ENTREGA <span class="op">=</span> <span class="fu">TO_CHAR</span>(<span class="fu">SYSDATE</span>, <span class="st">&#39;YYYY-MM-DD&#39;</span>);</span></code></pre></div>
+<p><strong>Consultar Estatísticas</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> STATUS, <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> TOTAL_EXECUCOES,</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">AVG</span>(TOTAL_COMPROVANTES) <span class="kw">AS</span> MEDIA_COMPROVANTES</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> AD_ACAO_AGENDADA_LOG</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> DATA_EXECUCAO <span class="op">&gt;=</span> <span class="fu">SYSDATE</span> <span class="op">-</span> <span class="dv">30</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> STATUS;</span></code></pre></div>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="problemas-comuns">Problemas Comuns</h3>
+<p><strong>Problema 1: Nenhum Veículo Encontrado</strong> -
+<strong>Sintoma</strong>: Log mostra “0 veículos encontrados” -
+<strong>Causa</strong>: Nenhum veículo com ordem de carga no dia -
+<strong>Solução</strong>: Verificar se há vendas com ordem de carga no
+dia atual</p>
+<p><strong>Problema 2: Erro de Conexão com API</strong> -
+<strong>Sintoma</strong>: Timeout ou erro de conexão -
+<strong>Causa</strong>: API Performaxxi indisponível ou credenciais
+inválidas - <strong>Solução</strong>: Verificar status da API e validar
+credenciais</p>
+<p><strong>Problema 3: Erro de Permissão no Banco</strong> -
+<strong>Sintoma</strong>: Erro ao salvar comprovantes -
+<strong>Causa</strong>: Usuário sem permissão na tabela AD_COMPROVANTES
+- <strong>Solução</strong>: Conceder permissões adequadas ao usuário de
+execução</p>
+<p><strong>Problema 4: Email de Notificação Não Enviado</strong> -
+<strong>Sintoma</strong>: Erro crítico ocorreu mas email não foi enviado
+- <strong>Causa</strong>: Configuração incorreta do servidor de email -
+<strong>Solução</strong>: Verificar configurações de SMTP no Sankhya</p>
+<h3 id="logs-de-debug">Logs de Debug</h3>
+<p><strong>Habilitar Logs Detalhados</strong>: - Acessar configurações
+do sistema - Ativar modo debug para módulo Performaxxi - Verificar logs
+no console do Sankhya</p>
+<p><strong>Informações de Log</strong>: - ID de correlação da execução -
+Timestamp de início e fim - Detalhes de cada veículo processado -
+Mensagens de erro específicas</p>
+<h3 id="contatos-de-suporte">Contatos de Suporte</h3>
+<p><strong>Suporte Técnico</strong>: - <strong>Email</strong>:
+suporte@guaranamineiro.com.br - <strong>Horário</strong>: 08:00 às 18:00
+(segunda a sexta)</p>
+<p><strong>Suporte Performaxxi</strong>: - <strong>Email</strong>:
+suporte@performaxxi.com.br - <strong>Documentação</strong>:
+https://www.performaxxi.com.br/API.WS.Documentation2/</p>
+<p><strong>Suporte Sankhya</strong>: - <strong>Email</strong>:
+suporte@sankhya.com.br - <strong>Documentação</strong>:
+https://developer.sankhya.com.br/</p>
+<hr />
+<p><strong>Versão</strong>: 1.0.0 <strong>Última atualização</strong>:
+Janeiro 2025 <strong>Autor</strong>: Sistema de Integração
+PERFORMAXXI</p>
+</body>
+</html>

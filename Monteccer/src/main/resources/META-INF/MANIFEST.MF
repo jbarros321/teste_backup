@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Created-By: Maven JAR Plugin 3.4.1
+Build-Jdk-Spec: 21
+Main-Class: br.com.monteccer.action.botaoAcao.IntegraMonteccer
+Implementation-Title: Integracao Monteccer
+Implementation-Version: 1.0.0
+Implementation-Vendor: Monteccer

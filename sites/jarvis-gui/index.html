@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O.L.A B.I. Core Interface</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Canvas 3D -->
+    <div id="container"></div>
+
+    <!-- Scanlines overlay -->
+    <div id="scanlines"></div>
+
+    <!-- Grid background -->
+    <div id="grid-bg"></div>
+
+    <!-- Orbital rings SVG -->
+    <div id="orbital-rings">
+        <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+            <circle class="ring ring-1" cx="300" cy="300" r="220"/>
+            <circle class="ring ring-2" cx="300" cy="300" r="195"/>
+            <circle class="ring ring-3" cx="300" cy="300" r="170"/>
+
+            <!-- Tick marks -->
+            <g class="tick-group" id="ticks-outer"></g>
+
+            <!-- Arc indicators -->
+            <path class="arc-indicator" d="M 300 80 A 220 220 0 0 1 520 300" />
+            <path class="arc-indicator arc-2" d="M 300 520 A 220 220 0 0 1 80 300" />
+
+            <!-- Diamond markers -->
+            <polygon class="diamond" points="300,62 307,80 300,98 293,80"/>
+            <polygon class="diamond diamond-r" points="518,293 536,300 518,307 500,300"/>
+        </svg>
+    </div>
+
+    <!-- Main HUD -->
+    <div id="ui-overlay">
+
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <div class="top-left">
+                <div class="corner-bracket tl"></div>
+                <div class="sys-id">
+                    <span class="label">SYS//ID</span>
+                    <span class="mono accent">OLA-BI-CORE</span>
+                </div>
+                <div class="sys-build">
+                    <span class="label">BUILD</span>
+                    <span class="mono">2025.04.REV7</span>
+                </div>
+                <div class="status-pill" id="status-pill">
+                    <span class="pulse-dot"></span>
+                    <span id="status-text">ONLINE</span>
+                </div>
+            </div>
+
+            <div class="top-center">
+                <div class="system-name">O.L.A <span class="sep">·</span> B.I</div>
+                <div class="subtitle">BEHAVIORAL INTELLIGENCE CORE <span class="version">v2.0</span></div>
+            </div>
+
+            <div class="top-right">
+                <div class="corner-bracket tr"></div>
+                <div class="data-readout">
+                    <span class="label">UPTIME</span>
+                    <span class="mono" id="uptime-display">00:00:00</span>
+                </div>
+                <div class="data-readout">
+                    <span class="label">PARTICLES</span>
+                    <span class="mono accent">4.000</span>
+                </div>
+                <div class="data-readout">
+                    <span class="label">NEURAL LOAD</span>
+                    <span class="mono" id="neural-load">--.--%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MIDDLE ROW: side panels + center -->
+        <div class="middle-row">
+
+            <!-- LEFT PANEL -->
+            <div class="side-panel left-panel">
+                <div class="panel-header">
+                    <span class="panel-label">◈ TELEMETRY</span>
+                    <span class="panel-blink">●</span>
+                </div>
+
+                <div class="metric-block">
+                    <div class="metric-label">RESPOSTA_MS</div>
+                    <div class="metric-bar-wrap">
+                        <div class="metric-bar" id="bar-latency" style="width:30%"></div>
+                    </div>
+                    <div class="metric-val mono" id="val-latency">148 ms</div>
+                </div>
+
+                <div class="metric-block">
+                    <div class="metric-label">CONFIDENCE</div>
+                    <div class="metric-bar-wrap">
+                        <div class="metric-bar bar-green" id="bar-conf" style="width:87%"></div>
+                    </div>
+                    <div class="metric-val mono" id="val-conf">87.3 %</div>
+                </div>
+
+                <div class="metric-block">
+                    <div class="metric-label">VOCAB_BUFFER</div>
+                    <div class="metric-bar-wrap">
+                        <div class="metric-bar bar-yellow" id="bar-vocab" style="width:55%"></div>
+                    </div>
+                    <div class="metric-val mono" id="val-vocab">55.1 %</div>
+                </div>
+
+                <div class="metric-block">
+                    <div class="metric-label">CONTEXT_WINDOW</div>
+                    <div class="metric-bar-wrap">
+                        <div class="metric-bar" id="bar-ctx" style="width:20%"></div>
+                    </div>
+                    <div class="metric-val mono" id="val-ctx">20.4 %</div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="panel-header" style="margin-top:0.5rem">
+                    <span class="panel-label">◈ ESTADO ATUAL</span>
+                </div>
+                <div class="state-display" id="state-display">IDLE</div>
+                <div class="state-desc" id="state-desc">Sistema em repouso. Aguardando ativação.</div>
+
+                <div class="divider"></div>
+
+                <!-- Mini waveform -->
+                <div class="waveform-wrap">
+                    <div class="panel-label" style="margin-bottom:0.4rem">◈ AUDIO WAVE</div>
+                    <div class="waveform" id="waveform">
+                        <span></span><span></span><span></span><span></span><span></span>
+                        <span></span><span></span><span></span><span></span><span></span>
+                        <span></span><span></span><span></span><span></span><span></span>
+                        <span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CENTER placeholder (sphere lives in #container behind) -->
+            <div class="center-zone">
+                <div class="scan-line-h" id="scan-h"></div>
+            </div>
+
+            <!-- RIGHT PANEL -->
+            <div class="side-panel right-panel">
+                <div class="panel-header">
+                    <span class="panel-label">◈ ACTIVITY LOG</span>
+                    <span class="panel-blink">●</span>
+                </div>
+
+                <div id="activity-log" class="activity-log">
+                    <!-- logs inseridos pelo main.js -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- BOTTOM BAR -->
+        <div class="bottom-controls">
+            <div class="corner-bracket bl"></div>
+            <div class="corner-bracket br"></div>
+
+            <div class="bottom-left">
+                <div id="mic-indicator" class="mic-off">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                    <span class="mic-label" id="mic-label">MIC OFF</span>
+                </div>
+            </div>
+
+            <div class="bottom-center">
+                <div class="feedback-wrapper">
+                    <div class="feedback-tag">AI_OUTPUT //</div>
+                    <p id="feedback-text">Aguardando comando...</p>
+                </div>
+            </div>
+
+            <div class="bottom-right">
+                <div class="bottom-metrics">
+                    <div class="bm-item"><span class="label">SESSION</span><span class="mono" id="session-id">S-7F2A</span></div>
+                    <div class="bm-item"><span class="label">MODO</span><span class="mono accent" id="mode-display">STANDBY</span></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script type="text/javascript" src="/eel.js"></script>
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+          }
+        }
+    </script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>

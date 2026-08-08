@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluxo de Caixa</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <!-- SheetJS para exportação Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- jsPDF + AutoTable para exportação PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 84% 4.9%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
+
+            --col-bg-white: #ffffff;
+            --col-bg-muted: #f1f5f9;
+            --col-bg-blue: #eff6ff;
+            --col-bg-red: #fff5f5;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+
+        /* ─── STICKY COLUNA FIXA ──────────────────────────────────────── */
+        /*  A célula sticky recebe um fundo explícito via variável CSS do TR
+            para nunca herdar transparência ao rolar horizontalmente.        */
+        .sticky-col {
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            /* sombra sutil à direita, como "divisor" visual ao scrollar */
+            box-shadow: 3px 0 6px -2px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Fundos explícitos por tipo de linha */
+        tr.row-header .sticky-col {
+            background-color: var(--col-bg-muted);
+            z-index: 20;
+        }
+
+        tr.row-default .sticky-col {
+            background-color: var(--col-bg-white);
+        }
+
+        tr.row-entradas .sticky-col {
+            background-color: var(--col-bg-blue);
+        }
+
+        tr.row-saidas .sticky-col {
+            background-color: var(--col-bg-red);
+        }
+
+        tr.row-saldo .sticky-col {
+            background-color: var(--col-bg-muted);
+        }
+
+        /* Hover: iluminar tanto o TR quanto a célula sticky */
+        tr.row-default:hover .sticky-col {
+            background-color: #f8fafc;
+        }
+
+        tr.row-entradas:hover .sticky-col {
+            background-color: #dbeafe;
+        }
+
+        tr.row-saidas:hover .sticky-col {
+            background-color: #fee2e2;
+        }
+
+        tr.row-default:hover,
+        tr.row-entradas:hover,
+        tr.row-saidas:hover {
+            background-color: transparent;
+        }
+
+        /* deixa o CSS do TR agir */
+
+        /* thead sticky-col */
+        thead .sticky-col {
+            z-index: 20;
+            background-color: var(--col-bg-muted);
+        }
+
+        /* Scrollbar fina */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: hsl(220 14% 80%);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: hsl(220 14% 65%);
+        }
+
+        /* Botões de exportação */
+        .btn-export {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: background 0.15s, box-shadow 0.15s;
+        }
+
+        .btn-export:hover {
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+        }
+
+        .btn-excel {
+            background: #16a34a;
+            color: #fff;
+            border-color: #15803d;
+        }
+
+        .btn-excel:hover {
+            background: #15803d;
+        }
+
+        .btn-pdf {
+            background: #dc2626;
+            color: #fff;
+            border-color: #b91c1c;
+        }
+
+        .btn-pdf:hover {
+            background: #b91c1c;
+        }
+    </style>
+</head>
+
+<body class="h-full w-full">
+
+    <!-- Barra de exportação principal -->
+    <div id="export-bar" class="hidden flex items-center gap-2 px-3 py-2 bg-white border-b border-border">
+        <span class="text-xs text-gray-500 mr-1">Exportar tabela:</span>
+        <button class="btn-export btn-excel" onclick="exportTableExcel()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+            </svg>
+            Excel
+        </button>
+        <button class="btn-export btn-pdf" onclick="exportTablePDF()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+            </svg>
+            PDF
+        </button>
+    </div>
+
+    <div id="cashflow-container" class="overflow-auto transition-opacity duration-200"
+        style="height: calc(100% - 0px);">
+        <div id="loader" class="h-full flex items-center justify-center">
+            <div class="text-center text-muted-foreground">
+                <svg class="mx-auto h-12 w-12 animate-spin text-primary" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                </svg>
+                <p class="mt-4 text-lg">Carregando dados do fluxo de caixa...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Naturezas -->
+    <div id="natureza-modal"
+        class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div
+            class="bg-white rounded-xl shadow-2xl w-[95vw] max-w-[1400px] max-h-[90vh] flex flex-col border border-border">
+            <div class="px-6 py-4 border-b border-border flex justify-between items-center bg-muted/30 rounded-t-xl">
+                <h2 id="natureza-modal-title" class="text-xl font-bold text-foreground"></h2>
+                <div class="flex items-center gap-2">
+                    <button class="btn-export btn-excel"
+                        onclick="exportModalExcel('natureza-modal-content','natureza-modal-title')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                        Excel
+                    </button>
+                    <button class="btn-export btn-pdf"
+                        onclick="exportModalPDF('natureza-modal-content','natureza-modal-title')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                        PDF
+                    </button>
+                    <button type="button" id="close-modal-btn"
+                        class="text-muted-foreground hover:text-foreground p-1 hover:bg-muted rounded-md ml-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="p-0 overflow-auto flex-1">
+                <div id="natureza-modal-content" class="w-full"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Títulos -->
+    <div id="titulos-modal"
+        class="hidden fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div
+            class="bg-white rounded-xl shadow-2xl w-[95vw] max-w-[1200px] max-h-[90vh] flex flex-col border border-border">
+            <div class="px-6 py-4 border-b border-border flex justify-between items-center bg-orange-50 rounded-t-xl">
+                <h2 id="titulos-modal-title" class="text-xl font-bold text-orange-900">Títulos</h2>
+                <div class="flex items-center gap-2">
+                    <button class="btn-export btn-excel"
+                        onclick="exportModalExcel('titulos-modal-content','titulos-modal-title')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                        Excel
+                    </button>
+                    <button class="btn-export btn-pdf"
+                        onclick="exportModalPDF('titulos-modal-content','titulos-modal-title')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                        PDF
+                    </button>
+                    <button type="button" id="close-titulos-btn"
+                        class="text-orange-700 hover:text-orange-900 p-1 hover:bg-orange-200 rounded-md ml-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="p-0 overflow-auto flex-1 relative">
+                <div id="titulos-modal-loader"
+                    class="absolute inset-0 bg-white/80 z-10 flex flex-col justify-center items-center text-orange-600 hidden">
+                    <svg class="animate-spin h-10 w-10 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                    <span class="font-semibold text-lg">Buscando títulos...</span>
+                </div>
+                <div id="titulos-modal-content" class="w-full"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ═══════════════════════════════════════════════════════════════
+           HELPERS DE EXPORTAÇÃO
+        ═══════════════════════════════════════════════════════════════ */
+
+        /** Extrai texto puro de uma célula HTML (remove tags, trata spans de moeda) */
+        function cellText(td) {
+            return (td.innerText || td.textContent || '').trim();
+        }
+
+        /** Converte número BR formatado para número JS */
+        function parseBRNumber(str) {
+            const s = str.replace(/R\$\s?/g, '').replace(/\./g, '').replace(',', '.').trim();
+            const n = parseFloat(s);
+            return isNaN(n) ? str : n;
+        }
+
+        /** Lê uma tabela HTML e retorna { headers[], rows[][] } com valores numéricos onde possível */
+        function readTable(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return { headers: [], rows: [] };
+            const table = container.querySelector('table');
+            if (!table) return { headers: [], rows: [] };
+
+            const headers = [];
+            const headerRow = table.querySelector('thead tr');
+            if (headerRow) {
+                headerRow.querySelectorAll('th').forEach(th => headers.push(cellText(th)));
+            }
+
+            const rows = [];
+            table.querySelectorAll('tbody tr').forEach(tr => {
+                const row = [];
+                tr.querySelectorAll('td').forEach((td, i) => {
+                    const text = cellText(td);
+                    // Colunas numéricas (contém R$): converter para número
+                    row.push(i > 0 ? parseBRNumber(text) : text);
+                });
+                if (row.length > 0) rows.push(row);
+            });
+
+            return { headers, rows };
+        }
+
+        /** Exporta tabela principal para Excel */
+        function exportTableExcel() {
+            const { headers, rows } = readTable('main-table-wrapper');
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+            // Larguras de coluna
+            ws['!cols'] = [{ wch: 36 }, ...headers.slice(1).map(() => ({ wch: 18 }))];
+            XLSX.utils.book_append_sheet(wb, ws, 'Fluxo de Caixa');
+            XLSX.writeFile(wb, 'fluxo_de_caixa.xlsx');
+        }
+
+        /** Exporta tabela de modal para Excel */
+        function exportModalExcel(contentId, titleId) {
+            const title = document.getElementById(titleId)?.innerText || 'Exportacao';
+            const { headers, rows } = readTable(contentId);
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+            ws['!cols'] = [{ wch: 36 }, ...headers.slice(1).map(() => ({ wch: 18 }))];
+            XLSX.utils.book_append_sheet(wb, ws, title.substring(0, 31));
+            XLSX.writeFile(wb, title.replace(/[^a-zA-Z0-9 ]/g, '_').substring(0, 40) + '.xlsx');
+        }
+
+        /** Exporta tabela principal para PDF */
+        function exportTablePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+            const { headers, rows } = readTable('main-table-wrapper');
+            doc.setFontSize(14);
+            doc.text('Fluxo de Caixa', 14, 15);
+            doc.autoTable({
+                head: [headers],
+                body: rows,
+                startY: 22,
+                styles: { fontSize: 7, cellPadding: 2 },
+                headStyles: { fillColor: [30, 58, 138], textColor: 255, fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [248, 250, 252] },
+                columnStyles: { 0: { cellWidth: 50, fontStyle: 'bold' } },
+            });
+            doc.save('fluxo_de_caixa.pdf');
+        }
+
+        /** Exporta tabela de modal para PDF */
+        function exportModalPDF(contentId, titleId) {
+            const { jsPDF } = window.jspdf;
+            const title = document.getElementById(titleId)?.innerText || 'Exportacao';
+            const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+            const { headers, rows } = readTable(contentId);
+            doc.setFontSize(13);
+            doc.text(title, 14, 15);
+            doc.autoTable({
+                head: [headers],
+                body: rows,
+                startY: 22,
+                styles: { fontSize: 7, cellPadding: 2 },
+                headStyles: { fillColor: [30, 58, 138], textColor: 255, fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [248, 250, 252] },
+                columnStyles: { 0: { cellWidth: 50 } },
+            });
+            doc.save(title.replace(/[^a-zA-Z0-9 ]/g, '_').substring(0, 40) + '.pdf');
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           CORE DO COMPONENTE
+        ═══════════════════════════════════════════════════════════════ */
+        const MITRA_UPDATE_EVENT_NAME = 'mitra-update-fluxocaixa';
+        let isOpeningModal = false;
+        let expandedGroups = [];
+        const container = document.getElementById('cashflow-container');
+
+        function updateMitra() {
+            if (isOpeningModal) return;
+            document.body.dispatchEvent(new CustomEvent(MITRA_UPDATE_EVENT_NAME));
+        }
+
+        const customUpdateHandler = async () => {
+            expandedGroups = Array.from(document.querySelectorAll('[data-toggle][aria-expanded="true"]')).map(el => el.dataset.toggle);
+            if (container) container.style.opacity = '0.5';
+            await loadDataAndRender();
+        };
+
+        const formatCurrency = (value, forceColor = null) => {
+            const number = parseFloat(value) || 0;
+            let colorClass = 'text-foreground';
+            if (forceColor) {
+                colorClass = forceColor;
+            } else {
+                if (number < 0) colorClass = 'text-red-600 font-medium';
+                else if (number > 0) colorClass = 'text-emerald-600 font-medium';
+            }
+            const formatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(number);
+            return `<span class="${colorClass}">${formatted}</span>`;
+        };
+
+        const chevronIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 transition-transform duration-200 group-aria-expanded:rotate-90 flex-shrink-0"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+
+        async function loadDataAndRender() {
+            try {
+                const jdbcId = parseInt(componentData.jdbcId, 10);
+                const [
+                    gruposResult,
+                    saldoInicialResult,
+                    entradasResult,
+                    saidasResult,
+                    outrasMovResult,
+                    saldoFinalResult
+                ] = await Promise.all([
+                    queryMitra({ query: componentData.queryGruposNatureza, jdbcId: 1 }),
+                    queryMitra({ query: componentData.querySaldoInicialDiario, jdbcId }),
+                    queryMitra({ query: componentData.queryEntradasDiarias, jdbcId }),
+                    queryMitra({ query: componentData.querySaidasDiarias, jdbcId }),
+                    queryMitra({ query: componentData.queryOutrasMovDiarias, jdbcId }),
+                    queryMitra({ query: componentData.querySaldoFinalDiario, jdbcId }),
+                ]);
+
+                if (!saldoInicialResult || !saldoInicialResult.data || saldoInicialResult.data.length === 0) {
+                    container.innerHTML = `<div class="p-8 text-center text-destructive bg-destructive/10 h-full flex items-center justify-center">Nenhum dado encontrado para o período selecionado.</div>`;
+                    return;
+                }
+
+                const dateHeaders = saldoInicialResult.data.map(row => row[0]);
+
+                const grupoMap = {};
+                if (gruposResult && gruposResult.data) {
+                    gruposResult.data.forEach(row => {
+                        grupoMap[row[0]] = { grupo: row[1], tipo: row[2], ordem: parseInt(row[3]) || 999 };
+                    });
+                }
+
+                const normTipo = t => (t || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase();
+                // Canoniza o tipo do grupo; se o TIPO cadastrado n\u00e3o for reconhecido, deduz pelo nome do grupo
+                const canonTipo = (tipo, nomeGrupo) => {
+                    const n = normTipo(tipo);
+                    if (['RECEITA', 'RECEITAS', 'ENTRADA', 'ENTRADAS', 'CREDITO', 'R', 'E', 'C'].includes(n)) return 'RECEITA';
+                    if (['DESPESA', 'DESPESAS', 'SAIDA', 'SAIDAS', 'DEBITO', 'D', 'S'].includes(n)) return 'DESPESA';
+                    const nome = normTipo(nomeGrupo);
+                    if (nome.includes('RECEITA')) return 'RECEITA';
+                    if (nome.includes('DESPESA')) return 'DESPESA';
+                    return n;
+                };
+                console.debug('[FluxoCaixa] TIPOs de grupo carregados:',
+                    [...new Set(Object.values(grupoMap).map(g => JSON.stringify(g.tipo)))].join(', ') || '(grupoMap vazio!)');
+                const processData = (dataRows, defaultTipo) => {
+                    const naturezas = {};
+                    dataRows.forEach(row => {
+                        const dia = row[0];
+                        const codnat = row[1];
+                        const nome = row[2] || 'Sem Descrição';
+                        const valor = parseFloat(row[3]) || 0;
+
+                        const gInfo = grupoMap[codnat] || { grupo: 'Outros', tipo: defaultTipo, ordem: 9999 };
+                        const tipoGrupo = canonTipo(gInfo.tipo, gInfo.grupo);
+                        // Grupo marcado para não aparecer no fluxo
+                        if (tipoGrupo === 'IGNORAR' || tipoGrupo === 'NAO CONSIDERAR') return;
+                        // Grupo de Receita só entra nas Entradas; grupo de Despesa só nas Saídas
+                        const tipoOposto = defaultTipo === 'RECEITA' ? 'DESPESA' : 'RECEITA';
+                        if (tipoGrupo === tipoOposto) return;
+
+                        if (!naturezas[codnat]) {
+                            naturezas[codnat] = { codnat, nome, grupo: gInfo.grupo, ordemGrupo: gInfo.ordem, valores: {} };
+                        }
+                        naturezas[codnat].valores[dia] = (naturezas[codnat].valores[dia] || 0) + valor;
+                    });
+                    const groups = {};
+                    Object.values(naturezas).forEach(nat => {
+                        if (!groups[nat.grupo]) {
+                            groups[nat.grupo] = { nome: nat.grupo, ordem: nat.ordemGrupo, naturezas: [], valores: {} };
+                        }
+                        groups[nat.grupo].naturezas.push(nat);
+                        dateHeaders.forEach(dia => {
+                            groups[nat.grupo].valores[dia] = (groups[nat.grupo].valores[dia] || 0) + (nat.valores[dia] || 0);
+                        });
+                    });
+                    const sortedGroups = Object.values(groups).sort((a, b) => {
+                        if (a.ordem !== b.ordem) return a.ordem - b.ordem;
+                        return a.nome.localeCompare(b.nome);
+                    });
+                    sortedGroups.forEach(g => g.naturezas.sort((a, b) => a.nome.localeCompare(b.nome)));
+                    return sortedGroups;
+                };
+
+                const entradasAgrupadas = processData(entradasResult.data || [], 'RECEITA');
+                const saidasAgrupadas = processData(saidasResult.data || [], 'DESPESA');
+
+                const totalEntradas = {};
+                const totalSaidas = {};
+                const outrasMov = {};
+                const saldoInicialCalc = {};
+                const saldoFinalCalc = {};
+                let saldoAtual = 0;
+
+                dateHeaders.forEach((dia, index) => {
+                    totalEntradas[dia] = entradasAgrupadas.reduce((sum, g) => sum + (g.valores[dia] || 0), 0);
+                    totalSaidas[dia] = saidasAgrupadas.reduce((sum, g) => sum + (g.valores[dia] || 0), 0);
+                    outrasMov[dia] = outrasMovResult.data?.find(r => r[0] === dia)?.[1] || 0;
+                    if (index === 0) saldoAtual = parseFloat(saldoInicialResult.data.find(r => r[0] === dia)?.[1]) || 0;
+                    saldoInicialCalc[dia] = saldoAtual;
+                    saldoFinalCalc[dia] = saldoAtual + totalEntradas[dia] - totalSaidas[dia] + outrasMov[dia];
+                    saldoAtual = saldoFinalCalc[dia];
+                });
+
+                /* ── MONTAR HTML ── */
+                let tableHTML = `
+                  <div id="main-table-wrapper" class="w-full overflow-auto border border-border rounded-lg bg-white">
+                    <table class="w-full text-sm text-left whitespace-nowrap border-collapse">`;
+
+                /* Cabeçalho */
+                tableHTML += `<thead><tr class="row-header border-b border-border bg-muted">
+                    <th class="sticky-col p-3 font-semibold text-muted-foreground min-w-[280px] border-r border-border">Categoria</th>`;
+                dateHeaders.forEach(h => {
+                    tableHTML += `<th class="p-3 font-semibold text-muted-foreground text-right min-w-[140px]">${h}</th>`;
+                });
+                tableHTML += `<th class="p-3 font-semibold text-muted-foreground text-right border-l border-border bg-muted min-w-[140px]">Total</th>`;
+                tableHTML += `</tr></thead><tbody class="divide-y divide-border">`;
+
+                /* Saldo Inicial */
+                const totalSaldoInicial = dateHeaders.length > 0 ? saldoInicialCalc[dateHeaders[0]] : 0;
+                tableHTML += `<tr class="row-default font-semibold hover:bg-slate-50">
+                    <td class="sticky-col p-3 border-r border-border">Saldo Inicial</td>`;
+                dateHeaders.forEach(dia => {
+                    tableHTML += `<td class="p-3 text-right">${formatCurrency(saldoInicialCalc[dia])}</td>`;
+                });
+                tableHTML += `<td class="p-3 text-right font-bold border-l border-border bg-slate-50">${formatCurrency(totalSaldoInicial)}</td>`;
+                tableHTML += `</tr>`;
+
+                /* Entradas Nível 1 */
+                const totalGeralEntradas = dateHeaders.reduce((acc, dia) => acc + (totalEntradas[dia] || 0), 0);
+                tableHTML += `<tr data-toggle="entradas" aria-expanded="false"
+                    class="row-entradas group cursor-pointer hover:brightness-95">
+                    <td class="sticky-col p-3 font-semibold flex items-center text-blue-800 border-r border-border">
+                        ${chevronIcon} Fluxo de Entradas
+                    </td>`;
+                dateHeaders.forEach(dia => {
+                    tableHTML += `<td class="p-3 text-right font-semibold text-blue-800">${formatCurrency(totalEntradas[dia])}</td>`;
+                });
+                tableHTML += `<td class="p-3 text-right font-semibold text-blue-800 border-l border-border">${formatCurrency(totalGeralEntradas)}</td>`;
+                tableHTML += `</tr>`;
+
+                /* Grupos de Entrada Nível 2 */
+                entradasAgrupadas.forEach(grupo => {
+                    const totalGrupo = dateHeaders.reduce((acc, dia) => acc + (grupo.valores[dia] || 0), 0);
+                    const grupoDataStr = encodeURIComponent(JSON.stringify({ nome: grupo.nome, naturezas: grupo.naturezas, headers: dateHeaders }));
+                    tableHTML += `<tr data-grupo-data="${grupoDataStr}"
+                        class="child-of-entradas hidden row-default group cursor-pointer hover:bg-blue-50/60">
+                        <td class="sticky-col p-3 pl-8 font-medium flex items-center text-foreground border-r border-border">
+                            <span class="w-2 h-2 rounded-full bg-blue-400 mr-3 flex-shrink-0"></span>${grupo.nome}
+                        </td>`;
+                    dateHeaders.forEach(dia => {
+                        tableHTML += `<td class="p-3 text-right font-medium">${formatCurrency(grupo.valores[dia])}</td>`;
+                    });
+                    tableHTML += `<td class="p-3 text-right font-bold border-l border-border bg-blue-50/60">${formatCurrency(totalGrupo)}</td>`;
+                    tableHTML += `</tr>`;
+                });
+
+                /* Saídas Nível 1 */
+                const totalGeralSaidas = dateHeaders.reduce((acc, dia) => acc + (totalSaidas[dia] || 0), 0);
+                tableHTML += `<tr data-toggle="saidas" aria-expanded="false"
+                    class="row-saidas group cursor-pointer hover:brightness-95">
+                    <td class="sticky-col p-3 font-semibold flex items-center text-red-800 border-r border-border">
+                        ${chevronIcon} Fluxo de Saídas
+                    </td>`;
+                dateHeaders.forEach(dia => {
+                    tableHTML += `<td class="p-3 text-right font-semibold">${formatCurrency(totalSaidas[dia], 'text-red-600 font-medium')}</td>`;
+                });
+                tableHTML += `<td class="p-3 text-right font-semibold border-l border-border">${formatCurrency(totalGeralSaidas, 'text-red-600 font-medium')}</td>`;
+                tableHTML += `</tr>`;
+
+                /* Grupos de Saída Nível 2 */
+                saidasAgrupadas.forEach(grupo => {
+                    const totalGrupo = dateHeaders.reduce((acc, dia) => acc + (grupo.valores[dia] || 0), 0);
+                    const grupoDataStr = encodeURIComponent(JSON.stringify({ nome: grupo.nome, naturezas: grupo.naturezas, headers: dateHeaders }));
+                    tableHTML += `<tr data-grupo-data="${grupoDataStr}"
+                        class="child-of-saidas hidden row-default group cursor-pointer hover:bg-red-50/60">
+                        <td class="sticky-col p-3 pl-8 font-medium flex items-center text-foreground border-r border-border">
+                            <span class="w-2 h-2 rounded-full bg-red-400 mr-3 flex-shrink-0"></span>${grupo.nome}
+                        </td>`;
+                    dateHeaders.forEach(dia => {
+                        tableHTML += `<td class="p-3 text-right font-medium">${formatCurrency(grupo.valores[dia], 'text-red-600 font-medium')}</td>`;
+                    });
+                    tableHTML += `<td class="p-3 text-right font-bold border-l border-border bg-red-50/60">${formatCurrency(totalGrupo, 'text-red-600 font-medium')}</td>`;
+                    tableHTML += `</tr>`;
+                });
+
+                /* Outras Movimentações */
+                const totalOutrasMov = dateHeaders.reduce((acc, dia) => acc + (outrasMov[dia] || 0), 0);
+                tableHTML += `<tr class="row-default font-medium hover:bg-slate-50">
+                    <td class="sticky-col p-3 border-r border-border">Outras Movimentações</td>`;
+                dateHeaders.forEach(dia => {
+                    tableHTML += `<td class="p-3 text-right">${formatCurrency(outrasMov[dia])}</td>`;
+                });
+                tableHTML += `<td class="p-3 text-right font-bold border-l border-border bg-slate-50">${formatCurrency(totalOutrasMov)}</td>`;
+                tableHTML += `</tr>`;
+
+                /* Saldo Final */
+                const totalSaldoFinal = dateHeaders.length > 0 ? saldoFinalCalc[dateHeaders[dateHeaders.length - 1]] : 0;
+                tableHTML += `<tr class="row-saldo font-semibold border-t-2 border-primary/20">
+                    <td class="sticky-col p-3 border-r border-border">Saldo Final</td>`;
+                dateHeaders.forEach(dia => {
+                    tableHTML += `<td class="p-3 text-right">${formatCurrency(saldoFinalCalc[dia])}</td>`;
+                });
+                tableHTML += `<td class="p-3 text-right font-bold border-l border-border bg-slate-50">${formatCurrency(totalSaldoFinal)}</td>`;
+                tableHTML += `</tr>`;
+
+                tableHTML += `</tbody></table></div>`;
+                container.innerHTML = tableHTML;
+
+                /* Mostrar barra de exportação */
+                document.getElementById('export-bar').classList.remove('hidden');
+                document.getElementById('export-bar').classList.add('flex');
+
+                /* Restaurar expansão */
+                expandedGroups.forEach(id => {
+                    const toggle = document.querySelector(`[data-toggle="${id}"]`);
+                    if (toggle) {
+                        toggle.setAttribute('aria-expanded', 'true');
+                        document.querySelectorAll(`.child-of-${id}`).forEach(row => row.classList.remove('hidden'));
+                    }
+                });
+
+            } catch (error) {
+                console.error("Erro ao carregar e renderizar o fluxo de caixa:", error);
+                container.innerHTML = `<div class="p-8 text-center text-destructive bg-destructive/10 h-full flex items-center justify-center">Ocorreu um erro ao buscar os dados. Verifique o console para mais detalhes.</div>`;
+            } finally {
+                if (container) container.style.opacity = '1';
+            }
+        }
+
+        function initializeComponent() {
+            /* ── Clicks na tabela principal ── */
+            container.addEventListener('click', async (e) => {
+                const toggleRow = e.target.closest('[data-toggle]');
+                const groupRow = e.target.closest('[data-grupo-data]');
+
+                if (toggleRow) {
+                    const targetClass = toggleRow.dataset.toggle;
+                    const isExpanded = toggleRow.getAttribute('aria-expanded') === 'true';
+                    toggleRow.setAttribute('aria-expanded', !isExpanded);
+                    document.querySelectorAll(`.child-of-${targetClass}`).forEach(child => {
+                        child.classList.toggle('hidden', isExpanded);
+                    });
+                } else if (groupRow) {
+                    try {
+                        const data = JSON.parse(decodeURIComponent(groupRow.dataset.grupoData));
+                        let modalHTML = `<table class="w-full text-sm text-left whitespace-nowrap border-collapse">`;
+                        modalHTML += `<thead class="bg-muted"><tr class="border-b border-border">`;
+                        modalHTML += `<th class="sticky-col p-4 font-semibold text-muted-foreground min-w-[280px] border-r border-border bg-muted z-20">Natureza</th>`;
+                        data.headers.forEach(h => modalHTML += `<th class="p-4 font-semibold text-muted-foreground text-right bg-muted min-w-[130px]">${h}</th>`);
+                        modalHTML += `</tr></thead><tbody class="divide-y divide-border">`;
+                        data.naturezas.forEach(nat => {
+                            modalHTML += `<tr data-natureza-click="${nat.codnat}" class="cursor-pointer hover:bg-orange-50/60 group">`;
+                            modalHTML += `<td class="sticky-col p-4 font-medium bg-white group-hover:bg-orange-50/60 flex items-center justify-between border-r border-border z-10 transition-colors">
+                                <div class="flex items-center"><span class="w-2 h-2 rounded-full bg-primary mr-3 flex-shrink-0"></span>${nat.nome}</div>
+                                <span class="ml-2 text-xs text-orange-700 hidden group-hover:inline-block border border-orange-200 px-2 py-0.5 rounded-md bg-orange-100 font-semibold">Ver detalhes →</span>
+                            </td>`;
+                            data.headers.forEach(dia => {
+                                modalHTML += `<td class="p-4 text-right text-muted-foreground">${formatCurrency(nat.valores[dia])}</td>`;
+                            });
+                            modalHTML += `</tr>`;
+                        });
+                        modalHTML += `</tbody></table>`;
+                        document.getElementById('natureza-modal-title').innerText = `Detalhamento: ${data.nome}`;
+                        document.getElementById('natureza-modal-content').innerHTML = modalHTML;
+                        document.getElementById('natureza-modal').classList.remove('hidden');
+                    } catch (err) {
+                        console.error("Erro ao abrir modal de naturezas:", err);
+                    }
+                }
+            });
+
+            /* ── Fechar modais ── */
+            document.getElementById('close-modal-btn').addEventListener('click', () => {
+                document.getElementById('natureza-modal').classList.add('hidden');
+            });
+            document.getElementById('close-titulos-btn').addEventListener('click', () => {
+                document.getElementById('titulos-modal').classList.add('hidden');
+            });
+            document.getElementById('natureza-modal').addEventListener('click', e => {
+                if (e.target === document.getElementById('natureza-modal'))
+                    document.getElementById('natureza-modal').classList.add('hidden');
+            });
+            document.getElementById('titulos-modal').addEventListener('click', e => {
+                if (e.target === document.getElementById('titulos-modal'))
+                    document.getElementById('titulos-modal').classList.add('hidden');
+            });
+
+            /* ── Clicks dentro do modal de naturezas → abrir títulos ── */
+            document.getElementById('natureza-modal-content').addEventListener('click', async (e) => {
+                const natRow = e.target.closest('[data-natureza-click]');
+                if (natRow && !isOpeningModal) {
+                    try {
+                        isOpeningModal = true;
+                        const codnat = natRow.dataset.naturezaClick;
+                        document.getElementById('titulos-modal-title').innerText = `Processando...`;
+                        document.getElementById('titulos-modal-content').innerHTML = '';
+                        document.getElementById('titulos-modal-loader').classList.remove('hidden');
+                        document.getElementById('titulos-modal').classList.remove('hidden');
+
+                        const queryTitulos = `
+                            SELECT 
+                                FIN.NUFIN as "NUFIN",
+                                FIN.NUMNOTA as "CONTROLE",
+                                PAR.NOMEPARC as "PARCEIRO",
+                                TO_CHAR(FIN.DTVENC, 'DD/MM/YYYY') as "VENCIMENTO",
+                                TO_CHAR(FIN.DHBAIXA, 'DD/MM/YYYY') as "BAIXA",
+                                CASE WHEN FIN.DHBAIXA IS NOT NULL THEN FIN.VLRBAIXA ELSE FIN.VLRDESDOB END as "VALOR",
+                                CASE WHEN FIN.DHBAIXA IS NOT NULL THEN 'Baixado' ELSE 'Aberto' END as "STATUS",
+                                FIN.RECDESP as "TIPO"
+                            FROM TGFFIN FIN
+                            LEFT JOIN TGFPAR PAR ON PAR.CODPARC = FIN.CODPARC
+                            LEFT JOIN TGFMBC MBC ON FIN.NUBCO = MBC.NUBCO
+                            WHERE FIN.CODNAT = ${codnat}
+                              AND FIN.PROVISAO = 'N'
+                              AND (
+                                   (FIN.DHBAIXA IS NOT NULL AND TRUNC(FIN.DHBAIXA) >= TRUNC(NVL(TO_DATE(SUBSTR(:VAR_DATA_INICIO_FC, 1, 10), 'YYYY-MM-DD'), TRUNC(SYSDATE) - 15)) AND TRUNC(FIN.DHBAIXA) <= TRUNC(NVL(TO_DATE(SUBSTR(:VAR_DATA_FIM_FC, 1, 10), 'YYYY-MM-DD'), TRUNC(SYSDATE) + 15)))
+                                   OR
+                                   (FIN.DHBAIXA IS NULL AND FIN.DTVENC >= TRUNC(SYSDATE) AND TRUNC(FIN.DTVENC) >= TRUNC(NVL(TO_DATE(SUBSTR(:VAR_DATA_INICIO_FC, 1, 10), 'YYYY-MM-DD'), TRUNC(SYSDATE) - 15)) AND TRUNC(FIN.DTVENC) <= TRUNC(NVL(TO_DATE(SUBSTR(:VAR_DATA_FIM_FC, 1, 10), 'YYYY-MM-DD'), TRUNC(SYSDATE) + 15)))
+                              )
+                              AND (:VAR_EMPRESA_FC IS NULL OR :VAR_EMPRESA_FC = '' OR INSTR(',' || :VAR_EMPRESA_FC || ',', ',' || FIN.CODEMP || ',') > 0)
+                              AND (:VAR_CONTA_BANCARIA_FC IS NULL OR :VAR_CONTA_BANCARIA_FC = '' OR INSTR(',' || :VAR_CONTA_BANCARIA_FC || ',', ',' || TO_CHAR(MBC.CODCTABCOINT) || ',') > 0)
+                            ORDER BY NVL(FIN.DHBAIXA, FIN.DTVENC) DESC
+                        `;
+
+                        const jdbcId = parseInt(componentData.jdbcId, 10) || 1;
+                        const titulosResult = await queryMitra({ query: queryTitulos, jdbcId });
+
+                        document.getElementById('titulos-modal-loader').classList.add('hidden');
+                        document.getElementById('titulos-modal-title').innerText = `Títulos da Natureza (Cód. ${codnat})`;
+
+                        if (!titulosResult || !titulosResult.data || titulosResult.data.length === 0) {
+                            document.getElementById('titulos-modal-content').innerHTML = `<div class="p-12 text-center text-muted-foreground text-lg">Nenhum título compondo o saldo no período.</div>`;
+                            return;
+                        }
+
+                        let tHtml = `<table class="w-full text-sm text-left whitespace-nowrap border-collapse">`;
+                        tHtml += `<thead class="bg-gray-50 border-b border-border sticky top-0 z-10"><tr>`;
+                        ['NUFIN', 'Documento', 'Parceiro', 'Vencimento', 'Data Baixa', 'Situação', 'Valor'].forEach(h => {
+                            tHtml += `<th class="p-4 font-semibold text-muted-foreground">${h}</th>`;
+                        });
+                        tHtml += `</tr></thead><tbody class="divide-y divide-border">`;
+                        titulosResult.data.forEach(row => {
+                            const vlr = parseFloat(row[5]) || 0;
+                            const tipo = parseInt(row[7]);
+                            const valorAjustado = tipo === -1 ? -Math.abs(vlr) : Math.abs(vlr);
+                            const isBaixado = row[6] === 'Baixado';
+                            const statusColor = isBaixado
+                                ? 'text-green-700 bg-green-100/80 border border-green-200'
+                                : 'text-blue-700 bg-blue-100/80 border border-blue-200';
+                            tHtml += `<tr class="hover:bg-accent/60 transition-colors">
+                                <td class="p-4 font-medium text-muted-foreground">${row[0] || '-'}</td>
+                                <td class="p-4 font-medium">${row[1] || '-'}</td>
+                                <td class="p-4 truncate max-w-xs" title="${row[2] || '-'}">${row[2] || '-'}</td>
+                                <td class="p-4 text-center">${row[3] || '-'}</td>
+                                <td class="p-4 text-center text-muted-foreground">${row[4] || '-'}</td>
+                                <td class="p-4 text-center"><span class="px-3 py-1 rounded-full text-xs font-semibold ${statusColor}">${row[6] || 'Aberto'}</span></td>
+                                <td class="p-4 text-right">${formatCurrency(valorAjustado)}</td>
+                            </tr>`;
+                        });
+                        tHtml += `</tbody></table>`;
+                        document.getElementById('titulos-modal-content').innerHTML = tHtml;
+                    } catch (err) {
+                        console.error("Erro ao buscar títulos:", err);
+                        document.getElementById('titulos-modal-loader').classList.add('hidden');
+                        document.getElementById('titulos-modal-content').innerHTML = `<div class="p-12 text-center text-red-500 font-medium">Ocorreu um erro ao buscar os títulos.</div>`;
+                    } finally {
+                        setTimeout(() => { isOpeningModal = false; }, 300);
+                    }
+                }
+            });
+
+            document.body.addEventListener(MITRA_UPDATE_EVENT_NAME, customUpdateHandler);
+            loadDataAndRender();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const waitForMitraAndInit = () => {
+                const maxWaitTime = 5000;
+                const intervalTime = 100;
+                const startTime = Date.now();
+                const checkInterval = setInterval(() => {
+                    if (window.componentData && window.componentData.jdbcId && window.componentData.querySaldoInicialDiario) {
+                        clearInterval(checkInterval);
+                        initializeComponent();
+                    } else if (Date.now() - startTime > maxWaitTime) {
+                        clearInterval(checkInterval);
+                        container.innerHTML = `<div class="p-8 text-center text-destructive bg-destructive/10 h-full flex items-center justify-center">Erro Crítico: As configurações do componente não foram carregadas da plataforma.</div>`;
+                    }
+                }, intervalTime);
+            };
+            waitForMitraAndInit();
+        });
+    </script>
+</body>
+
+</html>

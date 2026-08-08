@@ -1,0 +1,12 @@
+<export-info>
+  <nome>AutoCmp</nome>
+  <descricao>Serviços de consulta de pendências e encaminhamento de OS da Compilação Automática</descricao>
+  <versao>1.1</versao>
+  <plataforma-minima>3.13</plataforma-minima>
+  <parceiro-id>647</parceiro-id>
+  <parceiro-nome>Sankhya Gestão de Negócios</parceiro-nome>
+  <modulo-padrao />
+  <numos>905328</numos>
+  <salt>2a3bfbfa21c34677b715d374fc72d414</salt>
+  <license-resources />
+</export-info>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<controls:DefaultSankhyaApplication 
+	preloader="br.com.sankhya.controls.managers.CustomPreloader"
+	xmlns:controls="br.com.sankhya.controls.*"
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:dynaform="br.com.sankhya.db.dynaform.*"
+	creationComplete="completeScreen()"
+	implements="br.com.sankhya.db.dynaform.IDynaformFieldBuilder,
+		br.com.sankhya.db.dynaform.IDynaformRecursiveVisitor, br.com.sankhya.db.IDataGridColumnVisitor">
+
+	<mx:Script>
+		<![CDATA[
+			import mx.containers.HBox;
+			import mx.core.UIComponent;
+			import mx.controls.dataGridClasses.DataGridColumn;
+
+			import br.com.sankhya.db.DBDataSet;
+			import br.com.sankhya.db.IDBDataSet;
+			import br.com.sankhya.db.ui.DBNumericInput;
+			import br.com.sankhya.db.ui.DBPesquisa;
+			import br.com.sankhya.dwf.CriteriaParameter;
+			import br.com.sankhya.dwf.LiteralCriteria;
+			import br.com.sankhya.db.dynaform.IDynaformFieldBuilder;
+			import br.com.sankhya.db.DBCriteriaParameter;
+			import br.com.sankhya.db.dynaform.IDynaformFieldsVisitor;
+
+			private var _dsInvalidacaoVag:DBDataSet;
+			private var _dsOrdemServico:DBDataSet;
+			private var _numOS:DBPesquisa;
+
+			private function completeScreen():void{
+				dynaform.loadMetadata();
+			}
+
+			private function enviromentCriteria():Array {
+				var numOS:Number = 0;
+
+				if(_dsInvalidacaoVag != null){
+					numOS = _dsInvalidacaoVag.getFieldValueAsNumberOrZero("NUMOS");
+				}
+
+				var criterio:LiteralCriteria = new LiteralCriteria();
+				criterio.expression = "this.NUMOS = ?";
+				criterio.parameters = [new CriteriaParameter("N", String(numOS))];
+
+				return [criterio];
+			}
+
+			public function setDataSet(dynaform:Dynaform, dataSet:IDBDataSet):void{
+				if(dynaform.entityName == "InvalidacaoVag"){
+					_dsInvalidacaoVag = dataSet as DBDataSet;
+				}
+			}
+
+			public function buildField(source:XML, dataSet:IDBDataSet):UIComponent{
+				var fieldName:String = source.@dataField;
+
+				if(dataSet.entity == "InvalidacaoVag"){
+					if(fieldName == "NUMITEM"){
+						var pesqItemOS:DBPesquisa = new DBPesquisa();
+						pesqItemOS.entityName = "ItemOrdemServico";
+						pesqItemOS.fieldName = fieldName;
+						pesqItemOS.dataSet = _dsInvalidacaoVag;
+						pesqItemOS.setDescriptionInputVisible(false);
+						pesqItemOS.getEnvironmentCriteria= enviromentCriteria;
+
+						return pesqItemOS;
+					}
+				}
+				return null;
+			}
+			
+			public function visitColumn(dgc:DataGridColumn):void {
+				if("NUMOS-NUMITEM-CODUSU".indexOf(dgc.dataField) > -1){
+					dgc.width = 80;
+				}else if("MOTIVO".indexOf(dgc.dataField) > -1){
+					dgc.width = 520;
+				}else{
+					dgc.width = 180;
+				}
+			}
+		]]>
+	</mx:Script>
+
+	<dynaform:Dynaform id="dynaform" 
+		   entityName="InvalidacaoVag" 
+		   width="100%" 
+		   height="100%" 
+		   fieldBuilder="{this}"
+		   dynaformRecursiveVisitor="{this}"
+		   dataGridColumnVisitor="{this}"
+		   providerName="mge@CRUDServiceProvider"
+		   />
+
+</controls:DefaultSankhyaApplication>

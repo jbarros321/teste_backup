@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<extension>
+  <id>CredParApp</id>
+  <description>Aplicativo Credpar</description>
+  <version>6.6</version>
+  <platform-min-version>3.10</platform-min-version>
+  <build-timestamp>28/12/2017 08:51:09</build-timestamp>
+  <vendor>
+    <id>647</id>
+    <name>Sankhya Gestão de Negócios</name>
+  </vendor>
+  <license-by-resource>
+    <default-module />
+  </license-by-resource>
+  <ui-mashups />
+</extension>
+

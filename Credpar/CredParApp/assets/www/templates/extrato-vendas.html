@@ -1,0 +1,38 @@
+<ion-view view-title="EXTRATO DE VENDAS" cache-view="false">
+
+	<ion-nav-buttons side="left">
+    	<button class="button button-icon button-clear icon ion-ios-arrow-back" style="color: white;" ng-click="goBack()">
+        </button>
+    </ion-nav-buttons>
+    
+    <ion-content class="background-login" >    	
+    	<div class="txtPeriodo">
+    		<span>PERÍODO DE VENDAS</span>
+    	</div>
+    	<div style="display: inline-block; padding: 10px;">
+    		<div style="display: inline-block;">
+    			<label class="item item-input fieldDtBordero">
+		    		<input type="date" placeholder="DATA INICIAL" ng-model="extratoVendas.DTINI">
+		  		</label>
+    		</div>
+   			<div class="calendar-35x35-img"></div>
+    	</div>
+    	<div >
+    		<span style="vertical-align: middle;">até</span>
+    	</div>
+    	<div style="display: inline-block; padding: 10px;">
+    		<div style="display: inline-block;">
+    			<label class="item item-input fieldDtBordero">
+		    		<input type="date" placeholder="DATA FINAL" ng-model="extratoVendas.DTFIM">
+		  		</label>
+    		</div>
+   			<div class="calendar-35x35-img"></div>
+    	</div>
+    	<div style="text-align: center;">
+	        <button class="button btnAcessar" style="width: 230px;" ng-click="getAutorizacoesExtrato($event)">
+	        	<i class="calendar-35x35-img"></i>
+			  Buscar Vendas
+			</button>
+		</div >
+    </ion-content>
+</ion-view>

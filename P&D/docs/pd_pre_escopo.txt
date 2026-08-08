@@ -1,0 +1,269 @@
+Levantamento de Regras de Negócio para Parametrização
+Dados do Projeto
+P & D SOLUCOES INDUSTRIAIS E MANUTENÇÃO
+
+Código/Cliente:
+Número da FAP:
+​
+Objetivo
+
+Documentar as regras de negócio para o desenvolvimento da funcionalidade de Orçamento.
+
+​Participantes
+Nome
+Rogério Possati
+Jacqueline Lopes Lima Dalbello
+Thiago Belém
+Alano Alves da Silva
+
+Função no Projeto
+Patrocinador
+Líder do Projeto
+Consultor
+Gerente de Projetos
+
+Empresa
+P&D
+P&D
+Sankhya
+Sankhya
+
+Regras de Negócio
+Especificação de Requisitos: Venda e Orçamento​
+​
+Este documento detalha os requisitos para a personalização do sistema, abrangendo o cadastro de novas
+entidades, o fluxo de criação de orçamentos e o processo de faturamento.
+
+Início do processo de orçamento Cadastro de Modalidades de Venda
+1. Acessar a tela (Portal de Vendas);
+2. Clicar no sinal de (+) para abrir a tela (Central de Vendas);
+3. No campo “Cabeçalho” Preencher com o “Parceiro”;
+4. Tipo de negociação “Selecionar o prazo de pagamento” (à vista, 30 dias, 45 dias, 60 dias, 90 dias).
+Este campo deverá dar opção de novas condições de negociação.
+5. Selecionar a empresa (P&D Soluções Industriais). Neste campo é necessário termos a opção de
+cadastrar novas empresas caso necessário. Isto vai acontecer no futuro com a divisão das
+atividades da empresa em outros CNPJ’s;
+6. Tipo de operação. Neste campo é necessário que tenhamos a opção de seleção dos itens abaixo
+conforme segue:
+
+D4Sign 19842306-c8f7-4485-83bd-fafd8b2b5132 - Para conﬁrmar as assinaturas acesse https://secure.d4sign.com.br/veriﬁcar
+Documento assinado eletronicamente, conforme MP 2.200-2/01, Art. 10º, §2. Brasil
+
+As modalidades a serem cadastradas são:
+●​ 6.1. Empreitada Global: Nesta modalidade fornecemos serviços e materiais de forma que no pacote está
+inclusa a instalação dos produtos que fornecemos, assim como testes e entrega de todos os sistemas
+funcionando. Neste modelo, no momento de comprar os materiais, estes são comprados como itens de
+industrialização, uma vez que nós mesmos vamos instalar para o cliente e ele recebe um sistema montado e
+não um equipamento sozinho em uma caixa. (Código de emissão de nota fiscal 7.02). Neste tipo de venda a
+nota fiscal emitida é de SERVIÇOS, porém o sistema deverá fazer os calculos sobre os percentuais de mão
+de obra e produtos que formam o total da proposta conforme exemplo:
+Total da proposta R$ 10.000,00
+(Total de materiais R$ 3.500,00 + Total de serviços R$ 6.500,00) importante configurar o sistema
+de forma que incida os impostos corretos para os materiais e os impostos corretos para os
+serviços como por exemplo o INSS que incide apenas sobre o valor dos serviços).
+OBS.: O sistema deverá verificar na tabela dos itens inseridos no orçamento com o objetivo de
+separar os itens materiais dos itens serviços para encontrar o percentual de cada um dos dois
+sobre o total.
+
+●​ 6.2. Serviços de eletricidade: Nesta modalidade não contempla materiais, sendo que caso tenha materiais
+a serem instalados, o cliente é quem fornece. Este tipo de fornecimento também chamamos de H.H em
+alguns casos e o que define isto, é quando o cliente não sabe o tamanho do trabalho, ou não sabe mensurar
+quantos dias ele precisa para fazer todo o trabalho que precisa então ele paga por horas. (Código de
+emissão de nota fiscal 7.02). Emissão de nota fiscal de SERVIÇOS.
+
+D4Sign 19842306-c8f7-4485-83bd-fafd8b2b5132 - Para conﬁrmar as assinaturas acesse https://secure.d4sign.com.br/veriﬁcar
+Documento assinado eletronicamente, conforme MP 2.200-2/01, Art. 10º, §2. Brasil
+
+●​ 6.3. Serviços de engenharia: Nesta modalidade não contempla materiais, sendo que caso tenha materiais
+a serem instalados o cliente é quem fornece. A unida diferença que temos aqui com relação ao item 2 é que
+o ISS é menor do que o de serviços de eletricidade. (Código de emissão de nota fiscal 7.01). Emissão de
+nota fiscal de SERVIÇOS.
+
+●​ 6.4. Comercialização: Neste modelo de negócios, nós compramos um produto qualquer e revendemos este
+para o cliente. Neste tipo de negociação a P&D não instala o produto apenas compra como item de
+REVENDA e aplica a tributação e lucros e envia para o cliente que destina como melhor entende. (Código
+de emissão de nota fiscal CFOP 5.102 ou 5.405). Emissão de nota fiscal de REVENDA DE MATERIAIS.
+
+D4Sign 19842306-c8f7-4485-83bd-fafd8b2b5132 - Para conﬁrmar as assinaturas acesse https://secure.d4sign.com.br/veriﬁcar
+Documento assinado eletronicamente, conforme MP 2.200-2/01, Art. 10º, §2. Brasil
+
+●​ 6.5. Industrialização: Este modelo se aplica para fabricação de quadros elétricos e outros equipamentos na
+fábrica da P&D, ou seja, compramos vários insumos como chapas de aço, fechaduras, dobradiças,
+borrachas de vedação, tinta e transformamos tudo em um quadro elétrico ou outro equipamento. Neste
+modelo venda no momento de comprar os materiais este também são comprados como itens de
+industrialização. (Código de emissão de nota fiscal 5.101). Emissão de nota fiscal de
+INDUSTRIALIZAÇÃO.
+
+●​ 6.6. Serviços de Laboratório: Este se aplica para manutenção de equipamentos eletrônicos em nosso
+laboratório. (Código de emissão de nota fiscal 14.01). Emissão de nota fiscal de SERVIÇOS.
+
+D4Sign 19842306-c8f7-4485-83bd-fafd8b2b5132 - Para conﬁrmar as assinaturas acesse https://secure.d4sign.com.br/veriﬁcar
+Documento assinado eletronicamente, conforme MP 2.200-2/01, Art. 10º, §2. Brasil
+
+IMPORTANTE SOBRE IMPOSTOS
+É importante ressaltar que a carga efetiva do Imposto de Renda não é um valor padrão fixo, pois ela
+depende diretamente da sua receita mensal. A alíquota final muda conforme o faturamento, já que o
+adicional de 10% do IRPJ só é cobrado se a base de cálculo exceder R$ 60.000,00 ao trimestre, tanto
+para as prestações de serviços quando para comercio/indústria.
+Margem de lucro bruta:
+
+D4Sign 19842306-c8f7-4485-83bd-fafd8b2b5132 - Para conﬁrmar as assinaturas acesse https://secure.d4sign.com.br/veriﬁcar
+Documento assinado eletronicamente, conforme MP 2.200-2/01, Art. 10º, §2. Brasil
+
+OBS.: Além da margem de lucro, dependendo do tipo de negociação (Prazo de pagamento). é
+necessário que a cada 30 dias seja acrescido (2%) sobre o valor total da proposta. Exemplo:
+Proposta com valor total de R$ 10.000,00 com prazo de pagamento de 90 dias. (Valor global + 6%) =
+Valor total R$ 10.600,00.
+1. Módulo de Cadastros e Configurações
+1.2. Cadastro de Cargos e Precificação de Mão de Obra
+O sistema deverá ter uma nova tela de cadastro para "Cargos". Para cada cargo cadastrado, será
+necessário definir:
+●​ Nome do Cargo: (Ex: Engenheiro, Eletricista, Programador).
+●​ Unidade padrão
+●​ Unidades alternativas: (Mesma lógica de conversão utilizada para produto porém dentro dos cargos que
+serão utilizados para compor um serviço).
+●​ Níveis e Precificação: Possibilidade de criar múltiplos níveis para cada cargo, com um valor/Hora
+específico para cada um.
+○​ Nível: Júnior (JR) -> Valor/Hora: R$ XX,XX
+○​ Nível: Pleno (PL) -> Valor/Hora: R$ YY,YY
+○​ Nível: Sênior (SR) -> Valor/Hora: R$ ZZ,ZZ
+Este cadastro servirá como base para a precificação automática dos serviços nos orçamentos.
+2. Orçamento
+O fluxo de criação de um novo orçamento seguirá as seguintes etapas:
+2.1. Início do Orçamento
+1.​ Seleção da Modalidade: O usuário inicia um novo orçamento selecionando obrigatoriamente uma das 6
+"Modalidades de Venda" cadastradas (Ver itens do 6.1 ao 6.6). A seleção desta modalidade definirá a base
+de cálculo de impostos para o orçamento inteiro. (Ver tabela individual de cada um dos itens 6.1 ao 6.6)
+2.​ Descrição do Serviço: O usuário preencherá um campo de texto livre para nomear o serviço principal do
+orçamento (Ex: "Revitalização de Sala de Reunião da Diretoria").
+2.2. Adição de Itens ao Orçamento
+O usuário poderá adicionar dois tipos de itens ao orçamento: Serviços (Mão de Obra) e Produtos.
+A) Lançamento de Serviços (Mão de Obra):
+1.​ O usuário seleciona um Cargo e um Nível (Ex: Engenheiro - SR) a partir dos cadastros existentes.
+2.​ O campo "Valor/diária" é preenchido automaticamente pelo sistema com o preço definido no cadastro do
+cargo/nível.
+3.​ O usuário informa a quantidade de dias previstos para aquele cargo na execução do serviço.
+4.​ O sistema calcula o subtotal da linha: Subtotal do Serviço = Valor/diária x Quantidade de diárias.
+B) Lançamento de Produtos:
+D4Sign 19842306-c8f7-4485-83bd-fafd8b2b5132 - Para conﬁrmar as assinaturas acesse https://secure.d4sign.com.br/veriﬁcar
+Documento assinado eletronicamente, conforme MP 2.200-2/01, Art. 10º, §2. Brasil
+
+1.​ O usuário seleciona produtos a partir do cadastro nativo do sistema.
+2.​ O preço unitário é puxado do cadastro de produtos.
+3.​ O usuário informa a quantidade desejada.
+4.​ O sistema calcula o subtotal da linha: Subtotal do Produto = Preço Unitário x Quantidade.
+2.3. Totalização do Orçamento (Rodapé)
+O rodapé do orçamento deverá exibir de forma clara e separada os seguintes valores:
+●​
+●​
+●​
+●​
+
+Total de Serviços: Soma de todos os subtotais de mão de obra.
+Total de Produtos: Soma de todos os subtotais de produtos.
+Subtotal Geral: (Total de Serviços + Total de Produtos).
+Impostos: Valor total dos impostos, calculado com base nas alíquotas vinculadas à Modalidade de Venda
+selecionada no início do orçamento.
+●​ Valor Total do Orçamento: (Subtotal Geral + Impostos).
+3. Faturamento (Pedido de Venda)
+3.1. Conversão de Orçamento em Pedido de Venda
+Após a aprovação do cliente, o usuário deverá ter a funcionalidade de converter o orçamento em um Pedido
+de Venda com um único clique.
+3.2. Regras de Faturamento e Consolidação
+No momento da conversão, o sistema aplicará as seguintes regras para a geração do Pedido de Venda:
+1.​ Consolidação de Serviços: Todos os itens de serviço (mão de obra, cargos, horas) listados no orçamento
+e levados para o Pedido de venda quando faturados serão agrupados e representados como um único item
+na Nota de venda. Obs: a Baixa do estoque deverá ocorrer no momento da confirmação do pedido de
+venda e não na nota.
+○​ Exemplo: Descrição: "Prestação de Serviços de Mão de Obra" | Valor Total: R$ 5.914,00
+2.​ Manutenção dos Produtos: Todos os itens de produto listados no orçamento serão transferidos para o
+Pedido de Venda exatamente como estão.
+3.​ Composição para Nota Fiscal: O sistema deverá apresentar campos para que o usuário informe, no item
+de serviço consolidado, apenas informativo para que saia na descrição da observação da nota a
+composição percentual do valor que corresponde a mão de obra e a material (quando aplicável, como na
+Empreitada Global). OBS.: Desenvolver o sistema de forma que o percentual do orçamento seja
+mostrado no pedido de venda e na emissão da nota fiscal. Este processo de mostrar os percentuais
+deverá vigorar apenas para o item 6.1. EMPREITADA GLOBAL. Para os demais NÃO É NECESSÁRIO.
+○​ Exemplo prático:
+■​ Item no Pedido de Venda: 1 - Prestação de Serviços por empreitada global - R$ 10.000,00
+■​ Campos Adicionais para Nota:
+■​ % Mão de Obra: [ 60 ] % ou valor
+■​ % Material: [ 40 ] % ou valor
+○​ Esta informação será utilizada para a correta descrição e tributação na emissão da Nota Fiscal de Serviço
+(NFS-e). Somente para orçamentos em moldes do item 6.1. Empreitada Global
+
+D4Sign 19842306-c8f7-4485-83bd-fafd8b2b5132 - Para conﬁrmar as assinaturas acesse https://secure.d4sign.com.br/veriﬁcar
+Documento assinado eletronicamente, conforme MP 2.200-2/01, Art. 10º, §2. Brasil
+
+Uberaba, 23 de setembro 2025.
+
+D4Sign 19842306-c8f7-4485-83bd-fafd8b2b5132 - Para conﬁrmar as assinaturas acesse https://secure.d4sign.com.br/veriﬁcar
+Documento assinado eletronicamente, conforme MP 2.200-2/01, Art. 10º, §2. Brasil
+
+10 páginas - Datas e horá rios baseados em Brasília, Brasil
+Sincronizado com o NTP.br e Observatório Nacional (ON)
+Certiﬁcado de assinaturas gerado em 09 de October de 2025, 16:20:27
+
+P&D - Pré-Escopo de personalização Orçamento docx pdf
+Código do documento 19842306-c8f7-4485-83bd-fafd8b2b5132
+
+Assinaturas
+Jacqueline Lopes Lima Dalbello
+jacqueline.lopes@pedsolucoesbrasil.com
+
+Assinou
+ROGÉRIO POSSATI DALBELLO
+rogerio.possati@pedsolucoesbrasil.com
+
+Assinou
+Thiago Ferreira Belém
+thiago.belem@sankhya.com.br
+
+Assinou
+Alano Alves da Silva
+alano.silva@sankhya.com.br
+
+Assinou
+
+Eventos do documento
+24 Sep 2025, 12:38:09
+Documento 19842306-c8f7-4485-83bd-fafd8b2b5132 criado por ALANO ALVES DA SILVA
+(18020dda-2b78-4b79-8e28-1cea7d5b288a). Email:alano.silva@sankhya.com.br. - DATE_ATOM:
+2025-09-24T12:38:09-03:00
+24 Sep 2025, 12:40:26
+Assinaturas iniciadas por ALANO ALVES DA SILVA (18020dda-2b78-4b79-8e28-1cea7d5b288a). Email:
+alano.silva@sankhya.com.br. - DATE_ATOM: 2025-09-24T12:40:26-03:00
+24 Sep 2025, 12:40:45
+ALANO ALVES DA SILVA Assinou (18020dda-2b78-4b79-8e28-1cea7d5b288a) - Email: alano.silva@sankhya.com.br
+- IP: 201.71.43.151 (201-71-43-151.static.sumicity.net.br porta: 11758) - Documento de identiﬁcação informado:
+013.498.166-98 - DATE_ATOM: 2025-09-24T12:40:45-03:00
+24 Sep 2025, 17:38:55
+THIAGO FERREIRA BELÉM Assinou - Email: thiago.belem@sankhya.com.br - IP: 200.196.36.36 (200.196.36.36
+porta: 27754) - Documento de identiﬁcação informado: 126.736.196-40 - DATE_ATOM: 2025-09-24T17:38:55-03:00
+25 Sep 2025, 09:46:03
+ROGÉRIO POSSATI DALBELLO Assinou (650de70d-356d-492f-bd6e-f67987aee1c2) - Email:
+
+10 páginas - Datas e horá rios baseados em Brasília, Brasil
+Sincronizado com o NTP.br e Observatório Nacional (ON)
+Certiﬁcado de assinaturas gerado em 09 de October de 2025, 16:20:27
+
+rogerio.possati@pedsolucoesbrasil.com - IP: 189.15.199.130 (189-015-199-130.xd-dynamic.algarnetsuper.com.br
+porta: 8930) - Geolocalização: -19.73271393443919 -47.97368122184459 - Documento de identiﬁcação
+informado: 863.192.216-15 - DATE_ATOM: 2025-09-25T09:46:03-03:00
+26 Sep 2025, 08:44:18
+JACQUELINE LOPES LIMA DALBELLO Assinou - Email: jacqueline.lopes@pedsolucoesbrasil.com - IP:
+186.210.246.150 (186-210-246-150.xd-dynamic.algarnetsuper.com.br porta: 27366) - Documento de identiﬁcação
+informado: 056.243.956-04 - DATE_ATOM: 2025-09-26T08:44:18-03:00
+
+Hash do documento original
+(SHA256):b0e0243d608c7653b32e000ca143f4929a038a89b00f8e0684ef6d9366ad0568
+(SHA512):45cadfeea6afe30182583b23bc9a332c0ba0d01af91525676d7708ce02098637942e2885559976f8746268ef5ad1704f424551a3fb73e3e56de416ce768c170d
+
+Esse log pertence única e exclusivamente aos documentos de HASH acima
+
+Esse documento está assinado e certiﬁcado pela D4Sign
+Integridade certiﬁcada no padrão ICP-BRASIL
+Assinaturas eletrônicas e físicas têm igual validade legal, conforme MP 2.200-2/2001 e Lei
+14.063/2020.
+
+

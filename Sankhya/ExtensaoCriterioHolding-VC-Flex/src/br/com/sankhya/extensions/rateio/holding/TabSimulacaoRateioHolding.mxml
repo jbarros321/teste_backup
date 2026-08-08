@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+	width="100%" height="100%"
+	label="Rateio"
+	xmlns:db="br.com.sankhya.db.*" 
+	xmlns:ui="br.com.sankhya.db.ui.*" 
+	xmlns:controls="br.com.sankhya.controls.*"
+	xmlns:rateioHolding="br.com.sankhya.mgefin.rateioHolding.*"
+	creationComplete="creationCompleteHandler()">
+
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.Button;
+			import mx.core.Application;
+			import br.com.sankhya.db.IDBDataSet;
+			import br.com.sankhya.controls.DefaultSankhyaApplication;
+			
+			[Bindable]
+			private var _dsCriterioHolding:IDBDataSet;
+			
+			private function creationCompleteHandler():void{
+				var btnSimulaAnalitico:Button = new Button();
+				
+				btnSimulaAnalitico.addEventListener(MouseEvent.CLICK, function():void {
+					if(camposValidosParaSimularAnalitico()) {
+						gridRateio.datIni = new Date(dtInicialPeriodoBaixa.getData());
+						gridRateio.datFim = new Date(dtfinalPeriodoBaixa.getData());
+						gridRateio.ordem = parseInt(ordem.getData().toString());
+						gridRateio.calcImpRetidos = cbxCalcImpRetidos.selected;
+						gridRateio.ehRepasse = true;
+						gridRateio.simularAnalitico();
+					}
+				});
+				
+				btnSimulaAnalitico.label = "Simular Analítico";
+				btnSimulaAnalitico.styleName = "btnRemoveSelectedLines";
+								
+				gridRateio.topBars = [btnSimulaAnalitico];
+			}
+			
+			public function set dataSetCriterioHolding(ds:IDBDataSet):void{
+				_dsCriterioHolding = ds;
+			}
+		]]>
+	</mx:Script>
+	
+	<rateioHolding:GridRateioHolding id="gridRateio"/>	
+</mx:VBox>

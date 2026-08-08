@@ -1,0 +1,11 @@
+SpeechRecognition
+pyaudio
+edge-tts
+pygame-ce
+pyautogui
+requests
+sounddevice
+numpy
+setuptools
+pyttsx3
+psutil

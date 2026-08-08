@@ -1,0 +1,13 @@
+{
+    "fatos": [
+        "O usuário se chama Jonathan",
+        "O usuário está tudo bem",
+        "O usuário prefere ser chamado como Jona",
+        "O usuário prefere ser chamado como Jo",
+        "O usuário voltou a preferir ser chamado como Jonathan",
+        "O usuário confirmou que seu nome é Jonathan"
+    ],
+    "contexto_usuario": {},
+    "historico_resumo": "",
+    "preferencias": {}
+}

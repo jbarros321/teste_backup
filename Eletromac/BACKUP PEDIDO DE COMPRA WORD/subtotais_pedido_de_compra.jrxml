@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="subtotais_pedido_de_compra" language="groovy" pageWidth="802" pageHeight="555" orientation="Landscape" columnWidth="802" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.3310000000000015"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="PK_NUNOTA" class="java.math.BigDecimal" isForPrompting="false">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT   CAB.VLRICMS AS VALORICMS,
+         CAB.VLRSUBST AS VALORST,
+         CAB.VLRIPI AS VALORIPI,
+         CAB.VLRFRETE AS VALORFRETE,
+         DECODE (CAB.CIF_FOB, 'F', 'FOB', 'C', 'CIF') AS TIPFRETE,
+         CASE
+            WHEN PAR.CODPARC = 0
+               THEN ''
+            ELSE PAR.NOMEPARC
+         END AS TRANSPORTADORA,
+         (SELECT ROUND(SUM(ITE.QTDNEG * ITE.VLRUNIT), 2) FROM TGFITE ITE WHERE ITE.NUNOTA = CAB.NUNOTA) AS VLRPROD,
+         TRIM (CAB.OBSERVACAO) AS OBSERVACAO,
+         CAB.VLRNOTA AS VALORTOTAL
+    FROM TGFCAB CAB, TGFPAR PAR
+   WHERE CAB.NUNOTA = $P{PK_NUNOTA}
+   AND CAB.CODPARCTRANSP = PAR.CODPARC
+GROUP BY CAB.VLRICMS,
+         CAB.VLRSUBST,
+         CAB.VLRIPI,
+         CAB.VLRFRETE,
+         PAR.CODPARC,
+         PAR.NOMEPARC,
+         CAB.OBSERVACAO,
+         CAB.VLRNOTA,
+         CAB.CIF_FOB,
+         CAB.NUNOTA]]>
+	</queryString>
+	<field name="VALORICMS" class="java.lang.Double"/>
+	<field name="VALORST" class="java.lang.Double"/>
+	<field name="VALORIPI" class="java.lang.Double"/>
+	<field name="VALORFRETE" class="java.lang.Double"/>
+	<field name="TIPFRETE" class="java.lang.String"/>
+	<field name="TRANSPORTADORA" class="java.lang.String"/>
+	<field name="VLRPROD" class="java.math.BigDecimal"/>
+	<field name="OBSERVACAO" class="java.lang.String"/>
+	<field name="VALORTOTAL" class="java.lang.Double"/>
+	<summary>
+		<band height="97" splitType="Stretch">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="125" y="84" width="677" height="13" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$F{OBSERVACAO} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{OBSERVACAO}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="84" width="125" height="13" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$F{OBSERVACAO} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ Observações:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="0" y="0" width="802" height="70"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Times New Roman" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" Total Produtos: " + $F{VLRPROD} + "\n" +
+" Valor ICMS: " + $F{VALORICMS} + "\n" +
+" Valor S.T.: " + $F{VALORST} + "\n" +
+" Valor IPI: " + $F{VALORIPI} + "\n" +
+" Valor Total: " + $F{VALORTOTAL}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="71" width="125" height="13" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$F{OBSERVACAO} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ Tipo de Frete:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="125" y="71" width="677" height="13" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$F{OBSERVACAO} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+					<topPen lineWidth="0.5" lineStyle="Solid"/>
+					<leftPen lineWidth="0.5" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.5" lineStyle="Solid"/>
+					<rightPen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TIPFRETE}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

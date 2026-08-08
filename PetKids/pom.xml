@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>br.com.petkids</groupId>
+    <artifactId>integracao-neogrid</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>Integração Neogrid - Pet Kids</name>
+    <description>Integração para geração de arquivos de exportação Neogrid (Vendedores, Clientes, Produtos, Vendas e Estoque)</description>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+    
+    <profiles>
+        <!-- Perfil padrão: suprime warnings de validação para dependências systemPath -->
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <maven.model.validation>false</maven.model.validation>
+            </properties>
+        </profile>
+        
+        <!-- Perfil para compilação sem dependências Sankhya (quando JARs não estão disponíveis) -->
+        <profile>
+            <id>skip-sankhya-deps</id>
+            <activation>
+                <property>
+                    <name>skip.sankhya.deps</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <dependencies>
+                <!-- Dependências Sankhya são omitidas neste perfil -->
+            </dependencies>
+        </profile>
+    </profiles>
+
+    <dependencies>
+        <!-- Dependências Sankhya locais -->
+        <!-- 
+            Nota: systemPath aponta para arquivos locais pois as dependências Sankhya não estão no Maven Central.
+            Os warnings sobre systemPath são esperados e não afetam o funcionamento do projeto.
+            Essas dependências são fornecidas localmente no diretório lib/ e são necessárias para compilação.
+        -->
+        <dependency>
+            <groupId>br.com.sankhya.local</groupId>
+            <artifactId>sankhyaw-extensions-local</artifactId>
+            <version>1.0.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/SankhyaW-extensions.jar</systemPath>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>br.com.sankhya.local</groupId>
+            <artifactId>jape-local</artifactId>
+            <version>1.0.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/jape.jar</systemPath>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>br.com.sankhya.local</groupId>
+            <artifactId>mge-modelcore-local</artifactId>
+            <version>1.0.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/mge-modelcore.jar</systemPath>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>br.com.sankhya.local</groupId>
+            <artifactId>sanutil-local</artifactId>
+            <version>1.0.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/sanutil.jar</systemPath>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Dependências utilitárias -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.1</version>
+        </dependency>
+        <!-- ExceptionUtils para melhor tratamento de exceções -->
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <sourceDirectory>src</sourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
+                <!-- finalName é read-only, o nome padrão já é artifactId-version.jar -->
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+

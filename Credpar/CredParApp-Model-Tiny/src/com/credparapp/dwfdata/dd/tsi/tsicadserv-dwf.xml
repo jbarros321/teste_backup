@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE metadata-provider >
+<metadata-provider name="tsicadserv-dwf" parent="mge-dwf" data-source="java:/MGEDS" batch-fetch-size="200" verbose="false" event-listener="br.com.sankhya.modelcore.dwfdata.DynamicEntityLoader" use-ejb="false">
+	<container-config entity-cache-max-idle="1800" entity-cache-max-size="5000" instance-cache-max-size="2000" commit-type-d-refresh-rate="120"/>
+	
+	<descriptor name="CADSERV" location="com/credparapp/dwfdata/dd/tsi/CADSERV.xml"/>
+	<descriptor name="OndeComprar" location="com/credparapp/dwfdata/dd/tsi/OndeComprar.xml"/>
+	<descriptor name="OperadoraCelular" location="com/credparapp/dwfdata/dd/tsi/OperadoraCelular.xml"/>
+	<descriptor name="ProdutoOperadora" location="com/credparapp/dwfdata/dd/tsi/ProdutoOperadora.xml"/>
+	<descriptor name="DddOperadora" location="com/credparapp/dwfdata/dd/tsi/DddOperadora.xml"/>
+	<descriptor name="EstadoOperadora" location="com/credparapp/dwfdata/dd/tsi/EstadoOperadora.xml"/>
+	<descriptor name="HistoricoRecargaCel" location="com/credparapp/dwfdata/dd/tsi/HistoricoRecargaCel.xml"/>
+	
+</metadata-provider>

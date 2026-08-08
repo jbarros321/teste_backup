@@ -1,0 +1,18 @@
+<project name="AutoCmp Extension" default="war">
+
+	<target name="war">
+		<copy todir="build/WEB-INF/classes">
+			<fileset dir="bin">
+				<include name="**/*.class" />
+			</fileset>
+			<fileset dir="src">
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+		<zip destfile="ws-autocmp/web/autocmp.war">
+			<fileset dir="build">
+				<exclude name="**/.svn" />
+			</fileset>
+		</zip>
+	</target>
+</project>

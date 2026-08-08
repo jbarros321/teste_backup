@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<configurations>
+<archive destination="" exploded="false" name="mgegi-model.jar" used="true">
+<folder excludes="" includes="**/*.*" location="bin" name="bin" prefix="" project="" projectLocation="bin" used="true"/>
+<file location="build/META-INF/*.*" name="*.*" prefix="META-INF" project="" projectLocation="build/META-INF/*.*" used="true"/>
+</archive>
+</configurations>

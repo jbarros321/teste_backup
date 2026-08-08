@@ -1,0 +1,103 @@
+<project name="ExtensaoCriterioHolding-VC">
+	
+	<property name="warName" value="2a3ExtCriterioHolding.war" />
+	<property name="home.skjava" value="C:\sk-java"/>
+	
+	<target name="Enviar WAR para gerar extensao" depends="z-createtmp,z-copyflex">
+		<copy todir="tmp">
+			<fileset dir="${basedir}/build" includes="WEB-INF/**/*"/>
+		</copy>
+		<copy todir="tmp">
+			<fileset dir="${basedir}" includes="META-INF/**/*"/>
+		</copy>
+		<copy todir="tmp/WEB-INF/classes">
+			<fileset dir="${basedir}/bin" includes="**/*"/>
+		</copy>
+		<copy todir="tmp">
+			<fileset dir="${basedir}/build" includes="**/*">
+				<include name="*.parameters"/>
+			</fileset>
+		</copy>
+		<delete file="${basedir}/../ExtensaoCriterioHolding-Model/extBuild/web/${warName}" failonerror="false" />
+		<jar destfile="${basedir}/../ExtensaoCriterioHolding-Model/extBuild/web/${warName}">
+			<zipfileset dir="tmp" includes="**/*"/>
+		</jar>
+		<delete dir="tmp" />
+		
+		<echo message="WAR para extensao disponivel em ${home.skjava}\SkwExtensionTool\build-extensao\web\${warName}. ${line.separator}Apos enviar tambem o JAR(EJBs) e as libs, utilize o Skw Extension Tool para gerar sua extensao." />
+	</target>
+	
+	<target name="Deploy WAR" depends="z-createtmp,z-copyflex">
+		<copy todir="tmp">
+			<fileset dir="${basedir}/build" includes="WEB-INF/**/*"/>
+		</copy>
+		<copy todir="tmp">
+			<fileset dir="${basedir}" includes="META-INF/**/*"/>
+		</copy>
+		<copy todir="tmp/WEB-INF/classes">
+			<fileset dir="${basedir}/bin" includes="**/*"/>
+		</copy>
+		<copy todir="tmp">
+			<fileset dir="${basedir}/build" includes="**/*">
+				<include name="*.parameters"/>
+			</fileset>
+		</copy>
+		<delete dir="${default.jboss}\deploy\${warName}" />
+		<copy todir="${default.jboss}\deploy\${warName}">
+			<fileset dir="tmp" includes="**/*"/>
+		</copy>
+		<delete dir="tmp" />
+		
+		<echo message="Feito deploy no servidor de aplicacoes em ${default.jboss}\deploy\${warName}" />
+	</target>
+	
+	<target name="Deploy Flex" if="flex.present" depends="z-check-flex">		
+		<copy todir="${default.jboss}\deploy\${warName}\flex" failonerror="true" verbose="true">
+			<fileset dir="${basedir}-Flex\bin">
+				<include name="*.swf" />
+			</fileset>
+		</copy>
+		
+		<echo message="Feito deploy dos arquivos *.swf de ${basedir}-Flex\bin para ${default.jboss}\deploy\${warName}\flex"/>
+	</target>
+	
+	<target name="z-createtmp">
+		<mkdir dir="tmp" />
+	</target>
+	
+	<target name="z-copyflex" if="flex.present" depends="z-check-flex">
+		<delete>
+			<fileset dir="${basedir}-Flex/bin/">
+				<include name="*.swf"/>
+			</fileset>
+		</delete>
+		<applicationCompiler
+			outPutPath="${basedir}-Flex/bin"
+			rslURLBase="/mge/flex/lib"
+			srcPath="${basedir}-Flex/src"
+			swcHome="C:/sk-java/workspace/trunk/api_sankhya-3.17.13/flex"
+			flexHome="C:/sk-java/libs/flex-sdk/flex_sdk_3.6"
+			libNames="sanutil-fx,google-fx,controls,sandb-fx,commons-fx,dashboard-fx,extensoes-fx,map_flex_1_20,analytics,as3corelib,as3crypto"
+			storeDir="Lixo"
+			forceCompile="true"
+		/>
+		<copy todir="tmp/flex">
+			<fileset dir="${basedir}-Flex/bin/">
+				<include name="*.swf"/>
+			</fileset>
+		</copy>
+	</target>
+	
+	<target name="z-check-ant" unless="eclipse.home">
+		<echo message="Propriedades requeridas nao disponiveis (rode este ANT dentro da mesma JRE do seu Eclipse). ${line.separator}Botao direito no ant>Run As...>Ant Build...>Aba JRE>Marcar opcao 'Run in the same JRE as the workspace'." />
+	</target>
+	
+	<target name="z-check-flex" unless="flex.present" depends="z-check-is-flex-present">
+		<echo message="Projeto ${project_name}-Flex nao encontrado." />
+	</target>
+	
+	<target name="z-check-is-flex-present">
+	    <available file="${basedir}-Flex" type="dir" property="flex.present"/>
+	</target>
+	
+</project>

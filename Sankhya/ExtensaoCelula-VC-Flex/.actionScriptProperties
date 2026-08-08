@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<actionScriptProperties analytics="false" mainApplicationPath="CronogramaCelula.mxml" projectUUID="d0193829-007d-485c-a584-3ee5eaa76495" version="11">
+  <compiler additionalCompilerArguments="--compiler.locale en_US --compiler.external-library-path+=D:\sk-java\flex\3.6.0\frameworks\libs\framework.swc,D:\sk-java\flex\3.6.0\frameworks\libs\datavisualization.swc,D:\sk-java\workspace_teste\trunk\api_sankhya-3.11.0\flex\sanutil-fx.swc,D:\sk-java\workspace_teste\trunk\api_sankhya-3.11.0\flex\google-fx.swc,D:\sk-java\workspace_teste\trunk\api_sankhya-3.11.0\flex\controls.swc,D:\sk-java\workspace_teste\trunk\api_sankhya-3.11.0\flex\sandb-fx.swc,D:\sk-java\workspace_teste\trunk\api_sankhya-3.11.0\flex\commons-fx.swc,D:\sk-java\workspace_teste\trunk\api_sankhya-3.11.0\flex\dashboard-fx.swc,D:\sk-java\workspace_teste\trunk\api_sankhya-3.11.0\flex\extensoes-fx.swc,D:\sk-java\workspace_teste\trunk\api_sankhya-3.11.0\flex\map_flex_1_20.swc,D:\sk-java\workspace_teste\trunk\api_sankhya-3.11.0\flex\analytics.swc,D:\sk-java\workspace_teste\trunk\api_outros\flex\as3corelib.swc,D:\sk-java\workspace_teste\trunk\api_outros\flex\as3crypto.swc,D:\sk-java\flex\3.6.0\frameworks\libs\rpc.swc --runtime-shared-libraries+=/mge/flex/lib/framework.swf,/mge/flex/lib/datavisualization.swf,/mge/flex/lib/sanutil-fx.swf,/mge/flex/lib/google-fx.swf,/mge/flex/lib/controls.swf,/mge/flex/lib/sandb-fx.swf,/mge/flex/lib/commons-fx.swf,/mge/flex/lib/dashboard-fx.swf,/mge/flex/lib/extensoes-fx.swf,/mge/flex/lib/map_flex_1_20.swf,/mge/flex/lib/analytics.swf,/mge/flex/lib/as3corelib.swf,/mge/flex/lib/as3crypto.swf,/mge/flex/lib/rpc.swf" autoRSLOrdering="false" copyDependentFiles="true" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="true" htmlHistoryManagement="true" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin" removeUnusedRSL="true" sourceFolderPath="src" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="false" useDebugRSLSwfs="true" useFlashSDK="false" verifyDigests="true" warn="true">
+    <compilerSourcePath/>
+    <libraryPath defaultLinkType="0">
+      <libraryPathEntry kind="4" path="">
+        <excludedEntries>
+          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/flex.swc" useDefaultLinkType="false"/>
+          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/core.swc" useDefaultLinkType="false"/>
+        </excludedEntries>
+      </libraryPathEntry>
+      <libraryPathEntry kind="1" linkType="1" path="libs"/>
+      <libraryPathEntry kind="3" linkType="1" path="/commons-fx3110/bin/commons-fx3110.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="1" path="/controls3110/bin/controls3110.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="1" path="/sandb-fx3110/bin/sandb-fx3110.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="1" path="/sanutil-fx3110/bin/sanutil-fx3110.swc" useDefaultLinkType="false"/>
+    </libraryPath>
+    <sourceAttachmentPath/>
+  </compiler>
+  <applications>
+    <application path="CronogramaCelula.mxml"/>
+  </applications>
+  <modules/>
+  <workers/>
+  <buildCSSFiles/>
+  <flashCatalyst validateFlashCatalystCompatibility="false"/>
+</actionScriptProperties>

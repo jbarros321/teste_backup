@@ -1,0 +1,21 @@
+<configs>
+  <dataSources />
+  <defaultJbossPath>D:\SankhyaW\SKW a1\server\default</defaultJbossPath>
+  <buildDir>D:\Developer\workspaces\trunk\ExtensaoCriterioHolding-Model\extBuild</buildDir>
+  <exportDir>D:\sk-java\Extensions</exportDir>
+  <recriaDefault>false</recriaDefault>
+  <cleanJboss>false</cleanJboss>
+  <devEnvironment>
+    <DataSource name="dsDevBase">
+      <dataBase>ORACLE</dataBase>
+      <host>192.168.0.210</host>
+      <sidInstance>ORCL</sidInstance>
+      <port>1521</port>
+      <user>EXTENSOES</user>
+      <pass>tecsis</pass>
+      <baseName />
+      <poolSizeMin>0</poolSizeMin>
+      <poolSizeMax>0</poolSizeMax>
+    </DataSource>
+  </devEnvironment>
+</configs>

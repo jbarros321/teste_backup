@@ -1,0 +1,416 @@
+CREATE OR REPLACE PROCEDURE PROC_IMP_XMLNFSEHMM_NACIONAL (
+    p_codusu    NUMBER,
+    p_idsessao  VARCHAR2,
+    p_qtdlinhas NUMBER,
+    p_mensagem  IN OUT VARCHAR2,
+    p_imp_xml   VARCHAR2 DEFAULT 'N'
+)
+AS
+    field_sequencia     NUMBER;
+    v_qtdreg            NUMBER := 0;
+    v_incluir           BOOLEAN := TRUE;
+    v_qtdinc            NUMBER := 0;
+    v_qtd_dup           NUMBER := 0;
+    v_qtd_erros         NUMBER := 0;
+    v_xml_existe        NUMBER := 0;
+    v_xml_tamanho       NUMBER := 0;
+    v_xml_content       CLOB;
+    v_xml_test          XMLTYPE;
+    v_sqlcode           NUMBER;
+    v_erro_detalhe      VARCHAR2(4000);
+    v_linha_atual       NUMBER := 0;
+    v_doc_count         NUMBER := 0;
+    v_compnfse_count    NUMBER := 0;
+    v_current_pos       NUMBER := 1;
+    v_next_start        NUMBER := 0;
+    v_next_end          NUMBER := 0;
+    v_single_xml        CLOB;
+    v_layout_type       VARCHAR2(20) := 'NACIONAL_ABRASF';
+    v_registros_rigoroso NUMBER := 0;
+BEGIN
+    IF p_codusu IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20001, 'ERRO: Código de usuário não informado.');
+    END IF;
+
+    IF p_idsessao IS NULL OR TRIM(p_idsessao) IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20002, 'ERRO: ID da sessão não informado ou vazio.');
+    END IF;
+
+    IF p_qtdlinhas IS NULL OR p_qtdlinhas < 1 THEN
+        RAISE_APPLICATION_ERROR(-20003, 'ERRO: Quantidade de linhas inválida.');
+    END IF;
+
+    IF p_qtdlinhas > 1 THEN
+        RAISE_APPLICATION_ERROR(-20004, 'ERRO: Selecione apenas UMA linha para processamento.');
+    END IF;
+
+    FOR i IN 1..p_qtdlinhas LOOP
+        BEGIN
+            field_sequencia := ACT_INT_FIELD(p_idsessao, i, 'SEQUENCIA');
+        EXCEPTION
+            WHEN OTHERS THEN
+                RAISE_APPLICATION_ERROR(-20005, 'ERRO: Campo SEQUENCIA não encontrado ou função ACT_INT_FIELD não disponível.');
+        END;
+
+        IF field_sequencia IS NULL THEN
+            RAISE_APPLICATION_ERROR(-20005, 'ERRO: Campo SEQUENCIA não encontrado.');
+        END IF;
+
+        BEGIN
+            SELECT COUNT(1) INTO v_qtdreg FROM ad_xmlnfsehmm WHERE sequencia = field_sequencia;
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN v_qtdreg := 0;
+        END;
+
+        IF v_qtdreg > 0 THEN
+            IF p_imp_xml = 'S' THEN
+                DELETE FROM ad_xmlnfsehmm WHERE sequencia = field_sequencia;
+            ELSIF p_imp_xml = 'N' THEN
+                BEGIN
+                    IF ACT_ESCOLHER_SIMNAO('Movimentos já existentes', 'Já existem notas. Apagar?', p_idsessao, i) = 'S' THEN
+                        DELETE FROM ad_xmlnfsehmm WHERE sequencia = field_sequencia;
+                    END IF;
+                EXCEPTION
+                    WHEN OTHERS THEN
+                        -- Se a função não estiver disponível, assumir que não deve apagar
+                        DBMS_OUTPUT.PUT_LINE('AVISO: Função ACT_ESCOLHER_SIMNAO não disponível, mantendo registros existentes.');
+                END;
+            END IF;
+        END IF;
+
+        BEGIN
+            SELECT xml INTO v_xml_content
+            FROM ad_xmlnfsehmmc
+            WHERE sequencia = field_sequencia AND ROWNUM = 1;
+
+            -- ===========================================
+            -- TRATAMENTO AVANÇADO DE XML PROBLEMÁTICO
+            -- ===========================================
+
+            -- 1. Limpar caracteres de controle e quebras de linha
+            v_xml_content := REPLACE(REPLACE(REPLACE(REPLACE(v_xml_content, CHR(0), ''), CHR(1), ''), CHR(26), ''), CHR(13), '');
+
+            -- 1.1. Limpar conteúdo estranho no início do XML (caso exista)
+            DECLARE
+                v_first_valid_pos NUMBER := 0;
+            BEGIN
+                v_first_valid_pos := INSTR(v_xml_content, '<GerarNfseResponse');
+                IF v_first_valid_pos > 1 THEN
+                    v_xml_content := SUBSTR(v_xml_content, v_first_valid_pos);
+                END IF;
+            END;
+
+            -- 2. PROCESSAMENTO DIRETO COMO XML CONCATENADO (sempre tentar este caminho)
+            DECLARE
+                v_count_docs NUMBER := 0;
+            BEGIN
+                -- Contar quantas vezes aparece <GerarNfseResponse
+                v_count_docs := LENGTH(v_xml_content) - LENGTH(REPLACE(v_xml_content, '<GerarNfseResponse', '<GerarNfseResponseX')) + 1;
+
+                -- Sempre ir para processamento concatenado
+                GOTO process_concatenated_xml;
+            END;
+
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                RAISE_APPLICATION_ERROR(-20010, 'ERRO: XML não encontrado para sequencia=' || field_sequencia);
+            WHEN OTHERS THEN
+                RAISE_APPLICATION_ERROR(-20011, 'ERRO: Falha ao processar XML da sequência ' || field_sequencia || ': ' || SQLERRM ||
+                                       CHR(10) || 'Tamanho XML: ' || LENGTH(NVL(v_xml_content, 'NULL')) ||
+                                       CHR(10) || 'Inicio do XML: ' || SUBSTR(NVL(v_xml_content, 'NULL'), 1, 200));
+        END;
+
+
+        -- ===========================================
+        -- NOVA LÓGICA: PROCESSAR TODOS OS DOCUMENTOS CONCATENADOS
+        -- ===========================================
+        DECLARE
+            v_current_pos NUMBER := 1;
+            v_doc_start NUMBER := 0;
+            v_doc_end NUMBER := 0;
+            v_single_doc CLOB;
+            v_doc_count NUMBER := 0;
+            v_total_nfse NUMBER := 0;
+        BEGIN
+            -- Loop para processar cada documento GerarNfseResponse
+            LOOP
+                -- Encontrar o início do próximo documento
+                v_doc_start := INSTR(v_xml_content, '<GerarNfseResponse', v_current_pos);
+
+                IF v_doc_start = 0 THEN
+                    EXIT; -- Não há mais documentos
+                END IF;
+
+                -- Encontrar o fim deste documento
+                v_doc_end := INSTR(v_xml_content, '</GerarNfseResponse>', v_doc_start) + LENGTH('</GerarNfseResponse>');
+
+                IF v_doc_end = 0 THEN
+                    EXIT; -- Documento malformado
+                END IF;
+
+                -- Extrair o documento completo
+                v_single_doc := SUBSTR(v_xml_content, v_doc_start, v_doc_end - v_doc_start);
+                v_doc_count := v_doc_count + 1;
+
+
+                -- Processar este documento específico
+                BEGIN
+                    -- Limpar namespaces problemáticos
+                    v_single_doc := REPLACE(v_single_doc, 'xmlns="http://www.abrasf.org.br/nfse.xsd"', '');
+                    v_single_doc := REPLACE(v_single_doc, 'xmlns="http://nfse.abrasf.org.br"', '');
+                    v_single_doc := REPLACE(v_single_doc, 'xmlns="http://nfse.goiania.go.gov.br/xsd/nfse_gyn_v02.xsd"', '');
+
+                    -- Validar o XML do documento
+                    DECLARE
+                        v_xml_valid XMLTYPE;
+                    BEGIN
+                        v_xml_valid := XMLTYPE(v_single_doc);
+                    EXCEPTION
+                        WHEN OTHERS THEN
+                            v_current_pos := v_doc_end;
+                            CONTINUE;
+                    END;
+
+                    -- Contar Nfse neste documento
+                    DECLARE
+                        v_count_nfse NUMBER := 0;
+                    BEGIN
+                        SELECT COUNT(*) INTO v_count_nfse
+                        FROM XMLTABLE('/*:GerarNfseResponse/*:GerarNfseResposta/*:ListaNfse/*:CompNfse/*:Nfse'
+                                     PASSING XMLTYPE(v_single_doc)
+                                     COLUMNS dummy VARCHAR2(1) PATH '*:InfNfse/*:Numero') t
+                        WHERE t.dummy IS NOT NULL;
+
+                        v_total_nfse := v_total_nfse + v_count_nfse;
+                    EXCEPTION
+                        WHEN OTHERS THEN
+                            NULL; -- Ignorar erros na contagem
+                    END;
+
+                EXCEPTION
+                    WHEN OTHERS THEN
+                        NULL; -- Ignorar erros em documentos individuais
+                END;
+
+                -- Avançar para a próxima posição
+                v_current_pos := v_doc_end;
+            END LOOP;
+
+            IF v_doc_count = 0 THEN
+                RAISE_APPLICATION_ERROR(-20100, 'ERRO: Nenhum documento GerarNfseResponse válido encontrado. ' ||
+                                              'Verifique se o XML tem estrutura esperada. ' ||
+                                              'Inicio do XML: ' || SUBSTR(v_xml_content, 1, 500) ||
+                                              '. Parâmetros: sequencia=' || field_sequencia);
+            END IF;
+        END;
+
+        -- ===========================================
+        -- NOVA LÓGICA: LOOP PARA PROCESSAR TODOS OS DOCUMENTOS CONCATENADOS
+        -- ===========================================
+        <<process_concatenated_xml>>
+        DECLARE
+            v_current_pos NUMBER := 1;
+            v_doc_start NUMBER := 0;
+            v_doc_end NUMBER := 0;
+            v_single_doc CLOB;
+            v_doc_processed NUMBER := 0;
+        BEGIN
+            LOOP
+                -- Encontrar o início do próximo documento
+                v_doc_start := INSTR(v_xml_content, '<GerarNfseResponse', v_current_pos);
+
+                IF v_doc_start = 0 THEN
+                    EXIT; -- Não há mais documentos
+                END IF;
+
+                -- Encontrar o fim deste documento
+                v_doc_end := INSTR(v_xml_content, '</GerarNfseResponse>', v_doc_start) + LENGTH('</GerarNfseResponse>');
+
+                IF v_doc_end = 0 THEN
+                    EXIT; -- Documento malformado
+                END IF;
+
+                -- Extrair o documento completo
+                v_single_doc := SUBSTR(v_xml_content, v_doc_start, v_doc_end - v_doc_start);
+                v_doc_processed := v_doc_processed + 1;
+
+                -- Processar NFS-e deste documento específico
+                FOR nfs IN (
+                    SELECT t.numero,
+                           t.codigoverificacao,
+                           AD_CTB.FC_DATEXMLNFE(t.dataemissao) AS dataemissao,
+                           REPLACE(t.basecalculo, '.', ',') AS basecalculo,
+                           REPLACE(t.aliquota, '.', ',') AS aliquota,
+                           REPLACE(t.valoriss, '.', ',') AS valoriss,
+                           t.numerorps,
+                           t.serierps,
+                           t.tiporps,
+                           AD_CTB.FC_DATEXMLNFE(t.dataemissaorps) AS dataemissaorps,
+                           AD_CTB.FC_DATEXMLNFE(t.competencia) AS competencia,
+                           REPLACE(t.valorservicos, '.', ',') AS valorservicos,
+                           REPLACE(t.valordeducoes, '.', ',') AS valordeducoes,
+                           REPLACE(t.valorpis, '.', ',') AS valorpis,
+                           REPLACE(t.valorcofins, '.', ',') AS valorcofins,
+                           REPLACE(t.valorinss, '.', ',') AS valorinss,
+                           REPLACE(t.valorir, '.', ',') AS valorir,
+                           REPLACE(t.valorcsll, '.', ',') AS valorcsll,
+                           REPLACE(t.valoriss2, '.', ',') AS valoriss2,
+                           REPLACE(t.aliquota2, '.', ',') AS aliquota2,
+                           REPLACE(t.descontoincondicionado, '.', ',') AS descontoincondicionado,
+                           t.issretido,
+                           t.codigotributacaomunicipio,
+                           t.discriminacao,
+                           t.codigomunicipio,
+                           t.exigibilidadeiss,
+                           t.municipioincidencia,
+                           t.cnpj_prestador,
+                           t.inscricaomunicipal_prestador,
+                           t.cpf_tomador,
+                           t.cnpj_tomador,
+                           t.inscricaomunicipal_tomador,
+                           t.razaosocial_tomador,
+                           t.endereco_tomador,
+                           t.numero_tomador,
+                           t.complemento_tomador,
+                           t.bairro_tomador,
+                           t.codigomunicipio_tomador,
+                           t.uf_tomador,
+                           t.cep_tomador,
+                           t.optantesimplesnacional
+                    FROM XMLTABLE('/*:GerarNfseResponse/*:GerarNfseResposta/*:ListaNfse/*:CompNfse/*:Nfse'
+                                  PASSING XMLTYPE(v_single_doc) COLUMNS
+                                  numero                       VARCHAR2(4000) PATH '*:InfNfse/*:Numero',
+                                  codigoverificacao            VARCHAR2(4000) PATH '*:InfNfse/*:CodigoVerificacao',
+                                  dataemissao                  VARCHAR2(4000) PATH '*:InfNfse/*:DataEmissao',
+                                  basecalculo                  VARCHAR2(4000) PATH '*:InfNfse/*:ValoresNfse/*:BaseCalculo',
+                                  aliquota                     VARCHAR2(4000) PATH '*:InfNfse/*:ValoresNfse/*:Aliquota',
+                                  valoriss                     VARCHAR2(4000) PATH '*:InfNfse/*:ValoresNfse/*:ValorIss',
+                                  numerorps                    VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Rps/*:IdentificacaoRps/*:Numero',
+                                  serierps                     VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Rps/*:IdentificacaoRps/*:Serie',
+                                  tiporps                      VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Rps/*:IdentificacaoRps/*:Tipo',
+                                  dataemissaorps               VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Rps/*:DataEmissao',
+                                  competencia                  VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Competencia',
+                                  valorservicos                VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Servico/*:Valores/*:ValorServicos',
+                                  valordeducoes                VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Servico/*:Valores/*:ValorDeducoes',
+                                  valorpis                     VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Servico/*:Valores/*:ValorPis',
+                                  valorcofins                  VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Servico/*:Valores/*:ValorCofins',
+                                  valorinss                    VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Servico/*:Valores/*:ValorInss',
+                                  valorir                      VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Servico/*:Valores/*:ValorIr',
+                                  valorcsll                    VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Servico/*:Valores/*:ValorCsll',
+                                  valoriss2                    VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Servico/*:Valores/*:ValorIss',
+                                  aliquota2                    VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Servico/*:Valores/*:Aliquota',
+                                  descontoincondicionado       VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Servico/*:Valores/*:DescontoIncondicionado',
+                                  issretido                    VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Servico/*:IssRetido',
+                                  codigotributacaomunicipio    VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Servico/*:CodigoTributacaoMunicipio',
+                                  discriminacao                VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Servico/*:Discriminacao',
+                                  codigomunicipio              VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Servico/*:CodigoMunicipio',
+                                  exigibilidadeiss             VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Servico/*:ExigibilidadeISS',
+                                  municipioincidencia          VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Servico/*:MunicipioIncidencia',
+                                  cnpj_prestador               VARCHAR2(4000) PATH '*:InfNfse/*:PrestadorServico/*:CpfCnpj/*:Cnpj | *:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Prestador/*:CpfCnpj/*:Cnpj',
+                                  inscricaomunicipal_prestador VARCHAR2(4000) PATH '*:InfNfse/*:PrestadorServico/*:InscricaoMunicipal | *:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:Prestador/*:InscricaoMunicipal',
+                                  cpf_tomador                  VARCHAR2(4000) PATH '*:InfNfse/*:TomadorServico/*:IdentificacaoTomador/*:CpfCnpj/*:Cpf | *:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:TomadorServico/*:IdentificacaoTomador/*:CpfCnpj/*:Cpf',
+                                  cnpj_tomador                 VARCHAR2(4000) PATH '*:InfNfse/*:TomadorServico/*:IdentificacaoTomador/*:CpfCnpj/*:Cnpj | *:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:TomadorServico/*:IdentificacaoTomador/*:CpfCnpj/*:Cnpj',
+                                  inscricaomunicipal_tomador   VARCHAR2(4000) PATH '*:InfNfse/*:TomadorServico/*:IdentificacaoTomador/*:InscricaoMunicipal | *:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:TomadorServico/*:IdentificacaoTomador/*:InscricaoMunicipal',
+                                  razaosocial_tomador          VARCHAR2(4000) PATH '*:InfNfse/*:TomadorServico/*:RazaoSocial | *:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:TomadorServico/*:RazaoSocial',
+                                  endereco_tomador             VARCHAR2(4000) PATH '*:InfNfse/*:TomadorServico/*:Endereco/*:Endereco | *:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:TomadorServico/*:Endereco/*:Endereco',
+                                  numero_tomador               VARCHAR2(4000) PATH '*:InfNfse/*:TomadorServico/*:Endereco/*:Numero | *:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:TomadorServico/*:Endereco/*:Numero',
+                                  complemento_tomador          VARCHAR2(4000) PATH '*:InfNfse/*:TomadorServico/*:Endereco/*:Complemento | *:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:TomadorServico/*:Endereco/*:Complemento',
+                                  bairro_tomador               VARCHAR2(4000) PATH '*:InfNfse/*:TomadorServico/*:Endereco/*:Bairro | *:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:TomadorServico/*:Endereco/*:Bairro',
+                                  codigomunicipio_tomador      VARCHAR2(4000) PATH '*:InfNfse/*:TomadorServico/*:Endereco/*:CodigoMunicipio | *:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:TomadorServico/*:Endereco/*:CodigoMunicipio',
+                                  uf_tomador                   VARCHAR2(4000) PATH '*:InfNfse/*:TomadorServico/*:Endereco/*:Uf | *:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:TomadorServico/*:Endereco/*:Uf',
+                                  cep_tomador                  VARCHAR2(4000) PATH '*:InfNfse/*:TomadorServico/*:Endereco/*:Cep | *:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:TomadorServico/*:Endereco/*:Cep',
+                                  optantesimplesnacional       VARCHAR2(4000) PATH '*:InfNfse/*:DeclaracaoPrestacaoServico/*:InfDeclaracaoPrestacaoServico/*:OptanteSimplesNacional') t
+                    WHERE t.numero IS NOT NULL
+                ) LOOP
+
+        v_registros_rigoroso := v_registros_rigoroso + 1;
+
+        BEGIN
+            INSERT INTO ad_xmlnfsehmm (
+                sequencia, numero, numerorps, codigoverificacao, dataemissao, basecalculo, aliquota, valoriss,
+                serie, tipo, dataemissaorps, competencia, valorservicos, valordeducoes, valorpis, valorcofins,
+                valorinss, valorir, valorcsll, valoriss2, aliquota2, descontoincondicionado, issretido,
+                codigotributacaomunicipio, discriminacao, codigomunicipio, exigibilidadeiss, municipioincidencia,
+                cnpj_prestador, inscricaomunicipal_prestador, cpf_cnpj_tomador, inscricaomunicipal_tomador,
+                razaosocial_tomador, endereco_tomador, numero_tomador, complemento_tomador, bairro_tomador,
+                codigomunicipio_tomador, uf_tomador, cep_tomador, optantesimplesnacional
+            ) VALUES (
+                field_sequencia, nfs.numero, nfs.numerorps, nfs.codigoverificacao, nfs.dataemissao, nfs.basecalculo,
+                nfs.aliquota, nfs.valoriss, nfs.serierps, nfs.tiporps, nfs.dataemissaorps, nfs.competencia,
+                nfs.valorservicos, nfs.valordeducoes, nfs.valorpis, nfs.valorcofins, nfs.valorinss, nfs.valorir,
+                nfs.valorcsll, nfs.valoriss2, nfs.aliquota2, nfs.descontoincondicionado, nfs.issretido,
+                nfs.codigotributacaomunicipio, nfs.discriminacao, nfs.codigomunicipio, nfs.exigibilidadeiss,
+                nfs.municipioincidencia, nfs.cnpj_prestador, nfs.inscricaomunicipal_prestador,
+                NVL(nfs.cpf_tomador, nfs.cnpj_tomador), nfs.inscricaomunicipal_tomador, nfs.razaosocial_tomador,
+                nfs.endereco_tomador, nfs.numero_tomador, nfs.complemento_tomador, nfs.bairro_tomador,
+                nfs.codigomunicipio_tomador, nfs.uf_tomador, nfs.cep_tomador, nfs.optantesimplesnacional
+            );
+            v_qtdinc := v_qtdinc + 1;
+        EXCEPTION
+            WHEN DUP_VAL_ON_INDEX THEN
+                v_qtd_dup := v_qtd_dup + 1;
+            WHEN OTHERS THEN
+                RAISE_APPLICATION_ERROR(-20102, 'ERRO no INSERT da NFS-e ' || NVL(nfs.numero, 'NULL') ||
+                                              ' no layout nacional: ' || SQLERRM ||
+                                              '. Valores sendo inseridos: ' ||
+                                              'numero=' || NVL(nfs.numero, 'NULL') ||
+                                              ', serie=' || NVL(nfs.serierps, 'NULL') ||
+                                              ', cnpj_prestador=' || NVL(nfs.cnpj_prestador, 'NULL') ||
+                                              '. Parâmetros: sequencia=' || field_sequencia);
+        END;
+
+                END LOOP; -- Fim do loop NFS-e
+
+                -- Avançar para a próxima posição no XML concatenado
+                v_current_pos := v_doc_end;
+
+            END LOOP; -- Fim do loop de documentos concatenados
+
+        END;
+
+    -- Verificação adicional para garantir que múltiplas notas foram processadas
+    IF v_registros_rigoroso < 10 THEN
+        DBMS_OUTPUT.PUT_LINE('AVISO: Apenas ' || v_registros_rigoroso || ' registros foram processados. ' ||
+                           'Verifique se o XML contém realmente todas as notas fiscais esperadas.');
+    END IF;
+
+    -- ===========================================
+    -- VALIDAÇÕES FINAIS COM DEBUG DETALHADO
+    -- ===========================================
+    IF v_registros_rigoroso = 0 THEN
+        RAISE_APPLICATION_ERROR(-20103, 'ERRO CRÍTICO: Nenhum registro NFS-e foi encontrado no XML. ' ||
+                                      'Isso indica que a estrutura do XML pode estar incorreta ou que os XPaths não correspondem. ' ||
+                                      'Estatísticas: processados=' || v_registros_rigoroso || ', inseridos=' || v_qtdinc ||
+                                      ', duplicados=' || v_qtd_dup || ', erros=' || v_qtd_erros ||
+                                      '. Inicio do XML: ' || SUBSTR(v_xml_content, 1, 500) ||
+                                      '. Parâmetros: sequencia=' || field_sequencia ||
+                                      '. Verifique se o XML contém tags <GerarNfseResponse> válidas.');
+    END IF;
+
+    IF v_qtdinc = 0 AND v_qtd_dup = 0 THEN
+        RAISE_APPLICATION_ERROR(-20104, 'ERRO: Registros foram encontrados (' || v_registros_rigoroso || ') mas nenhum foi inserido. ' ||
+                                      'Isso pode indicar problemas de constraint UNIQUE ou dados inválidos. ' ||
+                                      'Verifique se há registros duplicados na tabela AD_XMLNFSEHMM. ' ||
+                                      'Estatísticas: processados=' || v_registros_rigoroso || ', inseridos=' || v_qtdinc ||
+                                      ', duplicados=' || v_qtd_dup || ', erros=' || v_qtd_erros ||
+                                      '. Primeiro registro encontrado: numero=' || '???' ||
+                                      '. Parâmetros: sequencia=' || field_sequencia);
+    END IF;
+
+
+    UPDATE ad_xmlnfsehmmc
+       SET dhregistro = SYSDATE,
+           codusu = p_codusu
+     WHERE sequencia = field_sequencia;
+
+    p_mensagem := v_qtdinc || ' registro(s) importado(s)';
+    IF v_qtd_dup > 0 THEN p_mensagem := p_mensagem || ' | ' || v_qtd_dup || ' duplicado(s)'; END IF;
+    IF v_qtd_erros > 0 THEN p_mensagem := p_mensagem || ' | ' || v_qtd_erros || ' erro(s)'; END IF;
+
+END LOOP;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE_APPLICATION_ERROR(-20099, 'ERRO na procedure PROC_IMP_XMLNFSEHMM_NACIONAL: ' || SQLERRM);
+END;
+/

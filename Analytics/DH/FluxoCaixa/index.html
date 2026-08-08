@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluxo de Caixa</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <!-- SheetJS para exportação Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- jsPDF + AutoTable para exportação PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 84% 4.9%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
+
+            --col-bg-white: #ffffff;
+            --col-bg-muted: #f1f5f9;
+            --col-bg-blue: #eff6ff;
+            --col-bg-red: #fff5f5;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+
+        .sticky-col {
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            box-shadow: 3px 0 6px -2px rgba(0, 0, 0, 0.08);
+        }
+
+        tr.row-header .sticky-col {
+            background-color: var(--col-bg-muted);
+            z-index: 20;
+        }
+
+        tr.row-default .sticky-col {
+            background-color: var(--col-bg-white);
+        }
+
+        tr.row-entradas .sticky-col {
+            background-color: var(--col-bg-blue);
+        }
+
+        tr.row-saidas .sticky-col {
+            background-color: var(--col-bg-red);
+        }
+
+        tr.row-saldo .sticky-col {
+            background-color: var(--col-bg-muted);
+        }
+
+        tr.row-default:hover .sticky-col {
+            background-color: #f8fafc;
+        }
+
+        tr.row-entradas:hover .sticky-col {
+            background-color: #dbeafe;
+        }
+
+        tr.row-saidas:hover .sticky-col {
+            background-color: #fee2e2;
+        }
+
+        tr.row-default:hover,
+        tr.row-entradas:hover,
+        tr.row-saidas:hover {
+            background-color: transparent;
+        }
+
+        thead .sticky-col {
+            z-index: 20;
+            background-color: var(--col-bg-muted);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: hsl(220 14% 80%);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: hsl(220 14% 65%);
+        }
+
+        .btn-export {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: background 0.15s, box-shadow 0.15s;
+        }
+
+        .btn-export:hover {
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+        }
+
+        .btn-excel {
+            background: #16a34a;
+            color: #fff;
+            border-color: #15803d;
+        }
+
+        .btn-excel:hover {
+            background: #15803d;
+        }
+
+        .btn-pdf {
+            background: #dc2626;
+            color: #fff;
+            border-color: #b91c1c;
+        }
+
+        .btn-pdf:hover {
+            background: #b91c1c;
+        }
+
+        /* ── Toggle (switch) da barra de ações ───────────────────────── */
+        .switch-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .switch-wrap input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .switch-track {
+            position: relative;
+            width: 36px;
+            height: 20px;
+            border-radius: 999px;
+            background: #cbd5e1;
+            transition: background 0.18s ease;
+            flex-shrink: 0;
+        }
+
+        .switch-track::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+            transition: transform 0.18s ease;
+        }
+
+        .switch-wrap input:checked+.switch-track {
+            background: #2563eb;
+        }
+
+        .switch-wrap input:checked+.switch-track::after {
+            transform: translateX(16px);
+        }
+
+        .switch-wrap input:focus-visible+.switch-track {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px;
+        }
+
+        /* ── Tabela dos modais de detalhamento ───────────────────────── */
+        .detail-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 13px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .detail-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            background: #f8fafc;
+            border-bottom: 1px solid hsl(var(--border));
+            padding: 10px 14px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .detail-table tbody td {
+            padding: 9px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            background: #fff;
+        }
+
+        .detail-table tbody tr:nth-child(even) td {
+            background: #fbfcfe;
+        }
+
+        .detail-table tbody tr:hover td {
+            background: #fff7ed;
+        }
+
+        .detail-table .detail-sticky {
+            position: sticky;
+            left: 0;
+            min-width: 300px;
+            max-width: 340px;
+            border-right: 1px solid hsl(var(--border));
+        }
+
+        .detail-table tbody .detail-sticky {
+            z-index: 20;
+        }
+
+        .detail-table thead .detail-sticky {
+            z-index: 40;
+        }
+
+        .detail-table tfoot td {
+            position: sticky;
+            bottom: 0;
+            z-index: 25;
+            background: #f1f5f9;
+            border-top: 2px solid hsl(var(--border));
+            padding: 10px 14px;
+            font-weight: 700;
+        }
+
+        .detail-table tfoot .detail-sticky {
+            z-index: 45;
+        }
+
+        .detail-table .num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .detail-table .col-total {
+            border-left: 1px solid hsl(var(--border));
+        }
+
+        /* Badge com espaço sempre reservado: evita reflow/piscar no hover */
+        .detail-badge {
+            margin-left: 12px;
+            flex-shrink: 0;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 6px;
+            color: #c2410c;
+            background: #ffedd5;
+            border: 1px solid #fed7aa;
+            opacity: 0;
+            transition: opacity 0.12s ease;
+        }
+
+        .detail-table tbody tr:hover .detail-badge {
+            opacity: 1;
+        }
+
+        .detail-name {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .detail-name>span:first-child {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ── Árvore hierárquica (TGFNAT) dentro do modal ─────────────── */
+        .detail-table tr.node-sintetica td {
+            background: #f8fafc;
+            font-weight: 600;
+        }
+
+        .detail-table tr.node-sintetica:hover td {
+            background: #eef2f7;
+        }
+
+        .detail-table tr.node-hidden {
+            display: none;
+        }
+
+        .tree-cell {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tree-caret {
+            flex-shrink: 0;
+            width: 16px;
+            height: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            transition: transform 0.15s ease;
+        }
+
+        tr[aria-expanded="false"] .tree-caret {
+            transform: rotate(-90deg);
+        }
+
+        .tree-spacer {
+            flex-shrink: 0;
+            width: 16px;
+        }
+
+        .tree-dot {
+            flex-shrink: 0;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .tree-label {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .tree-cod {
+            flex-shrink: 0;
+            font-size: 11px;
+            color: hsl(var(--muted-foreground));
+            font-weight: 500;
+        }
+
+        .detail-empty {
+            padding: 48px 16px;
+            text-align: center;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .detail-input {
+            width: 220px;
+            padding: 6px 10px;
+            font-size: 13px;
+            border: 1px solid hsl(var(--border));
+            border-radius: 6px;
+            outline: none;
+            background: #fff;
+        }
+
+        .detail-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        #global-tooltip {
+            position: fixed;
+            z-index: 9999;
+            pointer-events: none;
+            max-width: 240px;
+            padding: 10px;
+            background: #1e293b;
+            color: #fff;
+            font-size: 12px;
+            line-height: 1.3;
+            text-align: center;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.15s ease;
+            white-space: normal;
+            word-break: break-word;
+        }
+
+        #global-tooltip.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #global-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #1e293b;
+        }
+    </style>
+</head>
+
+<body class="h-full w-full">
+
+    <!-- Barra de exportação principal -->
+    <div id="export-bar" class="hidden flex items-center gap-2 px-3 py-2 bg-white border-b border-border">
+        <label class="switch-wrap"
+            title="Quando desativado, o Saldo Inicial é desconsiderado e o Saldo Final passa a refletir apenas as movimentações do período.">
+            <input type="checkbox" id="toggle-saldo-inicial" checked>
+            <span class="switch-track"></span>
+            <span>Considerar Saldo Inicial</span>
+        </label>
+        <label class="switch-wrap ml-3"
+            title="Quando desativado, a linha de Movimentos Bancários é ocultada e deixa de compor o Saldo Final.">
+            <input type="checkbox" id="toggle-mov-bancarios" checked>
+            <span class="switch-track"></span>
+            <span>Considerar Mov. Bancários</span>
+        </label>
+        <span class="w-px h-5 bg-border mx-2"></span>
+        <span class="text-xs text-gray-500 mr-1">Exportar tabela:</span>
+        <button class="btn-export btn-excel" onclick="exportTableExcel()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+            </svg>
+            Excel
+        </button>
+        <button class="btn-export btn-pdf" onclick="exportTablePDF()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+            </svg>
+            PDF
+        </button>
+    </div>
+
+    <div id="cashflow-container" class="overflow-auto transition-opacity duration-200"
+        style="height: calc(100% - 0px);">
+        <div id="loader" class="h-full flex items-center justify-center">
+            <div class="text-center text-muted-foreground">
+                <svg class="mx-auto h-12 w-12 animate-spin text-primary" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                </svg>
+                <p class="mt-4 text-lg">Carregando dados do fluxo de caixa...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tooltip global (fora da tabela, evita conflitos de z-index/sticky) -->
+    <div id="global-tooltip"></div>
+
+    <!-- Modal Naturezas -->
+    <div id="natureza-modal"
+        class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div
+            class="bg-white rounded-xl shadow-2xl w-[95vw] max-w-[1400px] max-h-[90vh] flex flex-col border border-border">
+            <div
+                class="px-6 py-4 border-b border-border flex justify-between items-center gap-4 bg-muted/30 rounded-t-xl">
+                <div class="min-w-0">
+                    <h2 id="natureza-modal-title" class="text-lg font-bold text-foreground truncate"></h2>
+                    <p id="natureza-modal-subtitle"
+                        class="text-xs text-muted-foreground mt-1 flex flex-wrap items-center gap-2"></p>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <label class="switch-wrap" id="hierarquia-wrap"
+                        title="Exibe as naturezas dentro da estrutura de pais da TGFNAT. Desligado, mostra apenas as naturezas analíticas.">
+                        <input type="checkbox" id="toggle-hierarquia" checked>
+                        <span class="switch-track"></span>
+                        <span>Estrutura</span>
+                    </label>
+                    <input type="text" id="natureza-filter" class="detail-input" placeholder="Filtrar natureza..."
+                        autocomplete="off">
+                    <button class="btn-export btn-excel"
+                        onclick="exportModalExcel('natureza-modal-content','natureza-modal-title')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                        Excel
+                    </button>
+                    <button class="btn-export btn-pdf"
+                        onclick="exportModalPDF('natureza-modal-content','natureza-modal-title')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                        PDF
+                    </button>
+                    <button type="button" id="close-modal-btn"
+                        class="text-muted-foreground hover:text-foreground p-1 hover:bg-muted rounded-md ml-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="p-0 overflow-auto flex-1">
+                <div id="natureza-modal-content" class="w-full"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Títulos -->
+    <div id="titulos-modal"
+        class="hidden fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div
+            class="bg-white rounded-xl shadow-2xl w-[95vw] max-w-[1200px] max-h-[90vh] flex flex-col border border-border">
+            <div class="px-6 py-4 border-b border-border flex justify-between items-center bg-orange-50 rounded-t-xl">
+                <div class="min-w-0">
+                    <h2 id="titulos-modal-title" class="text-lg font-bold text-orange-900 truncate">Títulos</h2>
+                    <p id="titulos-modal-subtitle"
+                        class="text-xs text-orange-700/80 mt-1 flex flex-wrap items-center gap-2"></p>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <button class="btn-export btn-excel"
+                        onclick="exportModalExcel('titulos-modal-content','titulos-modal-title')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                        Excel
+                    </button>
+                    <button class="btn-export btn-pdf"
+                        onclick="exportModalPDF('titulos-modal-content','titulos-modal-title')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                        PDF
+                    </button>
+                    <button type="button" id="close-titulos-btn"
+                        class="text-orange-700 hover:text-orange-900 p-1 hover:bg-orange-200 rounded-md ml-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="p-0 overflow-auto flex-1 relative">
+                <div id="titulos-modal-loader"
+                    class="absolute inset-0 bg-white/80 z-10 flex flex-col justify-center items-center text-orange-600 hidden">
+                    <svg class="animate-spin h-10 w-10 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                    <span class="font-semibold text-lg">Buscando títulos...</span>
+                </div>
+                <div id="titulos-modal-content" class="w-full"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ═══════════════════════════════════════════════════════════════
+           HELPERS DE EXPORTAÇÃO
+        ═══════════════════════════════════════════════════════════════ */
+
+        function cellText(td) {
+            return (td.innerText || td.textContent || '').trim();
+        }
+
+        /* Só converte o que realmente tem cara de moeda/número BR. Sem isso,
+           uma data como "18/12/2025" seria exportada como 18. */
+        const BR_NUMBER_RE = /^-?\s*(R\$\s*)?-?\d{1,3}(\.\d{3})*(,\d+)?$/;
+
+        function parseBRNumber(str) {
+            const raw = String(str).replace(/ /g, ' ').trim();
+            if (!BR_NUMBER_RE.test(raw)) return str;
+            const negative = raw.startsWith('-') || raw.includes('$ -') || raw.includes('$-');
+            const s = raw.replace(/-/g, '').replace(/R\$\s?/g, '').replace(/\./g, '').replace(',', '.').trim();
+            const n = parseFloat(s);
+            if (isNaN(n)) return str;
+            return negative ? -n : n;
+        }
+
+        function readTable(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return { headers: [], rows: [] };
+            const table = container.querySelector('table');
+            if (!table) return { headers: [], rows: [] };
+
+            const headers = [];
+            const headerRow = table.querySelector('thead tr');
+            if (headerRow) {
+                headerRow.querySelectorAll('th').forEach(th => headers.push(cellText(th)));
+            }
+
+            const rows = [];
+            table.querySelectorAll('tbody tr').forEach(tr => {
+                const row = [];
+                tr.querySelectorAll('td').forEach((td, i) => {
+                    const text = cellText(td);
+                    row.push(i > 0 ? parseBRNumber(text) : text);
+                });
+                if (row.length > 0) rows.push(row);
+            });
+
+            return { headers, rows };
+        }
+
+        function exportTableExcel() {
+            const { headers, rows } = readTable('main-table-wrapper');
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+            ws['!cols'] = [{ wch: 36 }, ...headers.slice(1).map(() => ({ wch: 18 }))];
+            XLSX.utils.book_append_sheet(wb, ws, 'Fluxo de Caixa');
+            XLSX.writeFile(wb, 'fluxo_de_caixa.xlsx');
+        }
+
+        function exportModalExcel(contentId, titleId) {
+            const title = document.getElementById(titleId)?.innerText || 'Exportacao';
+            const { headers, rows } = readTable(contentId);
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+            ws['!cols'] = [{ wch: 36 }, ...headers.slice(1).map(() => ({ wch: 18 }))];
+            XLSX.utils.book_append_sheet(wb, ws, title.substring(0, 31));
+            XLSX.writeFile(wb, title.replace(/[^a-zA-Z0-9 ]/g, '_').substring(0, 40) + '.xlsx');
+        }
+
+        function exportTablePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+            const { headers, rows } = readTable('main-table-wrapper');
+            doc.setFontSize(14);
+            doc.text('Fluxo de Caixa', 14, 15);
+            doc.autoTable({
+                head: [headers],
+                body: rows,
+                startY: 22,
+                styles: { fontSize: 7, cellPadding: 2 },
+                headStyles: { fillColor: [30, 58, 138], textColor: 255, fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [248, 250, 252] },
+                columnStyles: { 0: { cellWidth: 50, fontStyle: 'bold' } },
+            });
+            doc.save('fluxo_de_caixa.pdf');
+        }
+
+        function exportModalPDF(contentId, titleId) {
+            const { jsPDF } = window.jspdf;
+            const title = document.getElementById(titleId)?.innerText || 'Exportacao';
+            const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+            const { headers, rows } = readTable(contentId);
+            doc.setFontSize(13);
+            doc.text(title, 14, 15);
+            doc.autoTable({
+                head: [headers],
+                body: rows,
+                startY: 22,
+                styles: { fontSize: 7, cellPadding: 2 },
+                headStyles: { fillColor: [30, 58, 138], textColor: 255, fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [248, 250, 252] },
+                columnStyles: { 0: { cellWidth: 50 } },
+            });
+            doc.save(title.replace(/[^a-zA-Z0-9 ]/g, '_').substring(0, 40) + '.pdf');
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           CORE DO COMPONENTE
+        ═══════════════════════════════════════════════════════════════ */
+        const MITRA_UPDATE_EVENT_NAME = 'mitra-update-fluxocaixa';
+        let isOpeningModal = false;
+        let expandedGroups = [];
+        const container = document.getElementById('cashflow-container');
+
+        /* Dados já processados da última carga — permitem re-renderizar
+           (ex.: alternar o Saldo Inicial) sem novo round-trip ao banco. */
+        let cashflowState = null;
+
+        const SALDO_INICIAL_PREF_KEY = 'fluxocaixa:considerarSaldoInicial';
+        const MOV_BANCARIOS_PREF_KEY = 'fluxocaixa:considerarMovBancarios';
+        let considerarSaldoInicial = true;
+        let considerarMovBancarios = true;
+        try {
+            considerarSaldoInicial = localStorage.getItem(SALDO_INICIAL_PREF_KEY) !== 'false';
+            considerarMovBancarios = localStorage.getItem(MOV_BANCARIOS_PREF_KEY) !== 'false';
+        } catch (e) { /* storage indisponível: mantém o padrão */ }
+
+        function updateMitra() {
+            if (isOpeningModal) return;
+            document.body.dispatchEvent(new CustomEvent(MITRA_UPDATE_EVENT_NAME));
+        }
+
+        const customUpdateHandler = async () => {
+            expandedGroups = Array.from(document.querySelectorAll('[data-toggle][aria-expanded="true"]')).map(el => el.dataset.toggle);
+            if (container) container.style.opacity = '0.5';
+            await loadDataAndRender();
+        };
+
+        const formatCurrency = (value, forceColor = null) => {
+            const number = parseFloat(value) || 0;
+            let colorClass = 'text-foreground';
+            if (forceColor) {
+                colorClass = forceColor;
+            } else {
+                if (number < 0) colorClass = 'text-red-600 font-medium';
+                else if (number > 0) colorClass = 'text-emerald-600 font-medium';
+            }
+            const formatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(number);
+            return `<span class="${colorClass}">${formatted}</span>`;
+        };
+
+        const chevronIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 transition-transform duration-200 group-aria-expanded:rotate-90 flex-shrink-0"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+
+        async function loadDataAndRender() {
+            try {
+                const jdbcId = parseInt(componentData.jdbcId, 10);
+                const gruposResult = await queryMitra({ query: componentData.queryGruposNatureza, jdbcId: 1 });
+
+                const grupoMap = {};
+                if (gruposResult && gruposResult.data) {
+                    gruposResult.data.forEach(row => {
+                        grupoMap[row[0]] = { grupo: row[1], tipo: row[2], ordem: parseInt(row[3]) || 999 };
+                    });
+                }
+
+                const codnatsReceita = [];
+                const codnatsDespesa = [];
+                Object.keys(grupoMap).forEach(codnat => {
+                    if (grupoMap[codnat].tipo === 'RECEITA') {
+                        codnatsReceita.push(codnat);
+                    } else if (grupoMap[codnat].tipo === 'DESPESA') {
+                        codnatsDespesa.push(codnat);
+                    }
+                });
+
+                const buildInClause = (codnats) => {
+                    if (!codnats || codnats.length === 0) return 'AND 1=0';
+                    return `AND FIN.CODNAT IN (${codnats.join(',')})`;
+                };
+
+                const receitaInClause = buildInClause(codnatsReceita);
+                const despesaInClause = buildInClause(codnatsDespesa);
+
+                const queryEntradas = componentData.queryEntradasDiarias.replace(/\/\*\{\{NATUREZA_FILTER\}\}\*\//g, receitaInClause);
+                const querySaidas = componentData.querySaidasDiarias.replace(/\/\*\{\{NATUREZA_FILTER\}\}\*\//g, despesaInClause);
+
+                const [
+                    saldoInicialResult,
+                    entradasResult,
+                    saidasResult,
+                    outrasMovResult,
+                    saldoFinalResult,
+                    hierarquiaResult
+                ] = await Promise.all([
+                    queryMitra({ query: componentData.querySaldoInicialDiario, jdbcId }),
+                    queryMitra({ query: queryEntradas, jdbcId }),
+                    queryMitra({ query: querySaidas, jdbcId }),
+                    queryMitra({ query: componentData.queryOutrasMovDiarias, jdbcId }),
+                    queryMitra({ query: componentData.querySaldoFinalDiario, jdbcId }),
+                    // Estrutura de pais da TGFNAT — usada só no modal de detalhamento.
+                    // Falha aqui não derruba o fluxo: cai para a visão plana.
+                    queryMitra({ query: QUERY_HIERARQUIA_NAT, jdbcId }).catch(err => {
+                        console.warn('Hierarquia de naturezas indisponível:', err);
+                        return null;
+                    }),
+                ]);
+
+                carregarHierarquia(hierarquiaResult);
+
+                if (!saldoInicialResult || !saldoInicialResult.data || saldoInicialResult.data.length === 0) {
+                    container.innerHTML = `<div class="p-8 text-center text-destructive bg-destructive/10 h-full flex items-center justify-center">Nenhum dado encontrado para o período selecionado.</div>`;
+                    return;
+                }
+
+                const dateHeaders = saldoInicialResult.data.map(row => row[0]);
+
+                const processData = (dataRows, defaultTipo) => {
+                    const naturezas = {};
+                    dataRows.forEach(row => {
+                        const dia = row[0];
+                        const codnat = row[1];
+                        const nome = row[2] || 'Sem Descrição';
+                        const valor = parseFloat(row[3]) || 0;
+                        if (!naturezas[codnat]) {
+                            const gInfo = grupoMap[codnat] || { grupo: 'Outros', tipo: defaultTipo, ordem: 9999 };
+                            naturezas[codnat] = { codnat, nome, grupo: gInfo.grupo, ordemGrupo: gInfo.ordem, valores: {} };
+                        }
+                        naturezas[codnat].valores[dia] = (naturezas[codnat].valores[dia] || 0) + valor;
+                    });
+                    const groups = {};
+                    Object.values(naturezas).forEach(nat => {
+                        if (!groups[nat.grupo]) {
+                            groups[nat.grupo] = { nome: nat.grupo, ordem: nat.ordemGrupo, naturezas: [], valores: {} };
+                        }
+                        groups[nat.grupo].naturezas.push(nat);
+                        dateHeaders.forEach(dia => {
+                            groups[nat.grupo].valores[dia] = (groups[nat.grupo].valores[dia] || 0) + (nat.valores[dia] || 0);
+                        });
+                    });
+                    const sortedGroups = Object.values(groups).sort((a, b) => {
+                        if (a.ordem !== b.ordem) return a.ordem - b.ordem;
+                        return a.nome.localeCompare(b.nome);
+                    });
+                    sortedGroups.forEach(g => g.naturezas.sort((a, b) => a.nome.localeCompare(b.nome)));
+                    return sortedGroups;
+                };
+
+                const entradasAgrupadas = processData(entradasResult.data || [], 'RECEITA');
+                const saidasAgrupadas = processData(saidasResult.data || [], 'DESPESA');
+
+                const outrasAgrupadas = [];
+                const outrasMap = {};
+                if (outrasMovResult && outrasMovResult.data) {
+                    outrasMovResult.data.forEach(row => {
+                        const dia = row[0];
+                        const cod = row[1];
+                        const nome = row[2];
+                        const valor = parseFloat(row[3]) || 0;
+                        if (!outrasMap[cod]) {
+                            outrasMap[cod] = { cod, nome, valores: {} };
+                            outrasAgrupadas.push(outrasMap[cod]);
+                        }
+                        outrasMap[cod].valores[dia] = (outrasMap[cod].valores[dia] || 0) + valor;
+                    });
+                }
+                outrasAgrupadas.sort((a, b) => a.nome.localeCompare(b.nome));
+
+                cashflowState = {
+                    dateHeaders,
+                    entradasAgrupadas,
+                    saidasAgrupadas,
+                    outrasAgrupadas,
+                    saldoInicialBase: parseFloat(saldoInicialResult.data.find(r => r[0] === dateHeaders[0])?.[1]) || 0
+                };
+
+                renderTable();
+
+            } catch (error) {
+                console.error("Erro ao carregar e renderizar o fluxo de caixa:", error);
+                container.innerHTML = `<div class="p-8 text-center text-destructive bg-destructive/10 h-full flex items-center justify-center">Ocorreu um erro ao buscar os dados. Verifique o console para mais detalhes.</div>`;
+            } finally {
+                if (container) container.style.opacity = '1';
+            }
+        }
+
+        /* Renderiza a tabela a partir de cashflowState. Chamado no carregamento
+           e sempre que o usuário alterna "Considerar Saldo Inicial" — sem refetch. */
+        function renderTable() {
+            if (!cashflowState) return;
+
+            const { dateHeaders, entradasAgrupadas, saidasAgrupadas, outrasAgrupadas, saldoInicialBase } = cashflowState;
+
+            const totalEntradas = {};
+            const totalSaidas = {};
+            const outrasMov = {};
+            const saldoInicialCalc = {};
+            const saldoFinalCalc = {};
+            // Com o toggle desligado, o saldo acumulado parte de zero: o Saldo
+            // Final passa a refletir apenas as movimentações do período.
+            let saldoAtual = considerarSaldoInicial ? saldoInicialBase : 0;
+
+            dateHeaders.forEach((dia) => {
+                totalEntradas[dia] = entradasAgrupadas.reduce((sum, g) => sum + (g.valores[dia] || 0), 0);
+                totalSaidas[dia] = saidasAgrupadas.reduce((sum, g) => sum + (g.valores[dia] || 0), 0);
+                outrasMov[dia] = outrasAgrupadas.reduce((sum, item) => sum + (item.valores[dia] || 0), 0);
+                saldoInicialCalc[dia] = saldoAtual;
+                saldoFinalCalc[dia] = saldoAtual + totalEntradas[dia] - totalSaidas[dia]
+                    + (considerarMovBancarios ? outrasMov[dia] : 0);
+                saldoAtual = saldoFinalCalc[dia];
+            });
+
+            let tableHTML = `
+                <div id="main-table-wrapper" class="w-full overflow-auto border border-border rounded-lg bg-white">
+                  <table class="w-full text-sm text-left whitespace-nowrap border-collapse">`;
+
+            tableHTML += `<thead><tr class="row-header border-b border-border bg-muted">
+                <th class="sticky-col p-3 font-semibold text-muted-foreground min-w-[280px] border-r border-border">Categoria</th>`;
+            dateHeaders.forEach(h => {
+                tableHTML += `<th class="p-3 font-semibold text-muted-foreground text-right min-w-[140px]">${h}</th>`;
+            });
+            tableHTML += `<th class="p-3 font-semibold text-muted-foreground text-right border-l border-border bg-muted min-w-[140px]">Total</th>`;
+            tableHTML += `</tr></thead><tbody class="divide-y divide-border">`;
+
+            if (considerarSaldoInicial) {
+                const totalSaldoInicial = dateHeaders.length > 0 ? saldoInicialCalc[dateHeaders[0]] : 0;
+                tableHTML += `<tr class="row-default font-semibold hover:bg-slate-50">
+                    <td class="sticky-col p-3 border-r border-border">Saldo Inicial</td>`;
+                dateHeaders.forEach(dia => {
+                    tableHTML += `<td class="p-3 text-right">${formatCurrency(saldoInicialCalc[dia])}</td>`;
+                });
+                tableHTML += `<td class="p-3 text-right font-bold border-l border-border bg-slate-50">${formatCurrency(totalSaldoInicial)}</td>`;
+                tableHTML += `</tr>`;
+            }
+
+            const totalGeralEntradas = dateHeaders.reduce((acc, dia) => acc + (totalEntradas[dia] || 0), 0);
+            tableHTML += `<tr data-toggle="entradas" aria-expanded="false"
+                class="row-entradas group cursor-pointer hover:brightness-95">
+                <td class="sticky-col p-3 font-semibold flex items-center text-blue-800 border-r border-border">
+                    ${chevronIcon} Fluxo de Entradas
+                </td>`;
+            dateHeaders.forEach(dia => {
+                tableHTML += `<td class="p-3 text-right font-semibold text-blue-800">${formatCurrency(totalEntradas[dia])}</td>`;
+            });
+            tableHTML += `<td class="p-3 text-right font-semibold text-blue-800 border-l border-border">${formatCurrency(totalGeralEntradas)}</td>`;
+            tableHTML += `</tr>`;
+
+            entradasAgrupadas.forEach(grupo => {
+                const totalGrupo = dateHeaders.reduce((acc, dia) => acc + (grupo.valores[dia] || 0), 0);
+                const grupoDataStr = encodeURIComponent(JSON.stringify({ nome: grupo.nome, tipo: 'entrada', naturezas: grupo.naturezas, headers: dateHeaders }));
+                tableHTML += `<tr data-grupo-data="${grupoDataStr}"
+                    class="child-of-entradas hidden row-default group cursor-pointer hover:bg-blue-50/60">
+                    <td class="sticky-col p-3 pl-8 font-medium flex items-center text-foreground border-r border-border">
+                        <span class="w-2 h-2 rounded-full bg-blue-400 mr-3 flex-shrink-0"></span>${grupo.nome}
+                    </td>`;
+                dateHeaders.forEach(dia => {
+                    tableHTML += `<td class="p-3 text-right font-medium">${formatCurrency(grupo.valores[dia])}</td>`;
+                });
+                tableHTML += `<td class="p-3 text-right font-bold border-l border-border bg-blue-50/60">${formatCurrency(totalGrupo)}</td>`;
+                tableHTML += `</tr>`;
+            });
+
+            const totalGeralSaidas = dateHeaders.reduce((acc, dia) => acc + (totalSaidas[dia] || 0), 0);
+            tableHTML += `<tr data-toggle="saidas" aria-expanded="false"
+                class="row-saidas group cursor-pointer hover:brightness-95">
+                <td class="sticky-col p-3 font-semibold flex items-center text-red-800 border-r border-border">
+                    ${chevronIcon} Fluxo de Saídas
+                </td>`;
+            dateHeaders.forEach(dia => {
+                tableHTML += `<td class="p-3 text-right font-semibold">${formatCurrency(totalSaidas[dia], 'text-red-600 font-medium')}</td>`;
+            });
+            tableHTML += `<td class="p-3 text-right font-semibold border-l border-border">${formatCurrency(totalGeralSaidas, 'text-red-600 font-medium')}</td>`;
+            tableHTML += `</tr>`;
+
+            saidasAgrupadas.forEach(grupo => {
+                const totalGrupo = dateHeaders.reduce((acc, dia) => acc + (grupo.valores[dia] || 0), 0);
+                const grupoDataStr = encodeURIComponent(JSON.stringify({ nome: grupo.nome, tipo: 'saida', naturezas: grupo.naturezas, headers: dateHeaders }));
+                tableHTML += `<tr data-grupo-data="${grupoDataStr}"
+                    class="child-of-saidas hidden row-default group cursor-pointer hover:bg-red-50/60">
+                    <td class="sticky-col p-3 pl-8 font-medium flex items-center text-foreground border-r border-border">
+                        <span class="w-2 h-2 rounded-full bg-red-400 mr-3 flex-shrink-0"></span>${grupo.nome}
+                    </td>`;
+                dateHeaders.forEach(dia => {
+                    tableHTML += `<td class="p-3 text-right font-medium">${formatCurrency(grupo.valores[dia], 'text-red-600 font-medium')}</td>`;
+                });
+                tableHTML += `<td class="p-3 text-right font-bold border-l border-border bg-red-50/60">${formatCurrency(totalGrupo, 'text-red-600 font-medium')}</td>`;
+                tableHTML += `</tr>`;
+            });
+
+            // Desligado o switch, a seção some da tabela e do Saldo Final.
+            if (considerarMovBancarios) {
+                const totalGeralOutras = dateHeaders.reduce((acc, dia) => acc + (outrasMov[dia] || 0), 0);
+                tableHTML += `<tr data-toggle="outras" aria-expanded="false"
+                    class="row-default group cursor-pointer hover:brightness-95">
+                    <td class="sticky-col p-3 font-semibold flex items-center text-slate-800 border-r border-border">
+                        ${chevronIcon}
+                        <div class="flex items-center gap-1.5 whitespace-nowrap">
+                            <span>Movimentos Bancários</span>
+                            <svg data-tooltip-text="Trata-se de movimentos bancários que podem ser consultados na tela de Movimentação Bancária." xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="js-tooltip-trigger text-slate-500 cursor-help block flex-shrink-0"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        </div>
+                    </td>`;
+                dateHeaders.forEach(dia => {
+                    tableHTML += `<td class="p-3 text-right font-semibold text-slate-800">${formatCurrency(outrasMov[dia])}</td>`;
+                });
+                tableHTML += `<td class="p-3 text-right font-semibold text-slate-800 border-l border-border">${formatCurrency(totalGeralOutras)}</td>`;
+                tableHTML += `</tr>`;
+
+                outrasAgrupadas.forEach(item => {
+                    const totalItem = dateHeaders.reduce((acc, dia) => acc + (item.valores[dia] || 0), 0);
+                    tableHTML += `<tr class="child-of-outras hidden row-default hover:bg-slate-100/60">
+                        <td class="sticky-col p-3 pl-8 font-medium flex items-center text-foreground border-r border-border">
+                            <span class="w-2 h-2 rounded-full bg-slate-400 mr-3 flex-shrink-0"></span>${item.nome}
+                        </td>`;
+                    dateHeaders.forEach(dia => {
+                        tableHTML += `<td class="p-3 text-right font-medium">${formatCurrency(item.valores[dia])}</td>`;
+                    });
+                    tableHTML += `<td class="p-3 text-right font-bold border-l border-border bg-slate-100/60">${formatCurrency(totalItem)}</td>`;
+                    tableHTML += `</tr>`;
+                });
+            }
+
+            const totalSaldoFinal = dateHeaders.length > 0 ? saldoFinalCalc[dateHeaders[dateHeaders.length - 1]] : 0;
+            const exclusoes = [];
+            if (!considerarSaldoInicial) exclusoes.push('o Saldo Inicial');
+            if (!considerarMovBancarios) exclusoes.push('os Movimentos Bancários');
+            const rotuloSaldoFinal = exclusoes.length === 0
+                ? 'Saldo Final'
+                : `<div class="flex items-center gap-1.5 whitespace-nowrap">
+                       <span>Saldo Final</span>
+                       <svg data-tooltip-text="Cálculo sem ${exclusoes.join(' e sem ')}." xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="js-tooltip-trigger text-amber-600 cursor-help block flex-shrink-0"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                   </div>`;
+            tableHTML += `<tr class="row-saldo font-semibold border-t-2 border-primary/20">
+                <td class="sticky-col p-3 border-r border-border">${rotuloSaldoFinal}</td>`;
+            dateHeaders.forEach(dia => {
+                tableHTML += `<td class="p-3 text-right">${formatCurrency(saldoFinalCalc[dia])}</td>`;
+            });
+            tableHTML += `<td class="p-3 text-right font-bold border-l border-border bg-slate-50">${formatCurrency(totalSaldoFinal)}</td>`;
+            tableHTML += `</tr>`;
+
+            tableHTML += `</tbody></table></div>`;
+            container.innerHTML = tableHTML;
+
+            document.getElementById('export-bar').classList.remove('hidden');
+            document.getElementById('export-bar').classList.add('flex');
+
+            expandedGroups.forEach(id => {
+                const toggle = document.querySelector(`[data-toggle="${id}"]`);
+                if (toggle) {
+                    toggle.setAttribute('aria-expanded', 'true');
+                    document.querySelectorAll(`.child-of-${id}`).forEach(row => row.classList.remove('hidden'));
+                }
+            });
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           MODAL DE DETALHAMENTO POR NATUREZA
+        ═══════════════════════════════════════════════════════════════ */
+
+        let naturezaModalData = null;
+
+        const escapeHTML = (str) => String(str ?? '')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+
+        /* Valores zerados ficam esmaecidos para o olho ir direto ao que tem movimento. */
+        const formatCell = (valor, isSaida) => {
+            const n = parseFloat(valor) || 0;
+            if (n === 0) return formatCurrency(0, 'text-slate-300');
+            return formatCurrency(n, isSaida ? 'text-red-600 font-medium' : null);
+        };
+
+        /* ── Hierarquia da TGFNAT ─────────────────────────────────────
+           A raiz da árvore no Sankhya usa um CODNATPAI sentinela
+           (-999999999). Em vez de depender desse valor, tratamos como raiz
+           toda natureza cujo pai não exista no próprio mapa. */
+        const QUERY_HIERARQUIA_NAT = `
+            SELECT NAT.CODNAT, NAT.DESCRNAT, NAT.CODNATPAI
+            FROM TGFNAT NAT
+        `;
+
+        const HIERARQUIA_PREF_KEY = 'fluxocaixa:verHierarquia';
+        let verHierarquia = true;
+        try {
+            verHierarquia = localStorage.getItem(HIERARQUIA_PREF_KEY) !== 'false';
+        } catch (e) { /* storage indisponível: mantém o padrão */ }
+
+        let hierarquiaNat = null;          // Map(codnat -> {codnat, nome, pai})
+        const nosRecolhidos = new Set();   // caminhos recolhidos no modal aberto
+
+        function carregarHierarquia(result) {
+            if (!result || !result.data || result.data.length === 0) {
+                hierarquiaNat = null;
+                return;
+            }
+            const map = new Map();
+            result.data.forEach(row => {
+                const cod = String(row[0]);
+                map.set(cod, {
+                    codnat: cod,
+                    nome: row[1] || `Natureza ${cod}`,
+                    pai: row[2] === null || row[2] === undefined ? null : String(row[2])
+                });
+            });
+            hierarquiaNat = map;
+        }
+
+        /* Sobe até a raiz devolvendo os ancestrais na ordem raiz → pai direto.
+           O limite de profundidade protege contra ciclos em bases inconsistentes. */
+        function ancestraisDe(codnat) {
+            if (!hierarquiaNat) return [];
+            const cadeia = [];
+            const vistos = new Set([String(codnat)]);
+            let atual = hierarquiaNat.get(String(codnat));
+            let guard = 0;
+            while (atual && atual.pai && guard++ < 24) {
+                if (vistos.has(atual.pai)) break;
+                const pai = hierarquiaNat.get(atual.pai);
+                if (!pai) break;
+                vistos.add(pai.codnat);
+                cadeia.unshift(pai);
+                atual = pai;
+            }
+            return cadeia;
+        }
+
+        /* Monta a árvore só com os ramos que contêm as naturezas exibidas.
+           Sintéticas recebem a soma dos filhos — nunca vêm de valor próprio. */
+        function montarArvore(naturezas, headers) {
+            const nos = new Map();
+            const raizes = [];
+
+            naturezas.forEach(nat => {
+                let paiKey = null;
+                ancestraisDe(nat.codnat).forEach(anc => {
+                    const key = 'S' + anc.codnat;
+                    if (!nos.has(key)) {
+                        const no = { key, codnat: anc.codnat, nome: anc.nome, sintetica: true, filhos: [], valores: {} };
+                        nos.set(key, no);
+                        if (paiKey === null) raizes.push(no);
+                        else nos.get(paiKey).filhos.push(no);
+                    }
+                    paiKey = key;
+                });
+
+                const folha = {
+                    key: 'A' + nat.codnat, codnat: String(nat.codnat), nome: nat.nome,
+                    sintetica: false, filhos: [], valores: nat.valores
+                };
+                nos.set(folha.key, folha);
+                if (paiKey === null) raizes.push(folha);
+                else nos.get(paiKey).filhos.push(folha);
+            });
+
+            const acumular = (no) => {
+                if (!no.sintetica) return no.valores;
+                const soma = {};
+                no.filhos.forEach(f => {
+                    const v = acumular(f);
+                    headers.forEach(dia => { soma[dia] = (soma[dia] || 0) + (parseFloat(v[dia]) || 0); });
+                });
+                no.valores = soma;
+                return soma;
+            };
+            raizes.forEach(acumular);
+
+            const ordenar = (lista) => {
+                lista.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+                lista.forEach(n => ordenar(n.filhos));
+            };
+            ordenar(raizes);
+
+            return raizes;
+        }
+
+        function achatarArvore(nos, nivel = 0, caminho = '', saida = []) {
+            nos.forEach(no => {
+                const p = caminho ? `${caminho}/${no.key}` : no.key;
+                saida.push({ no, nivel, caminho: p });
+                achatarArvore(no.filhos, nivel + 1, p, saida);
+            });
+            return saida;
+        }
+
+        const caretIcon = `<svg class="tree-caret" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+
+        function renderNaturezaTable(filtro = '') {
+            const data = naturezaModalData;
+            if (!data) return;
+
+            const isSaida = data.tipo === 'saida';
+            const termo = filtro.trim().toLowerCase();
+            const naturezas = termo
+                ? data.naturezas.filter(n => String(n.nome).toLowerCase().includes(termo) || String(n.codnat).includes(termo))
+                : data.naturezas;
+
+            const contentEl = document.getElementById('natureza-modal-content');
+
+            if (naturezas.length === 0) {
+                contentEl.innerHTML = `<div class="detail-empty">Nenhuma natureza corresponde ao filtro <strong>${escapeHTML(filtro)}</strong>.</div>`;
+                return;
+            }
+
+            // Totais sempre vêm das analíticas: somar sintéticas duplicaria valores.
+            const totaisDia = {};
+            data.headers.forEach(dia => {
+                totaisDia[dia] = naturezas.reduce((acc, n) => acc + (parseFloat(n.valores[dia]) || 0), 0);
+            });
+            const totalGeral = data.headers.reduce((acc, dia) => acc + totaisDia[dia], 0);
+
+            const comHierarquia = verHierarquia && !!hierarquiaNat;
+            const linhas = comHierarquia
+                ? achatarArvore(montarArvore(naturezas, data.headers))
+                : naturezas.map(nat => ({
+                    no: { key: 'A' + nat.codnat, codnat: String(nat.codnat), nome: nat.nome, sintetica: false, filhos: [], valores: nat.valores },
+                    nivel: 0, caminho: 'A' + nat.codnat
+                }));
+
+            let html = `<table class="detail-table">`;
+            html += `<thead><tr>`;
+            html += `<th class="detail-sticky">Natureza</th>`;
+            data.headers.forEach(h => html += `<th class="num">${escapeHTML(h)}</th>`);
+            html += `<th class="num col-total">Total</th>`;
+            html += `</tr></thead><tbody>`;
+
+            linhas.forEach(({ no, nivel, caminho }) => {
+                const totalNo = data.headers.reduce((acc, dia) => acc + (parseFloat(no.valores[dia]) || 0), 0);
+                const recolhidoPor = [...nosRecolhidos].find(p => caminho.startsWith(p + '/'));
+                const oculto = recolhidoPor ? ' node-hidden' : '';
+
+                if (no.sintetica) {
+                    const expandido = !nosRecolhidos.has(caminho);
+                    html += `<tr class="node-sintetica${oculto}" data-node-path="${escapeHTML(caminho)}"
+                                 data-node-toggle="1" aria-expanded="${expandido}" style="cursor:pointer">`;
+                    html += `<td class="detail-sticky" style="padding-left:${14 + nivel * 18}px">
+                                <div class="tree-cell">
+                                    ${caretIcon}
+                                    <span class="tree-label" title="${escapeHTML(no.nome)}">${escapeHTML(no.nome)}</span>
+                                    <span class="tree-cod">#${escapeHTML(no.codnat)}</span>
+                                </div>
+                             </td>`;
+                } else {
+                    html += `<tr class="${oculto.trim()}" data-node-path="${escapeHTML(caminho)}"
+                                 data-natureza-click="${escapeHTML(no.codnat)}" data-natureza-nome="${escapeHTML(no.nome)}"
+                                 style="cursor:pointer">`;
+                    html += `<td class="detail-sticky" style="padding-left:${14 + nivel * 18}px">
+                                <div class="detail-name">
+                                    <span class="tree-cell">
+                                        ${comHierarquia ? '<span class="tree-spacer"></span>' : ''}
+                                        <span class="tree-dot ${isSaida ? 'bg-red-400' : 'bg-blue-400'}"></span>
+                                        <span class="tree-label" title="${escapeHTML(no.nome)}">${escapeHTML(no.nome)}</span>
+                                        <span class="tree-cod">#${escapeHTML(no.codnat)}</span>
+                                    </span>
+                                    <span class="detail-badge">Ver títulos →</span>
+                                </div>
+                             </td>`;
+                }
+
+                data.headers.forEach(dia => {
+                    html += `<td class="num">${formatCell(no.valores[dia], isSaida)}</td>`;
+                });
+                html += `<td class="num col-total font-semibold">${formatCell(totalNo, isSaida)}</td>`;
+                html += `</tr>`;
+            });
+
+            html += `</tbody><tfoot><tr>`;
+            html += `<td class="detail-sticky">Total${termo ? ' (filtrado)' : ''}</td>`;
+            data.headers.forEach(dia => html += `<td class="num">${formatCell(totaisDia[dia], isSaida)}</td>`);
+            html += `<td class="num col-total">${formatCell(totalGeral, isSaida)}</td>`;
+            html += `</tr></tfoot></table>`;
+
+            contentEl.innerHTML = html;
+        }
+
+        /* Recolher/expandir mexe só em classes das linhas já renderizadas —
+           nada de reconstruir a tabela (era o que causava o piscar). */
+        function alternarNo(caminho) {
+            const recolhido = nosRecolhidos.has(caminho);
+            if (recolhido) nosRecolhidos.delete(caminho); else nosRecolhidos.add(caminho);
+
+            document.querySelectorAll('#natureza-modal-content tr[data-node-path]').forEach(tr => {
+                const p = tr.dataset.nodePath;
+                if (p === caminho) {
+                    tr.setAttribute('aria-expanded', String(recolhido));
+                    return;
+                }
+                if (!p.startsWith(caminho + '/')) return;
+                // Um descendente só reaparece se nenhum ancestral seguir recolhido.
+                const escondido = [...nosRecolhidos].some(r => p.startsWith(r + '/'));
+                tr.classList.toggle('node-hidden', escondido);
+            });
+        }
+
+        function openNaturezaModal(data) {
+            naturezaModalData = data;
+            nosRecolhidos.clear();
+
+            const totalGeral = data.naturezas.reduce((acc, nat) =>
+                acc + data.headers.reduce((s, dia) => s + (parseFloat(nat.valores[dia]) || 0), 0), 0);
+            const periodo = data.headers.length
+                ? `${data.headers[0]} a ${data.headers[data.headers.length - 1]}`
+                : '—';
+            const totalFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalGeral);
+
+            document.getElementById('natureza-modal-title').innerText = data.nome;
+            document.getElementById('natureza-modal-subtitle').innerHTML =
+                `<span class="chip">${data.naturezas.length} natureza${data.naturezas.length === 1 ? '' : 's'}</span>
+                 <span class="chip">${escapeHTML(periodo)}</span>
+                 <span class="chip">Total ${totalFmt}</span>
+                 <span>Clique em uma natureza para ver os títulos.</span>`;
+
+            // Sem hierarquia disponível, o switch não tem o que fazer.
+            const toggleHier = document.getElementById('toggle-hierarquia');
+            const wrapHier = document.getElementById('hierarquia-wrap');
+            const temHierarquia = !!hierarquiaNat;
+            toggleHier.disabled = !temHierarquia;
+            toggleHier.checked = temHierarquia && verHierarquia;
+            wrapHier.style.opacity = temHierarquia ? '1' : '0.45';
+            wrapHier.title = temHierarquia
+                ? 'Exibe as naturezas dentro da estrutura de pais da TGFNAT. Desligado, mostra apenas as naturezas analíticas.'
+                : 'Estrutura indisponível: não foi possível ler a hierarquia da TGFNAT.';
+
+            const filtro = document.getElementById('natureza-filter');
+            filtro.value = '';
+            renderNaturezaTable('');
+
+            document.getElementById('natureza-modal').classList.remove('hidden');
+            document.getElementById('natureza-modal-content').parentElement.scrollTop = 0;
+        }
+
+        function initializeComponent() {
+            container.addEventListener('click', async (e) => {
+                const toggleRow = e.target.closest('[data-toggle]');
+                const groupRow = e.target.closest('[data-grupo-data]');
+
+                if (toggleRow) {
+                    const targetClass = toggleRow.dataset.toggle;
+                    const isExpanded = toggleRow.getAttribute('aria-expanded') === 'true';
+                    toggleRow.setAttribute('aria-expanded', !isExpanded);
+                    document.querySelectorAll(`.child-of-${targetClass}`).forEach(child => {
+                        child.classList.toggle('hidden', isExpanded);
+                    });
+                } else if (groupRow) {
+                    try {
+                        openNaturezaModal(JSON.parse(decodeURIComponent(groupRow.dataset.grupoData)));
+                    } catch (err) {
+                        console.error("Erro ao abrir modal de naturezas:", err);
+                    }
+                }
+            });
+
+            document.getElementById('close-modal-btn').addEventListener('click', () => {
+                document.getElementById('natureza-modal').classList.add('hidden');
+            });
+            document.getElementById('close-titulos-btn').addEventListener('click', () => {
+                document.getElementById('titulos-modal').classList.add('hidden');
+            });
+            document.getElementById('natureza-modal').addEventListener('click', e => {
+                if (e.target === document.getElementById('natureza-modal'))
+                    document.getElementById('natureza-modal').classList.add('hidden');
+            });
+            document.getElementById('titulos-modal').addEventListener('click', e => {
+                if (e.target === document.getElementById('titulos-modal'))
+                    document.getElementById('titulos-modal').classList.add('hidden');
+            });
+
+            document.getElementById('natureza-modal-content').addEventListener('click', async (e) => {
+                const nodeRow = e.target.closest('[data-node-toggle]');
+                if (nodeRow) {
+                    alternarNo(nodeRow.dataset.nodePath);
+                    return;
+                }
+
+                const natRow = e.target.closest('[data-natureza-click]');
+                if (natRow && !isOpeningModal) {
+                    try {
+                        isOpeningModal = true;
+                        const codnat = natRow.dataset.naturezaClick;
+                        const nomeNatureza = natRow.dataset.naturezaNome || '';
+                        document.getElementById('titulos-modal-title').innerText = nomeNatureza || 'Títulos';
+                        document.getElementById('titulos-modal-subtitle').innerHTML = `<span class="chip">Cód. ${escapeHTML(codnat)}</span> <span>Buscando títulos...</span>`;
+                        document.getElementById('titulos-modal-content').innerHTML = '';
+                        document.getElementById('titulos-modal-loader').classList.remove('hidden');
+                        document.getElementById('titulos-modal').classList.remove('hidden');
+
+                        const queryTitulos = `
+                            SELECT 
+                                FIN.NUFIN as "NUFIN",
+                                FIN.NUMNOTA as "CONTROLE",
+                                PAR.NOMEPARC as "PARCEIRO",
+                                TO_CHAR(FIN.DTVENC, 'DD/MM/YYYY') as "VENCIMENTO",
+                                TO_CHAR(FIN.DHBAIXA, 'DD/MM/YYYY') as "BAIXA",
+                                CASE WHEN FIN.DHBAIXA IS NOT NULL THEN FIN.VLRBAIXA ELSE FIN.VLRDESDOB END as "VALOR",
+                                CASE WHEN FIN.DHBAIXA IS NOT NULL THEN 'Baixado' ELSE 'Aberto' END as "STATUS",
+                                FIN.RECDESP as "TIPO"
+                            FROM TGFFIN FIN
+                            LEFT JOIN TGFPAR PAR ON PAR.CODPARC = FIN.CODPARC
+                            LEFT JOIN TGFMBC MBC ON FIN.NUBCO = MBC.NUBCO
+                            WHERE FIN.CODNAT = ${codnat}
+                              AND FIN.PROVISAO = 'N'
+                              AND (
+                                   (FIN.DHBAIXA IS NOT NULL AND TRUNC(FIN.DHBAIXA) >= TRUNC(NVL(TO_DATE(SUBSTR(:VAR_DATA_INICIO_FC, 1, 10), 'YYYY-MM-DD'), TRUNC(SYSDATE) - 15)) AND TRUNC(FIN.DHBAIXA) <= TRUNC(NVL(TO_DATE(SUBSTR(:VAR_DATA_FIM_FC, 1, 10), 'YYYY-MM-DD'), TRUNC(SYSDATE) + 15)))
+                                   OR
+                                   (FIN.DHBAIXA IS NULL AND FIN.DTVENC >= TRUNC(SYSDATE) AND TRUNC(FIN.DTVENC) >= TRUNC(NVL(TO_DATE(SUBSTR(:VAR_DATA_INICIO_FC, 1, 10), 'YYYY-MM-DD'), TRUNC(SYSDATE) - 15)) AND TRUNC(FIN.DTVENC) <= TRUNC(NVL(TO_DATE(SUBSTR(:VAR_DATA_FIM_FC, 1, 10), 'YYYY-MM-DD'), TRUNC(SYSDATE) + 15)))
+                              )
+                              AND (:VAR_EMPRESA_FC IS NULL OR :VAR_EMPRESA_FC = '' OR INSTR(',' || :VAR_EMPRESA_FC || ',', ',' || FIN.CODEMP || ',') > 0)
+                              AND (:VAR_CONTA_BANCARIA_FC IS NULL OR :VAR_CONTA_BANCARIA_FC = '' OR INSTR(',' || :VAR_CONTA_BANCARIA_FC || ',', ',' || TO_CHAR(MBC.CODCTABCOINT) || ',') > 0)
+                            ORDER BY NVL(FIN.DHBAIXA, FIN.DTVENC) DESC
+                        `;
+
+                        const jdbcId = parseInt(componentData.jdbcId, 10) || 1;
+                        const titulosResult = await queryMitra({ query: queryTitulos, jdbcId });
+
+                        document.getElementById('titulos-modal-loader').classList.add('hidden');
+                        document.getElementById('titulos-modal-title').innerText = nomeNatureza || `Natureza ${codnat}`;
+
+                        if (!titulosResult || !titulosResult.data || titulosResult.data.length === 0) {
+                            document.getElementById('titulos-modal-subtitle').innerHTML = `<span class="chip">Cód. ${escapeHTML(codnat)}</span>`;
+                            document.getElementById('titulos-modal-content').innerHTML = `<div class="detail-empty">Nenhum título compondo o saldo no período.</div>`;
+                            return;
+                        }
+
+                        const linhas = titulosResult.data.map(row => {
+                            const vlr = parseFloat(row[5]) || 0;
+                            const tipo = parseInt(row[7]);
+                            return {
+                                nufin: row[0], doc: row[1], parceiro: row[2],
+                                venc: row[3], baixa: row[4], status: row[6] || 'Aberto',
+                                valor: tipo === -1 ? -Math.abs(vlr) : Math.abs(vlr)
+                            };
+                        });
+
+                        const totalTitulos = linhas.reduce((acc, l) => acc + l.valor, 0);
+                        const qtdBaixados = linhas.filter(l => l.status === 'Baixado').length;
+                        const fmt = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+
+                        document.getElementById('titulos-modal-subtitle').innerHTML =
+                            `<span class="chip">Cód. ${escapeHTML(codnat)}</span>
+                             <span class="chip">${linhas.length} título${linhas.length === 1 ? '' : 's'}</span>
+                             <span class="chip">${qtdBaixados} baixado${qtdBaixados === 1 ? '' : 's'} · ${linhas.length - qtdBaixados} aberto${linhas.length - qtdBaixados === 1 ? '' : 's'}</span>
+                             <span class="chip">Total ${fmt(totalTitulos)}</span>`;
+
+                        let tHtml = `<table class="detail-table"><thead><tr>`;
+                        tHtml += `<th>NUFIN</th><th>Documento</th><th style="min-width:220px">Parceiro</th>`;
+                        tHtml += `<th class="num">Vencimento</th><th class="num">Data Baixa</th><th>Situação</th><th class="num col-total">Valor</th>`;
+                        tHtml += `</tr></thead><tbody>`;
+                        linhas.forEach(l => {
+                            const isBaixado = l.status === 'Baixado';
+                            const statusColor = isBaixado
+                                ? 'text-green-700 bg-green-100/80 border border-green-200'
+                                : 'text-blue-700 bg-blue-100/80 border border-blue-200';
+                            tHtml += `<tr>
+                                <td class="text-muted-foreground">${escapeHTML(l.nufin || '-')}</td>
+                                <td class="font-medium">${escapeHTML(l.doc || '-')}</td>
+                                <td class="max-w-xs truncate" title="${escapeHTML(l.parceiro || '-')}">${escapeHTML(l.parceiro || '-')}</td>
+                                <td class="num">${escapeHTML(l.venc || '-')}</td>
+                                <td class="num text-muted-foreground">${escapeHTML(l.baixa || '-')}</td>
+                                <td><span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusColor}">${escapeHTML(l.status)}</span></td>
+                                <td class="num col-total">${formatCurrency(l.valor)}</td>
+                            </tr>`;
+                        });
+                        tHtml += `</tbody><tfoot><tr>
+                            <td colspan="6">Total (${linhas.length})</td>
+                            <td class="num col-total">${formatCurrency(totalTitulos)}</td>
+                        </tr></tfoot></table>`;
+                        document.getElementById('titulos-modal-content').innerHTML = tHtml;
+                    } catch (err) {
+                        console.error("Erro ao buscar títulos:", err);
+                        document.getElementById('titulos-modal-loader').classList.add('hidden');
+                        document.getElementById('titulos-modal-content').innerHTML = `<div class="p-12 text-center text-red-500 font-medium">Ocorreu um erro ao buscar os títulos.</div>`;
+                    } finally {
+                        setTimeout(() => { isOpeningModal = false; }, 300);
+                    }
+                }
+            });
+
+            /* Toggle do Saldo Inicial: re-renderiza a partir dos dados já em
+               memória, preservando os grupos expandidos. Sem nova consulta. */
+            const rerenderComPreferencias = () => {
+                expandedGroups = Array.from(document.querySelectorAll('[data-toggle][aria-expanded="true"]')).map(el => el.dataset.toggle);
+                renderTable();
+            };
+
+            const toggleSaldo = document.getElementById('toggle-saldo-inicial');
+            toggleSaldo.checked = considerarSaldoInicial;
+            toggleSaldo.addEventListener('change', () => {
+                considerarSaldoInicial = toggleSaldo.checked;
+                try { localStorage.setItem(SALDO_INICIAL_PREF_KEY, String(considerarSaldoInicial)); } catch (e) { }
+                rerenderComPreferencias();
+            });
+
+            /* Movimentos Bancários: oculta a seção e a tira do Saldo Final. */
+            const toggleMovBanc = document.getElementById('toggle-mov-bancarios');
+            toggleMovBanc.checked = considerarMovBancarios;
+            toggleMovBanc.addEventListener('change', () => {
+                considerarMovBancarios = toggleMovBanc.checked;
+                try { localStorage.setItem(MOV_BANCARIOS_PREF_KEY, String(considerarMovBancarios)); } catch (e) { }
+                rerenderComPreferencias();
+            });
+
+            /* Filtro de naturezas dentro do modal de detalhamento. */
+            document.getElementById('natureza-filter').addEventListener('input', (e) => {
+                renderNaturezaTable(e.target.value);
+            });
+
+            /* Estrutura hierárquica (TGFNAT) ligada/desligada no modal. */
+            const toggleHier = document.getElementById('toggle-hierarquia');
+            toggleHier.addEventListener('change', () => {
+                verHierarquia = toggleHier.checked;
+                try { localStorage.setItem(HIERARQUIA_PREF_KEY, String(verHierarquia)); } catch (e) { }
+                nosRecolhidos.clear();
+                renderNaturezaTable(document.getElementById('natureza-filter').value);
+            });
+
+            /* ESC fecha o modal mais acima na pilha. */
+            document.addEventListener('keydown', (e) => {
+                if (e.key !== 'Escape') return;
+                const titulos = document.getElementById('titulos-modal');
+                const natureza = document.getElementById('natureza-modal');
+                if (!titulos.classList.contains('hidden')) titulos.classList.add('hidden');
+                else if (!natureza.classList.contains('hidden')) natureza.classList.add('hidden');
+            });
+
+            document.body.addEventListener(MITRA_UPDATE_EVENT_NAME, customUpdateHandler);
+
+            /* Tooltip global via delegação de eventos: escapa de qualquer
+               contexto de empilhamento criado por position:sticky nas células. */
+            const globalTooltip = document.getElementById('global-tooltip');
+
+            container.addEventListener('mouseover', (e) => {
+                const trigger = e.target.closest('.js-tooltip-trigger');
+                if (!trigger) return;
+                const text = trigger.dataset.tooltipText;
+                if (!text) return;
+
+                globalTooltip.textContent = text;
+                globalTooltip.classList.add('visible');
+
+                const rect = trigger.getBoundingClientRect();
+                const tooltipRect = globalTooltip.getBoundingClientRect();
+
+                let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+                left = Math.max(8, Math.min(left, window.innerWidth - tooltipRect.width - 8));
+
+                let top = rect.top - tooltipRect.height - 10;
+                if (top < 8) top = rect.bottom + 10; // se não couber acima, mostra abaixo
+
+                globalTooltip.style.left = `${left}px`;
+                globalTooltip.style.top = `${top}px`;
+            });
+
+            container.addEventListener('mouseout', (e) => {
+                const trigger = e.target.closest('.js-tooltip-trigger');
+                if (!trigger) return;
+                const related = e.relatedTarget;
+                if (related && trigger.contains(related)) return;
+                globalTooltip.classList.remove('visible');
+            });
+
+            loadDataAndRender();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const waitForMitraAndInit = () => {
+                const maxWaitTime = 5000;
+                const intervalTime = 100;
+                const startTime = Date.now();
+                const checkInterval = setInterval(() => {
+                    if (window.componentData && window.componentData.jdbcId && window.componentData.querySaldoInicialDiario) {
+                        clearInterval(checkInterval);
+                        initializeComponent();
+                    } else if (Date.now() - startTime > maxWaitTime) {
+                        clearInterval(checkInterval);
+                        container.innerHTML = `<div class="p-8 text-center text-destructive bg-destructive/10 h-full flex items-center justify-center">Erro Crítico: As configurações do componente não foram carregadas da plataforma.</div>`;
+                    }
+                }, intervalTime);
+            };
+            waitForMitraAndInit();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,57 @@
+<ion-view view-title="Cliente CREDPAR" cache-view="false">
+
+ 	<!--ion-nav-buttons side="left">
+    	<button class="button button-icon button-clear icon ion-android-menu" menu-toggle="left" style="color: white;">
+        </button>
+    </ion-nav-buttons-->
+
+	<ion-content class="top0 has-footer background-login centralizeScroll">
+	
+		<div style="width: 100%; margin: auto;">
+			<div class="ola-home">Olá, {{account.userName}}</div>
+		
+			<div style="width: 100px; display: inline-block;overflow: hidden;" ng-click="goToConsultaSaldo()">
+				<div class="btn-home-top">
+					<div class="consulta-saldo-img"></div>
+				</div>
+				<div class="btn-home-bottom">
+					<span>Consulta de Saldo</span>
+				</div>
+			</div>
+			<div style="width: 100px; display: inline-block;overflow: hidden;" ng-click="goToExtrato()">
+				<div class="btn-home-top">
+					<div class="extrato-vendas-img"></div>
+				</div>
+				<div class="btn-home-bottom">
+					<span>Extrato</br>&nbsp</span>
+				</div>
+			</div>
+			<div style="width: 100px; display: inline-block;overflow: hidden;" ng-click="goToAtendimento()">
+				<div class="btn-home-top">
+					<div class="atendimento-img"></div>
+				</div>
+				<div class="btn-home-bottom">
+					<span>Atendimento</br>&nbsp</span>
+				</div>
+			</div>
+			
+			<div style="width: 100px; display: inline-block;overflow: hidden;"  ng-click="goToOndeComprar()">
+				<div class="btn-home-top">
+					<div class="onde-comprar-img"></div>
+				</div>
+				<div class="btn-home-bottom">
+					<span>Onde Comprar</span>
+				</div>
+			</div>
+				
+			<div style="width: 100px; display: inline-block;overflow: hidden; margin-right:105px;" ng-click="goToAlterarSenha()">
+				<div class="btn-home-top">
+					<div class="alterar-senha-img"></div>
+				</div>
+				<div class="btn-home-bottom">
+					<span>Alterar</br> Senha</span>
+				</div>
+			</div>
+		</div>
+	</ion-content> 
+</ion-view>

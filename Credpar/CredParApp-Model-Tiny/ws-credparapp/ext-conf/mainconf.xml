@@ -1,0 +1,21 @@
+<configs>
+  <dataSources />
+  <defaultJbossPath>C:\sk-java\AS\jboss-4.0.5.GA\server\default</defaultJbossPath>
+  <buildDir>C:\sk-java\workspace\SankhyaW\CredParApp-Model-Tiny\ws-credparapp</buildDir>
+  <exportDir>C:\sk-java\workspace\SankhyaW\CredParApp-Model-Tiny\ws-credparapp</exportDir>
+  <recriaDefault>false</recriaDefault>
+  <cleanJboss>false</cleanJboss>
+  <devEnvironment>
+    <DataSource name="dsDevBase">
+      <dataBase>ORACLE</dataBase>
+      <host>192.168.0.146</host>
+      <sidInstance>DELPHI</sidInstance>
+      <port>1521</port>
+      <user>EXTENSOES</user>
+      <pass>armadura</pass>
+      <baseName />
+      <poolSizeMin>0</poolSizeMin>
+      <poolSizeMax>0</poolSizeMax>
+    </DataSource>
+  </devEnvironment>
+</configs>

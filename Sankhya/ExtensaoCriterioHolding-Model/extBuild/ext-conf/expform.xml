@@ -1,0 +1,12 @@
+<export-info>
+  <nome>RateioHolding</nome>
+  <descricao>Rateio para Holding</descricao>
+  <versao>1.2</versao>
+  <plataforma-minima>3.8</plataforma-minima>
+  <parceiro-id>647</parceiro-id>
+  <parceiro-nome>Sankhya Gestão de Negócios</parceiro-nome>
+  <modulo-padrao>30628</modulo-padrao>
+  <numos>753786</numos>
+  <salt>2a3bfbfa21c34677b715d374fc72d414</salt>
+  <license-resources />
+</export-info>

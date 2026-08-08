@@ -1,0 +1,294 @@
+Layout de Extração
+Vendedores DI Neogrid
+Versão 5.0
+
+Copyright © NEOGRID S/A. Todos os direitos reservados.
+É proibida a reprodução ou transmissão de qualquer parte deste
+documento sem autorização escrita da Neogrid S/A.
+
+Índice
+1. APRESENTAÇÃO ...................................................................................................................................................... 3
+2. DEFINIÇÕES PARA GERAÇÃO DO ARQUIVO ....................................................................................................... 3
+2.1
+
+Dados numéricos ............................................................................................................................................. 4
+
+2.2
+
+Dados Alfanuméricos ...................................................................................................................................... 5
+
+3.
+
+ESTRUTURA ............................................................................................................................................................. 5
+
+4. DESCRIÇÃO DO PADRÃO NEOGRID – VENDEDORES ......................................................................................... 5
+5. DETALHAMENTO DOS CAMPOS ........................................................................................................................... 6
+5.1
+
+Cabeçalho ......................................................................................................................................................... 6
+
+5.2
+
+Vendedores ....................................................................................................................................................... 6
+
+2
+
+www.neogrid.com
+
+1. APRESENTAÇÃO
+
+Neste documento apresentamos o layout do arquivo utilizado na coleta dos dados
+junto aos distribuidores, para implementação do sistema de informações gerenciais para
+distribuidores. Ressaltamos que este mesmo formato de layout deverá ser utilizado para
+integração com diversas indústrias/fornecedores diferentes e não apenas para um projeto
+específico. Neste caso, deverão ser gerados cinco arquivos: Vendedores, Clientes,
+Produtos, Vendas e Estoque. Nos arquivos de cadastros (Vendedores, Clientes e Produtos),
+devem ser enviados todos os dados da filial, independente das indústrias envolvidas nos
+projetos. Nos arquivos de movimentos, (Vendas e Estoque) deve ser enviado um arquivo
+para cada indústria.
+Solicitar à empresa terceirizada (ou setor de TI interno) responsável pelo
+desenvolvimento técnico deste layout, que seja previsto a opção da escolha da
+indústria/fornecedor no momento da geração dos arquivos de vendas e estoque, desta
+forma, caso sua distribuidora inicie algum novo projeto com outra indústria, não será
+necessária nenhuma intervenção da equipe de TI.
+
+Neste documento, estão detalhadas as informações a respeito do layout do arquivo de
+Vendedores.
+
+2. DEFINIÇÕES PARA GERAÇÃO DO ARQUIVO
+
+·
+
+O arquivo deverá ser gerado no formato Flat File com separadores PIPE ( | ),
+
+utilizando o critério Delimitado para identificar as colunas no arquivo.
+
+·
+
+O distribuidor poderá transmitir diariamente os arquivos com os dados necessários,
+
+podendo ser enviados somente dados de inclusão ou atualização, as informações serão
+substituídas, sendo consideradas somente a ultima atualização no portal:
+
+Observação: Existindo a necessidade de envio diário, verificar a capacidade do
+sistema responsável pela extração agendar de forma automática a geração das
+informações, sem a necessidade de intervenção manual diária.
+
+3
+
+www.neogrid.com
+
+·
+
+O arquivo deverá ser gerado utilizando Enconding padrão ANSI.
+
+·
+
+O padrão de quebra de linha a ser utilizado deverá ser PC/Windows.
+
+·
+
+Cada arquivo deverá conter dados de somente uma filial do distribuidor.
+
+· O arquivo deverá conter informações de todo o cadastro de vendedores da filial,
+independente das indústrias envolvidas nos projetos com a NeoGrid.
+·
+
+Caso haja necessidade, segue sugestão de identificadores para a nomenclatura do
+arquivo:
+
+Exemplo: MascaraDocumento_99999999999999_AAAAMMDDHHMMSS.txt
+Onde:
+“MascaraDocumento” é a identificação do tipo de documento Ex.:
+RELVEN “99999999999999” é o código de CNPJ da filial do
+distribuidor; “AAAAMMDDHHMMSS” é a data e hora da criação do
+arquivo.
+Onde:
+AAAA = ano
+MM = mês
+DD = dia
+HH = hora
+MM = minuto
+SS = sequencial
+
+2.1 Dados numéricos
+
+No caso de campo não obrigatório, e não havendo a disponibilidade do dado, não
+deve ser preenchido, embora o campo deva existir separado por PIPE.
+2.2 Dados Alfanuméricos
+
+Para os dados alfanuméricos não utilizar caracteres acentuados (tipo: Ç, Á, Ê, etc.)
+
+4
+
+www.neogrid.com
+
+ou caracteres especiais (tipo: \, @,#, etc.). No caso de campo não obrigatório, e
+não havendo a disponibilidade do dado, não deve ser preenchido, embora o campo
+deva existir separado por PIPE.
+3. ESTRUTURA
+CABEÇALHO
+VENDEDORES
+
+4. DESCRIÇÃO DO PADRÃO NEOGRID – VENDEDORES
+A coluna “Tam” das tabelas a seguir evidencia o tamanho máximo do campo e a
+coluna “Dec”, quantos dígitos equivalem às casas decimais deste tamanho total.
+Os campos apontados como “S” na coluna “Obrig” deverão sempre conter
+informação, salvo casos em que ela não exista.
+Registro 01 - CABEÇALHO (uma única ocorrência)
+Tipo de Registro
+Identificação
+Versão
+Número do Relatório
+Data - Hora de Emissão do Documento
+CNPJ do Emissor do Relatório
+CNPJ do Destinatário do Relatório
+
+Obrig Tipo Tam
+S
+AN
+02
+S
+AN
+06
+S
+AN
+03
+S
+AN
+20
+S
+DT
+12
+S
+N
+14
+S
+N
+14
+
+Dec
+
+Registro 02 – VENDEDORES (de uma a N ocorrências)
+Tipo de Registro
+Nome Vendedor
+Código Vendedor
+Nome Supervisor
+Código Supervisor
+Nome Gerente
+Código Gerente
+Status Vendedor
+Data de Desligamento Vendedor
+
+Obrig Tipo Tam
+S
+AN
+02
+S
+AN
+50
+S
+AN
+20
+N
+AN
+50
+N
+AN
+20
+N
+AN
+50
+N
+AN
+20
+S
+AN
+01
+S
+DT
+08
+
+Dec
+
+5. DETALHAMENTO DOS CAMPOS
+5.1 Cabeçalho
+
+Registro obrigatório que ocorre apenas uma vez no arquivo.
+TIPO REGISTRO
+5
+
+www.neogrid.com
+
+Fixo: 01
+IDENTIFICAÇÃO
+Informação fixa: RELVEN
+VERSÃO
+Informação fixa: 052
+
+NÚMERO DO RELATÓRIO
+Número de referência do documento/mensagem, designado pelo emissor.
+DATA - HORA DE EMISSÃO DO DOCUMENTO
+Data e hora de geração do arquivo de Relatório de Vendedores. O formato de data
+utilizado é: AAAAMMDDHHMM.
+CNPJ DO EMISSOR DO RELATÓRIO
+Identificação através do número do CNPJ da filial do distribuidor que esta emitindo o
+Relatório de Vendedores.
+CNPJ DO DESTINATÁRIO DO RELATÓRIO
+Identificação através do CNPJ da empresa que esta recebendo o Relatório de
+Vendedores. Informação Fixa: 03887830009046
+
+5.2 Vendedores
+
+Registro obrigatório que pode ocorrer N vezes dentro do arquivo.
+TIPO DE REGISTRO
+Informação fixa: 02
+
+NOME VENDEDOR
+
+Fixar informação como “Pessoa Física”.
+CÓDIGO VENDEDOR
+Caso a informação for CPF, devido à LGPD, encaminhar o código interno cadastrado no
+sistema do distribuidor.
+NOME SUPERVISOR
+Fixar informação como “Pessoa Física”.
+
+6
+
+www.neogrid.com
+
+CÓDIGO SUPERVISOR
+Caso a informação for CPF, devido à LGPD, encaminhar o código interno cadastrado no
+sistema do distribuidor.
+NOME GERENTE
+Fixar informação como “Pessoa Física”.
+CÓDIGO GERENTE
+Caso a informação for CPF, devido à LGPD, encaminhar o código interno cadastrado no
+sistema do distribuidor.
+STATUS VENDEDOR
+Informa o status do vendedor no sistema do distribuidor. Deve ser preenchido conforme
+dados abaixo:
+
+Código
+
+Descrição do Código
+
+A
+
+Ativo
+
+I
+
+Inativo
+
+DATA DE DESLIGAMENTO VENDEDOR
+Nos casos em que o vendedor estiver inativo, deve ser informada a data de desligamento
+do vendedor. O formato de data utilizado é: AAAAMMDD
+Observação: Caso o vendedor estiver Ativo, informar a data do dia da geração do
+relatório.
+
+7
+
+www.neogrid.com
+
+

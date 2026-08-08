@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<controls:DefaultSankhyaApplication preloader="br.com.sankhya.controls.managers.CustomPreloader"   
+    xmlns:mx="http://www.adobe.com/2006/mxml" 
+    layout="vertical"
+	xmlns:controls="br.com.sankhya.controls.*" 
+	xmlns:compactpanel="br.com.sankhya.controls.compactpanel.*" 
+	xmlns:dwf="br.com.sankhya.dwf.*" 
+	xmlns:ui="br.com.sankhya.db.ui.*"
+	xmlns:db="br.com.sankhya.db.*"
+	xmlns:dynaform="br.com.sankhya.db.dynaform.*"
+	implements="br.com.sankhya.db.dynaform.IDynaformTabNavigatorVisitor,br.com.sankhya.db.dynaform.IDynaformRecursiveVisitor"
+	creationComplete="creationCompleteHandler()"
+>
+    <mx:Script>
+    	<![CDATA[
+    		import mx.containers.TabNavigator;
+    		import mx.containers.VBox;
+    		import mx.controls.Button;
+    		import mx.controls.CheckBox;
+    		import mx.events.FlexEvent;
+ 			import mx.utils.ObjectUtil;
+    		import br.com.sankhya.controls.GradienteBox;
+    		import br.com.sankhya.db.IDBDataSet;
+ 			import br.com.sankhya.db.DBObserverAdapter;
+ 			import br.com.sankhya.db.DBPeriod;
+ 			import br.com.sankhya.db.dynaform.Dynaform;
+ 			import br.com.sankhya.db.ui.DBDateField;
+ 			import br.com.sankhya.util.MessageUtils;
+ 			import br.com.sankhya.util.datetime.DateUtil;
+ 			import br.com.sankhya.util.http.ServiceProxy;
+ 			import br.com.sankhya.extensions.rateio.holding.TabCriterioRateioHolding;
+ 			import br.com.sankhya.extensions.rateio.holding.TabDicasRateioHolding;
+ 			import br.com.sankhya.extensions.rateio.holding.GridRateioHolding;
+ 			import br.com.sankhya.extensions.rateio.holding.PeriodoDataBaixa;
+
+ 			private var _dsCriterioHolding:IDBDataSet;
+ 			private var _gridSimulacoes:GridRateioHolding;
+ 			private var _periodoBaixa:DBPeriod;
+ 			private var _ckcApenasCriterio:CheckBox;
+ 			private var _ckcImpostosRetidos:CheckBox;
+
+ 			private function creationCompleteHandler():void{
+				dynaformCriterioHolding.loadMetadata();
+    		}
+
+    		public function visitTabNavigator(tabNav:TabNavigator, dynaform:Dynaform):void{
+    			var rateioTab:TabCriterioRateioHolding = new TabCriterioRateioHolding();
+    			rateioTab.dataSetCriterioHolding = _dsCriterioHolding;
+
+    			tabNav.addChild(rateioTab);
+    			
+    			tabNav.addChild(buildAbaSimulacoes());
+
+    			tabNav.addChild(new TabDicasRateioHolding());
+    		}
+
+    		public function setDataSet(dynaform:Dynaform, dataSet:IDBDataSet):void{
+    			_dsCriterioHolding = dataSet;
+    			
+    			var observer:DBObserverAdapter = new DBObserverAdapter();
+    			observer.insertionModeActivatedImp = function():void{
+    				_dsCriterioHolding.setFieldValueAsString("RECDESP", "1");
+    			};
+    			
+    			_dsCriterioHolding.addObserver(observer);
+    		}
+    		
+    		private function buildAbaSimulacoes():VBox {
+    			var abaSimulacoes:VBox = new VBox();
+    			abaSimulacoes.label = "Simulação";
+    			abaSimulacoes.percentWidth = 100;
+    			abaSimulacoes.percentHeight = 100;
+    			
+    			var gridRateio:GridRateioHolding = new GridRateioHolding();
+    			gridRateio.setStyle("paddingTop", "4");
+    			
+    			_periodoBaixa = new DBPeriod();
+    			
+    			_ckcApenasCriterio = new CheckBox();
+    			_ckcApenasCriterio.label = "Apenas este Critério";
+    			
+    			_ckcImpostosRetidos = new CheckBox();
+    			_ckcImpostosRetidos.selected = true;
+    			_ckcImpostosRetidos.label = "Calcular sobre impostos retidos";
+    			
+    			gridRateio.topBars = [_periodoBaixa, _ckcApenasCriterio, _ckcImpostosRetidos];
+    			
+    			gridRateio.addEventListener(FlexEvent.CREATION_COMPLETE, function(e:FlexEvent):void{
+    				gridRateio.refreshTopBars();
+    				loadState();
+    			});
+    			
+    			var btnSimulaAnalitico:Button = new Button();
+    			
+				btnSimulaAnalitico.addEventListener(MouseEvent.CLICK, function():void {
+					if(camposValidosParaSimularAnalitico()) {
+						gridRateio.datIni = DateUtil.getDateObject(_periodoBaixa.dataInicialText);
+						gridRateio.datFim = DateUtil.getDateObject(_periodoBaixa.dataFinalText);
+						gridRateio.ordem = 0;
+						gridRateio.calcImpRetidos = _ckcImpostosRetidos.selected;
+						gridRateio.ehRepasse = false;
+						
+						if (_ckcApenasCriterio.selected){
+							gridRateio.nuCnd = _dsCriterioHolding.getFieldValueAsNumberOrZero("NUCND");
+						} else {
+							gridRateio.nuCnd = 0;
+						}
+						
+						gridRateio.simularAnalitico();
+						saveState();
+					}
+				});
+				
+				btnSimulaAnalitico.label = "Simular Analítico";
+				btnSimulaAnalitico.styleName = "btnSimAnalitico";	
+				btnSimulaAnalitico.height = 22;		
+				
+    			var btnSimulaSintetico:Button = new Button() ;
+				btnSimulaSintetico.addEventListener(MouseEvent.CLICK, function():void {
+					if(camposValidosParaSimularAnalitico()) {
+						gridRateio.datIni = DateUtil.getDateObject(_periodoBaixa.dataInicialText);
+						gridRateio.datFim = DateUtil.getDateObject(_periodoBaixa.dataFinalText);
+						gridRateio.ordem = 0;
+						gridRateio.calcImpRetidos = _ckcImpostosRetidos.selected;
+						gridRateio.ehRepasse = false;
+						
+						if (_ckcApenasCriterio.selected){
+							gridRateio.nuCnd = _dsCriterioHolding.getFieldValueAsNumberOrZero("NUCND");
+						} else {
+							gridRateio.nuCnd = 0;
+						}
+						
+						gridRateio.simularSintetico();
+						saveState();
+					}
+				});
+				btnSimulaSintetico.label = "Simular Sintético";
+				btnSimulaSintetico.styleName = "btnSimSintetico";	
+				btnSimulaSintetico.height = 22;	
+				
+    			gridRateio.addElemBeforeGrid(btnSimulaAnalitico);
+    			gridRateio.addElemBeforeGrid(btnSimulaSintetico);
+    			
+    			abaSimulacoes.addChild(gridRateio);
+    			
+    			return abaSimulacoes;
+    		}
+    		
+    		private function camposValidosParaSimularAnalitico():Boolean {
+				if( (_periodoBaixa != null && _periodoBaixa.dataInicialText == "")
+					|| (_periodoBaixa != null && _periodoBaixa.dataFinalText == "") ) {
+						MessageUtils.showError(MessageUtils.TITLE_ERROR, "Informe o Período de Baixa.");
+						return false;
+				}
+				
+				var dataInicial:Date = DateUtil.getDateObject(_periodoBaixa.dataInicialText);
+				var dataFinal:Date = DateUtil.getDateObject(_periodoBaixa.dataFinalText);
+				
+				if(ObjectUtil.dateCompare(dataInicial,dataFinal) > 0) {
+					MessageUtils.showError(MessageUtils.TITLE_ERROR, "Data Inicial no Período de Baixa não pode ser maior que a Data Final.");
+				}
+				
+				return true;
+			}
+			
+			private function saveState():void {
+				var config:XML =
+				<config chave={getApplicationResourceID() + "_criterioHolding"} tipo="T">
+					<staticFilter />
+					<pref />
+				</config>;
+
+				config.staticFilter.@impostosRetidos = _ckcImpostosRetidos.selected;
+				config.staticFilter.@apenasCriterio = _ckcApenasCriterio.selected;
+
+				ServiceProxy.callService(
+					"mge@SystemUtilsSP.saveConf",
+					config,
+					function(param:*, result:XML):void {
+					}, true);
+			}
+			
+			private function loadState():void {
+				ServiceProxy.callService(
+					"mge@SystemUtilsSP.getConf",
+					<config chave={getApplicationResourceID() + "_criterioHolding"} tipo="T" />,
+					function(params:*, response:XML):void{
+						if(response.responseBody.children().length() > 0) {
+							var staticFilter:XML = response.responseBody.config.staticFilter[0];
+
+							if (staticFilter.hasOwnProperty("@impostosRetidos")) {
+								_ckcImpostosRetidos.selected = staticFilter.@impostosRetidos.toString() == "true";
+							}
+
+							if (staticFilter.hasOwnProperty("@apenasCriterio")) {
+								_ckcApenasCriterio.selected = staticFilter.@apenasCriterio.toString() == "true";
+							}
+						}
+					}, 
+					true
+				);
+			}
+		]]>
+	</mx:Script>
+
+	<dynaform:Dynaform
+		id="dynaformCriterioHolding"		
+		entityName="CriterioRateioHolding"
+		width="100%"
+		height="100%"
+		helperClassName="br.com.sankhya.extensions.rateio.holding.dynaform.CriterioRateioHoldingDynaformHelper"
+		forceCreateTabNavigator="true"
+		tabNavigatorVisitor="{this}"
+		dynaformRecursiveVisitor="{this}"
+	/>
+</controls:DefaultSankhyaApplication>

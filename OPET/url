@@ -1,0 +1,99 @@
+https: //api.sankhya.com.br/gateway/v1/mge/service.sbr?serviceName=DatasetSP.save&outputType=json
+Authorization  Bearer $token
+Content-Type application/json
+
+body 
+
+{
+  "serviceName": "DatasetSP.save",
+  "requestBody": {
+    "entityName": "MetaAtual",
+    "standAlone": true,
+    "fields": [
+      "CODMETA",
+      "DTREF",
+      "CODEMP",
+      "CODPROD",
+      "CODGRUPOPROD",
+      "CODLOCAL",
+      "CODPROJ",
+      "CODCENCUS",
+      "CODNAT",
+      "CODREG",
+      "CODGER",
+      "CODVEND",
+      "CODPARC",
+      "CODUF",
+      "CODCID",
+      "CODPAIS",
+      "CODTIPPARC",
+      "CONTROLE",
+      "MARCA",
+      "QTDPREV",
+      "PREVREC",
+      "PREVDESP",
+      "QTDREAL",
+      "REALREC",
+      "REALDESP",
+      "PERCENTUAL",
+      "SUPLEMENTODESP",
+      "ANTECIPDESP",
+      "TRANSFDESP",
+      "TRANSFSALDODESP",
+      "REDUCAODESP",
+      "COMPROMISSODESP",
+      "ANALITICO",
+      "TIPOMSG",
+      "PERCAVISO",
+      "DIA",
+      "SEMANAMES",
+      "TOTALAUTINV",
+      "AD_IMPORT"
+    ],
+    "records": [
+      {
+        "values": {
+          "0": "$codtipoorcamento",
+          "1": "$dtref",
+          "2": "$codemp",
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": "$codproj",
+          "7": "$codcencus",
+          "8": "$codnat",
+          "9": 0,
+          "10": 0,
+          "11": 0,
+          "12": 0,
+          "13": 0,
+          "14": 0,
+          "15": 0,
+          "16": 0,
+          "17": " ",
+          "18": " ",
+          "19": 0,
+          "20": "$prevrec",
+          "21": "$prevdesp",
+          "22": 0,
+          "23": 0,
+          "24": 0,
+          "25": 0,
+          "26": 0,
+          "27": 0,
+          "28": 0,
+          "29": 0,
+          "30": 0,
+          "31": 0,
+          "32": "S",
+          "33": "Z",
+          "34": 0,
+          "35": 0,
+          "36": 0,
+          "37": 0,
+          "38": "S"
+        }
+      }
+    ]
+  }
+}

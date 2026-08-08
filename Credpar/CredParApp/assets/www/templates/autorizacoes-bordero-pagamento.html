@@ -1,0 +1,72 @@
+<ion-view view-title="BORDERÔ DE PAGAMENTO" cache-view="false">
+
+    <ion-nav-buttons side="left">
+    	<button class="button button-icon button-clear icon ion-ios-arrow-back" style="color: white" ng-click="goBack()">
+        </button>
+    </ion-nav-buttons>
+    
+            
+
+    <ion-content class="background-login" ng-class="{'top0': autorizacoes == null, 'bottom0' : autorizacoes == null}">        
+        <div class="row row-center" ng-if="autorizacoes == null" ng-style="{'height': windowHeight}">  
+            <div class="col" style="text-align: center;">                
+                    <span class="fontHome">Sem registros de borderô para o período selecionado</span>
+             </div>   
+        </div>
+        <ion-list type="list-inset" ng-if="autorizacoes != null">
+            <ion-item ng-repeat="autorizacao in autorizacoes" style="padding:5px !important;background: transparent; border-color: #D85904;">
+                
+                <div>    
+                    
+                        <div style="display: inline-block; width: 100%;width: 100%;">
+                            <div style="display: inline-block;float: left;" ng-if="autorizacao.CONTRATO != null">
+                                <span><b>{{autorizacao.CONTRATO}}</b></span>                   
+                            </div>
+                            <div style="display: inline-block;float: right" ng-if="autorizacao.VALOR != null">
+                                <span><b>R$ {{autorizacao.VALOR}}</b></span>                     
+                            </div>
+                        </div>                                    
+                </div>  
+
+                <div>         
+                    <div style="display: inline-block; width: 100%;">
+                        <div style="float: left;" ng-if="autorizacao.NOME != null">
+                            <span>{{autorizacao.NOME}}</span> 
+                        </div>                                    
+                    </div>
+                </div>
+                <div>    
+                    
+                        <div style="display: inline-block; width: 100%;width: 100%;left margin-bottom: 5px;">
+                            <div style="display: inline-block;float:" ng-if="autorizacao.DTVENC != null">
+                                <span>Vend.:&nbsp;{{autorizacao.DTNEG}}</span>
+                            </div>
+                            <div style="display: inline-block;float: right;" ng-if="autorizacao.DTVENC != null">
+                                <span>Vcto.:&nbsp;{{autorizacao.DTVENC}}</span>                            </div>
+                            
+                        </div>                                    
+                </div>                  
+                <div>
+                    <div style="display: inline-block; width: 100%;">
+                        <div style="margin-bottom: 5px;" ng-if="autorizacao.DESDOBRAMENTO != null">
+                            <span>Desdob.:&nbsp;{{autorizacao.DESDOBRAMENTO}}</span>
+                        </div>
+                    </div>
+                </div> 
+                
+
+            </ion-item>
+        </ion-list>       
+    	<div class ="btnAcessar" ng-if="autorizacoes != null" style="position: relative;float: right;margin-right: 10px;width: 200px;    margin-top: 5px; padding: 2px;"> 
+    		<div style="display: inline; vertical-align: middle;     margin-left: 5px;">
+    			<span>Total</span>
+    		</div>
+    		<div style="display: inline; vertical-align: middle;     float: right; margin-right: 5px; ">
+    			<span>R$ {{totalBordero}}</span>
+    		</div>
+    	</div>
+        <div style="height: 120px;">
+        </div>
+    </ion-content>
+
+    </ion-view>

@@ -1,0 +1,21 @@
+<configs>
+  <dataSources />
+  <defaultJbossPath>/home/wender/sk-java/as/jboss_producao/server/default</defaultJbossPath>
+  <buildDir>/home/wender/sk-java/workspace/AutoCmpExtension/ws-autocmp</buildDir>
+  <exportDir>/home/wender/Desktop</exportDir>
+  <recriaDefault>false</recriaDefault>
+  <cleanJboss>false</cleanJboss>
+  <devEnvironment>
+    <DataSource name="dsDevBase">
+      <dataBase>ORACLE</dataBase>
+      <host>192.168.0.193</host>
+      <sidInstance>TESTE</sidInstance>
+      <port>1521</port>
+      <user>TESTEPRODJAVA1</user>
+      <pass>lksank10</pass>
+      <baseName />
+      <poolSizeMin>100</poolSizeMin>
+      <poolSizeMax>100</poolSizeMax>
+    </DataSource>
+  </devEnvironment>
+</configs>

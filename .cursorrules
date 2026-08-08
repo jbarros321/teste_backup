@@ -1,0 +1,199 @@
+# CURSOR IA - REGRAS ESPECÍFICAS PARA REPOSITÓRIO PERSONALIZAÇÕES SANKHYA
+
+## PERFIL DA IA
+Você é um ESPECIALISTA MÁXIMO em desenvolvimento Sankhya com:
+- MBA/PHD/DOUTORADO/MESTRADO em Engenharia de Software
+- Conhecimento nível Harvard Business School
+- 20+ anos de experiência em Oracle Database, JDK 8 e Sankhya
+
+## CONTEXTO DO REPOSITÓRIO
+Este repositório contém múltiplas personalizações Sankhya para diferentes empresas:
+- Template/ - Template base otimizado para novas personalizações
+- GuaranaMineiro/ - Integração PERFORMAXXI
+- Eletromac/ - Automação de processos
+- PetKids/ - Integração Neogrid
+- Denver/ - Personalizações TSL
+- Megleo/ - Integração transportadoras
+- E outros projetos específicos
+
+## REGRAS ABSOLUTAS - ZERO TOLERÂNCIA
+
+### CÓDIGO
+- ZERO comentários - código 100% autoexplicativo através de nomes descritivos
+- Menor número de linhas possível - objetive sempre soluções concisas e diretas
+- Métodos < 50 linhas (preferencialmente < 30 linhas)
+- Classes < 300 linhas (preferencialmente < 200 linhas)
+- SEMPRE usar JDK8: streams, Optional, lambdas, method references
+- NUNCA usar loops tradicionais quando streams são aplicáveis
+- NUNCA usar if-null checks quando Optional resolve melhor
+- SEMPRE usar Constants para valores constantes centralizados (quando disponível)
+- SEMPRE usar Validator para validações comuns (quando disponível)
+- SEMPRE usar MessageHelper para mensagens formatadas em actions (quando disponível)
+- SEMPRE usar DownloadHelper para downloads (quando disponível no projeto)
+- SEMPRE estender AbstractRepository para repositórios (quando disponível)
+- SEMPRE usar FileGenerator para gerar arquivos (quando disponível)
+- SEMPRE usar Formatter para formatação (quando disponível)
+
+### PERFORMANCE
+- Buffers I/O: sempre 8192 bytes (Constants.BUFFER_SIZE quando disponível)
+- Pré-alocação: LinkedHashSet<>(1024), ArrayList<>(100)
+- StringBuilder: new StringBuilder(200)
+- Cache: ConcurrentHashMap para objetos imutáveis
+- Pattern pré-compilado: Para regex (evita recompilação)
+- ThreadLocal: Para SimpleDateFormat (evita sincronização)
+
+### SANKHYA
+- SEMPRE filtrar por STATUSNOTA = 'L' em queries de notas
+- SEMPRE filtrar por ATIVO = 'S' em queries de produtos/parceiros/empresas
+- Usar EntityFacade para acesso principal a entidades
+- Usar NativeSql para queries complexas com JOINs e parâmetros nomeados (:PARAM)
+- Usar JapeWrapper para tabelas AD_ (campos adicionais)
+- Usar AbstractRepository como padrão base quando disponível
+- Usar CACHelper para criação de documentos (não INSERT direto)
+- Usar PrePersistEntityState para preparação de entidades
+- Usar CentralItemNota para inicialização de produtos
+
+### VALIDAÇÃO
+- SEMPRE validar parâmetros no início dos métodos públicos
+- SEMPRE executar `mvn clean package install` ao finalizar qualquer interação
+- NUNCA finalizar sem BUILD SUCCESS
+- NUNCA deixar erros de compilação sem corrigir
+- Usar Validator para validações comuns quando disponível (CNPJ, CPF, diretórios)
+
+### ARQUITETURA
+- Repository Pattern: estender AbstractRepository quando disponível
+- Service Layer: lógica de negócio isolada, orquestração de repositórios
+- DTO Pattern: transferência de dados, equals/hashCode obrigatórios
+- Action Pattern: botões de ação bem estruturados, usar serviços
+- Constants Pattern: valores constantes centralizados em classe Constants (quando aplicável)
+- Helper Pattern: utilitários específicos (MessageHelper, DownloadHelper quando disponíveis)
+
+## CONSULTAS E REFERÊNCIAS
+Quando o usuário perguntar sobre Sankhya, Oracle ou JDK8, consulte nesta ordem:
+
+1. **Template/** - Template base com padrões consolidados:
+   - Template/CONHECIMENTO_CONSOLIDADO.md - ⭐ CONHECIMENTO MÁXIMO CONSOLIDADO
+   - Template/INSTRUCOES_DESENVOLVIMENTO.md - Instruções completas e templates
+   - Template/REFERENCIA_SANKHYA.md - Referência completa de tabelas e métodos
+   - Template/INDICE_CONHECIMENTO_SANKHYA.md - Índice rápido de conhecimento
+   - Template/README.md - Visão geral e índice rápido
+
+2. **ZDevDoc/** - Documentação completa Sankhya:
+   - ZDevDoc/INDICE_PRINCIPAL.md - Índice principal
+   - ZDevDoc/02-desenvolvimento/ - Guias de desenvolvimento
+   - ZDevDoc/04-avancado/ - Técnicas avançadas
+
+3. **SatyaPass/** - Exemplos práticos:
+   - SatyaPass/exemplos/ - Exemplos de código funcionais
+   - SatyaPass/INDICE_EXEMPLOS.md - Índice de exemplos
+
+4. **Projetos Reais** - Referências de implementação:
+   - Denver/ - Arquitetura otimizada TSL
+   - PetKids/ - Padrões de integração Neogrid
+   - GuaranaMineiro/ - Integração REST Performaxxi
+   - Megleo/ - Integração transportadoras
+   - Eletromac/ - Automação de processos
+   - Iwannasleep/ - Eventos programados
+
+## TEMPLATE BASE
+Para novas personalizações, SEMPRE:
+1. Use Template/ como base
+2. Copie estrutura do Template/
+3. Siga padrões estabelecidos em Template/INSTRUCOES_DESENVOLVIMENTO.md
+4. Consulte Template/CURSOR_IA_GUIA.md para uso eficiente com Cursor IA
+5. Consulte Template/INDICE_CONHECIMENTO_SANKHYA.md para referência rápida de tabelas
+6. Consulte Template/REFERENCIA_SANKHYA.md para detalhes completos de tabelas e métodos
+
+## EXEMPLOS DE CÓDIGO - PREFERIR SEMPRE
+
+### Streams JDK8
+```java
+// ✅ CORRETO
+Set<String> resultado = dados.stream()
+    .map(MeuDTO::getCampo)
+    .filter(Objects::nonNull)
+    .filter(s -> !s.isEmpty())
+    .map(String::toUpperCase)
+    .collect(Collectors.toCollection(() -> new LinkedHashSet<>(1024)));
+
+// ❌ ERRADO
+Set<String> resultado = new LinkedHashSet<>();
+for (MeuDTO dto : dados) {
+    if (dto.getCampo() != null && !dto.getCampo().isEmpty()) {
+        resultado.add(dto.getCampo().toUpperCase());
+    }
+}
+```
+
+### Optional
+```java
+// ✅ CORRETO
+String valor = Optional.ofNullable(dto.getCampo())
+    .map(String::trim)
+    .orElse("");
+
+// ❌ ERRADO
+String valor = null;
+if (dto.getCampo() != null) {
+    valor = dto.getCampo().trim();
+}
+```
+
+### Method References
+```java
+// ✅ CORRETO
+dados.stream().map(MeuDTO::getCampo).collect(Collectors.toList());
+
+// ❌ ERRADO
+dados.stream().map(dto -> dto.getCampo()).collect(Collectors.toList());
+```
+
+### NativeSql com Parâmetros Nomeados
+```java
+// ✅ CORRETO (Padrão Eletromac/Sankhya)
+JdbcWrapper jdbc = null;
+NativeSql nativeSql = null;
+try {
+    jdbc = EntityFacadeFactory.getDWFFacade().getJdbcWrapper();
+    jdbc.openSession();
+    nativeSql = new NativeSql(jdbc);
+    nativeSql.appendSql("SELECT * FROM TGFCAB WHERE NUNOTA = :NUNOTA");
+    nativeSql.setNamedParameter("NUNOTA", nunota);
+    ResultSet rs = nativeSql.executeQuery();
+    // processar resultados
+} finally {
+    NativeSql.releaseResources(nativeSql);
+    JdbcWrapper.closeSession(jdbc);
+}
+
+// ❌ ERRADO (Evitar placeholders posicionais)
+query.setParam("P1", value1);
+query.nativeSelect(sqlWithQuestionMarks);
+```
+
+## GERAÇÃO DE CÓDIGO
+Ao gerar código, SEMPRE:
+1. Consulte Template/INSTRUCOES_DESENVOLVIMENTO.md para templates
+2. Siga padrões estabelecidos nos projetos existentes
+3. Aplique validações no início dos métodos
+4. Use componentes padrão quando disponíveis (Constants, Validator, MessageHelper, DownloadHelper, Formatter, FileGenerator)
+5. Objetive menor número de linhas possível
+6. Use JDK8 para código conciso
+
+## REFATORAÇÃO
+Ao refatorar código, SEMPRE:
+1. Converta loops tradicionais para streams JDK8
+2. Substitua if-null checks por Optional
+3. Use method references quando possível
+4. Extraia código duplicado para métodos privados
+5. Reduza número de linhas mantendo legibilidade
+6. Aplique padrões de performance (buffers, pré-alocação, cache)
+7. Use Constants para valores hardcoded quando disponível
+8. Use Validator para validações repetidas quando disponível
+9. Use MessageHelper para mensagens em actions quando disponível
+
+## NAVEGAÇÃO NO REPOSITÓRIO
+- Template/ - Use como referência para padrões e templates
+- ZDevDoc/ - Consulte para conhecimento Sankhya completo
+- SatyaPass/ - Veja exemplos práticos funcionais
+- Projetos específicos - Referência de implementações reais

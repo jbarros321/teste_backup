@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+	 width="100%" height="100%"
+	 paddingBottom="5" 
+	 paddingLeft="5"
+	 paddingRight="5"
+	 paddingTop="0.5"
+	 label="Descontados"
+	 xmlns:db="br.com.sankhya.db.*" 
+	 xmlns:ui="br.com.sankhya.db.ui.*" 
+	 xmlns:controls="br.com.sankhya.controls.*"
+	 implements="br.com.sankhya.db.IDBCriteriaProvider"
+	 creationComplete="carregaAba()"
+	 initialize="{init()}">
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.utils.ObjectUtil;
+			
+			import br.com.sankhya.controls.DefaultSankhyaApplication;
+			import br.com.sankhya.db.DBCriteria;
+			import br.com.sankhya.db.DBCriteriaParameter;
+			import br.com.sankhya.db.DBCriteriaProviderAdapter;
+			import br.com.sankhya.db.DBObserverAdapter;
+			import br.com.sankhya.db.IDBCriteria;
+			import br.com.sankhya.db.IDBCriteriaProvider;
+			import br.com.sankhya.db.IDBDataSet;
+			import br.com.sankhya.db.IDBDataSetField;
+			import br.com.sankhya.util.MessageUtils;
+			import br.com.sankhya.util.StringUtils;
+
+			private var _codParc:String;
+			private var _codUnidade:String;
+
+			private function carregaAba():void{
+			}
+
+			private function init():void{
+				var dataSetObserver:DBObserverAdapter = new DBObserverAdapter();
+				dataSetObserver.refreshedImp = function():void{
+					btnRemoverSelecionados.enabled = dsVagDescontadas.size() > 0;
+				}
+
+				dsVagDescontadas.addObserver(dataSetObserver);
+				
+				dsVagDescontadas.addDBCriteriaProvider(this);
+			}
+
+			public function set codParcFiltro(codParc:String):void{
+				_codParc = codParc; 
+			}
+
+			public function set codUnidadeFiltro(codUnidade:String):void{
+				_codUnidade = codUnidade;
+			}
+
+			public function getCriteria():IDBCriteria{
+				var expressao:String;
+				var params:Array = new Array();
+
+				if(StringUtils.emptyAsNull(_codParc) != null && StringUtils.emptyAsNull(_codUnidade) != null){
+					expressao = " CODPARC = ? AND CODCENCUS = ?";
+					params.push(new DBCriteriaParameter(DBCriteriaParameter.TYPE_NUMBER, _codParc.toString()));					
+					params.push(new DBCriteriaParameter(DBCriteriaParameter.TYPE_NUMBER, _codUnidade.toString()));					
+				}else if(StringUtils.emptyAsNull(_codParc) != null){
+					expressao = " CODPARC = ?";
+					params.push(new DBCriteriaParameter(DBCriteriaParameter.TYPE_NUMBER, _codParc.toString()));					
+				}else if(StringUtils.emptyAsNull(_codUnidade) != null){
+					expressao = " CODCENCUS = ?";
+					params.push(new DBCriteriaParameter(DBCriteriaParameter.TYPE_NUMBER, _codUnidade.toString()));					
+				}
+
+				return new DBCriteria(expressao, params);
+			}
+
+			public function isCriteriaProviderLoaded(callThisOnLoad:Function):Boolean {
+				return true;
+			}
+
+			private function removerSelecionados():void{
+				var arrItensSelecionados:Array = gridVagDescontadas.selectedItems;
+				var listItensSelecionados:ArrayCollection = new ArrayCollection();
+				var listItensNaoExcluidos="";
+				
+				for each(var item:Object in gridVagDescontadas.selectedItems){
+					if(item.NUFINDESC == null && item.NUFINDESCREC == null){
+						listItensSelecionados.addItem(item);			
+					}else{
+						if("" == listItensNaoExcluidos){
+							listItensNaoExcluidos += item.NUMCONTRATO;
+						}else{
+							listItensNaoExcluidos += "," + item.NUMCONTRATO;
+						}
+					}
+				}
+
+				if(listItensSelecionados.length <= 0){
+					MessageUtils.showError(MessageUtils.TITLE_ERROR,"Registros que possuem Nro. Financeiro Desconto não podem ser removidos.");
+				}else if(arrItensSelecionados.length > listItensSelecionados.length){
+					MessageUtils.showAlertWithConfirmPersonalized(MessageUtils.TITLE_CONFIRMATION,
+						"Os seguintes contratos não podem ser removidos pois possuem Nro. Financeiro Desconto: \n\n" 
+						+ listItensNaoExcluidos 
+						+ "\n\nDeseja Continuar?",
+						"Sim","Não",
+						function():void{
+							dsVagDescontadas.setMultipleSelection(listItensSelecionados);
+
+							dsVagDescontadas.removeCurrentRow();								
+						},
+						function():void{	
+						});
+				}else{
+					dsVagDescontadas.setMultipleSelection(listItensSelecionados);
+
+					dsVagDescontadas.removeCurrentRow();
+				}
+			}
+		]]>
+	</mx:Script>
+
+	<db:DBDataSet id="dsVagDescontadas" entity="DescontoRepasseVisita"  providerName="mge@CRUDServiceProvider" orderBy="this.NUFINORIG" canRemove="true">
+		<db:designFields>
+			<db:Field pattern="*"/>
+			<db:Field pattern="CODPARC, NOMEPARC" path="Contrato.Parceiro"/>
+		</db:designFields>
+	</db:DBDataSet>
+
+	<controls:GradienteBox  width="100%" direction="vertical" horizontalGap="4" verticalAlign="middle">
+		<mx:VBox width="100%" height="100%">
+			<mx:HBox width="100%">
+				<controls:GridConfig id="gridVagDescConfig" configName="{DefaultSankhyaApplication.getInstance().getApplicationResourceID() + '.gridVagDescontadas'}" targetGrid="{gridVagDescontadas}" visible="{true}"/>
+				<mx:VRule height="20"/>
+				<ui:DBGridPrinter dataSet="{dsVagDescontadas}" entityName="ViewFinanceiroRepasseVisita" targetGrid="{gridVagDescontadas}" title="Descontados"/>
+				
+				<mx:VRule height="20"/>
+				<ui:DBPersonalizedFilter 
+					id="filtroVagDescontadas"
+					dataSet="{dsVagDescontadas}"
+					resourceID="{DefaultSankhyaApplication.getInstance().getApplicationResourceID() + '.filtroDescontadosVag'}"
+					showApplyButton="true"
+					/>
+				<mx:VRule height="20"/>
+				<mx:Button id="btnRemoverSelecionados" label="Remover" toolTip="Remover dos Descontados" buttonMode="true" styleName="btnRemoveItem" click="{removerSelecionados()}" enabled="{}"/>
+				<mx:HBox horizontalAlign="right" width="100%">
+					<controls:RowsCounter id="rowsCounterGridVagDesc" visible="{true}" includeInLayout="{true}" sourceList="{gridVagDescontadas}"/>  
+				</mx:HBox>
+			</mx:HBox>
+		</mx:VBox>
+	</controls:GradienteBox>
+	<ui:DBDataGrid id="gridVagDescontadas" dataSet="{dsVagDescontadas}" width="100%" height="100%" allowMultipleSelection="true"/>
+</mx:VBox>

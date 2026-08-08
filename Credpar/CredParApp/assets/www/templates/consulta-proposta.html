@@ -1,0 +1,41 @@
+<ion-view view-title="CONSULTA DE PROPOSTA" cache-view="false">
+
+	<ion-nav-buttons side="left">
+    	<button class="button button-icon button-clear icon ion-ios-arrow-back"  ng-click="goBack()">
+        </button>
+    </ion-nav-buttons>
+    
+    <ion-content class="has-header padding task-content background-login has-footer" >
+		 <div class="item item-input" style="border-color: #B1A9A1;border-radius: 6px; border-width: 2px;">
+		    <input type="text" placeholder="Digite o CPF" ng-model="consultaProposta.CGC_CPF" ng-enter="buscarParceiroProspect()">
+		    <button class="button button-stable " style="background-color: transparent;" ng-click="buscarParceiroProspect()">
+		  		<i class="search_40x40-img"></i>
+			</button>
+		 </div>
+		<ion-list >	   
+			<div style="margin-top: 10px; margin-bottom: 40px;">    
+		        <ion-item style="padding: 6px !important" ng-repeat="parPros in parProsList">
+	                <div class="text-center">
+	                	<b><span style=" white-space: normal;" ng-if="parPros.NOMEPAP != null">
+	                				{{ parPros.NOMEPAP }}</span> </b>                	
+	                </div>
+	                <div class="text-center">
+	                	<span ng-if="parPros.DTCAD != null">
+	                				DATA {{ parPros.DTCAD }}</span>                 	
+	                </div>
+	                <div ng-class="{'txtReprovada': parPros.STATUSPROPOSTA == 'I', 'txtPendente': parPros.STATUSPROPOSTA == 'T', 'txtAprovada': parPros.STATUSPROPOSTA == 'D', 'txtAnalise': parPros.STATUSPROPOSTA == 'N'}">
+	                	<span ng-if="parPros.STATUSPROPOSTASTR != null">
+	                				{{ parPros.STATUSPROPOSTASTR }}</span>                 	
+	                </div>
+	                <div>
+                		<div ng-if="parPros.STATUSPROPOSTASTR != null">
+                				<span>STATUS:</span>
+                				
+                					<hr id="hrProposta"  class="hr" ng-class="{'hrReprovada': parPros.STATUSPROPOSTA == 'I', 'hrPendente': parPros.STATUSPROPOSTA == 'T', 'hrAprovada': parPros.STATUSPROPOSTA == 'D', 'hrAnalise': parPros.STATUSPROPOSTA == 'N'}">	                				
+                		<div>
+	                </div>
+		        </ion-item>
+	        </div>
+        </ion-list>
+    </ion-content>
+</ion-view>

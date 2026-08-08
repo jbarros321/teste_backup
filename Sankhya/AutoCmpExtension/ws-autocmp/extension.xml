@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<extension>
+  <id>AutoCmp</id>
+  <description>Serviços de consulta de pendências e encaminhamento de OS da Compilação Automática</description>
+  <version>1.1</version>
+  <platform-min-version>3.13</platform-min-version>
+  <build-timestamp>13/08/2019 10:46:42</build-timestamp>
+  <vendor>
+    <id>647</id>
+    <name>Sankhya Gestão de Negócios</name>
+  </vendor>
+  <license-by-resource>
+    <default-module />
+  </license-by-resource>
+  <ui-mashups />
+</extension>
+

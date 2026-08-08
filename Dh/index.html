@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRE Gerencial</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Sora:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --background: 220 18% 97%;
+            --foreground: 220 20% 12%;
+            --primary: 221 83% 53%;
+            --primary-foreground: 0 0% 100%;
+            --secondary: 220 14% 93%;
+            --secondary-foreground: 220 15% 20%;
+            --muted: 220 14% 95%;
+            --muted-foreground: 220 10% 48%;
+            --accent: 220 14% 90%;
+            --accent-foreground: 220 15% 18%;
+            --destructive: 0 84% 60%;
+            --destructive-foreground: 0 0% 100%;
+            --border: 220 13% 86%;
+            --input: 220 13% 86%;
+            --ring: 221 83% 53%;
+            --radius: 0.5rem;
+
+            --receita-bg: 142 50% 95%;
+            --despesa-bg: 220 20% 96%;
+            --calculo-bg: 45 60% 95%;
+            --grupo-hover: 220 30% 91%;
+            --valor-receita: 142 65% 35%;
+            --valor-despesa: 0 72% 48%;
+            --valor-calculo: 220 20% 22%;
+            --total-receita: 142 65% 35%;
+            --total-geral: 220 20% 22%;
+
+            /* Button colors */
+            --btn-pdf: 0 72% 50%;
+            --btn-pdf-hover: 0 72% 43%;
+            --btn-excel: 142 65% 38%;
+            --btn-excel-hover: 142 65% 31%;
+            --btn-refresh: 220 15% 45%;
+            --btn-refresh-hover: 220 15% 35%;
+        }
+
+        .dark {
+            --background: 222 22% 9%;
+            --foreground: 0 0% 93%;
+            --primary: 217 91% 60%;
+            --primary-foreground: 222 22% 9%;
+            --secondary: 220 18% 16%;
+            --secondary-foreground: 0 0% 93%;
+            --muted: 220 18% 18%;
+            --muted-foreground: 220 12% 62%;
+            --accent: 220 18% 18%;
+            --accent-foreground: 0 0% 93%;
+            --border: 220 16% 22%;
+            --input: 220 16% 22%;
+            --ring: 217 91% 60%;
+            --receita-bg: 142 28% 16%;
+            --despesa-bg: 220 14% 17%;
+            --calculo-bg: 45 30% 17%;
+            --grupo-hover: 220 22% 25%;
+            --valor-receita: 142 65% 60%;
+            --valor-despesa: 0 72% 65%;
+            --valor-calculo: 220 15% 82%;
+            --total-receita: 142 65% 60%;
+            --total-geral: 220 15% 82%;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-family: 'Sora', system-ui, sans-serif;
+        }
+
+        /* ── Header ── */
+        #component-header {
+            background: linear-gradient(135deg, hsl(220 16% 22%) 0%, hsl(220 18% 17%) 100%);
+            border-bottom: 1px solid hsl(220 15% 13%);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+        }
+
+        .header-title {
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            letter-spacing: -0.01em;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .header-title svg {
+            opacity: 0.85;
+        }
+
+        /* ── Buttons ── */
+        .btn-base {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.45rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            transition: all 0.18s ease;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        }
+
+        .btn-pdf {
+            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+            color: #fff;
+        }
+
+        .btn-pdf:hover {
+            background: linear-gradient(135deg, #c53030 0%, #9b2c2c 100%);
+            box-shadow: 0 3px 12px rgba(197, 48, 48, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .btn-pdf:active {
+            transform: translateY(0);
+        }
+
+        .btn-excel {
+            background: linear-gradient(135deg, #276749 0%, #1c4d35 100%);
+            color: #fff;
+        }
+
+        .btn-excel:hover {
+            background: linear-gradient(135deg, #1c4d35 0%, #143825 100%);
+            box-shadow: 0 3px 12px rgba(28, 77, 53, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .btn-excel:active {
+            transform: translateY(0);
+        }
+
+        .btn-refresh {
+            background: rgba(255, 255, 255, 0.14);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            backdrop-filter: blur(4px);
+        }
+
+        .btn-refresh:hover {
+            background: rgba(255, 255, 255, 0.22);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            transform: translateY(-1px);
+        }
+
+        /* ── Table area ── */
+        #table-wrapper {
+            background: hsl(var(--background));
+        }
+
+        /* Garante que o thead sempre pinte acima do tbody ao rolar */
+        #dre-table thead {
+            position: relative;
+            z-index: 20;
+        }
+
+        #dre-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 16px rgba(30, 50, 100, 0.08), 0 1px 3px rgba(30, 50, 100, 0.06);
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: hsl(220 20% 18%);
+            color: #e8edf5;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            padding: 0.85rem 1rem;
+            border-bottom: 2px solid hsl(220 20% 28%);
+        }
+
+        thead th:first-child {
+            position: sticky;
+            left: 0;
+            top: 0;
+            z-index: 40;
+            background: hsl(220 20% 18%);
+            text-align: left;
+            font-family: 'Sora', sans-serif;
+            text-transform: none;
+            letter-spacing: 0;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        tbody td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: #fff;
+            box-shadow: 2px 0 6px rgba(0, 0, 0, 0.06);
+        }
+
+        tr[data-type="Receita"]>td:first-child {
+            background-color: hsl(var(--receita-bg));
+        }
+
+        tr[data-type="Despesa"]>td:first-child {
+            background-color: hsl(var(--despesa-bg));
+        }
+
+        tr[data-type="Cálculo"]>td:first-child {
+            background-color: hsl(var(--calculo-bg));
+        }
+
+        tr.font-bold:hover td:first-child {
+            background-color: hsl(var(--grupo-hover)) !important;
+        }
+
+        tr.font-bold {
+            border-left: 3px solid transparent;
+        }
+
+        tr.font-bold[data-type="Receita"] {
+            border-left-color: hsl(142 60% 45%);
+        }
+
+        tr.font-bold[data-type="Despesa"] {
+            border-left-color: hsl(0 72% 50%);
+        }
+
+        tr.font-bold[data-type="Cálculo"] {
+            border-left-color: hsl(45 80% 50%);
+        }
+
+        tbody tr:hover td {
+            background-color: hsl(220 40% 98%);
+        }
+
+        tbody tr.font-bold:hover td {
+            background-color: hsl(var(--grupo-hover));
+        }
+
+        /* Value colors */
+        .valor-receita {
+            color: hsl(var(--valor-receita));
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .valor-despesa {
+            color: hsl(var(--valor-despesa));
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .valor-calculo {
+            color: hsl(var(--valor-calculo));
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 500;
+        }
+
+        .total-receita {
+            color: hsl(var(--total-receita));
+            font-weight: 700;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .total-geral {
+            color: hsl(var(--total-geral));
+            font-weight: 800;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        /* Total column highlight - main table only */
+        #dre-table td:nth-last-child(1),
+        #dre-table td:nth-last-child(2),
+        #dre-table th:nth-last-child(1),
+        #dre-table th:nth-last-child(2) {
+            background-color: hsl(220 20% 97%) !important;
+        }
+
+        #dre-table td:nth-last-child(2),
+        #dre-table th:nth-last-child(2) {
+            border-left: 1px solid hsl(var(--border));
+        }
+
+        #dre-table thead th:nth-last-child(1),
+        #dre-table thead th:nth-last-child(2) {
+            background: hsl(220 20% 14%) !important;
+        }
+
+        #dre-table thead th:nth-last-child(2) {
+            border-left: 1px solid hsl(220 20% 25%);
+        }
+
+        .toggle-icon svg {
+            stroke: currentColor;
+            stroke-width: 2.5;
+        }
+
+        /* Drilldown button */
+        .drill-btn {
+            margin-left: 6px;
+            color: hsl(220 15% 50%);
+            opacity: 0.7;
+            transition: opacity 0.15s, transform 0.15s;
+            display: inline-flex;
+        }
+
+        .drill-btn:hover {
+            opacity: 1;
+            transform: scale(1.2);
+            color: hsl(220 15% 30%);
+        }
+
+        /* Loader */
+        #loader {
+            background: hsl(var(--background));
+        }
+
+        .loader-ring {
+            width: 48px;
+            height: 48px;
+            border: 3px solid hsl(220 20% 88%);
+            border-top-color: hsl(var(--primary));
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ── MODAL ── */
+        #drill-modal .modal-card {
+            background: #ffffff;
+            color: #1e2b3c;
+            border-radius: 16px;
+            border: 1px solid #e4eaf3;
+            box-shadow: 0 24px 64px rgba(15, 25, 60, 0.22), 0 4px 16px rgba(15, 25, 60, 0.12);
+            overflow: hidden;
+        }
+
+        #drill-modal .modal-header {
+            background: linear-gradient(135deg, hsl(220 16% 22%) 0%, hsl(220 18% 17%) 100%);
+            border-bottom: 1px solid hsl(220 15% 13%);
+            padding: 1rem 1.25rem;
+        }
+
+        #drill-modal .modal-header h3 {
+            color: #fff;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        #drill-modal .modal-header .close-btn {
+            color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 50%;
+            padding: 4px;
+            transition: background 0.15s;
+        }
+
+        #drill-modal .modal-header .close-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        /* Modal small buttons */
+        .modal-btn-pdf {
+            background: linear-gradient(135deg, #e53e3e, #c53030);
+            color: #fff;
+            border-radius: 7px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.35rem 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: all 0.15s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 1px 4px rgba(197, 48, 48, 0.25);
+        }
+
+        .modal-btn-pdf:hover {
+            background: linear-gradient(135deg, #c53030, #9b2c2c);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(197, 48, 48, 0.35);
+        }
+
+        .modal-btn-excel {
+            background: linear-gradient(135deg, #276749, #1c4d35);
+            color: #fff;
+            border-radius: 7px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.35rem 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: all 0.15s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 1px 4px rgba(28, 77, 53, 0.25);
+        }
+
+        .modal-btn-excel:hover {
+            background: linear-gradient(135deg, #1c4d35, #143825);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(28, 77, 53, 0.35);
+        }
+
+        #drill-modal #drill-table thead th {
+            background: hsl(220 15% 94%);
+            color: hsl(220 20% 28%);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            border-bottom: 2px solid hsl(220 13% 85%);
+            padding: 0.7rem 1rem;
+            position: relative;
+        }
+
+        #drill-modal #drill-table tbody tr:hover td {
+            background-color: hsl(220 40% 98%);
+        }
+
+        #drill-modal #drill-table td {
+            color: hsl(220 20% 18%);
+            border-bottom: 1px solid hsl(220 13% 93%);
+            padding: 0.65rem 1rem;
+            font-family: 'Sora', sans-serif;
+            font-size: 0.82rem;
+        }
+
+        #drill-modal #drill-table td:last-child {
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 500;
+            background: transparent !important;
+            border-left: none;
+        }
+
+        #drill-modal #drill-table tr:last-child td {
+            background: hsl(221 83% 97%) !important;
+            color: hsl(221 70% 30%);
+            font-weight: 700;
+        }
+
+        /* Row animations */
+        tbody tr {
+            transition: background 0.12s ease;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: hsl(220 14% 80%);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: hsl(220 14% 65%);
+        }
+
+        #dre-table td,
+        #dre-table th {
+            page-break-inside: avoid;
+        }
+    </style>
+</head>
+
+<body class="h-full antialiased">
+    <div id="dre-container" class="h-full w-full flex flex-col">
+
+        <!-- Header -->
+        <div id="component-header" class="hidden p-3 px-5 flex justify-between items-center gap-3">
+            <div class="header-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <path d="M3 9h18M9 21V9" />
+                </svg>
+                DRE Gerencial
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button id="refresh-btn" title="Forçar atualização" class="btn-base btn-refresh">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10" />
+                        <polyline points="1 20 1 14 7 14" />
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                    </svg>
+                    Atualizar
+                </button>
+
+                <button id="export-pdf-btn" class="btn-base btn-pdf">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                    Exportar PDF
+                </button>
+
+                <button id="export-btn" class="btn-base btn-excel">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Exportar Excel
+                </button>
+            </div>
+        </div>
+
+        <!-- Loader -->
+        <div id="loader" class="hidden flex-grow flex items-center justify-center">
+            <div class="text-center">
+                <div class="loader-ring mx-auto"></div>
+                <p class="mt-5 text-sm font-medium" style="color: hsl(var(--muted-foreground))">Carregando dados do DRE…
+                </p>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div id="table-wrapper" class="hidden flex-grow overflow-auto p-4">
+            <table id="dre-table" class="min-w-full text-sm">
+                <thead>
+                    <tr>
+                        <th class="px-5 py-3.5 text-left min-w-[450px]">Descrição</th>
+                        <th class="px-4 py-3.5 text-right">Janeiro</th>
+                        <th class="px-2 py-3.5 text-right text-gray-400/80 font-normal text-[0.65rem]">AV%</th>
+                        <th class="px-4 py-3.5 text-right">Fevereiro</th>
+                        <th class="px-2 py-3.5 text-right text-gray-400/80 font-normal text-[0.65rem]">AV%</th>
+                        <th class="px-4 py-3.5 text-right">Março</th>
+                        <th class="px-2 py-3.5 text-right text-gray-400/80 font-normal text-[0.65rem]">AV%</th>
+                        <th class="px-4 py-3.5 text-right">Abril</th>
+                        <th class="px-2 py-3.5 text-right text-gray-400/80 font-normal text-[0.65rem]">AV%</th>
+                        <th class="px-4 py-3.5 text-right">Maio</th>
+                        <th class="px-2 py-3.5 text-right text-gray-400/80 font-normal text-[0.65rem]">AV%</th>
+                        <th class="px-4 py-3.5 text-right">Junho</th>
+                        <th class="px-2 py-3.5 text-right text-gray-400/80 font-normal text-[0.65rem]">AV%</th>
+                        <th class="px-4 py-3.5 text-right">Julho</th>
+                        <th class="px-2 py-3.5 text-right text-gray-400/80 font-normal text-[0.65rem]">AV%</th>
+                        <th class="px-4 py-3.5 text-right">Agosto</th>
+                        <th class="px-2 py-3.5 text-right text-gray-400/80 font-normal text-[0.65rem]">AV%</th>
+                        <th class="px-4 py-3.5 text-right">Setembro</th>
+                        <th class="px-2 py-3.5 text-right text-gray-400/80 font-normal text-[0.65rem]">AV%</th>
+                        <th class="px-4 py-3.5 text-right">Outubro</th>
+                        <th class="px-2 py-3.5 text-right text-gray-400/80 font-normal text-[0.65rem]">AV%</th>
+                        <th class="px-4 py-3.5 text-right">Novembro</th>
+                        <th class="px-2 py-3.5 text-right text-gray-400/80 font-normal text-[0.65rem]">AV%</th>
+                        <th class="px-4 py-3.5 text-right">Dezembro</th>
+                        <th class="px-2 py-3.5 text-right text-gray-400/80 font-normal text-[0.65rem]">AV%</th>
+                        <th class="px-4 py-3.5 text-right">Total ano</th>
+                        <th class="px-2 py-3.5 text-right text-gray-400/80 font-normal text-[0.65rem]">AV%</th>
+                    </tr>
+                </thead>
+                <tbody id="dre-tbody"></tbody>
+            </table>
+        </div>
+
+        <!-- Drill Modal -->
+        <div id="drill-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+            style="background-color: rgba(10,18,40,0.7); backdrop-filter: blur(3px);">
+            <div class="modal-card w-full max-w-4xl flex flex-col max-h-[80vh]">
+                <div class="modal-header flex justify-between items-center">
+                    <h3 id="drill-modal-title">Análise por Grupo de Produtos</h3>
+                    <div class="flex items-center gap-2">
+                        <button id="modal-export-pdf-btn" class="modal-btn-pdf" title="Exportar PDF">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                                <polyline points="10 9 9 9 8 9" />
+                            </svg>
+                            PDF
+                        </button>
+                        <button id="modal-export-excel-btn" class="modal-btn-excel" title="Exportar Excel">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            Excel
+                        </button>
+                        <button onclick="closeDrillModal()" class="close-btn transition-colors p-1.5 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-4 overflow-auto flex-grow" style="background:#fff;">
+                    <div id="drill-loader" class="hidden flex justify-center py-10">
+                        <div class="loader-ring"></div>
+                    </div>
+                    <table id="drill-table" class="w-full text-sm border-collapse hidden">
+                        <thead>
+
+                        </thead>
+                        <tbody id="drill-tbody"></tbody>
+                    </table>
+                    <div id="drill-empty" class="hidden text-center py-10 text-sm" style="color:#94a3b8;">
+                        Nenhum dado encontrado para esta linha no período.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ─────────────────────────────────────────────
+        const MITRA_UPDATE_EVENT_NAME = 'mitra-update-dre-gerencial';
+
+        const cellText = (cell) => (cell ? (cell.innerText || cell.textContent || '').trim() : '');
+
+        const parseBRNumber = (text) => {
+            if (typeof text !== 'string' || !text) return text;
+            let cleanText = text.trim();
+
+            // Protege datas no formato DD/MM/YYYY (e variações com hora)
+            if (/^\d{2}\/\d{2}\/\d{4}/.test(cleanText)) return cleanText;
+
+            const isPercent = cleanText.endsWith('%');
+            if (isPercent) {
+                cleanText = cleanText.slice(0, -1);
+            }
+            cleanText = cleanText.replace(/\./g, '').replace(/,/g, '.');
+            const num = parseFloat(cleanText);
+            if (isNaN(num)) {
+                return text; // Return original text if not a valid number
+            }
+            return isPercent ? num / 100 : num;
+        };
+
+        function readTable(elementId) {
+            const el = document.getElementById(elementId);
+            if (!el) return { headers: [], rows: [] };
+
+            // Se o elemento já for a tabela, usa ele. Se não, busca a tabela dentro dele.
+            const table = el.tagName === 'TABLE' ? el : el.querySelector('table');
+            if (!table) return { headers: [], rows: [] };
+
+            const headers = [];
+            const headerRows = table.querySelectorAll('thead tr');
+            const headerMatrix = [];
+            headerRows.forEach(row => headerMatrix.push(Array.from(row.children)));
+
+            if (headerMatrix.length > 0) {
+                const mainHeaderRow = headerMatrix[headerMatrix.length - 1];
+                mainHeaderRow.forEach(th => headers.push(cellText(th)));
+            }
+
+            const rows = [];
+            table.querySelectorAll('tbody tr').forEach(tr => {
+                const rowData = [];
+                tr.querySelectorAll('td').forEach(td => {
+                    rowData.push(parseBRNumber(cellText(td)));
+                });
+                if (rowData.length > 0) rows.push(rowData);
+            });
+
+            return { headers, rows };
+        }
+
+        window.closeDrillModal = () => {
+            document.getElementById('drill-modal').classList.add('hidden');
+        };
+
+        window.openDrillModal = async (nodeId, nodeDesc, nodeTipo, isDevolucao = false) => {
+            const modal = document.getElementById('drill-modal');
+            const title = document.getElementById('drill-modal-title');
+            const loader = document.getElementById('drill-loader');
+            const table = document.getElementById('drill-table');
+            const tbody = document.getElementById('drill-tbody');
+            const empty = document.getElementById('drill-empty');
+
+            title.textContent = `Análise por Grupo: ${nodeDesc}`;
+            modal.classList.remove('hidden');
+            loader.classList.remove('hidden');
+            table.classList.add('hidden');
+            empty.classList.add('hidden');
+            tbody.innerHTML = '';
+            document.querySelector('#drill-table thead').innerHTML = '';
+
+            const codNat = nodeId.replace('N_', '').replace('IMP_', '');
+            const jdbcId = parseInt(window.componentData.jdbcId, 10) || 1;
+            const tipoNorm = (nodeTipo || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+            const isImposto = nodeId.startsWith('IMP_');
+            const isCreditoPresumido = nodeId === 'N_CREDITO_PRESUMIDO';
+
+            let drillQuery = "";
+
+            if (isImposto) {
+                title.textContent = `Detalhes do Imposto/Despesa: ${nodeDesc}`;
+                drillQuery = `
+            SELECT
+                DATE_FORMAT(I.DTREF, '%d/%m/%Y') AS "Data",
+                I.DESCRICAO AS "Descrição",
+                CAST(I.CODNAT AS CHAR) AS "Cód. Natureza",
+                CAST(I.CODCENCUS AS CHAR) AS "CR",
+                ABS(I.VLR) AS "Valor"
+            FROM IMP_IMPOSTOS I
+            WHERE I.CODIMP = '${codNat}'
+              AND (:VAR_DATA_INICIO IS NULL OR :VAR_DATA_INICIO='' OR I.DTREF >= :VAR_DATA_INICIO)
+              AND (:VAR_DATA_FIM IS NULL OR :VAR_DATA_FIM='' OR I.DTREF <= :VAR_DATA_FIM)
+              AND (:VAR_NATUREZA IS NULL OR :VAR_NATUREZA='' OR FIND_IN_SET(I.CODNAT, :VAR_NATUREZA))
+              AND (:VAR_CENTRO_RESULTADO IS NULL OR :VAR_CENTRO_RESULTADO='' OR FIND_IN_SET(I.CODCENCUS, :VAR_CENTRO_RESULTADO))
+            ORDER BY I.DTREF DESC, ABS(I.VLR) DESC`;
+            } else if (isDevolucao) {
+                title.textContent = `Análise por Títulos/Notas: ${nodeDesc}`;
+                let natFilter = "1=1";
+                if (nodeId.startsWith('G_')) {
+                    const gId = nodeId.replace('G_', '');
+                    natFilter = `C.CODNAT IN (SELECT CODNAT FROM DRE_GRUPOS_NATUREZAS WHERE ID_GRUPO = ${gId})`;
+                } else if (nodeId.startsWith('S_')) {
+                    const parts = nodeId.split('_');
+                    const sgId = parts[2];
+                    natFilter = `C.CODNAT IN (SELECT CODNAT FROM DRE_GRUPOS_NATUREZAS WHERE ID_SUBGRUPO = ${sgId})`;
+                } else if (nodeId.startsWith('N_')) {
+                    const nId = nodeId.replace('N_', '');
+                    natFilter = `C.CODNAT = ${nId}`;
+                }
+
+                drillQuery = `
+            SELECT
+                C.NUNOTA AS "Nota",
+                MAX(F.CODPARC) AS "Cód. Parceiro",
+                DATE_FORMAT(C.DTNEG, '%d/%m/%Y') AS "Data",
+                SUM(ABS(ITE.VLRTOT-ITE.VLRDESC+ITE.VLRIPI+ITE.VLRSUBST)) AS "Valor"
+            FROM IMP_IMP_CAB C
+            JOIN IMP_IMP_TOP T ON C.CODTIPOPER=T.CODTIPOPER AND C.DHTIPOPER=T.DHALTER
+            JOIN IMP_IMP_ITE ITE ON C.NUNOTA=ITE.NUNOTA
+            LEFT JOIN (
+                SELECT NUNOTA, MAX(CODPARC) AS CODPARC 
+                FROM IMP_FINANCEIRO_DRE 
+                GROUP BY NUNOTA
+            ) F ON C.NUNOTA = F.NUNOTA
+            WHERE T.GOLDEV=-1 AND C.TIPMOV='D' AND C.STATUSNOTA='L'
+              AND C.CODNAT NOT IN (1101001, 1103005, 1103006)
+              AND (:VAR_DATA_INICIO IS NULL OR :VAR_DATA_INICIO='' OR C.DTNEG>=:VAR_DATA_INICIO)
+              AND (:VAR_DATA_FIM IS NULL OR :VAR_DATA_FIM='' OR C.DTNEG<=:VAR_DATA_FIM)
+              AND (:VAR_NATUREZA IS NULL OR :VAR_NATUREZA='' OR FIND_IN_SET(C.CODNAT,:VAR_NATUREZA))
+              AND (:VAR_CENTRO_RESULTADO IS NULL OR :VAR_CENTRO_RESULTADO='' OR FIND_IN_SET(C.CODCENCUS,:VAR_CENTRO_RESULTADO))
+              AND ${natFilter}
+            GROUP BY C.NUNOTA, C.DTNEG
+            ORDER BY C.DTNEG DESC, "Valor" DESC`;
+            } else if (isCreditoPresumido) {
+                title.textContent = `Análise por Origem: ${nodeDesc}`;
+                drillQuery = `
+            SELECT COALESCE(ORIGEM,'Outros') AS GRUPO, SUM(ABS(SOMAVALOR)) AS VALOR
+            FROM IMP_CREDITO_PRESUMIDO C
+            WHERE (:VAR_DATA_INICIO IS NULL OR :VAR_DATA_INICIO='' OR C.DTREF>=:VAR_DATA_INICIO)
+              AND (:VAR_DATA_FIM IS NULL OR :VAR_DATA_FIM='' OR C.DTREF<=:VAR_DATA_FIM)
+            GROUP BY ORIGEM ORDER BY VALOR DESC`;
+            } else if (codNat === '99998') {
+                drillQuery = `
+            SELECT COALESCE(G.DESCRGRUPOPROD,'Sem Grupo') AS GRUPO, SUM(ABS(C.CMV)) AS VALOR
+            FROM IMP_CMV_GRUPO C LEFT JOIN IMP_GRUPOPRODUTOS G ON C.CODGRUPOPROD=G.CODGRUPOPROD
+            WHERE (:VAR_DATA_INICIO IS NULL OR :VAR_DATA_INICIO='' OR C.MES_REF>=:VAR_DATA_INICIO)
+              AND (:VAR_DATA_FIM IS NULL OR :VAR_DATA_FIM='' OR C.MES_REF<=:VAR_DATA_FIM)
+            GROUP BY G.DESCRGRUPOPROD ORDER BY VALOR DESC`;
+            } else if (codNat === '99994' || codNat === '99995') {
+                title.textContent = `Análise de Variação Cambial: ${nodeDesc}`;
+                const tipVar = codNat === '99994' ? 'P' : 'N';
+                drillQuery = `
+            SELECT COALESCE(VC.DESCRNAT,'Variação Cambial') AS GRUPO, SUM(ABS(VC.VALOR)) AS VALOR
+            FROM IMP_VARIACAO_CAMB VC WHERE VC.TIPVAR='${tipVar}'
+              AND (:VAR_DATA_INICIO IS NULL OR :VAR_DATA_INICIO='' OR VC.DTREF>=:VAR_DATA_INICIO)
+              AND (:VAR_DATA_FIM IS NULL OR :VAR_DATA_FIM='' OR VC.DTREF<=:VAR_DATA_FIM)
+              AND (:VAR_NATUREZA IS NULL OR :VAR_NATUREZA='' OR FIND_IN_SET(VC.CODNAT,:VAR_NATUREZA))
+              AND (:VAR_CENTRO_RESULTADO IS NULL OR :VAR_CENTRO_RESULTADO='' OR FIND_IN_SET(VC.CODCENCUS,:VAR_CENTRO_RESULTADO))
+            GROUP BY COALESCE(VC.DESCRNAT,'Variação Cambial') ORDER BY VALOR DESC`;
+            } else if (['99991', '99989', '99990', '99988'].includes(codNat)) {
+                let recDesp = (codNat === '99991' || codNat === '99990') ? 1 : -1;
+                let campoValor = (codNat === '99991' || codNat === '99989') ? 'JM.JUROS' : 'JM.MULTA';
+
+                title.textContent = `Títulos: ${nodeDesc}`;
+
+                drillQuery = `
+            SELECT
+                JM.NUFIN AS "Nº Único",
+                DATE_FORMAT(JM.DTREF, '%d/%m/%Y') AS "Data",
+                COALESCE(N.DESCRNAT, CAST(JM.CODNAT AS CHAR)) AS "Natureza",
+                JM.CODCENCUS AS "CR",
+                ${campoValor} AS "Valor"
+            FROM IMP_JUROS_MULTAS JM
+            LEFT JOIN IMP_NATUREZA N ON JM.CODNAT = N.CODNAT
+            WHERE JM.RECDESP = ${recDesp}
+              AND ${campoValor} > 0
+              AND (:VAR_DATA_INICIO IS NULL OR :VAR_DATA_INICIO='' OR JM.DTREF >= :VAR_DATA_INICIO)
+              AND (:VAR_DATA_FIM IS NULL OR :VAR_DATA_FIM='' OR JM.DTREF <= :VAR_DATA_FIM)
+              AND (:VAR_NATUREZA IS NULL OR :VAR_NATUREZA='' OR FIND_IN_SET(JM.CODNAT, :VAR_NATUREZA))
+              AND (:VAR_CENTRO_RESULTADO IS NULL OR :VAR_CENTRO_RESULTADO='' OR FIND_IN_SET(JM.CODCENCUS, :VAR_CENTRO_RESULTADO))
+            ORDER BY JM.DTREF DESC, ${campoValor} DESC`;
+            } else if (codNat === '99993' || codNat === '99992') {
+                // 99993 = Descontos Obtidos | 99992 = Descontos Concedidos
+                title.textContent = `Títulos: ${nodeDesc}`;
+
+                // Baseado na dataQuery: 99993 usa RECDESP = -1 e 99992 usa RECDESP = 1
+                let recDesp = codNat === '99993' ? -1 : 1;
+
+                drillQuery = `
+            SELECT
+                D.NUFIN AS "Nº Único",
+                DATE_FORMAT(D.DTREF, '%d/%m/%Y') AS "Data",
+                COALESCE(N.DESCRNAT, CAST(D.CODNAT AS CHAR)) AS "Natureza",
+                D.CODCENCUS AS "CR",
+                D.VALOR AS "Valor"
+            FROM IMP_DESCONTOS_CONC D
+            LEFT JOIN IMP_NATUREZA N ON D.CODNAT = N.CODNAT
+            WHERE D.RECDESP = ${recDesp}
+              AND (:VAR_DATA_INICIO IS NULL OR :VAR_DATA_INICIO='' OR D.DTREF >= :VAR_DATA_INICIO)
+              AND (:VAR_DATA_FIM IS NULL OR :VAR_DATA_FIM='' OR D.DTREF <= :VAR_DATA_FIM)
+              AND (:VAR_NATUREZA IS NULL OR :VAR_NATUREZA='' OR FIND_IN_SET(D.CODNAT, :VAR_NATUREZA))
+              AND (:VAR_CENTRO_RESULTADO IS NULL OR :VAR_CENTRO_RESULTADO='' OR FIND_IN_SET(D.CODCENCUS, :VAR_CENTRO_RESULTADO))
+            ORDER BY D.DTREF DESC, D.VALOR DESC`;
+            } else if (tipoNorm === 'receita' && (nodeDesc.toUpperCase().includes('RENDIMENTO') || nodeDesc.toUpperCase().includes('RECUPERAÇÃO DE DESPESAS') || nodeDesc.toUpperCase().includes('RECUPERACAO DE DESPESAS'))) {
+                title.textContent = `Títulos: ${nodeDesc}`;
+
+                let natFilter = "1=1";
+                if (nodeId.startsWith('G_')) {
+                    const gId = nodeId.replace('G_', '');
+                    natFilter = `F.CODNAT IN (SELECT CODNAT FROM DRE_GRUPOS_NATUREZAS WHERE ID_GRUPO = ${gId})`;
+                } else if (nodeId.startsWith('S_')) {
+                    const parts = nodeId.split('_');
+                    const sgId = parts[2];
+                    natFilter = `F.CODNAT IN (SELECT CODNAT FROM DRE_GRUPOS_NATUREZAS WHERE ID_SUBGRUPO = ${sgId})`;
+                } else if (nodeId.startsWith('N_')) {
+                    const nId = nodeId.replace('N_', '');
+                    natFilter = `F.CODNAT = ${nId}`;
+                }
+
+                drillQuery = `
+            SELECT 
+                F.NUFIN AS "Nº Único",
+                COALESCE(CAST(F.NURENEG AS CHAR), '-') AS "Nº Reneg.",
+                F.CODPARC AS "Cód. Parceiro",
+                DATE_FORMAT(F.DTNEG, '%d/%m/%Y') AS "Data",
+                RAT.HISTORICO AS "Histórico",
+                ABS(F.VALOR) AS "Valor"
+            FROM IMP_FINANCEIRO_DRE F
+            LEFT JOIN (
+                SELECT NUFIN, SEQUENCIA, MAX(HISTORICO) AS HISTORICO 
+                FROM IMP_ADTI_VGFFINRAT 
+                GROUP BY NUFIN, SEQUENCIA
+            ) RAT ON F.NUFIN = RAT.NUFIN AND F.SEQUENCIA = RAT.SEQUENCIA
+            WHERE (F.RECDESP = -1 OR (F.RECDESP = 1 AND F.NUNOTA IS NULL))
+              AND (:VAR_DATA_INICIO IS NULL OR :VAR_DATA_INICIO='' OR F.DTNEG >= :VAR_DATA_INICIO)
+              AND (:VAR_DATA_FIM IS NULL OR :VAR_DATA_FIM='' OR F.DTNEG <= :VAR_DATA_FIM)
+              AND (:VAR_EMPRESA IS NULL OR :VAR_EMPRESA='' OR FIND_IN_SET(F.CODEMP, :VAR_EMPRESA))
+              AND (:VAR_NATUREZA IS NULL OR :VAR_NATUREZA='' OR FIND_IN_SET(F.CODNAT, :VAR_NATUREZA))
+              AND (:VAR_CENTRO_RESULTADO IS NULL OR :VAR_CENTRO_RESULTADO='' OR FIND_IN_SET(F.CODCENCUS, :VAR_CENTRO_RESULTADO))
+              AND ${natFilter}
+            ORDER BY F.DTNEG DESC, ABS(F.VALOR) DESC`;
+            } else if (tipoNorm === 'receita') {
+                let natFilter = "1=1";
+                if (nodeId.startsWith('G_')) {
+                    const gId = nodeId.replace('G_', '');
+                    natFilter = `C.CODNAT IN (SELECT CODNAT FROM DRE_GRUPOS_NATUREZAS WHERE ID_GRUPO = ${gId})`;
+                } else if (nodeId.startsWith('S_')) {
+                    const parts = nodeId.split('_');
+                    const sgId = parts[2];
+                    natFilter = `C.CODNAT IN (SELECT CODNAT FROM DRE_GRUPOS_NATUREZAS WHERE ID_SUBGRUPO = ${sgId})`;
+                } else if (nodeId.startsWith('N_')) {
+                    const nId = nodeId.replace('N_', '');
+                    natFilter = `C.CODNAT = ${nId}`;
+                }
+
+                drillQuery = `
+            SELECT COALESCE(G.DESCRGRUPOPROD,'Sem Grupo') AS GRUPO,
+                   SUM(ABS(ITE.VLRTOT-ITE.VLRDESC+ITE.VLRIPI+ITE.VLRSUBST)) AS VALOR
+            FROM IMP_IMP_CAB C JOIN IMP_IMP_TOP T ON C.CODTIPOPER=T.CODTIPOPER AND C.DHTIPOPER=T.DHALTER
+            JOIN IMP_IMP_ITE ITE ON C.NUNOTA=ITE.NUNOTA
+            LEFT JOIN IMP_GRUPOPRODUTOS G ON ITE.GRUPO=G.CODGRUPOPROD
+            WHERE T.GOLSINAL=-1 AND C.TIPMOV='V' AND C.STATUSNOTA='L'
+              AND (:VAR_DATA_INICIO IS NULL OR :VAR_DATA_INICIO='' OR C.DTNEG>=:VAR_DATA_INICIO)
+              AND (:VAR_DATA_FIM IS NULL OR :VAR_DATA_FIM='' OR C.DTNEG<=:VAR_DATA_FIM)
+              AND (:VAR_NATUREZA IS NULL OR :VAR_NATUREZA='' OR FIND_IN_SET(C.CODNAT,:VAR_NATUREZA))
+              AND (:VAR_CENTRO_RESULTADO IS NULL OR :VAR_CENTRO_RESULTADO='' OR FIND_IN_SET(C.CODCENCUS,:VAR_CENTRO_RESULTADO))
+              AND ${natFilter}
+            GROUP BY G.DESCRGRUPOPROD ORDER BY VALOR DESC`;
+
+            } else if (tipoNorm === 'despesa') {
+                title.textContent = `Títulos da Despesa: ${nodeDesc}`;
+
+                let natFilter = "1=1";
+                if (nodeId === 'G_UNLINKED') {
+                    natFilter = `F.CODNAT NOT IN (SELECT CODNAT FROM DRE_GRUPOS_NATUREZAS)`;
+                } else if (nodeId.startsWith('G_')) {
+                    const gId = nodeId.replace('G_', '');
+                    natFilter = `F.CODNAT IN (SELECT CODNAT FROM DRE_GRUPOS_NATUREZAS WHERE ID_GRUPO = ${gId})`;
+                } else if (nodeId.startsWith('S_')) {
+                    const parts = nodeId.split('_');
+                    const sgId = parts[2];
+                    natFilter = `F.CODNAT IN (SELECT CODNAT FROM DRE_GRUPOS_NATUREZAS WHERE ID_SUBGRUPO = ${sgId})`;
+                } else if (nodeId.startsWith('N_')) {
+                    const nId = nodeId.replace('N_', '');
+                    natFilter = `F.CODNAT = ${nId}`;
+                }
+
+                drillQuery = `
+            SELECT 
+                F.NUFIN AS "Nº Único",
+                COALESCE(CAST(F.NURENEG AS CHAR), '-') AS "Nº Reneg.",
+                F.CODPARC AS "Cód. Parceiro",
+                DATE_FORMAT(F.DTNEG, '%d/%m/%Y') AS "Data",
+                RAT.HISTORICO AS "Histórico",
+                (F.VALOR * F.RECDESP * -1) AS "Valor"
+            FROM IMP_FINANCEIRO_DRE F
+            LEFT JOIN (
+                SELECT NUFIN, SEQUENCIA, MAX(HISTORICO) AS HISTORICO 
+                FROM IMP_ADTI_VGFFINRAT 
+                GROUP BY NUFIN, SEQUENCIA
+            ) RAT ON F.NUFIN = RAT.NUFIN AND F.SEQUENCIA = RAT.SEQUENCIA
+            WHERE (F.RECDESP = -1 OR (F.RECDESP = 1 AND F.NUNOTA IS NULL))
+              AND F.CODNAT NOT IN (1101001, 1103005, 1103006, 1102001, 1102002)
+              AND (:VAR_DATA_INICIO IS NULL OR :VAR_DATA_INICIO='' OR F.DTNEG >= :VAR_DATA_INICIO)
+              AND (:VAR_DATA_FIM IS NULL OR :VAR_DATA_FIM='' OR F.DTNEG <= :VAR_DATA_FIM)
+              AND (:VAR_EMPRESA IS NULL OR :VAR_EMPRESA='' OR FIND_IN_SET(F.CODEMP, :VAR_EMPRESA))
+              AND (:VAR_NATUREZA IS NULL OR :VAR_NATUREZA='' OR FIND_IN_SET(F.CODNAT, :VAR_NATUREZA))
+              AND (:VAR_CENTRO_RESULTADO IS NULL OR :VAR_CENTRO_RESULTADO='' OR FIND_IN_SET(F.CODCENCUS, :VAR_CENTRO_RESULTADO))
+              AND ${natFilter}
+            ORDER BY F.DTNEG DESC, (F.VALOR * F.RECDESP * -1) DESC`;
+            } else if (codNat === '99996') {
+                title.textContent = `Detalhes da Depreciação: ${nodeDesc}`;
+                drillQuery = `
+            SELECT
+                AUTO_ID AS "ID",
+                DATE_FORMAT(REFERENCIA, '%d/%m/%Y') AS "Período",
+                VALOR AS "Valor"
+            FROM IMP_DEPRECIACAO
+            WHERE (:VAR_DATA_INICIO IS NULL OR :VAR_DATA_INICIO='' OR REFERENCIA >= :VAR_DATA_INICIO)
+              AND (:VAR_DATA_FIM IS NULL OR :VAR_DATA_FIM='' OR REFERENCIA <= :VAR_DATA_FIM)
+            ORDER BY REFERENCIA DESC, VALOR DESC`;
+            } else {
+                drillQuery = `
+            SELECT COALESCE(G.DESCRGRUPOPROD,'Sem Grupo') AS GRUPO,
+                   SUM(ABS(ITE.VLRTOT-ITE.VLRDESC+ITE.VLRIPI+ITE.VLRSUBST)) AS VALOR
+            FROM IMP_IMP_CAB C JOIN IMP_IMP_ITE ITE ON C.NUNOTA=ITE.NUNOTA
+            LEFT JOIN IMP_GRUPOPRODUTOS G ON ITE.GRUPO=G.CODGRUPOPROD
+            WHERE C.CODNAT='${codNat}' AND C.STATUSNOTA='L'
+              AND (:VAR_DATA_INICIO IS NULL OR :VAR_DATA_INICIO='' OR C.DTNEG>=:VAR_DATA_INICIO)
+              AND (:VAR_DATA_FIM IS NULL OR :VAR_DATA_FIM='' OR C.DTNEG<=:VAR_DATA_FIM)
+              AND (:VAR_EMPRESA IS NULL OR :VAR_EMPRESA='' OR FIND_IN_SET(C.CODEMP,:VAR_EMPRESA))
+            GROUP BY G.DESCRGRUPOPROD ORDER BY VALOR DESC`;
+            }
+
+            try {
+                const result = await queryMitra({ query: drillQuery, jdbcId });
+                loader.classList.add('hidden');
+                if (result && result.data && result.data.length > 0) {
+                    table.classList.remove('hidden');
+
+                    // Render Headers Dinamicamente
+                    let theadHtml = '<tr>';
+                    result.headers.forEach(h => {
+                        const align = h.name.toUpperCase() === 'VALOR' ? 'text-right' : 'text-left';
+                        theadHtml += `<th class="${align}">${h.name}</th>`;
+                    });
+                    theadHtml += '</tr>';
+                    document.querySelector('#drill-table thead').innerHTML = theadHtml;
+
+                    // Render Body Dinamicamente
+                    let tbodyHtml = '';
+                    let total = 0;
+                    const valIndex = result.headers.findIndex(h => h.name.toUpperCase() === 'VALOR');
+
+                    result.data.forEach(row => {
+                        tbodyHtml += '<tr class="transition-colors">';
+                        row.forEach((cell, idx) => {
+                            if (idx === valIndex) {
+                                const valor = parseFloat(cell) || 0;
+                                total += valor;
+                                tbodyHtml += `<td class="text-right font-mono">${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
+                            } else {
+                                tbodyHtml += `<td>${cell || ''}</td>`;
+                            }
+                        });
+                        tbodyHtml += '</tr>';
+                    });
+
+                    // Render Footer (Total)
+                    tbodyHtml += '<tr>';
+                    result.headers.forEach((h, idx) => {
+                        if (idx === 0) {
+                            tbodyHtml += '<td><strong>TOTAL</strong></td>';
+                        } else if (idx === valIndex) {
+                            tbodyHtml += `<td class="text-right font-mono"><strong>${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></td>`;
+                        } else {
+                            tbodyHtml += '<td></td>';
+                        }
+                    });
+                    tbodyHtml += '</tr>';
+
+                    tbody.innerHTML = tbodyHtml;
+
+                } else {
+                    empty.classList.remove('hidden');
+                }
+            } catch (e) {
+                console.error("Erro ao buscar dados por grupo:", e);
+                loader.classList.add('hidden');
+                empty.textContent = "Erro ao carregar os dados. Verifique o console.";
+                empty.classList.remove('hidden');
+            }
+        };
+
+        function exportModalToExcel() {
+            const tableEl = document.getElementById('drill-table');
+            const title = document.getElementById('drill-modal-title').textContent || 'Drilldown_Export';
+
+            if (!tableEl || tableEl.classList.contains('hidden')) {
+                alert('Não há dados para exportar.');
+                return;
+            }
+
+            // Usa a função readTable passando o ID da tabela do modal
+            const { headers, rows } = readTable('drill-table');
+
+            if (rows.length === 0) {
+                alert('Não há dados para exportar.');
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+
+            // Define larguras de coluna para melhor visualização
+            const colWidths = headers.map((h, i) => ({
+                wch: i === 0 ? 45 : 18
+            }));
+            ws['!cols'] = colWidths;
+
+            XLSX.utils.book_append_sheet(wb, ws, 'Detalhes');
+            XLSX.writeFile(wb, `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.xlsx`);
+        }
+
+        async function exportModalToPDF() {
+            const table = document.getElementById('drill-table');
+            const title = document.getElementById('drill-modal-title').textContent || 'Análise Detalhada';
+            const btn = document.getElementById('modal-export-pdf-btn');
+            const orig = btn.innerHTML;
+            if (!table || table.classList.contains('hidden')) { alert('Não há dados para exportar.'); return; }
+            btn.disabled = true;
+            btn.innerHTML = `<svg class="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>`;
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+                const margin = 15;
+
+                pdf.setFontSize(14);
+                pdf.text(title, margin, margin);
+
+                // ✅ autoTable é injetado na instância do pdf pelo plugin
+                if (typeof pdf.autoTable === 'function') {
+                    pdf.autoTable({ html: '#drill-table', startY: margin + 8 });
+                } else {
+                    // Fallback via html2canvas caso o plugin não esteja disponível
+                    const canvas = await html2canvas(table, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+                    const imgW = pdf.internal.pageSize.getWidth() - margin * 2;
+                    const imgH = (canvas.height * imgW) / canvas.width;
+                    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin, margin + 8, imgW, imgH);
+                }
+
+                pdf.save(`${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`);
+            } catch (e) {
+                console.error(e);
+                alert("Erro ao gerar PDF.");
+            } finally {
+                btn.innerHTML = orig;
+                btn.disabled = false;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const loader = document.getElementById('loader');
+            const tableWrapper = document.getElementById('table-wrapper');
+            const componentHeader = document.getElementById('component-header');
+            const exportBtn = document.getElementById('export-btn');
+            const exportPdfBtn = document.getElementById('export-pdf-btn');
+            const refreshBtn = document.getElementById('refresh-btn');
+            const tbody = document.getElementById('dre-tbody');
+            const container = document.getElementById('dre-container');
+            const modalExportPdfBtn = document.getElementById('modal-export-pdf-btn');
+            const modalExportExcelBtn = document.getElementById('modal-export-excel-btn');
+
+            loader.classList.remove('hidden');
+
+            const MONTHS = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+            const TOTAL_COL = 'TOTAL_ANO';
+            const ALL_COLS = [...MONTHS, TOTAL_COL];
+            const COL_TO_DATA = { SET: 'SETEMBRO', OUT: 'OUTUBRO' };
+            const dataColName = (col) => COL_TO_DATA[col] || col;
+            const fmt = (v) => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const iconPlus = () => `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+            const iconMinus = () => `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+
+            function exportToExcel() {
+                // Usa a função auxiliar que já sabe ler e converter os números da tabela
+                const { headers, rows } = readTable('table-wrapper');
+                if (rows.length === 0) {
+                    alert('Não há dados para exportar.');
+                    return;
+                }
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+
+                // Define larguras de coluna para melhor visualização
+                const colWidths = headers.map((h, i) => ({
+                    wch: i === 0 ? 45 : 18 // Coluna de descrição mais larga
+                }));
+                ws['!cols'] = colWidths;
+
+                XLSX.utils.book_append_sheet(wb, ws, 'DRE_Gerencial');
+                XLSX.writeFile(wb, 'DRE_Gerencial.xlsx');
+            }
+
+            async function exportToPDF() {
+                const btn = document.getElementById('export-pdf-btn');
+                const orig = btn.innerHTML;
+                btn.innerHTML = `<svg class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg> Gerando…`;
+                btn.disabled = true;
+                const tw = document.getElementById('table-wrapper');
+                const origScroll = tw.scrollLeft;
+                tw.scrollLeft = 0;
+                try {
+                    const canvas = await html2canvas(document.getElementById('dre-table'), {
+                        scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff',
+                        logging: false, scrollX: 0, scrollY: 0,
+                        width: document.getElementById('dre-table').scrollWidth,
+                        height: document.getElementById('dre-table').scrollHeight
+                    });
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+                    const imgW = 297, pageH = 210;
+                    let imgH = (canvas.height * imgW) / canvas.width;
+                    let heightLeft = imgH, pos = 0;
+                    pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, pos, imgW, imgH);
+                    heightLeft -= pageH;
+                    while (heightLeft >= 0) {
+                        pos = heightLeft - imgH;
+                        pdf.addPage();
+                        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, pos, imgW, imgH);
+                        heightLeft -= pageH;
+                    }
+                    pdf.save('DRE_Gerencial.pdf');
+                } catch (e) {
+                    console.error(e); alert("Erro ao gerar PDF.");
+                } finally {
+                    btn.innerHTML = orig; btn.disabled = false; tw.scrollLeft = origScroll;
+                }
+            }
+
+            exportBtn.addEventListener('click', exportToExcel);
+            exportPdfBtn.addEventListener('click', exportToPDF);
+            if (modalExportPdfBtn) modalExportPdfBtn.addEventListener('click', exportModalToPDF);
+            if (modalExportExcelBtn) modalExportExcelBtn.addEventListener('click', exportModalToExcel);
+
+            refreshBtn.addEventListener('click', () => loadAndRenderDRE());
+
+            tbody.addEventListener('click', (e) => {
+                const toggler = e.target.closest('[data-toggle-id]');
+                if (!toggler) return;
+                const groupId = toggler.dataset.toggleId;
+                const children = document.querySelectorAll(`tr[data-parent-id='${groupId}']`);
+                if (!children.length) return;
+                const isExpanding = children[0].classList.contains('hidden');
+                const icon = toggler.querySelector('.toggle-icon');
+                children.forEach(child => {
+                    child.classList.toggle('hidden');
+                    if (!isExpanding) {
+                        document.querySelectorAll(`tr[data-parent-id='${child.dataset.id}']`).forEach(gc => gc.classList.add('hidden'));
+                        const ci = child.querySelector('.toggle-icon');
+                        if (ci) ci.innerHTML = iconPlus();
+                    }
+                });
+                if (icon) icon.innerHTML = isExpanding ? iconMinus() : iconPlus();
+            });
+
+            async function loadAndRenderDRE() {
+                try {
+                    loader.classList.remove('hidden');
+                    tableWrapper.classList.add('hidden');
+                    componentHeader.classList.add('hidden');
+                    tbody.innerHTML = '';
+
+                    if (!window.componentData?.structureQuery || !window.componentData?.dataQuery || !window.componentData?.jdbcId) {
+                        throw new Error("Variáveis de configuração (structureQuery, dataQuery, jdbcId) não encontradas.");
+                    }
+
+                    const jdbcId = parseInt(window.componentData.jdbcId, 10);
+                    const [structureResult, dataResult] = await Promise.all([
+                        queryMitra({ query: window.componentData.structureQuery, jdbcId }),
+                        queryMitra({ query: window.componentData.dataQuery, jdbcId }),
+                    ]);
+
+                    const dataMap = new Map();
+                    const dataHeaders = dataResult.headers.map(h => h.name.toUpperCase());
+                    const dataIdIdx = dataHeaders.indexOf('ID');
+                    if (dataIdIdx === -1) throw new Error("A 'dataQuery' deve retornar uma coluna 'ID'.");
+                    dataResult.data.forEach(row => {
+                        const obj = {};
+                        dataHeaders.forEach((h, i) => { obj[h] = row[i]; });
+                        dataMap.set(String(obj.ID), obj);
+                    });
+
+                    const sHeaders = structureResult.headers.map(h => h.name.toUpperCase());
+                    const cm = {
+                        ID: sHeaders.indexOf('ID'), DESCRICAO: sHeaders.indexOf('DESCRICAO'), PAI: sHeaders.indexOf('PAI'),
+                        IS_GROUP: sHeaders.indexOf('IS_GROUP'), TIPO: sHeaders.indexOf('TIPO'), ORDEM: sHeaders.indexOf('ORDEM'),
+                        FORMULA: sHeaders.indexOf('FORMULA'),
+                    };
+                    ['ID', 'DESCRICAO', 'PAI', 'IS_GROUP', 'TIPO'].forEach(col => {
+                        if (cm[col] === -1) throw new Error(`structureQuery deve retornar a coluna: ${col}`);
+                    });
+
+                    const nodes = new Map();
+                    const rootNodes = [];
+                    structureResult.data.forEach(row => {
+                        const node = {
+                            id: String(row[cm.ID]), descricao: row[cm.DESCRICAO],
+                            pai: row[cm.PAI] != null ? String(row[cm.PAI]) : null,
+                            isGroup: row[cm.IS_GROUP] == '1' || row[cm.IS_GROUP] === true,
+                            tipo: row[cm.TIPO] || 'Despesa',
+                            ordem: cm.ORDEM !== -1 ? (Number(row[cm.ORDEM]) || 0) : 0,
+                            formula: cm.FORMULA !== -1 && row[cm.FORMULA] ? String(row[cm.FORMULA]).trim() : null,
+                            children: [], values: {}, _calculated: false
+                        };
+                        ALL_COLS.forEach(c => { node.values[c] = 0; });
+                        nodes.set(node.id, node);
+                    });
+
+                    nodes.forEach(node => {
+                        if (node.pai && nodes.has(node.pai)) nodes.get(node.pai).children.push(node);
+                        else rootNodes.push(node);
+                    });
+
+                    const markDrillDown = (node, isTargetGroup, isDevolucaoGroup = false) => {
+                        const desc = (node.descricao || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                        const tipoNorm = (node.tipo || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+                        // NOVA LÓGICA: Identifica devoluções de forma precisa.
+                        // 1. Herda do pai (isDevolucaoGroup)
+                        // 2. É um Grupo (G_) ou Subgrupo (S_) que contém a palavra DEVOLUCAO
+                        // 3. O nome é exatamente "DEVOLUCOES DE VENDAS" ou variações.
+                        // Isso evita falsos positivos com naturezas de despesa como "IMP-LAVAGEM E DEVOLUCAO CONTEINER"
+                        const isNowDevolucao = isDevolucaoGroup ||
+                            (desc.includes('DEVOLUCAO') && (node.id.startsWith('G_') || node.id.startsWith('S_'))) ||
+                            desc === 'DEVOLUCOES DE VENDAS' ||
+                            desc === 'DEVOLUCAO DE VENDAS';
+
+                        const isExcluded = node.id.startsWith('IMP_') || node.id === 'N_CREDITO_PRESUMIDO' || node.id === 'N_99996' || node.id === 'CALC_CSLL' || node.id === 'CALC_IRPJ';
+
+                        const isNowTargetGroup = isTargetGroup || tipoNorm === 'receita' ||
+                            desc.includes('RECEITA OPERACIONAL BRUTA') || desc.includes('DEDUCOES') ||
+                            desc.includes('CUSTO DA MERCADORIA') ||
+                            desc.includes('VARIACAO CAMBIAL') ||
+                            isNowDevolucao;
+
+                        node.isDevolucao = isNowDevolucao;
+                        delete node.canDrillDown;
+
+                        if (!node.isGroup && isNowTargetGroup && !isExcluded) node.canDrillDown = true;
+
+                        if (tipoNorm === 'despesa' && !isExcluded) {
+                            node.canDrillDown = true;
+                        }
+
+                        node.children.forEach(c => markDrillDown(c, isNowTargetGroup, isNowDevolucao));
+                    };
+                    rootNodes.forEach(n => markDrillDown(n, false, false));
+
+                    nodes.forEach(node => {
+                        if (!node.isGroup) {
+                            const d = dataMap.get(node.id);
+                            if (d) {
+                                MONTHS.forEach(m => { node.values[m] = parseFloat(d[dataColName(m).toUpperCase()]) || 0; });
+                                node.values[TOTAL_COL] = parseFloat(d[TOTAL_COL]) || 0;
+                            }
+                            node._calculated = true;
+                        }
+                    });
+
+                    const findNodeByRef = (refId) => nodes.get('G_' + refId) || nodes.get(String(refId));
+
+                    const aggregateGroup = (node) => {
+                        if (node._calculated) return;
+                        if (!node.isGroup || node.formula) { node._calculated = true; return; }
+                        node.children.forEach(child => aggregateGroup(child));
+                        ALL_COLS.forEach(col => {
+                            node.values[col] = node.children.reduce((sum, child) => {
+                                if (child.descricao && child.descricao.toUpperCase().includes('ICMS RET S/ VENDAS E TRANSFERENCI')) return sum;
+                                return sum + (child.values[col] || 0);
+                            }, 0);
+                        });
+                        node._calculated = true;
+                    };
+                    nodes.forEach(node => { if (node.isGroup && !node.formula) aggregateGroup(node); });
+
+                    let formulaNodes = Array.from(nodes.values()).filter(n => n.formula);
+                    let safetyCounter = 0;
+                    const MAX_ITERATIONS = formulaNodes.length + 5;
+                    while (formulaNodes.length > 0 && safetyCounter < MAX_ITERATIONS) {
+                        let solvedInThisPass = false;
+                        for (let i = formulaNodes.length - 1; i >= 0; i--) {
+                            const node = formulaNodes[i];
+                            const deps = (node.formula.match(/\[(\d+)\]/g) || []).map(m => m.replace(/[\[\]]/g, ''));
+                            const allDepsReady = deps.every(depId => {
+                                const depNode = findNodeByRef(depId);
+                                return depNode && depNode._calculated;
+                            });
+                            if (allDepsReady) {
+                                ALL_COLS.forEach(col => {
+                                    const expr = node.formula.replace(/\[(\d+)\]/g, (_, id) => {
+                                        const target = findNodeByRef(id);
+                                        return target ? `(${target.values[col] || 0})` : '(0)';
+                                    });
+                                    try {
+                                        const safeExpr = expr.replace(/[^-()\d/*+.]/g, '');
+                                        const result = new Function(`"use strict"; return ${safeExpr};`)();
+                                        node.values[col] = isFinite(result) ? result : 0;
+                                    } catch (e) { node.values[col] = 0; }
+                                });
+                                node._calculated = true;
+                                formulaNodes.splice(i, 1);
+                                solvedInThisPass = true;
+                            }
+                        }
+                        if (!solvedInThisPass && formulaNodes.length > 0) {
+                            throw new Error(`Dependência circular nos nós: ${formulaNodes.map(n => n.id).join(', ')}`);
+                        }
+                        safetyCounter++;
+                    }
+
+                    const allNodesList = Array.from(nodes.values());
+                    const findNodeByText = (terms) => allNodesList.find(n => {
+                        if (!n.descricao) return false;
+                        const d = n.descricao.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                        return terms.some(t => d.includes(t.toUpperCase()));
+                    });
+                    const lairNode = findNodeByText(['LAIR', 'LUCRO ANTES', 'RESULTADO ANTES DOS TRIBUTOS']);
+                    const creditoPresumidoNode = findNodeByText(['CREDITO PRESUMIDO']);
+                    const irpjNode = findNodeByText(['IRPJ']);
+                    const csllNode = findNodeByText(['CSLL']);
+                    const lucroLiquidoNode = findNodeByText(['LUCRO LÍQUIDO', 'LUCRO LIQUIDO', 'RESULTADO LÍQUIDO', 'RESULTADO LIQUIDO']);
+
+                    if (lairNode && irpjNode && csllNode) {
+                        ALL_COLS.forEach(col => {
+                            const cpVal = creditoPresumidoNode ? Math.abs(creditoPresumidoNode.values[col] || 0) : 0;
+                            const base = (lairNode.values[col] || 0) - cpVal;
+
+                            irpjNode.values[col] = base > 250000 ? base * 0.24 : base > 0 ? base * 0.15 : 0;
+                            csllNode.values[col] = base > 0 ? base * 0.09 : 0;
+
+                            // Atualiza o Lucro Líquido diminuindo IRPJ e CSLL do LAIR
+                            if (lucroLiquidoNode) {
+                                lucroLiquidoNode.values[col] = (lairNode.values[col] || 0) - irpjNode.values[col] - csllNode.values[col];
+                            }
+                        });
+
+                        irpjNode._calculated = true;
+                        csllNode._calculated = true;
+
+                        if (lucroLiquidoNode) {
+                            lucroLiquidoNode._calculated = true;
+                            lucroLiquidoNode.formula = null; // Remove a fórmula para não ser sobrescrito pelo motor
+                        }
+
+                        nodes.forEach(node => {
+                            if (node.id !== irpjNode.id && node.id !== csllNode.id && node.id !== (lucroLiquidoNode ? lucroLiquidoNode.id : '') && (node.isGroup || node.formula))
+                                node._calculated = false;
+                        });
+                        nodes.forEach(node => { if (node.isGroup && !node.formula && !node._calculated) aggregateGroup(node); });
+                    }
+
+                    const rolNode = findNodeByText(['RECEITA OPERACIONAL LÍQUIDA', 'RECEITA LIQUIDA', 'ROL', 'RECEITA OPERACIONAL LIQUIDA TOTAL']);
+
+                    const getAV = (val, col) => {
+                        if (!rolNode || !rolNode.values[col]) return '0,00%';
+                        const rolVal = rolNode.values[col];
+                        if (rolVal === 0) return '0,00%';
+                        return ((val / rolVal) * 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+                    };
+
+                    let html = '';
+                    const renderNode = (node, level, parentId = null) => {
+                        const hasChildren = node.isGroup && node.children.length > 0;
+                        const tipoNorm = (node.tipo || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                        const padStyle = `padding-left:${level > 0 ? 8 + (level - 1) * 22 : 4}px`;
+                        let rowCls = 'border-b border-border transition-colors duration-100';
+                        if (parentId) rowCls += ' hidden';
+                        if (node.isGroup) {
+                            rowCls += ' font-bold';
+                            rowCls += tipoNorm === 'receita' ? ' bg-[hsl(var(--receita-bg))]'
+                                : tipoNorm === 'calculo' ? ' bg-[hsl(var(--calculo-bg))]'
+                                    : ' bg-[hsl(var(--despesa-bg))]';
+                            rowCls += ' hover:bg-[hsl(var(--grupo-hover))]';
+                        }
+                        const valCls = tipoNorm === 'receita' ? 'valor-receita'
+                            : tipoNorm === 'calculo' ? 'valor-calculo'
+                                : 'valor-despesa';
+                        const totalCls = tipoNorm === 'receita' ? 'total-receita'
+                            : tipoNorm === 'calculo' ? 'total-geral'
+                                : valCls;
+
+                        html += `
+                    <tr data-id="${node.id}" data-type="${node.tipo}" ${parentId ? `data-parent-id="${parentId}"` : ''} class="${rowCls}">
+                        <td class="p-3 border-r border-border/30">
+                            <div class="flex items-center" style="${padStyle}">
+                                ${hasChildren
+                                ? `<button data-toggle-id="${node.id}" class="mr-2.5 p-1 rounded-md hover:bg-black/8 transition-colors flex-shrink-0"><span class="toggle-icon">${iconPlus()}</span></button>`
+                                : `<span class="inline-block w-8 mr-2.5 flex-shrink-0"></span>`}
+                                <span class="${node.isGroup ? 'font-semibold' : 'text-foreground/90'} text-[0.82rem]">${node.descricao}</span>
+                                ${node.canDrillDown ? `<button onclick="openDrillModal('${node.id}','${node.descricao.replace(/'/g, "\\'")}', '${node.tipo}', ${node.isDevolucao ? 'true' : 'false'})" class="drill-btn ml-2 flex-shrink-0" title="Ver detalhes"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>` : ''}
+                            </div>
+                        </td>
+                        ${MONTHS.map(m => `
+                            <td class="px-4 py-2.5 text-right text-[0.78rem] ${valCls}">${fmt(node.values[m])}</td>
+                            <td class="px-2 py-2.5 text-right text-[0.7rem] text-gray-400/80">${getAV(node.values[m], m)}</td>
+                        `).join('')}
+                        <td class="px-4 py-2.5 text-right text-[0.78rem] ${totalCls}">${fmt(node.values[TOTAL_COL])}</td>
+                        <td class="px-2 py-2.5 text-right text-[0.7rem] text-gray-400/80 font-bold">${getAV(node.values[TOTAL_COL], TOTAL_COL)}</td>
+                    </tr>`;
+
+                        if (hasChildren) {
+                            node.children.sort((a, b) => a.ordem - b.ordem).forEach(child => renderNode(child, level + 1, node.id));
+                        }
+                    };
+
+                    rootNodes.sort((a, b) => a.ordem - b.ordem).forEach(n => renderNode(n, 0));
+                    tbody.innerHTML = html;
+
+                    loader.classList.add('hidden');
+                    tableWrapper.classList.remove('hidden');
+                    componentHeader.classList.remove('hidden');
+
+                } catch (error) {
+                    console.error("Erro ao construir DRE:", error);
+                    loader.classList.add('hidden');
+                    componentHeader.classList.add('hidden');
+                    container.innerHTML = `
+                <div class="p-10 text-center h-full flex items-center justify-center" style="color:#b91c1c; background:#fef2f2;">
+                    <div>
+                        <p class="text-xl font-bold mb-2">Erro Crítico</p>
+                        <p class="text-sm">${error.message}</p>
+                    </div>
+                </div>`;
+                }
+            }
+
+            document.body.addEventListener(MITRA_UPDATE_EVENT_NAME, () => loadAndRenderDRE());
+
+            const waitForMitraAndInit = () => {
+                const start = Date.now();
+                const timer = setInterval(() => {
+                    if (window.componentData?.structureQuery && window.componentData?.dataQuery) {
+                        clearInterval(timer);
+                        loadAndRenderDRE();
+                    } else if (Date.now() - start > 5000) {
+                        clearInterval(timer);
+                        container.innerHTML = `
+                    <div class="p-10 text-center h-full flex items-center justify-center" style="color:#b91c1c; background:#fef2f2;">
+                        <div>
+                            <p class="text-xl font-bold mb-2">Erro Crítico</p>
+                            <p class="text-sm">Configurações do componente não foram carregadas.</p>
+                        </div>
+                    </div>`;
+                    }
+                }, 100);
+            };
+
+            waitForMitraAndInit();
+        });
+    </script>
+</body>
+
+</html>

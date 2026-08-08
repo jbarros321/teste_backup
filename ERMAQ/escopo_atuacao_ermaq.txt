@@ -1,0 +1,45 @@
+ESCOPO DE ATUACAO: AUTOMATIZACAO DE ESTOQUE E GESTAO DE RETALHOS (ERMAQ)
+
+Este documento detalha as etapas necessarias para a transicao do sistema de controle de estoque baseado em unidades fixas (Unidades Alternativas) para o novo modelo de Medida Dinamica, garantindo maior flexibilidade operacional e precisao nos saldos de retalho.
+
+1. OBJETIVO DO PROJETO
+Eliminar a dependencia de cadastros fixos na aba "Unidades Alternativas" do Sankhya, permitindo que o calculo de consumo e sobra de chapas/barras seja feito com base no valor de calculo digitado pelo usuario no momento da nota.
+
+2. O QUE MUDOU NO PROCESSO?
+- Antes: Era necessario que cada chapa tivesse um cadastro de unidade alternativa (ex: 1 UN = 6 metros). Se a chapa fosse diferente, o processo parava ou errava.
+- Agora: O sistema ignora a unidade alternativa. Ele le o campo de calculo preenchido pelo usuario (ex: se o usuario digitar 1.6 no campo da medida, o sistema entende que aquela peca tem 1,6 metros e calcula a sobra automaticamente).
+
+3. PLANEJAMENTO DE TEMPO (TOTAL 8 HORAS)
+
+| Atividade | Descricao | Esforco Est. |
+| :--- | :--- | :--- |
+| Implantacao Tecnica | Instalacao da nova classe Java (RealizaMovimentosEstoqueSemVOA) no ambiente de testes/producao do Sankhya | 1 Hora |
+| Testes de Compra | Lancamento de notas de compra para validar se as quantidades continuam sendo distribuidas corretamente entre os campos AD_... | 2 Horas |
+| Testes de Retalho CORE | Testes de venda e movimentacao interna com medidas variadas (ex: chapa de 1.6m, venda de 1.0m) para validar se o retalho de sobra (0.6m) e gerado corretamente sem erros | 3 Horas |
+| Auditoria de Logs | Verificacao das tabelas de log (AD_DETACAOLOG) para garantir que o robo esta registrando cada passo sem interrupcoes | 1 Hora |
+| Ajustes e Formalizacao | Revisao final dos saldos e entrega da documentacao de uso aos operadores | 1 Hora |
+
+4. ROTEIRO DE TESTES (NAO TECNICO)
+Para validar se a entrega esta correta, realize os seguintes passos no sistema:
+
+1. Lancamento de Nota de Compra:
+- Escolha um produto que controla retalho.
+- Digite uma medida no campo de calculo correspondente (ex: no campo de 6000mm, digite 1.8).
+- Confirme a nota e verifique se o estoque "Inteiro" entrou com a medida correta.
+
+2. Processamento de Venda/Uso:
+- Realize uma venda parcial dessa medida.
+- Execute a acao agendada (Ação de Movimentos de Estoque).
+- Criterio de Sucesso: O sistema deve dar baixa na peca "Inteira" e gerar um novo item de estoque do tipo "Retalho" com a medida exatamente igual a sobra matematica.
+
+3. Verificacao de Inventario:
+- Acesse o portal de estoque e confirme se os saldos de pecas inteiras e retalhos batem 100% com a realidade fisica.
+
+5. RESULTADOS ESPERADOS
+- Agilidade: Nao e mais necessario cadastrar novas unidades para chapas de tamanhos atipicos.
+- Precisao: O estoque de retalho passa a ser gerado fielmente ao que foi digitado na nota, sem aproximacoes.
+- Autonomia: O usuario final tem controle total sobre o fator de conversao de cada item.
+
+---
+Documento gerado em: 01/04/2026
+Status: Sera refatorado o Java nos pontos de unidade alternativa que ja foram mapeados na rotina que gera as requisicoes. Apos essa refatoracao, o sistema estara pronto para os testes e homologacao final.

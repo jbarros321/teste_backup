@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>DOCUMENTACAO_FUNCIONAL_COMPLETA</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<h1 id="documentação-unificada-completa---guaranamineiro">Documentação
+Unificada Completa - GuaranaMineiro</h1>
+<h2 id="visão-geral-do-projeto">Visão Geral do Projeto</h2>
+<p>O projeto <strong>GuaranaMineiro</strong> é um sistema de integração
+completo entre o Sankhya e a plataforma Performaxxi, implementando três
+módulos principais para automatizar processos logísticos e de
+comunicação.</p>
+<h3 id="objetivo-principal">Objetivo Principal</h3>
+<ul>
+<li><strong>Automatizar</strong> a troca de informações entre Sankhya e
+Performaxxi</li>
+<li><strong>Melhorar a eficiencia</strong> operacional e a
+rastreabilidade de entregas e recebimentos</li>
+<li><strong>Fornecer ferramentas</strong> para monitoramento e solução
+de problemas</li>
+</ul>
+<h2 id="módulos-do-sistema">Módulos do Sistema</h2>
+<h3 id="ação-agendada---comprovantes-de-entrega">1. Ação Agendada -
+Comprovantes de Entrega</h3>
+<ul>
+<li><strong>Classe</strong>: <code>ComprovantesEntrega.java</code></li>
+<li><strong>Funcionalidade</strong>: Consulta automática de comprovantes
+de entrega via API Performaxxi</li>
+<li><strong>Agendamento</strong>: Execução diária para buscar
+comprovantes de veículos com ordem de carga</li>
+<li><strong>Documentação</strong>: <a
+href="./acaoAgendada/DOCUMENTACAO_FUNCIONAL.md">DOCUMENTACAO_FUNCIONAL.md</a></li>
+</ul>
+<p><strong>Características Técnicas</strong>: - Implementa
+<code>ScheduledAction</code> do Sankhya - Consulta veículos com ordem de
+carga do dia atual - Salva comprovantes na tabela
+<code>AD_COMPROVANTES</code> - Sistema de logs e notificação por email
+em caso de erro</p>
+<h3 id="botão-de-ação---integração-de-pedidos">2. Botão de Ação -
+Integração de Pedidos</h3>
+<ul>
+<li><strong>Classe</strong>: <code>IntegraPerformaxxi.java</code></li>
+<li><strong>Funcionalidade</strong>: Envio manual de pedidos para
+otimização de rotas</li>
+<li><strong>Interface</strong>: Botao de acao no Sankhya com parametros
+configuraveis</li>
+<li><strong>Documentação</strong>: <a
+href="./botaoAcao/DOCUMENTACAO_FUNCIONAL.md">DOCUMENTACAO_FUNCIONAL.md</a></li>
+</ul>
+<p><strong>Características Técnicas</strong>: - Implementa
+<code>AcaoRotinaJava</code> do Sankhya - Query SQL dinamica baseada em
+parametros - Sistema robusto de validacao e tratamento de erros - Logs
+detalhados na tabela <code>AD_INTPERFORMAXXILOG</code></p>
+<h3 id="evento-programado---notificação-de-recebimentos">3. Evento
+Programado - Notificação de Recebimentos</h3>
+<ul>
+<li><strong>Classe</strong>: <code>RecebimentoEvento.java</code></li>
+<li><strong>Funcionalidade</strong>: Notificacao automatica de
+recebimentos via PIX</li>
+<li><strong>Trigger</strong>: Baixa de títulos na tabela
+<code>TGFFIN</code></li>
+<li><strong>Documentação</strong>: <a
+href="./evento/DOCUMENTACAO_FUNCIONAL.md">DOCUMENTACAO_FUNCIONAL.md</a></li>
+</ul>
+<p><strong>Características Técnicas</strong>: - Implementa
+<code>EventoProgramavelJava</code> do Sankhya - Monitora campos
+específicos: <code>CODTIPOPERBAIXA</code>, <code>DHTIPOPERBAIXA</code>,
+<code>DHBAIXA</code>, <code>VLRBAIXA</code> - Envio de mensagens mobile
+via API Performaxxi - Logs na tabela <code>AD_RECEBIMENTOLOG</code></p>
+<h2 id="arquitetura-do-sistema">Arquitetura do Sistema</h2>
+<h3 id="componentes-compartilhados">Componentes Compartilhados</h3>
+<ul>
+<li><strong>PerformaxxiAPI</strong>: Classe utilitária para comunicação
+com a API</li>
+<li><strong>Sistema de Logs</strong>: Logging unificado em tabelas
+específicas</li>
+<li><strong>Tratamento de Erros</strong>: Sistema robusto de tratamento
+e recuperação</li>
+</ul>
+<h3 id="fluxo-de-dados">Fluxo de Dados</h3>
+<pre><code>Sankhya ? PerformaxxiAPI ? Performaxxi ? Notificação/Processamento</code></pre>
+<h3 id="tabelas-de-controle">Tabelas de Controle</h3>
+<ul>
+<li><code>AD_COMPROVANTES</code>: Comprovantes de entrega</li>
+<li><code>AD_INTPERFORMAXXILOG</code>: Logs de integração de
+pedidos</li>
+<li><code>AD_RECEBIMENTOLOG</code>: Logs de recebimentos</li>
+</ul>
+<h2 id="guias-de-implementação">Guias de Implementação</h2>
+<h3 id="configuração-inicial">1. Configuração Inicial</h3>
+<ol type="1">
+<li><strong>Instalar Módulo Java</strong>: Deploy do JAR no Sankhya</li>
+<li><strong>Criar Tabelas</strong>: Importar metadados das tabelas de
+controle</li>
+<li><strong>Configurar API</strong>: Definir credenciais da
+Performaxxi</li>
+<li><strong>Configurar Agendamento</strong>: Definir horários de
+execução</li>
+</ol>
+<h3 id="pré-requisitos">2. Pré-requisitos</h3>
+<ul>
+<li>Sankhya Framework</li>
+<li>Java 8+</li>
+<li>Acesso a API Performaxxi</li>
+<li>Permissoes de banco de dados</li>
+</ul>
+<h3 id="deploy-do-módulo">3. Deploy do Módulo</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compilar projeto</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">mvn</span> clean package</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Deploy do JAR</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> target/guaranamineiro-1.0.0.jar <span class="pp">[</span><span class="ss">SANKHYA_HOME</span><span class="pp">]</span>/modules/</span></code></pre></div>
+<h3 id="configuração-da-api-performaxxi">4. Configuração da API
+Performaxxi</h3>
+<ul>
+<li><strong>URL Base Produção</strong>:
+<code>https://www.performaxxi.com.br</code></li>
+<li><strong>URL Base Homologação</strong>:
+<code>https://www.rotaonline.com.br</code></li>
+<li><strong>Ambiente Ativo</strong>: HOMOLOGACAO (configurável)</li>
+<li><strong>Autenticação</strong>: Basic Auth</li>
+<li><strong>Endpoints Implementados</strong>:
+<ul>
+<li><code>/API.REST/importacao/pedidos</code> (Botão de Ação - Envio de
+Pedidos)</li>
+<li><code>/API.REST/entrega/comprovantes/veiculo</code> (Ação Agendada -
+Consulta de Comprovantes)</li>
+<li><code>/API.REST/rota/enviomensagemrota</code> (Evento Programado -
+Mensagens de Recebimento)</li>
+</ul></li>
+</ul>
+<h3 id="criacao-de-tabelas">5. Criacao de Tabelas</h3>
+<p>Importar metadados das tabelas de controle: -
+<code>AD_COMPROVANTES</code> - <code>AD_INTPERFORMAXXILOG</code> -
+<code>AD_RECEBIMENTOLOG</code></p>
+<h3 id="testes-unitários">6. Testes Unitários</h3>
+<ul>
+<li><strong>TesteComprovantesEntrega</strong>: Testa consulta de
+comprovantes com placas reais</li>
+<li><strong>TesteIntegraPerformaxxi</strong>: Testa integração de
+pedidos com dados simulados</li>
+<li><strong>TesteRecebimentoEvento</strong>: Testa processamento de
+eventos de recebimento</li>
+<li><strong>Ambiente</strong>: SEMPRE usa URL de HOMOLOGACAO para
+testes</li>
+<li><strong>Taxa de Sucesso</strong>: 100% em todos os testes
+unitários</li>
+<li><strong>Encoding</strong>: Compatível com ISO-8859-1 (sem caracteres
+especiais)</li>
+</ul>
+<h3 id="monitoramento-e-logs">7. Monitoramento e Logs</h3>
+<ul>
+<li><strong>Logs de Execução</strong>: Todas as operações são
+registradas</li>
+<li><strong>Correlation ID</strong>: Rastreamento de execuções</li>
+<li><strong>Métricas</strong>: Performance e taxa de sucesso</li>
+<li><strong>Alertas</strong>: Notificações por email em caso de
+erro</li>
+</ul>
+<h2 id="monitoramento">Monitoramento</h2>
+<h3 id="logs-de-execução">Logs de Execução</h3>
+<p>Todas as operações são registradas em tabelas específicas: -
+<strong>Ação Agendada</strong>: <code>AD_COMPROVANTES</code> -
+<strong>Botão de Ação</strong>: <code>AD_INTPERFORMAXXILOG</code> -
+<strong>Evento Programado</strong>: <code>AD_RECEBIMENTOLOG</code></p>
+<h3 id="consultas-de-diagnóstico">Consultas de Diagnóstico</h3>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Verificar logs de execução</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> AD_INTPERFORMAXXILOG</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> DATA_INICIO <span class="op">&gt;=</span> <span class="fu">SYSDATE</span> <span class="op">-</span> <span class="dv">1</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> DATA_INICIO <span class="kw">DESC</span>;</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">-- Verificar comprovantes processados</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> AD_COMPROVANTES</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> DHEXECUCAO <span class="op">&gt;=</span> <span class="fu">SYSDATE</span> <span class="op">-</span> <span class="dv">1</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> DHEXECUCAO <span class="kw">DESC</span>;</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">-- Verificar recebimentos notificados</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> AD_RECEBIMENTOLOG</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> DHEXECUCAO <span class="op">&gt;=</span> <span class="fu">SYSDATE</span> <span class="op">-</span> <span class="dv">1</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> DHEXECUCAO <span class="kw">DESC</span>;</span></code></pre></div>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="problemas-comuns">Problemas Comuns</h3>
+<ol type="1">
+<li><strong>Erro de Autenticação</strong>: Verificar credenciais da
+API</li>
+<li><strong>Timeout</strong>: Aumentar timeouts de conexão</li>
+<li><strong>Dados Inválidos</strong>: Verificar validação de
+parâmetros</li>
+<li><strong>Logs Não Aparecem</strong>: Verificar permissões de
+banco</li>
+</ol>
+<h3 id="suporte">Suporte</h3>
+<ul>
+<li><strong>Documentação</strong>: <a href="./">docs/</a></li>
+<li><strong>Logs</strong>: Consultar tabelas de controle</li>
+<li><strong>Contato</strong>: Sistema de Integração GuaranaMineiro</li>
+</ul>
+<h2 id="estrutura-de-arquivos">Estrutura de Arquivos</h2>
+<pre><code>GuaranaMineiro/
+??? README.md
+??? src/
+?   ??? br/com/performaxxi/
+?       ??? action/
+?       ?   ??? acaoAgendada/
+?       ?   ?   ??? ComprovantesEntrega.java
+?       ?   ??? botaoAcao/
+?       ?   ?   ??? IntegraPerformaxxi.java
+?       ?   ??? evento/
+?       ?       ??? RecebimentoEvento.java
+?       ??? shared/
+?       ?   ??? PerformaxxiAPI.java
+?       ?   ??? PerformaxxiIntegracaoHelper.java
+?       ??? test/
+?           ??? TesteComprovantesEntrega.java
+?           ??? TesteIntegraPerformaxxi.java
+?           ??? TesteRecebimentoEvento.java
+??? docs/
+?   ??? DOCUMENTACAO_FUNCIONAL_COMPLETA.md (este arquivo)
+?   ??? acaoAgendada/
+?   ?   ??? DOCUMENTACAO_FUNCIONAL.md
+?   ??? botaoAcao/
+?   ?   ??? DOCUMENTACAO_FUNCIONAL.md
+?   ??? evento/
+?       ??? DOCUMENTACAO_FUNCIONAL.md
+??? pom.xml</code></pre>
+<h2 id="métricas-e-kpis">Métricas e KPIs</h2>
+<h3 id="ação-agendada">Ação Agendada</h3>
+<ul>
+<li>Número de veículos processados por dia</li>
+<li>Tempo de execução médio</li>
+<li>Taxa de sucesso na consulta de comprovantes</li>
+</ul>
+<h3 id="botão-de-ação">Botão de Ação</h3>
+<ul>
+<li>Número de pedidos enviados por execução</li>
+<li>Tempo de processamento por lote</li>
+<li>Taxa de sucesso na integração</li>
+</ul>
+<h3 id="evento-programado">Evento Programado</h3>
+<ul>
+<li>Número de recebimentos notificados por dia</li>
+<li>Tempo de resposta da API</li>
+<li>Taxa de entrega das mensagens</li>
+</ul>
+<h2 id="segurança">Segurança</h2>
+<h3 id="dados-sensíveis">Dados Sensíveis</h3>
+<ul>
+<li><strong>Credenciais API</strong>: Armazenadas em configuração</li>
+<li><strong>Celulares</strong>: Formatados para envio</li>
+<li><strong>Valores</strong>: Logados apenas para auditoria</li>
+</ul>
+<h3 id="controle-de-acesso">Controle de Acesso</h3>
+<ul>
+<li><strong>Execução Manual</strong>: Apenas usuários autorizados</li>
+<li><strong>Logs</strong>: Apenas administradores</li>
+<li><strong>Configuração</strong>: Apenas desenvolvedores</li>
+</ul>
+<h2 id="compatibilidade-e-encoding">Compatibilidade e Encoding</h2>
+<h3 id="encoding-de-caracteres">Encoding de Caracteres</h3>
+<ul>
+<li><strong>Padrão</strong>: ISO-8859-1 (Latin-1)</li>
+<li><strong>Caracteres Especiais</strong>: Removidos para
+compatibilidade</li>
+<li><strong>Emojis</strong>: Substituídos por texto ASCII</li>
+<li><strong>Símbolos Unicode</strong>: Convertidos para caracteres
+seguros</li>
+</ul>
+<h3 id="caracteres-substituídos">Caracteres Substituídos</h3>
+<ul>
+<li><code>?</code> ? <code>OK</code> (sucesso)</li>
+<li><code>?</code> ? <code>ERRO</code> (falha)</li>
+<li><code>??</code> ? <code>SUCESSO</code> (todos os testes
+passaram)</li>
+<li><code>??</code> ? <code>ATENCAO</code> (alguns testes falharam)</li>
+</ul>
+<h3 id="testes-de-compatibilidade">Testes de Compatibilidade</h3>
+<ul>
+<li><strong>Compilação</strong>: Sem erros de encoding</li>
+<li><strong>Execução</strong>: Funcionamento normal em ambientes
+ISO-8859-1</li>
+<li><strong>Logs</strong>: Mensagens legíveis em qualquer sistema</li>
+</ul>
+<h2 id="suporte-e-contato">Suporte e Contato</h2>
+<h3 id="equipe-de-desenvolvimento">Equipe de Desenvolvimento</h3>
+<ul>
+<li><strong>Responsável</strong>: Sistema de Integração
+GuaranaMineiro</li>
+<li><strong>Especialidade</strong>: Integrações Sankhya e APIs
+externas</li>
+</ul>
+<h3 id="documentação-técnica">Documentação Técnica</h3>
+<ul>
+<li><strong>Repositório</strong>: GitHub - personalizacoes</li>
+<li><strong>Versão</strong>: 1.0.0</li>
+<li><strong>Última Atualização</strong>: Janeiro 2025</li>
+</ul>
+<h3 id="escalação-de-problemas">Escalação de Problemas</h3>
+<ol type="1">
+<li>Consultar documentação específica do módulo</li>
+<li>Verificar logs de execução</li>
+<li>Testar conectividade com API</li>
+<li>Contatar suporte técnico</li>
+</ol>
+<hr />
+<h2 id="documentação-detalhada-por-módulo">Documentação Detalhada por
+Módulo</h2>
+<h3 id="ação-agendada---comprovantes-de-entrega-1"><a
+href="./acaoAgendada/DOCUMENTACAO_FUNCIONAL.md">Ação Agendada -
+Comprovantes de Entrega</a></h3>
+<ul>
+<li><strong>Implementação</strong>:
+<code>ComprovantesEntrega.java</code></li>
+<li><strong>Funcionalidade</strong>: Consulta automática de
+comprovantes</li>
+<li><strong>Agendamento</strong>: Execução diária</li>
+<li><strong>Tabelas</strong>: <code>AD_COMPROVANTES</code></li>
+</ul>
+<h3 id="botão-de-ação---integração-performaxxi"><a
+href="./botaoAcao/DOCUMENTACAO_FUNCIONAL.md">Botão de Ação - Integração
+Performaxxi</a></h3>
+<ul>
+<li><strong>Implementação</strong>:
+<code>IntegraPerformaxxi.java</code></li>
+<li><strong>Funcionalidade</strong>: Envio manual de pedidos</li>
+<li><strong>Interface</strong>: Botão de ação configurável</li>
+<li><strong>Tabelas</strong>: <code>AD_INTPERFORMAXXILOG</code></li>
+</ul>
+<h3 id="evento-programado---recebimento"><a
+href="./evento/DOCUMENTACAO_FUNCIONAL.md">Evento Programado -
+Recebimento</a></h3>
+<ul>
+<li><strong>Implementação</strong>:
+<code>RecebimentoEvento.java</code></li>
+<li><strong>Funcionalidade</strong>: Notificação automática de
+recebimentos</li>
+<li><strong>Trigger</strong>: Baixa de títulos</li>
+<li><strong>Tabelas</strong>: <code>AD_RECEBIMENTOLOG</code></li>
+</ul>
+<hr />
+<p><strong>Versão</strong>: 1.0.0 <strong>Última atualização</strong>:
+Janeiro 2025 <strong>Autor</strong>: Sistema de Integração
+GuaranaMineiro</p>
+</body>
+</html>

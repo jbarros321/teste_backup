@@ -1,0 +1,1491 @@
+create or replace procedure "PROC_GERA_NFSE_PORTAIS_MARTINS"(p_codusu    number, -- Código do usuário logado
+                                                             p_idsessao  varchar2, -- Identificador da execução. Serve para buscar informações dos parâmetros/campos da execução.
+                                                             p_qtdlinhas number, -- Informa a quantidade de registros selecionados no momento da execução.
+                                                             p_mensagem  out varchar2 -- Caso seja passada uma mensagem aqui, ela será exibida como uma informação ao usuário.
+                                                             ) as
+  field_numero     number;
+  field_numerorps  number;
+  field_sequencia  number;
+  v_codtipoper     tgfcab.codtipoper%type;
+  v_dhtipoper      tgfcab.dhtipoper%type;
+  v_tipmov         tgfcab.tipmov%type;
+  v_atualfin       tgftop.atualfin%type;
+  v_tipatualfin    tgftop.tipatualfin%type;
+  v_codcencus      tgfcab.codcencus%type;
+  v_codnat         tgfcab.codnat%type;
+  v_codprod        tgfite.codprod%type;
+  v_usoprod        tgfite.usoprod%type;
+  v_codvol         tgfite.codvol%type;
+  v_codtipvenda    tgfcab.codtipvenda%type;
+  v_dhtipvenda     tgfcab.dhtipvenda%type;
+  v_codfiltro      number := 3; --3-Configurações para Importação XML NFS-e Hotel Mega Modas // "Centro Telas Adicionais » Parâmetro de Relatórios Personalizados"
+  v_erro           varchar2(4000);
+  param_registros  varchar2(4000);
+  param_cadparc    varchar2(4000);
+  v_nunota         number;
+  v_incluir_cab    varchar2(100);
+  v_vlrnota        float;
+  v_vlrdesdob_acum float;
+  v_nufin          number;
+  v_qtdinc         number := 0;
+  v_qtderr         number := 0;
+  v_qtdexistia     number := 0;
+  v_codtiptit      number;
+  v_qtddias        number;
+  v_vlrdif_fin     float;
+  v_desdob         number;
+  v_codend         number;
+  v_codbai         number;
+  v_codcid         number;
+
+begin
+  /*
+  Autor: Rodrigo Coutinho
+  Data/Hora da Implementação: 17/08/2021
+  Justificativa da Implementação: Geração de notas fiscais de serviço do Hotel Mega Modas no portal de vendas
+  */
+
+  -- Os valores informados pelo formulário de parâmetros, podem ser obtidos com as funções:
+  --     ACT_INT_PARAM
+  --     ACT_DEC_PARAM
+  --     ACT_TXT_PARAM
+  --     ACT_DTA_PARAM
+  -- Estas funções recebem 2 argumentos:
+  --     ID DA SESSÃO - Identificador da execução (Obtido através de P_IDSESSAO))
+  --     NOME DO PARAMETRO - Determina qual parametro deve se deseja obter.
+
+  param_registros := act_txt_param(p_chave => p_idsessao,
+                                   p_nome  => 'REGISTROS');
+  param_cadparc   := nvl(act_txt_param(p_chave => p_idsessao,
+                                       p_nome  => 'CADPARC'),
+                         'N');
+
+  --Identificar o Tipo de Operação
+  begin
+    select t.codtipoper,
+           t.dhalter,
+           t.tipmov,
+           t.atualfin,
+           t.tipatualfin
+      into v_codtipoper,
+           v_dhtipoper,
+           v_tipmov,
+           v_atualfin,
+           v_tipatualfin
+      from ad_relparmtop f
+     inner join tgftop_ultlinha t
+        on t.codtipoper = f.codtipoper
+       and t.ativo = 'S'
+     where f.nurelparm = v_codfiltro;
+  exception
+    when no_data_found then
+      v_erro := 'Não Identificado Tipo de Operação no parâmetro 3, ou o informado não está ativo.';
+    when too_many_rows then
+      v_erro := 'Identificado mais de um Tipo de Operação no parâmetro 3.';
+  end;
+
+  --Identificar a Natureza
+  begin
+    select f.codnat
+      into v_codnat
+      from ad_relparmnat f
+     inner join tgfnat n
+        on n.codnat = f.codnat
+       and n.ativa = 'S'
+       and n.analitica = 'S'
+     where f.nurelparm = v_codfiltro;
+  exception
+    when no_data_found then
+      v_erro := v_erro ||
+                '<br>Não Identificada Natureza no parâmetro 3, ou a informada não está ativa e analítica.';
+    when too_many_rows then
+      v_erro := v_erro ||
+                '<br>Identificada mais de uma Natureza no parâmetro 3.';
+  end;
+
+  --Identificar o Centro de Resultado
+  begin
+    select f.codcencus
+      into v_codcencus
+      from ad_relparmcus f
+     inner join tsicus c
+        on c.codcencus = f.codcencus
+       and c.ativo = 'S'
+       and c.analitico = 'S'
+     where f.nurelparm = v_codfiltro;
+  exception
+    when no_data_found then
+      v_erro := v_erro ||
+                '<br>Não Identificado Centro de Resultado no parâmetro 3, ou o informado não está ativo e analítica.';
+    when too_many_rows then
+      v_erro := v_erro ||
+                '<br>Identificado mais de um Centro de Resultado no parâmetro 3.';
+  end;
+
+  --Identificar o Serviço
+  begin
+    select f.codprod,
+           p.usoprod,
+           p.codvol
+      into v_codprod,
+           v_usoprod,
+           v_codvol
+      from ad_relparmserv f
+     inner join tgfpro p
+        on p.codprod = f.codprod
+       and p.ativo = 'S'
+     where f.nurelparm = v_codfiltro;
+  exception
+    when no_data_found then
+      v_erro := v_erro ||
+                '<br>Não Identificado Serviço no parâmetro 3, ou o informado não está ativo.';
+    when too_many_rows then
+      v_erro := v_erro ||
+                '<br>Identificado mais de um Serviço no parâmetro 3.';
+  end;
+
+  --Identificar o Tipo de Negociação
+  begin
+    select f.codtipvenda,
+           t.dhalter
+      into v_codtipvenda,
+           v_dhtipvenda
+      from ad_relparmtpv f,
+           tgftpv        t
+     where f.nurelparm = v_codfiltro
+       and t.codtipvenda = f.codtipvenda
+       and t.dhalter = (select max(tt.dhalter)
+                          from tgftpv tt
+                         where tt.codtipvenda = t.codtipvenda)
+       and t.ativo = 'S';
+  exception
+    when no_data_found then
+      v_erro := v_erro ||
+                '<br>Não Identificado Tipo de Negociação no parâmetro 3, ou o informado não está ativo.';
+    when too_many_rows then
+      v_erro := v_erro ||
+                '<br>Identificado mais de um tipo de Negociação no parâmetro 3.';
+  end;
+
+  if trim(v_erro) is not null then
+    p_mensagem := 'Processamento abortado. Verificar erros abaixo: ' ||
+                  chr(13) || chr(13) || v_erro;
+    return;
+  end if;
+
+  for i in 1 .. p_qtdlinhas -- Este loop permite obter o valor de campos dos registros envolvidos na execução.
+  loop
+    -- A variável "I" representa o registro corrente.
+    -- Para obter o valor dos campos utilize uma das seguintes funções:
+    --     ACT_INT_FIELD (Retorna o valor de um campo tipo NUMÉRICO INTEIRO))
+    --     ACT_DEC_FIELD (Retorna o valor de um campo tipo NUMÉRICO DECIMAL))
+    --     ACT_TXT_FIELD (Retorna o valor de um campo tipo TEXTO),
+    --     ACT_DTA_FIELD (Retorna o valor de um campo tipo DATA)
+    -- Estas funções recebem 3 argumentos:
+    --     ID DA SESSÃO - Identificador da execução (Obtido através do parâmetro P_IDSESSAO))
+    --     NÚMERO DA LINHA - Relativo a qual linha selecionada.
+    --     NOME DO CAMPO - Determina qual campo deve ser obtido.
+    field_numero    := act_int_field(p_idsessao, i, 'NUMERO');
+    field_numerorps := act_int_field(p_idsessao, i, 'NUMERORPS');
+    field_sequencia := act_int_field(p_idsessao, i, 'SEQUENCIA');
+  
+    for reg in (select n.numero,
+                       n.numerorps,
+                       n.codigoverificacao,
+                       n.dataemissao,
+                       n.basecalculo,
+                       n.aliquota,
+                       n.valoriss,
+                       n.serie,
+                       n.tipo,
+                       n.dataemissaorps,
+                       n.competencia,
+                       n.valorservicos,
+                       n.valordeducoes,
+                       n.valorpis,
+                       n.valorcofins,
+                       n.valorinss,
+                       n.valorir,
+                       n.valorcsll,
+                       n.valoriss2,
+                       n.aliquota2,
+                       n.descontoincondicionado,
+                       n.issretido,
+                       n.codigotributacaomunicipio,
+                       n.discriminacao,
+                       n.codigomunicipio,
+                       n.exigibilidadeiss,
+                       n.municipioincidencia,
+                       n.cnpj_prestador,
+                       n.inscricaomunicipal_prestador,
+                       n.cpf_cnpj_tomador,
+                       n.inscricaomunicipal_tomador,
+                       n.razaosocial_tomador,
+                       n.endereco_tomador,
+                       n.numero_tomador,
+                       n.complemento_tomador,
+                       n.bairro_tomador,
+                       n.codigomunicipio_tomador,
+                       n.uf_tomador,
+                       n.cep_tomador,
+                       n.optantesimplesnacional,
+                       n.sequencia,
+                       n.xml,
+                       n.nunota,
+                       n.codparc,
+                       n.codemp,
+                       n.status
+                  from ad_xmlnfsehmm n
+                 where n.sequencia = field_sequencia
+                   and ((param_registros = 'SELECIONADO' and
+                       n.numero = field_numero and
+                       n.numerorps = field_numerorps) or
+                       param_registros = 'TODOS'))
+    loop
+    
+      v_incluir_cab := 'N';
+    
+      update ad_xmlnfsehmm n
+         set n.status  = 'N',
+             n.obsproc = null,
+             n.codusu  = p_codusu,
+             n.dhalter = current_date
+       where n.numero = reg.numero
+         and n.numerorps = reg.numerorps
+         and n.sequencia = reg.sequencia;
+    
+      --identificar parceiro
+      begin
+        select p.codparc
+          into reg.codparc
+          from tgfpar p
+         where p.cgc_cpf = reg.cpf_cnpj_tomador
+           and p.ativo = 'S'
+           and p.cliente = 'S'
+           and rownum = 1;
+      
+        update ad_xmlnfsehmm n
+           set n.codparc = reg.codparc,
+               n.codusu  = p_codusu,
+               n.dhalter = current_date
+         where n.numero = reg.numero
+           and n.numerorps = reg.numerorps
+           and n.sequencia = reg.sequencia;
+      
+      exception
+        when no_data_found then
+          if param_cadparc = 'N' then
+          
+            update ad_xmlnfsehmm n
+               set n.status  = 'N',
+                   n.obsproc = n.obsproc || chr(13) ||
+                               'Parceiro com CPF/CNPJ "' ||
+                               reg.cpf_cnpj_tomador ||
+                               ' não identificado, ou não ativo ou não marcado como Cliente.',
+                   n.codusu  = p_codusu,
+                   n.dhalter = current_date
+             where n.numero = reg.numero
+               and n.numerorps = reg.numerorps
+               and n.sequencia = reg.sequencia;
+          
+            v_incluir_cab := 'ERRO_PARC_EMP';
+          
+          else
+          
+            begin
+            
+              stp_keygen_tgfnum(p_arquivo => 'TGFPAR',
+                                p_codemp  => 1,
+                                p_tabela  => 'TGFPAR',
+                                p_campo   => 'CODPARC',
+                                p_dsync   => 0,
+                                p_ultcod  => reg.codparc);
+            
+              begin
+                select cep.codcid,
+                       cep.codbai,
+                       cep.codend
+                  into v_codcid,
+                       v_codbai,
+                       v_codend
+                  from tsicep cep
+                 inner join tsicid cid
+                    on cid.codcid = cep.codcid
+                 where cep.cep = reg.cep_tomador
+                   and rownum = 1;
+              exception
+                when no_data_found then
+                  v_codcid := null;
+                  v_codbai := 0;
+                  v_codend := 0;
+              end;
+            
+              if nvl(v_codcid, 0) = 0 then
+
+                -- Primeiro tentar encontrar pela código exato do município
+                select nvl(min(tsicid.codcid), 0)
+                  into v_codcid
+                  from tsicid
+                 where tsicid.codmundms = reg.codigomunicipio_tomador;
+
+                -- Se não encontrou, tentar pela UF (estado) - pegar primeira cidade
+                if v_codcid = 0 and length(reg.codigomunicipio_tomador) >= 2 then
+                  begin
+                    select nvl(min(tsicid.codcid), 0)
+                      into v_codcid
+                      from tsicid
+                     where tsicid.uf = substr(reg.codigomunicipio_tomador, 1, 2)
+                       and rownum = 1;
+                  exception
+                    when no_data_found then
+                      -- Pegar primeira cidade do estado
+                      select nvl(min(tsicid.codcid), 0)
+                        into v_codcid
+                        from tsicid
+                       where tsicid.uf = substr(reg.codigomunicipio_tomador, 1, 2)
+                         and rownum = 1;
+                  end;
+                end if;
+
+                -- Se ainda não encontrou, usar cidade padrão (Brasília ou primeira cidade ativa)
+                if v_codcid = 0 then
+                  begin
+                    select nvl(min(tsicid.codcid), 0)
+                      into v_codcid
+                      from tsicid
+                     where tsicid.codmundms = '5300108' -- Capital Federal
+                     ;
+                  exception
+                    when no_data_found then
+                      -- Último recurso: primeira cidade ativa qualquer
+                      select nvl(min(tsicid.codcid), 0)
+                        into v_codcid
+                        from tsicid
+                       where rownum = 1;
+                  end;
+                end if;
+
+                if v_codcid = 0 then
+
+                  -- CORREÇÃO FINAL: Quando não conseguir identificar nenhuma cidade,
+                  -- usar Goiânia (5208707) como cidade padrão
+                  begin
+                    select tsicid.codcid
+                      into v_codcid
+                      from tsicid
+                     where tsicid.codmundms = '5208707' -- Goiânia/GO
+                       and rownum = 1;
+                  exception
+                    when no_data_found then
+                      -- Se nem Goiânia existir, usar qualquer cidade ativa
+                      select nvl(min(tsicid.codcid), 1)
+                        into v_codcid
+                        from tsicid
+                       where rownum = 1;
+                  end;
+
+                  -- GARANTIR que sempre tenha um codcid válido
+                  if v_codcid = 0 then
+                    v_codcid := 1; -- Valor mínimo para evitar erro
+                  end if;
+
+                  -- Log do fallback usado
+                  update ad_xmlnfsehmm n
+                     set n.obsproc = n.obsproc || chr(13) ||
+                                     'AVISO: Município ' || reg.codigomunicipio_tomador ||
+                                     ' não encontrado. Usando cidade padrão (codcid=' || v_codcid || ').',
+                         n.codusu  = p_codusu,
+                         n.dhalter = current_date
+                   where n.numero = reg.numero
+                     and n.numerorps = reg.numerorps
+                     and n.sequencia = reg.sequencia;
+
+                end if;
+
+              end if;
+            
+              if nvl(v_codcid, 0) <> 0 then
+              
+                insert into tgfpar
+                  (codparc,
+                   codparcmatriz,
+                   dtcad,
+                   dtalter,
+                   cliente,
+                   fornecedor,
+                   transportadora,
+                   vendedor,
+                   agencia,
+                   codtipparc,
+                   codbco,
+                   classificms,
+                   estabtransp,
+                   ativo,
+                   motorista,
+                   professor,
+                   aluno,
+                   codusu,
+                   simples,
+                   temipi,
+                   cgc_cpf,
+                   nomeparc,
+                   razaosocial,
+                   tippessoa,
+                   codend,
+                   numend,
+                   codbai,
+                   codcid,
+                   cep,
+                   telefone,
+                   identinscestad,
+                   observacoes)
+                values
+                  (reg.codparc, --codparc,
+                   reg.codparc, --codparcmatriz,
+                   current_date, --dtcad,
+                   current_date, --dtalter,
+                   'S', --cliente,
+                   'N', --fornecedor,
+                   'N', --transportadora,
+                   'N', --vendedor,
+                   'N', --agencia,
+                   10304000, --codtipparc,     --CLIENTES HOTEL MEGA MODAS
+                   0, --codbco,
+                   'C', --classificms,         --C-Consumidor Final Não Contribuinte
+                   'N', --estabtransp,         --N-Não contribuinte
+                   'S', --ativo,
+                   'N', --motorista,
+                   'N', --professor,
+                   'N', --aluno,
+                   p_codusu, --codusu,
+                   'N', --simples,
+                   'N', --temipi,
+                   reg.cpf_cnpj_tomador, --cgc_cpf,
+                   substr(upper(reg.razaosocial_tomador),1,40), --nomeparc,
+                   substr(upper(reg.razaosocial_tomador),1,40), --razaosocial,
+                   (case
+                     when length(trim(reg.cpf_cnpj_tomador)) > 11 then
+                      'J'
+                     else
+                      'F'
+                   end), --tippessoa,
+                   v_codend, --codend,
+                   substr(reg.numero_tomador, 1, 6), --numend, --CORREÇÃO: Truncar para 6 caracteres máximo
+                   v_codbai, --codbai,
+                   v_codcid, --codcid,
+                   reg.cep_tomador, --cep,
+                   null, --telefone,
+                   null, --identinscestad,
+                   'Importado conforme nota fiscal de serviços Hotel Mega Modas com número ' ||
+                   reg.numero || ' emitida em ' ||
+                   to_char(reg.dataemissao, 'dd/mm/rrrr') --observacoes
+                   );
+              
+                update ad_xmlnfsehmm n
+                   set n.codparc = reg.codparc,
+                       n.codusu  = p_codusu,
+                       n.dhalter = current_date
+                 where n.numero = reg.numero
+                   and n.numerorps = reg.numerorps
+                   and n.sequencia = reg.sequencia;
+              
+              end if;
+            
+            exception
+              when others then
+                v_erro := sqlerrm;
+                update ad_xmlnfsehmm n
+                   set n.status  = 'N',
+                       n.obsproc = n.obsproc || chr(13) ||
+                                   'Erro ao incluir Parceiro com CPF/CNPJ "' ||
+                                   reg.cpf_cnpj_tomador || ': ' || v_erro,
+                       n.codusu  = p_codusu,
+                       n.dhalter = current_date
+                 where n.numero = reg.numero
+                   and n.numerorps = reg.numerorps
+                   and n.sequencia = reg.sequencia;
+              
+                v_incluir_cab := 'ERRO_PARC_EMP';
+              
+            end;
+          end if;
+        
+      end;
+    
+      --identificar empresda
+      begin
+        select e.codemp
+          into reg.codemp
+          from tsiemp e
+         inner join tgfemp p
+            on p.codemp = e.codemp
+         where e.cgc = reg.cnpj_prestador
+           and p.ativo = 'S'
+           and rownum = 1;
+      
+        update ad_xmlnfsehmm n
+           set n.codemp  = reg.codemp,
+               n.codusu  = p_codusu,
+               n.dhalter = current_date
+         where n.numero = reg.numero
+           and n.numerorps = reg.numerorps
+           and n.sequencia = reg.sequencia;
+      
+      exception
+        when no_data_found then
+          update ad_xmlnfsehmm n
+             set n.status  = 'N',
+                 n.obsproc = n.obsproc || chr(13) || 'Empresa com CNPJ "' ||
+                             reg.cnpj_prestador ||
+                             ' não identificada ou não está ativa.',
+                 n.codusu  = p_codusu,
+                 n.dhalter = current_date
+           where n.numero = reg.numero
+             and n.numerorps = reg.numerorps
+             and n.sequencia = reg.sequencia;
+        
+          v_incluir_cab := 'ERRO_PARC_EMP';
+        
+      end;
+    
+      -- se não identificou parceiro ou empresa, já interrompe o processamento deste registro
+      if v_incluir_cab = 'ERRO_PARC_EMP' then
+      
+        v_qtderr := v_qtderr + 1;
+        goto sai_reg;
+      
+      end if;
+    
+      --verificar se nota já existe
+      begin
+      
+        select c.nunota
+          into v_nunota
+          from tgfcab c
+         where c.ad_codigoverificacao_nfse_hmm = reg.codigoverificacao
+           and c.numnota = reg.numerorps
+           and c.numnfse = reg.numero
+           and rownum = 1;
+      
+        if nvl(reg.nunota, 0) <> v_nunota then
+          update ad_xmlnfsehmm n
+             set n.nunota  = v_nunota,
+                 n.codusu  = p_codusu,
+                 n.dhalter = current_date
+           where n.numero = reg.numero
+             and n.numerorps = reg.numerorps
+             and n.sequencia = reg.sequencia;
+        end if;
+      
+        v_qtdexistia := v_qtdexistia + 1;
+      
+        update ad_xmlnfsehmm n
+           set n.status  = 'S',
+               n.obsproc = 'Processado com sucesso',
+               n.codusu  = p_codusu,
+               n.dhalter = current_date
+         where n.numero = reg.numero
+           and n.numerorps = reg.numerorps
+           and n.sequencia = reg.sequencia;
+      
+        v_incluir_cab := 'N';
+      
+      exception
+        when no_data_found then
+        
+          stp_keygen_tgfnum(p_arquivo => 'TGFCAB',
+                            p_codemp  => 1,
+                            p_tabela  => 'TGFCAB',
+                            p_campo   => 'NUNOTA',
+                            p_dsync   => 0,
+                            p_ultcod  => v_nunota);
+        
+          v_incluir_cab := 'S';
+        
+      end;
+    
+      if v_incluir_cab = 'S' then
+      
+        begin
+        
+          savepoint gravar_nota;
+        
+          if nvl(reg.issretido, '2') = '1' then
+            reg.issretido := 'S';
+          else
+            reg.issretido := 'N';
+          end if;
+        
+          v_vlrnota := reg.valorservicos - nvl(reg.descontoincondicionado, 0) -
+                       (case
+                         when reg.issretido = 'S' then
+                          reg.valoriss
+                         else
+                          0
+                       end) - nvl(reg.valorpis, 0) - nvl(reg.valorcofins, 0) -
+                       nvl(reg.valorinss, 0) - nvl(reg.valorir, 0) -
+                       nvl(reg.valorcsll, 0);
+        
+          insert into tgfcab
+            (nunota,
+             codemp,
+             codcencus,
+             numnota,
+             numnfse,
+             serienota,
+             dtneg,
+             dtfatur,
+             dtentsai,
+             dtmov,
+             codempnegoc,
+             codparc,
+             rateado,
+             codveiculo,
+             codtipoper,
+             dhtipoper,
+             tipmov,
+             codtipvenda,
+             dhtipvenda,
+             tipipiemb,
+             tipfrete,
+             vlrnota,
+             vlrdesctotitem,
+             qtdvol,
+             pendente,
+             aprovado,
+             statusnota,
+             codusu,
+             irfretido,
+             dtalter,
+             codusuinc,
+             ad_codigoverificacao_nfse_hmm,
+             codnat,
+             observacao,
+             baseiss,
+             vlriss,
+             issretido,
+             codcid,
+             codcidprest)
+          values
+            (v_nunota, --NUNOTA,
+             reg.codemp, --CODEMP,
+             v_codcencus, --CODCENCUS,
+             reg.numerorps, --NUMNOTA,
+             reg.numero, --NUMNFSE
+             substr(reg.serie, 1, 1), --SERIENOTA
+             trunc(reg.dataemissao), --DTNEG, --CORREÇÃO: Remover horas da data
+             trunc(reg.dataemissao), --DTFATUR, --CORREÇÃO: Remover horas da data
+             trunc(reg.dataemissao), --DTENTSAI, --CORREÇÃO: Remover horas da data
+             trunc(reg.dataemissao), --DTMOV, --CORREÇÃO: Remover horas da data
+             reg.codemp, --CODEMPNEGOC,
+             reg.codparc, --CODPARC,
+             'N', --RATEADO,
+             0, --CODVEICULO,
+             v_codtipoper, -- CODTIPOPER,
+             v_dhtipoper, -- DHTIPOPER,
+             v_tipmov, -- TIPMOV,
+             v_codtipvenda, --CODTIPVENDA,
+             v_dhtipvenda, --DHTIPVENDA,
+             'N', --TIPIPIEMB,
+             'S', --TIPFRETE,
+             v_vlrnota, --VLRNOTA,
+             nvl(reg.descontoincondicionado, 0), --VLRDESCTOTITEM
+             1, --QTDVOL,
+             'N', --PENDENTE,
+             'S', --APROVADO,
+             'L', --STATUSNOTA,
+             p_codusu, --CODUSU,
+             'N', --IRFRETIDO,
+             sysdate, --DTALTER,
+             p_codusu, --CODUSUINC
+             reg.codigoverificacao, --AD_CODIGOVERIFICACAO_NFSE_HMM
+             v_codnat, --CODNAT
+             reg.discriminacao, --OBSERVACAO
+             nvl(reg.basecalculo, 0), --BASEISS,
+             nvl(reg.valoriss, 0), --VLRISS,
+             reg.issretido, --ISSRETIDO
+             nvl((select min(tsicid.codcid)
+                   from tsicid
+                  where tsicid.codmundms = reg.codigomunicipio),
+                 (select min(tsicid.codcid)
+                  from tsicid
+                 where tsicid.codmundms =
+                       (CASE SUBSTR(reg.codigomunicipio, 1, 2)
+                         WHEN '11' THEN '1100205' -- Porto Velho/RO
+                         WHEN '12' THEN '1200401' -- Rio Branco/AC
+                         WHEN '13' THEN '1302603' -- Manaus/AM
+                         WHEN '14' THEN '1400100' -- Boa Vista/RR
+                         WHEN '15' THEN '1501402' -- Belém/PA
+                         WHEN '16' THEN '1600303' -- Macapá/AP
+                         WHEN '17' THEN '1721000' -- Palmas/TO
+                         WHEN '21' THEN '2111300' -- São Luís/MA
+                         WHEN '22' THEN '2211001' -- Teresina/PI
+                         WHEN '23' THEN '2304400' -- Fortaleza/CE
+                         WHEN '24' THEN '2408102' -- Natal/RN
+                         WHEN '25' THEN '2507507' -- João Pessoa/PB
+                         WHEN '26' THEN '2611606' -- Recife/PE
+                         WHEN '27' THEN '2704302' -- Maceió/AL
+                         WHEN '28' THEN '2800308' -- Aracaju/SE
+                         WHEN '29' THEN '2927408' -- Salvador/BA
+                         WHEN '31' THEN '3106200' -- Belo Horizonte/MG
+                         WHEN '32' THEN '3205309' -- Vitória/ES
+                         WHEN '33' THEN '3304557' -- Rio de Janeiro/RJ
+                         WHEN '35' THEN '3550308' -- São Paulo/SP
+                         WHEN '41' THEN '4106902' -- Curitiba/PR
+                         WHEN '42' THEN '4205407' -- Florianópolis/SC
+                         WHEN '43' THEN '4314902' -- Porto Alegre/RS
+                         WHEN '50' THEN '5002704' -- Campo Grande/MS
+                         WHEN '51' THEN '5103403' -- Cuiabá/MT
+                         WHEN '52' THEN '5208707' -- Goiânia/GO
+                         WHEN '53' THEN '5300108' -- Brasília/DF
+                         ELSE '5208707' -- Fallback: Goiânia
+                       END))), --codcid, --CORREÇÃO: Usar capital da UF como padrão
+             nvl((select min(tsicid.codcid)
+                   from tsicid
+                  where tsicid.codmundms = reg.municipioincidencia),
+                 (select min(tsicid.codcid)
+                  from tsicid
+                 where tsicid.codmundms =
+                       (CASE SUBSTR(reg.municipioincidencia, 1, 2)
+                         WHEN '11' THEN '1100205' -- Porto Velho/RO
+                         WHEN '12' THEN '1200401' -- Rio Branco/AC
+                         WHEN '13' THEN '1302603' -- Manaus/AM
+                         WHEN '14' THEN '1400100' -- Boa Vista/RR
+                         WHEN '15' THEN '1501402' -- Belém/PA
+                         WHEN '16' THEN '1600303' -- Macapá/AP
+                         WHEN '17' THEN '1721000' -- Palmas/TO
+                         WHEN '21' THEN '2111300' -- São Luís/MA
+                         WHEN '22' THEN '2211001' -- Teresina/PI
+                         WHEN '23' THEN '2304400' -- Fortaleza/CE
+                         WHEN '24' THEN '2408102' -- Natal/RN
+                         WHEN '25' THEN '2507507' -- João Pessoa/PB
+                         WHEN '26' THEN '2611606' -- Recife/PE
+                         WHEN '27' THEN '2704302' -- Maceió/AL
+                         WHEN '28' THEN '2800308' -- Aracaju/SE
+                         WHEN '29' THEN '2927408' -- Salvador/BA
+                         WHEN '31' THEN '3106200' -- Belo Horizonte/MG
+                         WHEN '32' THEN '3205309' -- Vitória/ES
+                         WHEN '33' THEN '3304557' -- Rio de Janeiro/RJ
+                         WHEN '35' THEN '3550308' -- São Paulo/SP
+                         WHEN '41' THEN '4106902' -- Curitiba/PR
+                         WHEN '42' THEN '4205407' -- Florianópolis/SC
+                         WHEN '43' THEN '4314902' -- Porto Alegre/RS
+                         WHEN '50' THEN '5002704' -- Campo Grande/MS
+                         WHEN '51' THEN '5103403' -- Cuiabá/MT
+                         WHEN '52' THEN '5208707' -- Goiânia/GO
+                         WHEN '53' THEN '5300108' -- Brasília/DF
+                         ELSE '5208707' -- Fallback: Goiânia
+                       END))) --codcidprest, --CORREÇÃO: Usar capital da UF como padrão
+             );
+        
+          insert into tgfite
+            (nunota,
+             sequencia,
+             codemp,
+             codprod,
+             codlocalorig,
+             controle,
+             usoprod,
+             codcfo,
+             qtdneg,
+             qtdconferida,
+             vlrunit,
+             vlrtot,
+             vlrdesc,
+             baseiss,
+             aliqiss,
+             vlriss,
+             vlrcus,
+             vlripi,
+             basesubstit,
+             vlrsubst,
+             pendente,
+             codvol,
+             atualestoque,
+             reserva,
+             statusnota,
+             codusu,
+             dtalter,
+             qtdformula,
+             atualestterc,
+             terceiros,
+             vlrretencao,
+             statuslote,
+             observacao,
+             codtribiss)
+          values
+            (v_nunota, --NUNOTA
+             1, --SEQUENCIA
+             reg.codemp, --CODEMP
+             v_codprod, --CODPROD
+             0, --CODLOCALORIG
+             ' ', --CONTROLE
+             v_usoprod, --USOPROD
+             0, --CODCFO
+             1, --QTDNEG
+             0, --QTDCONFERIDA
+             reg.valorservicos, --VLRUNIT
+             reg.valorservicos, --VLRTOT
+             nvl(reg.descontoincondicionado, 0), --VLRDESC
+             nvl(reg.basecalculo, 0), --BASEISS,
+             nvl(reg.aliquota, 0), --ALIQISS,
+             nvl(reg.valoriss, 0), --VLRISS,
+             0, --VLRCUS
+             0, --VLRIPI
+             0, --BASESUBSTIT
+             0, --VLRSUBST
+             'N', --PENDENTE
+             v_codvol, --CODVOL
+             0, --ATUALESTOQUE
+             'N', --RESERVA
+             'L', --STATUSNOTA
+             p_codusu, --CODUSU
+             sysdate, --DTALTER
+             0, --QTDFORMULA
+             'N', --ATUALESTTERC
+             'N', --TERCEIROS
+             0, --VLRRETENCAO
+             'N', --STATUSLOTE
+             '', --OBSERVACAO
+             (case when
+              nvl(reg.valoriss, 0) > 0 and nvl(reg.issretido, 'N') = 'N' then 0 --00 - Tributado
+              when
+              nvl(reg.valoriss, 0) > 0 and nvl(reg.issretido, 'N') = 'S' then 1 --01 - Tributado com ISS Retido
+              else 6 --06 - Isento
+              end)
+             --CODTRIBISS
+             );
+        
+          --retenção de pis
+          if nvl(reg.valorpis, 0) > 0 then
+          
+            insert into tgfimn
+              (nunota,
+               sequencia,
+               codimp,
+               codcid,
+               base,
+               valor,
+               aliquota,
+               tipimp,
+               digitado,
+               tipoimposto)
+            values
+              (v_nunota, --nunota,
+               1, --sequencia,
+               1 /*pis*/, --codimp,
+               0, --codcid,
+               reg.valorservicos, --base,
+               reg.valorpis, --valor,
+               round(func_divide_nm(reg.valorpis, reg.valorservicos) * 100,
+                     2), --aliquota,
+               -1, --tipimp,
+               'N', --digitado,
+               0 --tipoimposto
+               );
+          
+          end if;
+        
+          --retenção de Cofins
+          if nvl(reg.valorcofins, 0) > 0 then
+          
+            insert into tgfimn
+              (nunota,
+               sequencia,
+               codimp,
+               codcid,
+               base,
+               valor,
+               aliquota,
+               tipimp,
+               digitado,
+               tipoimposto)
+            values
+              (v_nunota, --nunota,
+               1, --sequencia,
+               3 /*cofins*/, --codimp,
+               0, --codcid,
+               reg.valorservicos, --base,
+               reg.valorcofins, --valor,
+               round(func_divide_nm(reg.valorcofins, reg.valorservicos) * 100,
+                     2), --aliquota,
+               -1, --tipimp,
+               'N', --digitado,
+               0 --tipoimposto
+               );
+          
+          end if;
+        
+          --retenção de inss
+          if nvl(reg.valorinss, 0) > 0 then
+          
+            insert into tgfimn
+              (nunota,
+               sequencia,
+               codimp,
+               codcid,
+               base,
+               valor,
+               aliquota,
+               tipimp,
+               digitado,
+               tipoimposto)
+            values
+              (v_nunota, --nunota,
+               1, --sequencia,
+               5 /*inss*/, --codimp,
+               0, --codcid,
+               reg.valorservicos, --base,
+               reg.valorinss, --valor,
+               round(func_divide_nm(reg.valorinss, reg.valorservicos) * 100,
+                     2), --aliquota,
+               -1, --tipimp,
+               'N', --digitado,
+               0 --tipoimposto
+               );
+          
+          end if;
+        
+          --retenção de ir
+          if nvl(reg.valorir, 0) > 0 then
+          
+            insert into tgfimn
+              (nunota,
+               sequencia,
+               codimp,
+               codcid,
+               base,
+               valor,
+               aliquota,
+               tipimp,
+               digitado,
+               tipoimposto)
+            values
+              (v_nunota, --nunota,
+               1, --sequencia,
+               4 /*ir*/, --codimp,
+               0, --codcid,
+               reg.valorservicos, --base,
+               reg.valorir, --valor,
+               round(func_divide_nm(reg.valorir, reg.valorservicos) * 100,
+                     2), --aliquota,
+               -1, --tipimp,
+               'N', --digitado,
+               0 --tipoimposto
+               );
+          
+          end if;
+        
+          --retenção de csll
+          if nvl(reg.valorcsll, 0) > 0 then
+          
+            insert into tgfimn
+              (nunota,
+               sequencia,
+               codimp,
+               codcid,
+               base,
+               valor,
+               aliquota,
+               tipimp,
+               digitado,
+               tipoimposto)
+            values
+              (v_nunota, --nunota,
+               1, --sequencia,
+               2 /*csll*/, --codimp,
+               0, --codcid,
+               reg.valorservicos, --base,
+               reg.valorcsll, --valor,
+               round(func_divide_nm(reg.valorcsll, reg.valorservicos) * 100,
+                     2), --aliquota,
+               -1, --tipimp,
+               'N', --digitado,
+               0 --tipoimposto
+               );
+          
+          end if;
+        
+          --inserir financeiro
+          /*
+          v_atualfin
+          -1 Despesas
+          0  Não atualizar
+          1  Receitas
+          */
+          /*
+          v_tipatualfin
+          I Incluir
+          P Provisionar
+          */
+          if v_atualfin <> 0
+             and v_tipatualfin = 'I' then
+
+            v_vlrdesdob_acum := 0;
+            v_vlrdif_fin     := 0;
+            v_desdob         := 0;
+
+            -- Verificar se há informação de pagamento na discriminação
+            if instr(upper(reg.discriminacao), 'PAGAMENTOS:') = 0 then
+              -- CORREÇÃO: Se não há informação de pagamento, criar financeiro padrão
+              -- Usar DINHEIRO com valor à vista para todo o montante
+
+              stp_keygen_tgfnum(p_arquivo => 'TGFFIN',
+                                p_codemp  => 1,
+                                p_tabela  => 'TGFFIN',
+                                p_campo   => 'NUFIN',
+                                p_dsync   => 0,
+                                p_ultcod  => v_nufin);
+
+              v_desdob := v_desdob + 1;
+
+              insert into tgffin
+                (nufin,
+                 codemp,
+                 numnota,
+                 numnfse,
+                 serienota,
+                 dtneg,
+                 dhmov,
+                 dtvencinic,
+                 dtvenc,
+                 codparc,
+                 codtipoper,
+                 dhtipoper,
+                 codbco,
+                 codnat,
+                 codcencus,
+                 vlrdesdob,
+                 recdesp,
+                 provisao,
+                 origem,
+                 dtentsai,
+                 dtalter,
+                 codusu,
+                 codtiptit,
+                 historico,
+                 nunota,
+                 desdobramento)
+              values
+                (v_nufin, --nufin,
+                 reg.codemp, --codemp,
+                 reg.numerorps, --numnota,
+                 reg.numero, --numnfse
+                 substr(reg.serie, 1, 1), --serienota
+                 trunc(reg.dataemissao), --dtneg, --CORREÇÃO: Remover horas da data
+                 reg.dataemissao, --dhmov,
+                 trunc(reg.dataemissao), --dtvencinic, --À vista
+                 trunc(reg.dataemissao), --dtvenc, --À vista
+                 reg.codparc, --codparc,
+                 v_codtipoper, --codtipoper,
+                 v_dhtipoper, --dhtipoper,
+                 0, --codbco,
+                 v_codnat, --codnat,
+                 v_codcencus, --codcencus,
+                 reg.valorservicos - nvl(reg.descontoincondicionado, 0) - nvl(reg.valoriss, 0), --vlrdesdob, --Valor líquido
+                 v_atualfin, --recdesp,
+                 (case when v_tipatualfin = 'I' then 'N' else 'S' end), --provisao,
+                 'E', --origem,
+                 trunc(reg.dataemissao), --dtentsai, --CORREÇÃO: Remover horas da data
+                 sysdate, --dtalter,
+                 p_codusu, --codusu,
+                 2, --codtiptit, --DINHEIRO (código 2)
+                 substr('Pagamento à vista - ' || reg.discriminacao, 1, 255), --historico
+                 v_nunota, --nunota
+                 v_desdob --desdobramento
+                 );
+
+              v_vlrdesdob_acum := reg.valorservicos - nvl(reg.descontoincondicionado, 0) - nvl(reg.valoriss, 0);
+
+            else
+              -- Processamento normal quando há informação de pagamento
+          
+            for pgto in (select doc.numero,
+                                doc.numerorps,
+                                doc.cpf_cnpj_tomador,
+                                doc.valorservicos,
+                                trim(ad_ctb.fc_csv(p_texto       => replace(t.column_value,
+                                                                            'PAGAMENTOS:',
+                                                                            null),
+                                                   p_posicao     => 1,
+                                                   p_delimitador => ':')) as forma_pgto,
+                                func_limpa_texto(replace(replace(ad_ctb.fc_csv(p_texto       => replace(t.column_value,
+                                                                                                        'PAGAMENTOS:',
+                                                                                                        null),
+                                                                               p_posicao     => 2,
+                                                                               p_delimitador => ':'),
+                                                                 ',',
+                                                                 null),
+                                                         '.',
+                                                         ','),
+                                                 9) as valor_pgto,
+                                doc.valoriss as valor_iss     --ALTERADO 21/10/2021 LIZARDO          
+                           from ad_xmlnfsehmm doc
+                           left join table(explode('+', substr(doc.discriminacao, instr(doc.discriminacao, 'PAGAMENTOS:'), 4000))) t
+                             on 1 = 1
+                          where doc.numero = reg.numero
+                            and doc.numerorps = reg.numerorps
+                            and doc.sequencia = reg.sequencia)
+            loop
+            
+              stp_keygen_tgfnum(p_arquivo => 'TGFFIN',
+                                p_codemp  => 1,
+                                p_tabela  => 'TGFFIN',
+                                p_campo   => 'NUFIN',
+                                p_dsync   => 0,
+                                p_ultcod  => v_nufin);
+            
+              begin
+                select t.codtiptit,
+                       nvl(t.qtddias, 0)
+                  into v_codtiptit,
+                       v_qtddias
+                  from ad_relparmtit t
+                 inner join tgftit tit
+                    on tit.codtiptit = t.codtiptit
+                   and tit.ativo = 'S'
+                 where t.nurelparm = 3
+                   and upper(trim(t.texto)) = upper(trim(pgto.forma_pgto))
+                   and rownum = 1;
+              exception
+                when no_data_found then
+                  -- CORREÇÃO: Usar mapeamento direto baseado na descrição da forma de pagamento
+                  begin
+         case upper(trim(pgto.forma_pgto))
+             when 'DIARIA' then
+               -- Usar BOLETO (codtiptit = 4)
+               select 4, 30 -- 30 dias padrão para boleto
+                 into v_codtiptit, v_qtddias
+                 from dual;
+             when 'DIVERSOS' then
+               -- Usar DINHEIRO (codtiptit = 2)
+               select 2, 0 -- À vista
+                 into v_codtiptit, v_qtddias
+                 from dual;
+             when 'OTHERS' then
+               -- Usar DINHEIRO (codtiptit = 2) para casos genéricos
+               select 2, 0 -- À vista
+                 into v_codtiptit, v_qtddias
+                 from dual;
+             else
+               -- Verificar se é uma variação de DIARIA ou DIVERSOS com "VALOR LIQUIDO"
+               if instr(upper(trim(pgto.forma_pgto)), 'DIARIA') > 0 then
+                 -- Qualquer variação com DIARIA usa BOLETO
+                 select 4, 30
+                   into v_codtiptit, v_qtddias
+                   from dual;
+               elsif instr(upper(trim(pgto.forma_pgto)), 'EVENTO') > 0 then
+                 -- EVENTO usa DINHEIRO
+                 select 2, 0
+                   into v_codtiptit, v_qtddias
+                   from dual;
+               else
+                 -- Para outros casos, usar o primeiro tipo de título ativo
+                 select tit.codtiptit, 0
+                   into v_codtiptit, v_qtddias
+                   from tgftit tit
+                  where tit.ativo = 'S'
+                    and tit.codtiptit = (select min(t.codtiptit) from tgftit t where t.ativo = 'S')
+                    and rownum = 1;
+               end if;
+                    end case;
+                  exception
+                    when no_data_found then
+                      -- Último recurso: pegar qualquer tipo de título ativo
+                      select tit.codtiptit, 0
+                        into v_codtiptit, v_qtddias
+                        from tgftit tit
+                       where tit.ativo = 'S'
+                         and rownum = 1;
+                  end;
+              end;
+            
+              v_desdob := v_desdob + 1;
+            
+          insert into tgffin
+            (nufin,
+             codemp,
+             numnota,
+             numnfse,
+             serienota,
+             dtneg,
+             dhmov,
+             dtvencinic,
+             dtvenc,
+             codparc,
+             codtipoper,
+             dhtipoper,
+             codbco,
+             codnat,
+             codcencus,
+             vlrdesdob,
+             recdesp,
+             provisao,
+             origem,
+             dtentsai,
+             dtalter,
+             codusu,
+             codtiptit,
+             historico,
+             nunota,
+             desdobramento)
+          values
+            (v_nufin, --nufin,
+             reg.codemp, --codemp,
+             reg.numerorps, --numnota,
+             reg.numero, --numnfse
+             substr(reg.serie, 1, 1), --serienota
+             trunc(reg.dataemissao), --dtneg, --CORREÇÃO: Remover horas da data
+             reg.dataemissao, --dhmov,
+             trunc(reg.dataemissao) + v_qtddias, --dtvencinic, --CORREÇÃO: Remover horas da data
+             trunc(reg.dataemissao) + v_qtddias, --dtvenc, --CORREÇÃO: Remover horas da data
+             reg.codparc, --codparc,
+             v_codtipoper, --codtipoper,
+             v_dhtipoper, --dhtipoper,
+             0, --codbco,
+             v_codnat, --codnat,
+             v_codcencus, --codcencus,
+             (pgto.valor_pgto - pgto.valor_iss), --vlrdesdob, --ALTERADO 21/10/2021 LIZARDO
+             v_atualfin, --recdesp,
+             (case when v_tipatualfin = 'I' then 'N' else 'S' end), --provisao,
+             'E', --origem,
+             trunc(reg.dataemissao), --dtentsai, --CORREÇÃO: Remover horas da data
+             sysdate, --dtalter,
+             p_codusu, --codusu,
+             v_codtiptit, --codtiptit,
+             substr(reg.discriminacao, 1, 255), --historico
+             v_nunota, --nunota
+             v_desdob --desdobramento
+             )
+              returning vlrdesdob + v_vlrdesdob_acum into v_vlrdesdob_acum;
+            
+            end loop;
+          
+            if v_vlrnota > v_vlrdesdob_acum then
+            
+              for ppg in (select p.*,
+                                 v_vlrnota - v_vlrdesdob_acum as dif_fin
+                            from tgfppg p
+                           where p.codtipvenda = v_codtipvenda
+                           order by p.sequencia)
+              loop
+              
+                stp_keygen_tgfnum(p_arquivo => 'TGFFIN',
+                                  p_codemp  => 1,
+                                  p_tabela  => 'TGFFIN',
+                                  p_campo   => 'NUFIN',
+                                  p_dsync   => 0,
+                                  p_ultcod  => v_nufin);
+              
+                v_desdob := v_desdob + 1;
+              
+                insert into tgffin
+                  (nufin,
+                   codemp,
+                   numnota,
+                   serienota,
+                   dtneg,
+                   dhmov,
+                   dtvencinic,
+                   dtvenc,
+                   codparc,
+                   codtipoper,
+                   dhtipoper,
+                   codbco,
+                   codnat,
+                   codcencus,
+                   vlrdesdob,
+                   recdesp,
+                   provisao,
+                   origem,
+                   dtentsai,
+                   dtalter,
+                   codusu,
+                   codtiptit,
+                   historico,
+                   nunota)
+                values
+                  (v_nufin, --nufin,
+                   reg.codemp, --codemp,
+                   reg.numerorps, --numnota,
+                   substr(reg.serie, 1, 1), --serienota
+                   trunc(reg.dataemissao), --dtneg, --CORREÇÃO: Remover horas da data
+                   reg.dataemissao, --dhmov,
+                   trunc(reg.dataemissao) + ppg.prazo, --dtvencinic, --CORREÇÃO: Remover horas da data
+                   trunc(reg.dataemissao) + ppg.prazo, --dtvenc, --CORREÇÃO: Remover horas da data
+                   reg.codparc, --codparc,
+                   v_codtipoper, --codtipoper,
+                   v_dhtipoper, --dhtipoper,
+                   nvl(ppg.codbcopad, 0), --codbco,
+                   (case when nvl(ppg.codnatpad, 0) = 0 then v_codnat else
+                    ppg.codnatpad end), --codnat,
+                   (case when nvl(ppg.codcencuspad, 0) = 0 then v_codcencus else
+                    ppg.codcencuspad end), --codcencus,
+                   round(ppg.dif_fin * ppg.percentual, 2), --vlrdesdob,
+                   v_atualfin, --recdesp,
+                   (case when v_tipatualfin = 'I' then 'N' else 'S' end), --provisao,
+                   'E', --origem,
+                   trunc(reg.dataemissao), --dtentsai, --CORREÇÃO: Remover horas da data
+                   sysdate, --dtalter,
+                   p_codusu, --codusu,
+                   nvl(ppg.codtiptitpad, 0), --codtiptit,
+                   substr('Ajustes no valor de ' ||
+                          round(ppg.dif_fin * ppg.percentual, 2) ||
+                          ' devida diferença entre valor da nota e total dos financeiros do xml  //  ' ||
+                          reg.discriminacao,
+                          1,
+                          255), --historico
+                   v_nunota --nunota
+                   )
+                returning vlrdesdob + v_vlrdesdob_acum into v_vlrdesdob_acum;
+              
+                v_vlrdif_fin := v_vlrdif_fin +
+                                round(ppg.dif_fin * ppg.percentual, 2);
+              
+              end loop;
+            
+              if v_vlrdesdob_acum <> v_vlrnota then
+              
+                update tgffin f
+                   set f.vlrdesdob = f.vlrdesdob +
+                                     (v_vlrnota - v_vlrdesdob_acum)
+                 where f.nunota = v_nunota
+                   and f.nufin = (select max(ff.nufin)
+                                    from tgffin ff
+                                   where ff.nunota = v_nunota);
+              
+                v_vlrdif_fin := v_vlrdif_fin +
+                                (v_vlrnota - v_vlrdesdob_acum);
+              
+              end if;
+
+            end if; -- Fecha o bloco else do processamento sem pagamento
+
+            end if;
+          
+          end if;
+        
+          update ad_xmlnfsehmm n
+             set n.status  = 'S',
+                 n.obsproc = 'Processado com sucesso' || (case
+                               when nvl(v_vlrdif_fin, 0) <> 0 then
+                                chr(13) || chr(13) ||
+                                'Ajustada diferença de ' || v_vlrdif_fin ||
+                                ' devida diferença entre valor da nota e total dos financeiros do xml'
+                               else
+                                null
+                             end),
+                 n.nunota  = v_nunota,
+                 n.codusu  = p_codusu,
+                 n.dhalter = current_date
+           where n.numero = reg.numero
+             and n.numerorps = reg.numerorps
+             and n.sequencia = reg.sequencia;
+        
+          v_qtdinc := v_qtdinc + 1;
+        
+        exception
+          when others then
+
+            -- Capturar e tratar exceptions específicas para melhor apresentação ao usuário
+            v_erro := sqlerrm;
+
+            -- Verificar se é erro de contabilidade fechada
+            if instr(upper(v_erro), 'CONTABILIDADE FECHADA') > 0 then
+              v_erro := 'Contabilidade fechada para a data ' || to_char(reg.dataemissao, 'dd/mm/yyyy') ||
+                       '. Não é possível processar notas com datas já fechadas no módulo de vendas. ' ||
+                       chr(13) || chr(13) || 'Solução: Verifique o fechamento contábil ou ajuste a data da nota fiscal.';
+            end if;
+
+            -- Verificar se é erro de mapeamento de formas de pagamento
+            if instr(upper(v_erro), 'NÃO IDENTIFICADO DExPARA VÁLIDO PARA A FORMA DE PAGAMENTO') > 0 then
+              v_erro := 'Forma de pagamento não mapeada no parâmetro 3. ' ||
+                       'Verifique o cadastro de formas de pagamento na configuração do parâmetro.';
+            end if;
+
+            -- Verificar se é erro de parceiro não encontrado
+            if instr(upper(v_erro), 'PARCEIRO COM CPF/CNPJ') > 0 and instr(upper(v_erro), 'NÃO IDENTIFICADO') > 0 then
+              v_erro := 'Parceiro (tomador) não encontrado no cadastro. ' ||
+                       'CPF/CNPJ: ' || reg.cpf_cnpj_tomador || ' - ' || reg.razaosocial_tomador ||
+                       chr(13) || chr(13) || 'Solução: Cadastre o parceiro ou marque a opção "Cadastrar Parceiro Automaticamente".';
+            end if;
+
+            -- Verificar se é erro de empresa não encontrada
+            if instr(upper(v_erro), 'EMPRESA COM CNPJ') > 0 and instr(upper(v_erro), 'NÃO IDENTIFICADA') > 0 then
+              v_erro := 'Empresa (prestador) não encontrada no cadastro. ' ||
+                       'CNPJ: ' || reg.cnpj_prestador ||
+                       chr(13) || chr(13) || 'Solução: Verifique se a empresa está ativa no cadastro.';
+            end if;
+
+            -- Verificar se é erro de violação de constraint (dados obrigatórios)
+            if instr(upper(v_erro), 'ORA-01400') > 0 or instr(upper(v_erro), 'NÃO É POSSÍVEL INSERIR NULL') > 0 then
+              v_erro := 'Erro de dados obrigatórios não preenchidos. ' ||
+                       'Verifique se todos os campos obrigatórios estão sendo informados corretamente.';
+            end if;
+
+            -- Verificar se é erro de chave duplicada
+            if instr(upper(v_erro), 'ORA-00001') > 0 or instr(upper(v_erro), 'VIOLAÇÃO DE CHAVE ÚNICA') > 0 then
+              v_erro := 'Registro duplicado. Já existe uma nota fiscal com os mesmos dados. ' ||
+                       'Nota: ' || reg.numero || ' RPS: ' || reg.numerorps;
+            end if;
+
+            -- Verificar se é erro de valor inválido
+            if instr(upper(v_erro), 'ORA-01481') > 0 or instr(upper(v_erro), 'VALOR MUITO GRANDE') > 0 then
+              v_erro := 'Valor numérico muito grande. Verifique os valores da nota fiscal.';
+            end if;
+
+            -- Verificar se é erro de tipo de operação inválido
+            if instr(upper(v_erro), 'TIPO DE OPERAÇÃO') > 0 and instr(upper(v_erro), 'NÃO IDENTIFICADO') > 0 then
+              v_erro := 'Tipo de operação não identificado no parâmetro 3. ' ||
+                       'Verifique a configuração do parâmetro de relatórios personalizados.';
+            end if;
+
+            -- Verificar se é erro de natureza inválida
+            if instr(upper(v_erro), 'NATUREZA') > 0 and instr(upper(v_erro), 'NÃO IDENTIFICADA') > 0 then
+              v_erro := 'Natureza não identificada no parâmetro 3. ' ||
+                       'Verifique se a natureza está ativa e analítica.';
+            end if;
+
+            -- Verificar se é erro de centro de custo inválido
+            if instr(upper(v_erro), 'CENTRO DE RESULTADO') > 0 and instr(upper(v_erro), 'NÃO IDENTIFICADO') > 0 then
+              v_erro := 'Centro de resultado não identificado no parâmetro 3. ' ||
+                       'Verifique se o centro de custo está ativo e analítico.';
+            end if;
+
+            -- Verificar se é erro de data de negociação com hora
+            if instr(upper(v_erro), 'DATA DE NEGOCIAÇÃO COM HORA') > 0 then
+              v_erro := 'Erro de data de negociação com hora no financeiro. ' ||
+                       'A data da nota fiscal contém informações de hora que não são aceitas pelo sistema financeiro. ' ||
+                       chr(13) || chr(13) || 'Solução: A procedure foi corrigida para remover as horas das datas. Recompile e execute novamente.';
+            end if;
+
+            rollback to gravar_nota;
+
+            update ad_xmlnfsehmm n
+               set n.status  = 'N',
+                   n.obsproc = n.obsproc || chr(13) ||
+                               'Erro de processamento: ' || v_erro,
+                   n.codusu  = p_codusu,
+                   n.dhalter = current_date
+             where n.numero = reg.numero
+               and n.numerorps = reg.numerorps
+               and n.sequencia = reg.sequencia;
+
+            v_qtderr := v_qtdinc + 1;
+
+        end;
+      
+      end if;
+    
+      <<sai_reg>>
+      null;
+    
+    end loop;
+  
+  end loop;
+
+  p_mensagem := v_qtdinc || ' notas incluídas.<br>' || --
+                v_qtderr || ' notas com erro de processamento.<br>' || --
+                v_qtdexistia || ' notas já processadas anteriormente';
+
+end;

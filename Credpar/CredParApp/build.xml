@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="CredPar-App" default="geral" basedir=".">
+	
+	<property name="app-name-sankhya-android" value="www-crepar-android.zip" />
+	<property name="app-name-sankhya-iphone" value="www-crepar-iphone.zip" />
+	<property name="app-name-sankhya" value="www-crepar.zip" />
+	<property name="app-index-html" value="${basedir}/assets/www/index.html" />
+	<property name="app-config-template" value="${basedir}/assets/www/config-template.xml" />
+	<property name="app-config" value="${basedir}/assets/www/config.xml" />
+	
+	<property name="dist-app" value="${basedir}/dist/phonegap" />
+	<target name="geral" description="Empacota App para disponibilizar no Phonegap" depends="clean,gera_android_iphone">
+	</target>
+	
+	<target name="clean">
+		<echo>Limpando dist ${dist-plugin}</echo>
+		<delete dir="${dist-app}" failonerror="true" verbose="false" />
+		<mkdir dir="${dist-app}"/>
+	</target>
+	<target name="compile-config">
+		<echo>Gerando configuração...</echo>
+		
+		<copy file="${app-config-template}" tofile="${app-config}" overwrite="true" />
+		
+		<replaceregexp match="\{APP_ID\}" replace="${APP_ID}" file="${app-config}" flags="ig" />
+		<replaceregexp match="\{APP_VERSION\}" replace="${APP_VERSION}" file="${app-config}" flags="ig" />
+		<replaceregexp match="\{VERSION_CODE}" replace="${VERSION_CODE}" file="${app-config}" flags="ig" />
+		<replaceregexp match="\{APP_NAME\}" replace="${APP_NAME}" file="${app-config}" flags="ig" />
+		<replaceregexp match="\{APP_DESCRIPTION\}" replace="${APP_DESCRIPTION}" file="${app-config}" flags="ig" />
+		<replaceregexp match="\{APP_SITE\}" replace="${APP_SITE}" file="${app-config}" flags="ig" />
+		<replaceregexp match="\{APP_EMAIL\}" replace="${APP_EMAIL}" file="${app-config}" flags="ig" />
+		<replaceregexp match="\{APP_AUTHOR\}" replace="${APP_AUTHOR}" file="${app-config}" flags="ig" />
+		<replaceregexp match="\{APP_ICON\}" replace="${APP_ICON}" file="${app-config}" flags="ig" />
+		<replaceregexp match="APP_ID\s*=\s*&quot;[\w\.\s]*&quot;" replace="APP_ID = &quot;${APP_ID}&quot;" file="${app-index-html}" flags="ig" />
+	</target>
+	
+	<target name="gera_android_iphone">
+		<antcall target="package_sankhya_app">
+			<param name="app_id_param" value="br.com.credpar.app2"/>
+			<param name="app_zip_name" value="${app-name-sankhya-android}"/>
+		</antcall>
+		
+		<antcall target="package_sankhya_app">
+			<param name="app_id_param" value="br.com.credpar"/>
+			<param name="app_zip_name" value="${app-name-sankhya-iphone}"/>
+		</antcall>
+	</target>
+	
+	<target name="package_sankhya_app" description="Cria pacote SANKHYA WWW para disponibilizar no Phonegap Build">
+
+		<echo>Empacotando SANKHYA WWW ${dist-app}/${app-name-sankhya}</echo>
+		
+		<antcall target="compile-config">
+     		<param name="APP_ID" value="${app_id_param}"/>
+			<param name="APP_VERSION" value="3.0.1"/>
+			<param name="VERSION_CODE" value="10417"/>
+     		<param name="APP_NAME" value="Credpar"/>
+     		<param name="APP_DESCRIPTION" value="Aplicativo Credpar"/>
+     		<param name="APP_SITE" value="http://sankhya.com.br"/>
+     		<param name="APP_EMAIL" value="place@sankhya.com.br"/>
+     		<param name="APP_AUTHOR" value="Sankhya Place"/>
+     		<param name="APP_ICON" value="sankhya"/>
+  		</antcall>
+		<mkdir dir="${dist-app}/www"/>
+
+		<copy todir="${dist-app}/www" failonerror="true" verbose="false">
+			<fileset dir="${basedir}/assets/www">
+				<include name="**/*.*" />
+			</fileset>
+		</copy>
+		<zip destfile="${dist-app}/${app_zip_name}" basedir="${dist-app}"/>
+	</target>
+	
+	<target name="atualizacao_pacote_aberto" description="atualiza pacote aberto - arquivos: .JS .PNG .GIF .JPG .CSS .HTML .JSP">
+		<echo>Atualizando arquivos .JS .PNG .GIF .JPG .CSS .HTML .JSP em ${basedir}\assets\platforms\browser\www\ </echo>
+		<copy todir="${basedir}/assets/platforms/browser/www/" failonerror="true" verbose="true">
+			<fileset dir="${basedir}/assets/www">
+				<include name="**/*.js" />
+				<include name="**/*.png" />
+				<include name="**/*.gif" />
+				<include name="**/*.jpg" />
+				<include name="**/*.css" />
+				<include name="**/*.html" />
+				<include name="**/*.jsp" />
+				<include name="**/*.xml" />
+			</fileset>
+		</copy>
+	</target>
+</project>

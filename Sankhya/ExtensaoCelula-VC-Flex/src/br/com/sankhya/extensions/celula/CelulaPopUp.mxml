@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<controls:DraggablePopUpBox
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:controls="br.com.sankhya.controls.*"
+	xmlns:ui="br.com.sankhya.db.ui.*"
+	>
+	<mx:Script>
+		<![CDATA[
+			import mx.core.Application;
+			
+			import br.com.sankhya.controls.DefaultSankhyaApplication;
+			import br.com.sankhya.util.MessageUtils;
+			
+			private static const LIST_ENTITY_NAME:String = "INDCELPROD";
+			
+			public var onSave:Function;
+			
+			private static function getAppResourceID():String{
+				return (Application.application as DefaultSankhyaApplication).getApplicationResourceID();
+			}
+			
+			override public function hide(forceRemove:Boolean = false):void{
+				if(entityListCelulas.dataChanged){
+					MessageUtils.confirm(
+						"Alterações não salvas",
+						"Antes de fechar, gostaria de salvar a seleção?",
+						function():void{
+							save();
+						},
+						function():void{
+							unconditionalHide();
+						}
+					);
+				} else {
+					unconditionalHide();
+				}
+			}
+			
+			private function unconditionalHide():void{
+				super.hide();
+			}
+			
+			override public function show(p:Point, fixed:Boolean=false):void{
+				super.show(p, fixed);
+				entityListCelulas.loadState();
+			}
+			
+			private function save():void{
+				entityListCelulas.saveState(function ():void{
+					if(onSave != null){
+						onSave();
+					}
+				});
+				unconditionalHide();
+			}
+			
+			private function concluir():void{
+				if(entityListCelulas.dataChanged){
+					save();
+				} else {
+					unconditionalHide();
+				}
+			}
+		]]>
+	</mx:Script>
+	<controls:EntityList id="entityListCelulas"  entityName="INDCELPROD" resourceID="{getAppResourceID()}" width="100%" height="100%" showCheckBox="true" showLabel="false" popupTitle="Pesquisando por Célula"/>
+	<mx:ControlBar horizontalAlign="right" width="100%" backgroundAlpha="0">
+		<mx:Button label="Cancelar" buttonMode="true" click="unconditionalHide()" />
+		<mx:Button label="Aplicar" buttonMode="true" click="concluir()"/>
+	</mx:ControlBar>
+</controls:DraggablePopUpBox>

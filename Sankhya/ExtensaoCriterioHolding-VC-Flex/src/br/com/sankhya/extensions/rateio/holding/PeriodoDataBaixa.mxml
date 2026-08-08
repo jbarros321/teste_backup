@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:ui="br.com.sankhya.db.ui.*">
+	<mx:HBox horizontalGap="0">
+		<mx:Label text="Período de Baixa:"/>
+		<mx:Label color="red" fontSize="14" text="*" />
+		<ui:DBDateField id="dtInicialPeriodoBaixa"/>
+		<mx:Label text=" a"/>
+		<ui:DBDateField id="dtfinalPeriodoBaixa" />
+	</mx:HBox>
+</mx:VBox>

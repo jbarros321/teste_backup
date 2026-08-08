@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE entity>
+
+<entity name="ViewRateioHoldingSimAnalitica" main-object="ViewRateioHoldingSimAnalitica" commit-type="D" isView="true">
+	<runtime max-results="500" timeout="20" load-on-find="true" />
+	<entity-key>
+		<key-member field="NUFIN" />
+		<key-member field="CODEMP" />
+		<key-member field="CODEMPREC" />
+		<key-member field="CODEMPDESP" />
+		<key-member field="CODPARCREC" />
+		<key-member field="CODPARCDESP" />
+		<key-member field="CODNAT" />
+		<key-member field="CODNATREC" />
+		<key-member field="CODNATDESP" />
+		<key-member field="CODCENCUS" />
+		<key-member field="CODCENCUSREC" />
+		<key-member field="CODCENCUSDESP" />
+		<key-member field="CODPROJ" />
+		<key-member field="CODPROJREC" />
+		<key-member field="CODPROJDESP" />
+		<key-member field="RECDESP" />
+	</entity-key>
+</entity>
+

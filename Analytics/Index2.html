@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Lançamento de Armazenagem — DH Original</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --navy: #0f1f3d;
+            --navy-mid: #1a3260;
+            --navy-light: #243a6e;
+            --amber: #e8921a;
+            --amber-light: #f5b34a;
+            --white: #ffffff;
+            --off-white: #f7f8fc;
+            --gray-100: #eef0f6;
+            --gray-200: #d8dce8;
+            --gray-400: #8a91a8;
+            --gray-600: #4a5168;
+            --gray-800: #252c3f;
+            --green: #1a7a4a;
+            --page-bg: #dde1ed;
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --shadow-card: 0 2px 16px rgba(15, 31, 61, 0.10), 0 1px 4px rgba(15, 31, 61, 0.06);
+        }
+
+        body {
+            font-family: 'Barlow', sans-serif;
+            background-color: var(--page-bg);
+            color: var(--gray-800);
+            font-size: 14px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── PAGE LAYOUT ── */
+        #main-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 32px 16px;
+        }
+
+        #print-controls {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 16px;
+        }
+
+        #report-container {
+            width: 100%;
+            max-width: 1100px;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+        }
+
+        /* ── PRINT BUTTON ── */
+        #print-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--navy);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 10px 20px;
+            font-family: 'Barlow', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            cursor: pointer;
+            transition: background 0.18s;
+        }
+
+        #print-button:hover {
+            background: var(--navy-light);
+        }
+
+        #print-button svg {
+            width: 15px;
+            height: 15px;
+        }
+
+        /* ── HEADER BAND ── */
+        .report-header {
+            background: var(--navy);
+            padding: 32px 40px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .logo-block {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-text {
+            line-height: 1.1;
+        }
+
+        .logo-name {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--white);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .logo-tagline {
+            font-size: 11px;
+            font-weight: 400;
+            color: var(--amber-light);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .report-title-block {
+            text-align: right;
+        }
+
+        .report-title-block h1 {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--white);
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .report-subtitle {
+            font-size: 12px;
+            color: var(--amber-light);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-top: 3px;
+        }
+
+        /* ── AMBER ACCENT BAR ── */
+        .accent-bar {
+            height: 4px;
+            background: linear-gradient(90deg, var(--amber) 0%, var(--amber-light) 100%);
+        }
+
+        /* ── BODY CONTENT ── */
+        .report-body {
+            padding: 36px 40px;
+        }
+
+        /* ── INFO CARDS ── */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 36px;
+        }
+
+        .info-card {
+            background: var(--off-white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            border-left: 3px solid var(--navy-light);
+        }
+
+        .info-card-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--gray-400);
+            margin-bottom: 6px;
+        }
+
+        .info-card-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--navy);
+            line-height: 1.3;
+        }
+
+        /* ── KPI CARDS (PDF) ── */
+        .kpi-grid-6 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-box {
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .kpi-box-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .kpi-box-value {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .kpi-box-sub {
+            font-size: 9px;
+            opacity: 0.8;
+        }
+
+        .bg-green {
+            background-color: #166534;
+            border: 1px solid #14532d;
+        }
+
+        .bg-red {
+            background-color: #7f1d1d;
+            border: 1px solid #6b1a1a;
+        }
+
+        .bg-blue {
+            background-color: #1e3a8a;
+            border: 1px solid #1e3070;
+        }
+
+        .bg-purple {
+            background-color: #4c1d95;
+            border: 1px solid #3b0764;
+        }
+
+        .bg-teal {
+            background-color: #0f766e;
+            border: 1px solid #115e59;
+        }
+
+        .bg-orange {
+            background-color: #b45309;
+            border: 1px solid #92400e;
+        }
+
+        /* ── SECTION HEADER ── */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .section-header-line {
+            flex: 1;
+            height: 1px;
+            background: var(--gray-200);
+        }
+
+        .section-header h2 {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--gray-400);
+            white-space: nowrap;
+        }
+
+        /* ── TABLE ── */
+        .table-wrapper {
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            /* Reduzido de 13.5px */
+        }
+
+        thead tr {
+            background: var(--navy);
+        }
+
+        thead th {
+            padding: 10px 12px;
+            /* Reduzido de 12px 18px */
+            font-size: 9px;
+            /* Reduzido de 10px */
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.65);
+            white-space: nowrap;
+        }
+
+        thead th:not(:first-child) {
+            text-align: right;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--gray-100);
+            transition: background 0.12s;
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        tbody tr:nth-child(even) {
+            background: var(--off-white);
+        }
+
+        tbody tr:hover {
+            background: #eef1fb;
+        }
+
+        tbody td {
+            padding: 10px 12px;
+            /* Reduzido de 13px 18px */
+            color: var(--gray-600);
+        }
+
+        tbody td:first-child {
+            color: var(--gray-800);
+            font-weight: 500;
+        }
+
+        tbody td:not(:first-child) {
+            text-align: right;
+        }
+
+        /* NOVA REGRA: Forçar quebra de linha no nome do produto e limitar largura */
+        thead th:first-child,
+        tbody td:first-child {
+            text-align: left;
+            width: 35%;
+            /* Limita a largura da coluna de produto */
+            white-space: normal;
+            /* Permite quebra de linha */
+            word-wrap: break-word;
+        }
+
+        td.valor-total-item {
+            color: var(--navy);
+            font-weight: 600;
+        }
+
+        /* Empty state */
+        td.empty-state {
+            text-align: center;
+            color: var(--gray-400);
+            padding: 40px 18px;
+            font-style: italic;
+        }
+
+        /* ── TOTAL FOOTER ── */
+        .total-section {
+            margin-top: 28px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .total-box {
+            background: var(--navy);
+            border-radius: var(--radius-md);
+            padding: 18px 28px;
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            min-width: 320px;
+        }
+
+        .total-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.55);
+        }
+
+        .total-value {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--amber-light);
+            letter-spacing: 0.02em;
+            margin-left: auto;
+        }
+
+        /* ── REPORT FOOTER ── */
+        .report-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--gray-100);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .report-footer-brand {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--gray-400);
+        }
+
+        .report-footer-brand span {
+            color: var(--navy);
+        }
+
+        .report-footer-date {
+            font-size: 11px;
+            color: var(--gray-400);
+        }
+
+        /* ── ERROR / LOADING ── */
+        #error-container {
+            display: none;
+            width: 100%;
+            max-width: 900px;
+            margin-top: 16px;
+            padding: 28px;
+            background: #fff3f3;
+            border: 1px solid #f5c2c2;
+            border-radius: var(--radius-md);
+            color: #8b1a1a;
+            text-align: center;
+        }
+
+        #error-container p:first-child {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 6px;
+        }
+
+        #loading-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray-400);
+            font-size: 14px;
+        }
+
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0% {
+                content: '';
+            }
+
+            33% {
+                content: '.';
+            }
+
+            66% {
+                content: '..';
+            }
+
+            100% {
+                content: '...';
+            }
+        }
+
+        /* ── PRINT ── */
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 10mm;
+            }
+
+            body {
+                background: white;
+            }
+
+            #print-controls,
+            #error-container {
+                display: none !important;
+            }
+
+            #main-container {
+                padding: 0;
+                display: block;
+            }
+
+            #report-container {
+                box-shadow: none;
+                border-radius: 0;
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .report-body {
+                padding: 15px 20px;
+            }
+
+            /* Reduzido para caber melhor na folha */
+
+            tbody tr:hover {
+                background: inherit;
+            }
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 640px) {
+            .report-header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 24px;
+            }
+
+            .report-title-block {
+                text-align: left;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .report-body {
+                padding: 24px;
+            }
+
+            .total-box {
+                min-width: unset;
+                width: 100%;
+            }
+
+            .total-section {
+                justify-content: stretch;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="main-container">
+
+        <!-- Print Button -->
+        <div id="print-controls">
+            <button id="print-button">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 6 2 18 2 18 9" />
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                    <rect x="6" y="14" width="12" height="8" />
+                </svg>
+                Imprimir / Gerar PDF
+            </button>
+        </div>
+
+        <!-- Error -->
+        <div id="error-container"></div>
+
+        <!-- Report Card -->
+        <div id="report-container">
+
+            <!-- Loading -->
+            <div id="loading-state">
+                <p class="loading-dots">Carregando dados do relatório</p>
+            </div>
+
+            <!-- Actual Report (hidden until data loads) -->
+            <div id="report-content" style="display:none;">
+
+                <!-- Header -->
+                <header class="report-header">
+                    <div class="logos-group" style="display: flex; align-items: center; gap: 24px;">
+                        <div id="partner-logo-container"></div>
+                        <div class="logo-block">
+                            <div class="logo-text">
+                                <div class="logo-name">DH Original</div>
+                                <div class="logo-tagline">Gestão de Armazenagem</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-title-block">
+                        <h1>Relatório de Lançamento</h1>
+                        <div class="report-subtitle">Armazenagem</div>
+                    </div>
+                </header>
+
+                <div class="accent-bar"></div>
+
+                <!-- Body -->
+                <div class="report-body">
+
+                    <!-- Info Cards -->
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <div class="info-card-label">Parceiro</div>
+                            <div id="parceiro-nome" class="info-card-value">—</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-card-label">Tipo de Armazenagem</div>
+                            <div id="tipo-armazenagem" class="info-card-value">—</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-card-label">Data do Lançamento</div>
+                            <div id="data-lancamento" class="info-card-value">—</div>
+                        </div>
+                    </div>
+
+                    <!-- KPI Cards -->
+                    <div class="kpi-grid-6">
+                        <div class="kpi-box bg-green">
+                            <div class="kpi-box-title">↗ ENTRADAS (ERP)</div>
+                            <div class="kpi-box-value" id="pdf-kpi-entradas">—</div>
+                            <div class="kpi-box-sub">Total de peso recebido no período</div>
+                        </div>
+                        <div class="kpi-box bg-red">
+                            <div class="kpi-box-title">↘ SAÍDAS (ERP)</div>
+                            <div class="kpi-box-value" id="pdf-kpi-saidas">—</div>
+                            <div class="kpi-box-sub">Total de peso expedido no período</div>
+                        </div>
+                        <div class="kpi-box bg-blue">
+                            <div class="kpi-box-title">$ SALDO (ERP)</div>
+                            <div class="kpi-box-value" id="pdf-kpi-saldo">—</div>
+                            <div class="kpi-box-sub">Saldo atual em estoque</div>
+                        </div>
+                        <div class="kpi-box bg-purple">
+                            <div class="kpi-box-title">↺ SALDO LÍQUIDO (HISTÓRICO)</div>
+                            <div class="kpi-box-value" id="pdf-kpi-historico">—</div>
+                            <div class="kpi-box-sub">Volume total armazenado até o período</div>
+                        </div>
+                        <div class="kpi-box bg-teal">
+                            <div class="kpi-box-title">≡ ESTOQUE ATUAL (GERAL)</div>
+                            <div class="kpi-box-value" id="pdf-kpi-atual">—</div>
+                            <div class="kpi-box-sub">Saldo líquido de todas as movimentações</div>
+                        </div>
+                        <div class="kpi-box bg-orange">
+                            <div class="kpi-box-title">△ PICO DO PERÍODO</div>
+                            <div class="kpi-box-value" id="pdf-kpi-pico">—</div>
+                            <div class="kpi-box-sub" id="pdf-kpi-pico-data">Maior saldo atingido no período</div>
+                        </div>
+                    </div>
+
+                    <!-- Section Title: Products -->
+                    <div class="section-header">
+                        <h2>Produtos Armazenados</h2>
+                        <div class="section-header-line"></div>
+                    </div>
+
+                    <!-- Table: Products -->
+                    <div class="table-wrapper" style="margin-bottom: 36px;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Entrada (Kg)</th>
+                                    <th>Saída (Kg)</th>
+                                    <th>Saldo Líquido (Kg)</th>
+                                    <th>Saldo Real (Kg)</th>
+                                    <th>Valor Total (R$)</th>
+                                    <th>Representação (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="products-table-body">
+                                <!-- rows injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Section Title -->
+                    <div class="section-header">
+                        <h2>Critérios de Cobrança</h2>
+                        <div class="section-header-line"></div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Critério</th>
+                                    <th>Quantidade</th>
+                                    <th>Valor Unitário (R$)</th>
+                                    <th>Valor Total do Item (R$)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="items-table-body">
+                                <!-- rows injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="total-section">
+                        <div class="total-box">
+                            <span class="total-label">Valor Total Geral</span>
+                            <span id="valor-total-geral" class="total-value">R$ —</span>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="report-footer">
+                        <div class="report-footer-brand">
+                            Emitido por <span>DH Original</span>
+                        </div>
+                        <div id="report-footer-date" class="report-footer-date"></div>
+                    </div>
+
+                </div><!-- /report-body -->
+            </div><!-- /report-content -->
+        </div><!-- /report-container -->
+    </div><!-- /main-container -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const loadingState = document.getElementById('loading-state');
+            const reportContent = document.getElementById('report-content');
+            const errorContainer = document.getElementById('error-container');
+            const printButton = document.getElementById('print-button');
+            const printControls = document.getElementById('print-controls');
+
+            const PLACEHOLDER_SVG = 'data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22300%22%20viewBox%3D%220%200%20400%20300%22%20role%3D%22img%22%20aria-label%3D%22Placeholder%3A%20Imagem%20indispon%C3%ADvel%22%3E%3Ctitle%3EPlaceholder%3A%20Imagem%20indispon%C3%ADvel%3C%2Ftitle%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23E5E7EB%22%3E%3C%2Frect%3E%3Cg%20fill%3D%22%239CA3AF%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220px%22%20text-anchor%3D%22middle%22%3E%3Cpath%20d%3D%22M120%2090%20L180%20150%20L220%20130%20L280%20190%20L120%20190%20Z%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%20fill%3D%22none%22%3E%3C%2Fpath%3E%3Ccircle%20cx%3D%22150%22%20cy%3D%22110%22%20r%3D%2210%22%3E%3C%2Fcircle%3E%3Ctext%20x%3D%22200%22%20y%3D%22230%22%3EImagem%20Indispon%C3%ADvel%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fsvg%3E';
+
+            function renderImageWithFallback(imgElement, imageUrl) {
+                const tempImg = new Image();
+                tempImg.onload = () => { imgElement.src = imageUrl; };
+                tempImg.onerror = () => { imgElement.src = PLACEHOLDER_SVG; };
+                if (!imageUrl || typeof imageUrl !== 'string' || imageUrl.trim() === '') {
+                    imgElement.src = PLACEHOLDER_SVG;
+                    return;
+                }
+                tempImg.src = imageUrl;
+            }
+
+            // Stamp today's date in footer
+            document.getElementById('report-footer-date').textContent =
+                'Gerado em ' + new Date().toLocaleDateString('pt-BR');
+
+            function showError(message) {
+                loadingState.style.display = 'none';
+                reportContent.style.display = 'none';
+                printControls.style.display = 'none';
+                errorContainer.style.display = 'block';
+                errorContainer.innerHTML =
+                    `<p>Erro ao Gerar Relatório</p><p>${message}</p>`;
+            }
+
+            function formatNumberBRL(value) {
+                const n = parseFloat(value);
+                if (isNaN(n)) return '0,00';
+                return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+
+            function formatKg(value) {
+                const n = parseFloat(value);
+                if (isNaN(n)) return '0,00 Kg';
+                return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Kg';
+            }
+
+            function formatDate(dateString) {
+                if (!dateString) return '—';
+                const date = new Date(dateString.substring(0, 19).replace(' ', 'T'));
+                if (isNaN(date.getTime())) return dateString;
+                return date.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+            }
+
+            async function initializeComponent() {
+                try {
+                    const jdbcId = parseInt(componentData.jdbcId, 10);
+                    const [headerResult, itemsResult, productsResult, totaisResult, histResult, atualResult, picoResult, manuaisResult] = await Promise.all([
+                        queryMitra({ query: componentData.queryHeader, jdbcId }),
+                        queryMitra({ query: componentData.queryItens, jdbcId }),
+                        queryMitra({ query: componentData.queryProdutos, jdbcId }),
+                        queryMitra({ query: componentData.queryTotaisErp, jdbcId }),
+                        queryMitra({ query: componentData.querySaldoHistorico, jdbcId }),
+                        queryMitra({ query: componentData.querySaldoAtual, jdbcId }),
+                        queryMitra({ query: componentData.queryPicoPeriodo, jdbcId }),
+                        /* Lançamentos manuais: query opcional — se não estiver configurada
+                           no componente, o relatório continua funcionando sem eles. */
+                        componentData.queryManuais
+                            ? queryMitra({ query: componentData.queryManuais, jdbcId }).catch(err => { console.error('Erro ao buscar lançamentos manuais:', err); return null; })
+                            : Promise.resolve(null)
+                    ]);
+
+                    // 1. Header
+                    if (!headerResult || !headerResult.data || headerResult.data.length === 0)
+                        throw new Error('A consulta de cabeçalho não retornou dados.');
+
+                    const headerData = headerResult.data[0];
+                    const headerMap = {};
+                    headerResult.headers.forEach((h, i) => headerMap[h.name.toUpperCase()] = i);
+
+                    const requiredH = ['NOMEPARC', 'TIPO_ARMAZENAGEM', 'DATA_LANCAMENTO', 'LOGO_URL'];
+                    for (const col of requiredH) {
+                        if (headerMap[col] === undefined)
+                            throw new Error(`Coluna obrigatória '${col}' não encontrada na query do cabeçalho.`);
+                    }
+
+                    // 2. Items
+                    const itemsData = itemsResult.data || [];
+                    const itemsMap = {};
+                    if (itemsResult.headers)
+                        itemsResult.headers.forEach((h, i) => itemsMap[h.name.toUpperCase()] = i);
+
+                    const requiredI = ['NOME_CRITERIO', 'QUANTIDADE', 'VALOR_UNITARIO', 'VALOR_TOTAL_ITEM'];
+                    for (const col of requiredI) {
+                        if (itemsResult.headers && itemsMap[col] === undefined)
+                            throw new Error(`Coluna obrigatória '${col}' não encontrada na query dos itens.`);
+                    }
+
+                    // 3. Products
+                    const productsData = productsResult.data || [];
+                    const productsMap = {};
+                    if (productsResult.headers)
+                        productsResult.headers.forEach((h, i) => productsMap[h.name.toUpperCase()] = i);
+
+                    const requiredP = ['PRODUTO', 'QTD_ENTRADA', 'QTD_SAIDA', 'SALDO_LIQUIDO', 'SALDO_REAL', 'VALOR_TOTAL'];
+                    for (const col of requiredP) {
+                        if (productsResult.headers && productsMap[col] === undefined)
+                            throw new Error(`Coluna obrigatória '${col}' não encontrada na query de produtos.`);
+                    }
+
+                    // 4. Render header info & partner logo
+                    const partnerLogoUrl = headerData[headerMap.LOGO_URL];
+                    if (partnerLogoUrl) {
+                        const partnerLogoContainer = document.getElementById('partner-logo-container');
+                        if (partnerLogoContainer) {
+                            const partnerImg = document.createElement('img');
+                            partnerImg.alt = "Logo do Parceiro";
+                            partnerImg.style.maxHeight = '52px';
+                            partnerImg.style.objectFit = 'contain';
+                            partnerImg.style.borderRadius = 'var(--radius-sm)';
+                            partnerLogoContainer.appendChild(partnerImg);
+                            renderImageWithFallback(partnerImg, partnerLogoUrl);
+                        }
+                    }
+
+                    document.getElementById('parceiro-nome').textContent = headerData[headerMap.NOMEPARC] || '—';
+                    document.getElementById('tipo-armazenagem').textContent = headerData[headerMap.TIPO_ARMAZENAGEM] || '—';
+                    document.getElementById('data-lancamento').textContent = formatDate(headerData[headerMap.DATA_LANCAMENTO]);
+
+                    // Preencher KPIs
+                    if (totaisResult && totaisResult.data && totaisResult.data.length > 0) {
+                        const d = totaisResult.data[0];
+                        document.getElementById('pdf-kpi-entradas').textContent = formatKg(d[0]);
+                        document.getElementById('pdf-kpi-saidas').textContent = formatKg(d[1]);
+                        document.getElementById('pdf-kpi-saldo').textContent = formatKg(d[2]);
+                    }
+                    if (histResult && histResult.data && histResult.data.length > 0) {
+                        document.getElementById('pdf-kpi-historico').textContent = formatKg(histResult.data[0][0]);
+                    }
+                    if (atualResult && atualResult.data && atualResult.data.length > 0) {
+                        document.getElementById('pdf-kpi-atual').textContent = formatKg(atualResult.data[0][0]);
+                    }
+                    if (picoResult && picoResult.data && picoResult.data.length > 0) {
+                        document.getElementById('pdf-kpi-pico').textContent = formatKg(picoResult.data[0][0]);
+                        const dataPico = picoResult.data[0][1];
+                        document.getElementById('pdf-kpi-pico-data').textContent = dataPico === 'Saldo Inicial' ? dataPico : `Atingido em: ${dataPico}`;
+                    }
+
+                    // 5. Render Products table
+                    const tbodyProducts = document.getElementById('products-table-body');
+                    tbodyProducts.innerHTML = '';
+
+                    if (productsData.length > 0) {
+                        // Calcular o total do Saldo Líquido para a base da Representação (%)
+                        let totalSaldoLiquido = 0;
+                        productsData.forEach(p => {
+                            const sld = parseFloat(p[productsMap.SALDO_LIQUIDO]) || 0;
+                            if (sld > 0) totalSaldoLiquido += sld;
+                        });
+
+                        productsData.forEach(product => {
+                            const ent = parseFloat(product[productsMap.QTD_ENTRADA]) || 0;
+                            const sai = parseFloat(product[productsMap.QTD_SAIDA]) || 0;
+                            const sld = parseFloat(product[productsMap.SALDO_LIQUIDO]) || 0;
+                            const sldReal = parseFloat(product[productsMap.SALDO_REAL]) || 0;
+                            const val = parseFloat(product[productsMap.VALOR_TOTAL]) || 0;
+
+                            let prc = 0;
+                            if (totalSaldoLiquido > 0 && sld > 0) {
+                                prc = (sld / totalSaldoLiquido) * 100;
+                            }
+
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                        <td>${product[productsMap.PRODUTO] || ''}</td>
+                        <td>${formatNumberBRL(ent)}</td>
+                        <td>${formatNumberBRL(sai)}</td>
+                        <td><strong>${formatNumberBRL(sld)}</strong></td>
+                        <td><strong>${formatNumberBRL(sldReal)}</strong></td>
+                        <td>R$ ${formatNumberBRL(val)}</td>
+                        <td>${formatNumberBRL(prc)}%</td>`;
+                            tbodyProducts.appendChild(tr);
+                        });
+                    } else {
+                        tbodyProducts.innerHTML = '<tr><td colspan="7" class="empty-state">Nenhum produto vinculado a este lançamento.</td></tr>';
+                    }
+
+                    // 6. Render Items rows
+                    const tbodyItems = document.getElementById('items-table-body');
+                    tbodyItems.innerHTML = '';
+                    let totalGeral = 0;
+
+                    if (itemsData.length > 0) {
+                        itemsData.forEach(item => {
+                            const totalItem = parseFloat(item[itemsMap.VALOR_TOTAL_ITEM]) || 0;
+                            totalGeral += totalItem;
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                        <td>${item[itemsMap.NOME_CRITERIO] || ''}</td>
+                        <td>${item[itemsMap.QUANTIDADE] || '0'}</td>
+                        <td>${formatNumberBRL(item[itemsMap.VALOR_UNITARIO])}</td>
+                        <td class="valor-total-item">${formatNumberBRL(totalItem)}</td>`;
+                            tbodyItems.appendChild(tr);
+                        });
+                    }
+
+                    // 6b. Render manual entries in the same table and add them to the grand total
+                    const manuaisData = manuaisResult?.data || [];
+                    if (manuaisData.length > 0) {
+                        // Resolve colunas por nome (tolerante a variações); fallback: col 1 = critério, última col = valor
+                        const mMap = {};
+                        (manuaisResult.headers || []).forEach((h, i) => mMap[h.name.toUpperCase()] = i);
+                        const pick = (...names) => { for (const n of names) if (mMap[n] !== undefined) return mMap[n]; return -1; };
+                        const colCriterio = pick('NOME_CRITERIO', 'CRITERIO', 'DESCRICAO');
+                        const colValor = pick('VALOR_TOTAL_ITEM', 'VALOR_TOTAL', 'VALOR');
+                        const colQtd = pick('QUANTIDADE', 'QTD');
+                        const colUnit = pick('VALOR_UNITARIO');
+
+                        manuaisData.forEach(item => {
+                            const nome = colCriterio >= 0 ? item[colCriterio] : item[1];
+                            const valorRaw = colValor >= 0 ? item[colValor] : item[item.length - 1];
+                            const totalItem = parseFloat(valorRaw) || 0;
+                            totalGeral += totalItem;
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                        <td>${nome || '—'} <span style="font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--amber);border:1px solid var(--amber-light);border-radius:10px;padding:1px 7px;margin-left:6px;white-space:nowrap;">Manual</span></td>
+                        <td>${colQtd >= 0 && item[colQtd] != null && item[colQtd] !== '' ? item[colQtd] : '—'}</td>
+                        <td>${colUnit >= 0 && item[colUnit] != null && item[colUnit] !== '' ? formatNumberBRL(item[colUnit]) : '—'}</td>
+                        <td class="valor-total-item">${formatNumberBRL(totalItem)}</td>`;
+                            tbodyItems.appendChild(tr);
+                        });
+                    }
+
+                    if (itemsData.length === 0 && manuaisData.length === 0) {
+                        tbodyItems.innerHTML = '<tr><td colspan="4" class="empty-state">Nenhum item encontrado para este lançamento.</td></tr>';
+                    }
+
+                    document.getElementById('valor-total-geral').textContent = 'R$ ' + formatNumberBRL(totalGeral);
+
+                    // 7. Show
+                    loadingState.style.display = 'none';
+                    reportContent.style.display = 'block';
+                    printButton.addEventListener('click', () => window.print());
+
+                } catch (error) {
+                    console.error('Falha ao gerar o relatório:', error);
+                    showError(error.message || 'Não foi possível carregar os dados. Verifique a configuração do componente.');
+                }
+            }
+
+            function waitForMitraAndInit() {
+                const maxWait = 5000;
+                const interval = 100;
+                const start = Date.now();
+                const timer = setInterval(() => {
+                    if (window.componentData &&
+                        window.componentData.queryHeader &&
+                        window.componentData.queryItens &&
+                        window.componentData.queryProdutos &&
+                        window.componentData.queryTotaisErp &&
+                        window.componentData.querySaldoHistorico &&
+                        window.componentData.querySaldoAtual &&
+                        window.componentData.queryPicoPeriodo &&
+                        window.componentData.jdbcId) {
+                        clearInterval(timer);
+                        initializeComponent();
+                    } else if (Date.now() - start > maxWait) {
+                        clearInterval(timer);
+                        showError('As configurações do componente (queries, jdbcId) não foram carregadas a tempo.');
+                    }
+                }, interval);
+            }
+
+            waitForMitraAndInit();
+        });
+    </script>
+</body>
+
+</html>

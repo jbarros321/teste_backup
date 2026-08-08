@@ -1,0 +1,261 @@
+create or replace procedure "PROC_IMP_XMLNFSEHMM_MARTINS"(p_codusu    number, -- Código do usuário logado
+                                                          p_idsessao  varchar2, -- Identificador da execução. Serve para buscar informações dos parâmetros/campos da execução.
+                                                          p_qtdlinhas number, -- Informa a quantidade de registros selecionados no momento da execução.
+                                                          p_mensagem  out varchar2, -- Caso seja passada uma mensagem aqui, ela será exibida como uma informação ao usuário.
+                                                          p_imp_xml   varchar2 default 'N') as
+  field_sequencia number;
+  v_qtdreg        number;
+  v_titulo        varchar(4000);
+  v_mensagem      varchar(4000);
+  v_incluir       boolean := true;
+  v_qtdinc        number := 0;
+begin
+  /*
+  Autor: Rodrigo Coutinho
+  Data/Hora da Implementação: 17/08/2021
+  Justificativa da Implementação: Importação de XMLs de notas fiscais de serviço do Hotel Mega Modas
+  */
+
+  -- Os valores informados pelo formulário de parâmetros, podem ser obtidos com as funções:
+  --     ACT_INT_PARAM
+  --     ACT_DEC_PARAM
+  --     ACT_TXT_PARAM
+  --     ACT_DTA_PARAM
+  -- Estas funções recebem 2 argumentos:
+  --     ID DA SESSÃO - Identificador da execução (Obtido através de P_IDSESSAO))
+  --     NOME DO PARAMETRO - Determina qual parametro deve se deseja obter.
+
+  if p_qtdlinhas > 1 then
+    p_mensagem := 'Favor selecionar apenas uma linha para processamento';
+    return;
+  end if;
+
+  for i in 1 .. p_qtdlinhas -- Este loop permite obter o valor de campos dos registros envolvidos na execução.
+  loop
+    -- A variável "I" representa o registro corrente.
+    -- Para obter o valor dos campos utilize uma das seguintes funções:
+    --     ACT_INT_FIELD (Retorna o valor de um campo tipo NUMÉRICO INTEIRO))
+    --     ACT_DEC_FIELD (Retorna o valor de um campo tipo NUMÉRICO DECIMAL))
+    --     ACT_TXT_FIELD (Retorna o valor de um campo tipo TEXTO),
+    --     ACT_DTA_FIELD (Retorna o valor de um campo tipo DATA)
+    -- Estas funções recebem 3 argumentos:
+    --     ID DA SESSÃO - Identificador da execução (Obtido através do parâmetro P_IDSESSAO))
+    --     NÚMERO DA LINHA - Relativo a qual linha selecionada.
+    --     NOME DO CAMPO - Determina qual campo deve ser obtido.
+    field_sequencia := act_int_field(p_idsessao, i, 'SEQUENCIA');
+  
+    select count(1)
+      into v_qtdreg
+      from ad_xmlnfsehmm x
+     where x.sequencia = field_sequencia;
+  
+    if v_qtdreg = 0 then
+      v_incluir := true;
+    else
+    
+      if p_imp_xml = 'N' then
+      
+        -- Senão, faz uma pergunta ao usuário.
+        v_titulo   := 'Movimentos já existentes na grade';
+        v_mensagem := 'Já existem ' || v_qtdreg ||
+                      'notas na grade. Deseja apaga-las e incluir novamente?' ||
+                      '<br>' ||
+                      '<br>Clicar "Sim" para apagar e incluir novamente' ||
+                      '<br>Clicar "Não" para incluir apenas faltantes' ||
+                      '<br>Clicar "Cancela" para cancelar o processamento';
+        v_incluir  := act_escolher_simnao(v_titulo,
+                                          v_mensagem,
+                                          p_idsessao,
+                                          i) = 'S';
+      
+        if v_incluir then
+          delete ad_xmlnfsehmm x where x.sequencia = field_sequencia;
+        end if;
+      
+      end if;
+    
+    end if;
+  
+    -- ===========================================
+    -- PROCESSAMENTO SIMPLIFICADO DE XML CONCATENADO - LAYOUT GOIÂNIA
+    -- ===========================================
+    DECLARE
+        v_xml_content CLOB;
+        v_current_pos NUMBER := 1;
+        v_doc_start NUMBER := 0;
+        v_doc_end NUMBER := 0;
+        v_single_doc CLOB;
+    BEGIN
+        -- Obter o XML da tabela
+        SELECT xml INTO v_xml_content
+        FROM ad_xmlnfsehmmc
+        WHERE sequencia = field_sequencia;
+
+        -- Limpar caracteres de controle
+        v_xml_content := REPLACE(REPLACE(REPLACE(REPLACE(v_xml_content, CHR(0), ''), CHR(1), ''), CHR(26), ''), CHR(13), '');
+
+        -- Limpar conteúdo estranho no início do XML
+        v_doc_start := INSTR(v_xml_content, '<GerarNfseResposta');
+        IF v_doc_start > 1 THEN
+            v_xml_content := SUBSTR(v_xml_content, v_doc_start);
+        END IF;
+
+
+        -- Loop para processar cada documento GerarNfseResposta
+        LOOP
+            -- Encontrar o início do próximo documento
+            v_doc_start := INSTR(v_xml_content, '<GerarNfseResposta', v_current_pos);
+            IF v_doc_start = 0 THEN
+                EXIT; -- Não há mais documentos
+            END IF;
+
+            -- Encontrar o fim deste documento
+            v_doc_end := INSTR(v_xml_content, '</GerarNfseResposta>', v_doc_start) + LENGTH('</GerarNfseResposta>');
+
+            IF v_doc_end = 0 THEN
+                EXIT; -- Documento malformado
+            END IF;
+
+            -- Extrair o documento completo
+            v_single_doc := SUBSTR(v_xml_content, v_doc_start, v_doc_end - v_doc_start);
+
+            -- Limpar namespaces problemáticos
+            v_single_doc := REPLACE(v_single_doc, 'xmlns="http://nfse.goiania.go.gov.br/xsd/nfse_gyn_v02.xsd"', '');
+            v_single_doc := REPLACE(v_single_doc, 'xmlns="http://www.abrasf.org.br/nfse.xsd"', '');
+            v_single_doc := REPLACE(v_single_doc, 'xmlns="http://nfse.abrasf.org.br"', '');
+
+
+            -- Processar NFS-e deste documento específico
+            BEGIN
+                FOR nfs IN (
+                    SELECT t.numero,
+                       t.codigoverificacao,
+                       ad_ctb.fc_datexmlnfe(t.dataemissao) as dataemissao,
+                       replace(t.basecalculo, '.', ',') as basecalculo,
+                       replace(t.aliquota, '.', ',') as aliquota,
+                       replace(t.valoriss, '.', ',') as valoriss,
+                       t.numerorps,
+                       t.serierps,
+                       t.tiporps,
+                       ad_ctb.fc_datexmlnfe(t.dataemissaorps) as dataemissaorps,
+                       ad_ctb.fc_datexmlnfe(t.competencia) as competencia,
+                       replace(t.valorservicos, '.', ',') as valorservicos,
+                       replace(t.valordeducoes, '.', ',') as valordeducoes,
+                       replace(t.valorpis, '.', ',') as valorpis,
+                       replace(t.valorcofins, '.', ',') as valorcofins,
+                       replace(t.valorinss, '.', ',') as valorinss,
+                       replace(t.valorir, '.', ',') as valorir,
+                       replace(t.valorcsll, '.', ',') as valorcsll,
+                       replace(t.valoriss2, '.', ',') as valoriss2,
+                       replace(t.aliquota2, '.', ',') as aliquota2,
+                       replace(t.descontoincondicionado, '.', ',') as descontoincondicionado,
+                       t.issretido,
+                       t.codigotributacaomunicipio,
+                       t.discriminacao,
+                       t.codigomunicipio,
+                       t.exigibilidadeiss,
+                       t.municipioincidencia,
+                       t.cnpj_prestador,
+                       t.inscricaomunicipal_prestador,
+                       t.cpf_tomador,
+                       t.cnpj_tomador,
+                       t.inscricaomunicipal_tomador,
+                       t.razaosocial_tomador,
+                       t.endereco_tomador,
+                       t.numero_tomador,
+                       t.complemento_tomador,
+                       t.bairro_tomador,
+                       t.codigomunicipio_tomador,
+                       t.uf_tomador,
+                       t.cep_tomador,
+                       t.optantesimplesnacional
+                FROM XMLTABLE('GerarNfseResposta/ListaNfse/CompNfse'
+                             PASSING XMLTYPE(v_single_doc) COLUMNS --
+                             numero varchar2(4000) path 'Nfse/InfNfse/Numero',
+                             codigoverificacao varchar2(4000) path 'Nfse/InfNfse/CodigoVerificacao',
+                             dataemissao varchar2(4000) path 'Nfse/InfNfse/DataEmissao',
+                             basecalculo varchar2(4000) path 'Nfse/InfNfse/ValoresNfse/BaseCalculo',
+                             aliquota varchar2(4000) path 'Nfse/InfNfse/ValoresNfse/Aliquota',
+                             valoriss varchar2(4000) path 'Nfse/InfNfse/ValoresNfse/ValorIss',
+                             numerorps varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Rps/IdentificacaoRps/Numero | Nfse/InfNfse/DeclaracaoPrestacaoServico/IdentificacaoRps/Numero',
+                             serierps varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Rps/IdentificacaoRps/Serie | Nfse/InfNfse/DeclaracaoPrestacaoServico/IdentificacaoRps/Serie',
+                             tiporps varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Rps/IdentificacaoRps/Tipo | Nfse/InfNfse/DeclaracaoPrestacaoServico/IdentificacaoRps/Tipo',
+                             dataemissaorps varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Rps/DataEmissao | Nfse/InfNfse/DeclaracaoPrestacaoServico/DataEmissao',
+                             competencia varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Competencia | Nfse/InfNfse/DeclaracaoPrestacaoServico/Competencia',
+                             valorservicos varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/ValorServicos | Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/ValorServicos',
+                             valordeducoes varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/ValorDeducoes | Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/ValorDeducoes',
+                             valorpis varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/ValorPis | Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/ValorPis',
+                             valorcofins varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/ValorCofins | Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/ValorCofins',
+                             valorinss varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/ValorInss | Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/ValorInss',
+                             valorir varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/ValorIr | Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/ValorIr',
+                             valorcsll varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/ValorCsll | Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/ValorCsll',
+                             valoriss2 varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/ValorIss | Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/ValorIss',
+                             aliquota2 varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/Aliquota | Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/Aliquota',
+                             descontoincondicionado varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/DescontoIncondicionado | Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/DescontoIncondicionado',
+                             issretido varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/IssRetido | Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/IssRetido',
+                             codigotributacaomunicipio varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/CodigoTributacaoMunicipio | Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/CodigoTributacaoMunicipio',
+                             discriminacao varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Discriminacao | Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Discriminacao',
+                             codigomunicipio varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/CodigoMunicipio | Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/CodigoMunicipio',
+                             exigibilidadeiss varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/ExigibilidadeISS | Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/ExigibilidadeISS',
+                             municipioincidencia varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/MunicipioIncidencia | Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/MunicipioIncidencia',
+                             cnpj_prestador varchar2(4000) path 'Nfse/InfNfse/PrestadorServico/CpfCnpj/Cnpj | Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Prestador/CpfCnpj/Cnpj | Nfse/InfNfse/DeclaracaoPrestacaoServico/Prestador/IdentificacaoPrestador/CpfCnpj/Cnpj',
+                             inscricaomunicipal_prestador varchar2(4000) path 'Nfse/InfNfse/PrestadorServico/InscricaoMunicipal | Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Prestador/InscricaoMunicipal | Nfse/InfNfse/DeclaracaoPrestacaoServico/Prestador/IdentificacaoPrestador/InscricaoMunicipal',
+                             cpf_tomador varchar2(4000) path 'Nfse/InfNfse/TomadorServico/IdentificacaoTomador/CpfCnpj/Cpf | Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/IdentificacaoTomador/CpfCnpj/Cpf | Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/IdentificacaoTomador/CpfCnpj/Cpf',
+                             cnpj_tomador varchar2(4000) path 'Nfse/InfNfse/TomadorServico/IdentificacaoTomador/CpfCnpj/Cnpj | Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/IdentificacaoTomador/CpfCnpj/Cnpj | Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/IdentificacaoTomador/CpfCnpj/Cnpj',
+                             inscricaomunicipal_tomador varchar2(4000) path 'Nfse/InfNfse/TomadorServico/IdentificacaoTomador/InscricaoMunicipal | Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/IdentificacaoTomador/InscricaoMunicipal | Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/IdentificacaoTomador/InscricaoMunicipal',
+                             razaosocial_tomador varchar2(4000) path 'Nfse/InfNfse/TomadorServico/RazaoSocial | Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/RazaoSocial | Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/RazaoSocial',
+                             endereco_tomador varchar2(4000) path 'Nfse/InfNfse/TomadorServico/Endereco/Endereco | Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/Endereco/Endereco | Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/Endereco/Endereco',
+                             numero_tomador varchar2(4000) path 'Nfse/InfNfse/TomadorServico/Endereco/Numero | Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/Endereco/Numero | Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/Endereco/Numero',
+                             complemento_tomador varchar2(4000) path 'Nfse/InfNfse/TomadorServico/Endereco/Complemento | Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/Endereco/Complemento | Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/Endereco/Complemento',
+                             bairro_tomador varchar2(4000) path 'Nfse/InfNfse/TomadorServico/Endereco/Bairro | Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/Endereco/Bairro | Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/Endereco/Bairro',
+                             codigomunicipio_tomador varchar2(4000) path 'Nfse/InfNfse/TomadorServico/Endereco/CodigoMunicipio | Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/Endereco/CodigoMunicipio | Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/Endereco/CodigoMunicipio',
+                             uf_tomador varchar2(4000) path 'Nfse/InfNfse/TomadorServico/Endereco/Uf | Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/Endereco/Uf | Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/Endereco/Uf',
+                             cep_tomador varchar2(4000) path 'Nfse/InfNfse/TomadorServico/Endereco/Cep | Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/Endereco/Cep | Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/Endereco/Cep',
+                             optantesimplesnacional varchar2(4000) path 'Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/OptanteSimplesNacional | Nfse/InfNfse/DeclaracaoPrestacaoServico/OptanteSimplesNacional') t)
+                LOOP
+                    BEGIN
+                        INSERT INTO ad_xmlnfsehmm (
+                            sequencia, numero, numerorps, codigoverificacao, dataemissao, basecalculo, aliquota, valoriss,
+                            serie, tipo, dataemissaorps, competencia, valorservicos, valordeducoes, valorpis, valorcofins,
+                            valorinss, valorir, valorcsll, valoriss2, aliquota2, descontoincondicionado, issretido,
+                            codigotributacaomunicipio, discriminacao, codigomunicipio, exigibilidadeiss, municipioincidencia,
+                            cnpj_prestador, inscricaomunicipal_prestador, cpf_cnpj_tomador, inscricaomunicipal_tomador,
+                            razaosocial_tomador, endereco_tomador, numero_tomador, complemento_tomador, bairro_tomador,
+                            codigomunicipio_tomador, uf_tomador, cep_tomador, optantesimplesnacional
+                        ) VALUES (
+                            field_sequencia, nfs.numero, nfs.numerorps, nfs.codigoverificacao, nfs.dataemissao, nfs.basecalculo,
+                            nfs.aliquota, nfs.valoriss, nfs.serierps, nfs.tiporps, nfs.dataemissaorps, nfs.competencia,
+                            nfs.valorservicos, nfs.valordeducoes, nfs.valorpis, nfs.valorcofins, nfs.valorinss, nfs.valorir,
+                            nfs.valorcsll, nfs.valoriss2, nfs.aliquota2, nfs.descontoincondicionado, nfs.issretido,
+                            nfs.codigotributacaomunicipio, nfs.discriminacao, nfs.codigomunicipio, nfs.exigibilidadeiss,
+                            nfs.municipioincidencia, nfs.cnpj_prestador, nfs.inscricaomunicipal_prestador,
+                            NVL(nfs.cpf_tomador, nfs.cnpj_tomador), nfs.inscricaomunicipal_tomador, nfs.razaosocial_tomador,
+                            nfs.endereco_tomador, nfs.numero_tomador, nfs.complemento_tomador, nfs.bairro_tomador,
+                            nfs.codigomunicipio_tomador, nfs.uf_tomador, nfs.cep_tomador, nfs.optantesimplesnacional
+                        );
+                        v_qtdinc := v_qtdinc + 1;
+                    EXCEPTION
+                        WHEN DUP_VAL_ON_INDEX THEN
+                            NULL;
+                        WHEN OTHERS THEN
+                            NULL; -- Ignorar erros individuais de NFS-e
+                    END;
+                END LOOP;
+            END;
+
+            -- Avançar para a próxima posição no XML concatenado
+            v_current_pos := v_doc_end;
+        END LOOP;
+
+        p_mensagem := v_qtdinc || ' registros atualizados';
+
+        UPDATE ad_xmlnfsehmmc c
+           SET c.dhregistro = CURRENT_DATE,
+               c.codusu = p_codusu
+         WHERE c.sequencia = field_sequencia;
+
+    END;
+
+end loop;
+
+end;

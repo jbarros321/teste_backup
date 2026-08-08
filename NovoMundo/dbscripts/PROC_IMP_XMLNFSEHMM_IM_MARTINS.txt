@@ -1,0 +1,236 @@
+CREATE OR REPLACE PROCEDURE PROC_IMP_XMLNFSEHMM_IM_MARTINS (
+    p_codusu    NUMBER,
+    p_idsessao  VARCHAR2,
+    p_qtdlinhas NUMBER,
+    p_mensagem  IN OUT VARCHAR2
+)
+AS
+    field_sequencia     NUMBER;
+    v_xml_content       CLOB;
+    v_layout_type       VARCHAR2(20);
+    v_xml_size          NUMBER;
+    v_xml_start         VARCHAR2(500);
+    v_namespace_count   NUMBER := 0;
+    v_has_abrasf        NUMBER := 0;
+    v_has_goiania       NUMBER := 0;
+    v_has_response      NUMBER := 0;
+    v_has_resposta      NUMBER := 0;
+    v_mensagem_result   VARCHAR2(4000);
+BEGIN
+    /*
+    ================================================================================
+    PROCEDURE PRINCIPAL DE IMPORTAÇÃO DE XML NFS-E HOTEL MEGA MODA
+    AUTOR: PhD Rodrigo Coutinho (Especialista Oracle XML/NFS-e)
+    DATA: 02/11/2025
+    FINALIDADE: Detectar automaticamente o layout do XML e chamar a procedure apropriada
+
+    SUPORTE A LAYOUTS:
+    - GOIANIA: Layout da Prefeitura de Goiânia (namespace goiania.go.gov.br)
+    - NACIONAL: Layout ABRASF Nacional (namespace abrasf.org.br)
+
+    DETECÇÃO AUTOMÁTICA POR:
+    1. Namespace declarations
+    2. Estrutura do elemento raiz (GerarNfseResponse vs GerarNfseResposta)
+    3. Presença de elementos específicos de cada layout
+    ================================================================================
+    */
+
+    -- Validações de entrada
+    IF p_codusu IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20001, 'ERRO: Código de usuário não informado.');
+    END IF;
+
+    IF p_idsessao IS NULL OR TRIM(p_idsessao) IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20002, 'ERRO: ID da sessão não informado ou vazio.');
+    END IF;
+
+    IF p_qtdlinhas IS NULL OR p_qtdlinhas < 1 THEN
+        RAISE_APPLICATION_ERROR(-20003, 'ERRO: Quantidade de linhas inválida.');
+    END IF;
+
+    IF p_qtdlinhas > 1 THEN
+        RAISE_APPLICATION_ERROR(-20004, 'ERRO: Selecione apenas UMA linha para processamento.');
+    END IF;
+
+    FOR i IN 1 .. p_qtdlinhas LOOP
+        BEGIN
+            field_sequencia := ACT_INT_FIELD(p_idsessao, i, 'SEQUENCIA');
+        EXCEPTION
+            WHEN OTHERS THEN
+                RAISE_APPLICATION_ERROR(-20005, 'ERRO: Campo SEQUENCIA não encontrado ou função ACT_INT_FIELD não disponível.');
+        END;
+
+        IF field_sequencia IS NULL THEN
+            RAISE_APPLICATION_ERROR(-20005, 'ERRO: Campo SEQUENCIA não encontrado.');
+        END IF;
+
+        DBMS_OUTPUT.PUT_LINE('DEBUG: Iniciando processamento da sequência: ' || field_sequencia);
+
+        -- Obter o XML para detectar o layout
+        BEGIN
+            SELECT xml INTO v_xml_content
+            FROM ad_xmlnfsehmmc
+            WHERE sequencia = field_sequencia AND ROWNUM = 1;
+
+            v_xml_size := LENGTH(v_xml_content);
+            v_xml_start := SUBSTR(v_xml_content, 1, 500);
+
+            DBMS_OUTPUT.PUT_LINE('DEBUG: XML obtido com sucesso. Tamanho: ' || v_xml_size || ' bytes');
+
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                RAISE_APPLICATION_ERROR(-20010, 'ERRO: XML não encontrado para sequencia=' || field_sequencia);
+            WHEN OTHERS THEN
+                RAISE_APPLICATION_ERROR(-20011, 'ERRO: Falha ao obter XML da sequência ' || field_sequencia || ': ' || SQLERRM);
+        END;
+
+        -- ===========================================
+        -- DETECÇÃO AVANÇADA DO LAYOUT XML
+        -- ===========================================
+
+        -- 1. Verificar namespaces
+        v_has_goiania := INSTR(v_xml_content, 'http://nfse.goiania.go.gov.br/xsd/nfse_gyn_v02.xsd');
+        v_has_abrasf := INSTR(v_xml_content, 'http://nfse.abrasf.org.br');
+        IF v_has_abrasf = 0 THEN
+            v_has_abrasf := INSTR(v_xml_content, 'http://www.abrasf.org.br/nfse.xsd');
+        END IF;
+
+        -- 2. Verificar estrutura do elemento raiz
+        v_has_response := INSTR(v_xml_content, '<GerarNfseResponse');
+        v_has_resposta := INSTR(v_xml_content, '<GerarNfseResposta');
+
+        -- 3. Verificar elementos específicos de cada layout
+        v_namespace_count := CASE WHEN v_has_goiania > 0 THEN 1 ELSE 0 END +
+                           CASE WHEN v_has_abrasf > 0 THEN 1 ELSE 0 END;
+
+        DBMS_OUTPUT.PUT_LINE('DEBUG: Análise de namespaces:');
+        DBMS_OUTPUT.PUT_LINE('  - Goiânia encontrado: ' || CASE WHEN v_has_goiania > 0 THEN 'SIM' ELSE 'NÃO' END);
+        DBMS_OUTPUT.PUT_LINE('  - ABRASF encontrado: ' || CASE WHEN v_has_abrasf > 0 THEN 'SIM' ELSE 'NÃO' END);
+        DBMS_OUTPUT.PUT_LINE('  - Namespaces detectados: ' || v_namespace_count);
+
+        DBMS_OUTPUT.PUT_LINE('DEBUG: Análise de estrutura:');
+        DBMS_OUTPUT.PUT_LINE('  - GerarNfseResponse encontrado: ' || CASE WHEN v_has_response > 0 THEN 'SIM' ELSE 'NÃO' END);
+        DBMS_OUTPUT.PUT_LINE('  - GerarNfseResposta encontrado: ' || CASE WHEN v_has_resposta > 0 THEN 'SIM' ELSE 'NÃO' END);
+
+        -- ===========================================
+        -- LÓGICA DE DETECÇÃO DO LAYOUT
+        -- ===========================================
+
+        IF v_has_goiania > 0 AND v_has_abrasf = 0 THEN
+            -- Layout claramente identificado como Goiânia
+            v_layout_type := 'GOIANIA';
+            DBMS_OUTPUT.PUT_LINE('DEBUG: ✓ Layout CONFIRMADO: PREFEITURA DE GOIÂNIA (namespace exclusivo)');
+
+        ELSIF v_has_abrasf > 0 AND v_has_goiania = 0 THEN
+            -- Layout claramente identificado como Nacional
+            v_layout_type := 'NACIONAL';
+            DBMS_OUTPUT.PUT_LINE('DEBUG: ✓ Layout CONFIRMADO: SEFAZ NACIONAL (namespace exclusivo)');
+
+        ELSIF v_has_response > 0 AND v_has_resposta = 0 THEN
+            -- Só tem GerarNfseResponse (estrutura nacional)
+            v_layout_type := 'NACIONAL';
+            DBMS_OUTPUT.PUT_LINE('DEBUG: ✓ Layout identificado por estrutura: SEFAZ NACIONAL (GerarNfseResponse)');
+
+        ELSIF v_has_resposta > 0 AND v_has_response = 0 THEN
+            -- Só tem GerarNfseResposta (estrutura Goiânia)
+            v_layout_type := 'GOIANIA';
+            DBMS_OUTPUT.PUT_LINE('DEBUG: ✓ Layout identificado por estrutura: PREFEITURA DE GOIÂNIA (GerarNfseResposta)');
+
+        ELSIF v_has_abrasf > 0 AND v_has_goiania > 0 THEN
+            -- Ambos os namespaces encontrados - verificar qual é mais específico
+            IF INSTR(v_xml_content, '<GerarNfseResponse') > 0 THEN
+                v_layout_type := 'NACIONAL';
+                DBMS_OUTPUT.PUT_LINE('DEBUG: ✓ Layout definido por estrutura prioritária: SEFAZ NACIONAL (mesmo com namespace Goiânia presente)');
+            ELSE
+                v_layout_type := 'GOIANIA';
+                DBMS_OUTPUT.PUT_LINE('DEBUG: ✓ Layout definido por estrutura prioritária: PREFEITURA DE GOIÂNIA (mesmo com namespace ABRASF presente)');
+            END IF;
+
+        ELSIF INSTR(v_xml_content, '<CompNfse>') > 0 THEN
+            -- Verificar elementos internos para determinar o layout
+            IF INSTR(v_xml_content, '<InfDeclaracaoPrestacaoServico') > 0 OR
+               INSTR(v_xml_content, '<TomadorServico>') > 0 OR
+               INSTR(v_xml_content, '<PrestadorServico>') > 0 THEN
+                v_layout_type := 'NACIONAL';
+                DBMS_OUTPUT.PUT_LINE('DEBUG: ✓ Layout identificado por elementos internos: SEFAZ NACIONAL (InfDeclaracaoPrestacaoServico/TomadorServico)');
+            ELSE
+                v_layout_type := 'GOIANIA';
+                DBMS_OUTPUT.PUT_LINE('DEBUG: ✓ Layout identificado por elementos internos: PREFEITURA DE GOIÂNIA (estrutura tradicional)');
+            END IF;
+
+        ELSE
+            -- Layout não identificado - mostrar informações de debug para análise
+            RAISE_APPLICATION_ERROR(-20006, 'ERRO: Não foi possível detectar o tipo de layout do XML. ' ||
+                                          'Sequencia=' || field_sequencia || CHR(10) ||
+                                          'Tamanho XML: ' || v_xml_size || ' bytes' || CHR(10) ||
+                                          'Namespaces detectados: ' || v_namespace_count || CHR(10) ||
+                                          'Goiânia: ' || CASE WHEN v_has_goiania > 0 THEN 'SIM' ELSE 'NÃO' END || CHR(10) ||
+                                          'ABRASF: ' || CASE WHEN v_has_abrasf > 0 THEN 'SIM' ELSE 'NÃO' END || CHR(10) ||
+                                          'GerarNfseResponse: ' || CASE WHEN v_has_response > 0 THEN 'SIM' ELSE 'NÃO' END || CHR(10) ||
+                                          'GerarNfseResposta: ' || CASE WHEN v_has_resposta > 0 THEN 'SIM' ELSE 'NÃO' END || CHR(10) ||
+                                          'Inicio do XML: ' || CHR(10) || SUBSTR(v_xml_content, 1, 200));
+        END IF;
+
+        -- ===========================================
+        -- CHAMADA DA PROCEDURE APROPRIADA
+        -- ===========================================
+
+        DBMS_OUTPUT.PUT_LINE('DEBUG: ====================================================');
+        DBMS_OUTPUT.PUT_LINE('DEBUG: CHAMANDO PROCEDURE PARA LAYOUT: ' || v_layout_type);
+        DBMS_OUTPUT.PUT_LINE('DEBUG: Sequência: ' || field_sequencia);
+        DBMS_OUTPUT.PUT_LINE('DEBUG: ====================================================');
+
+        IF v_layout_type = 'GOIANIA' THEN
+            -- Chamar procedure específica para layout da Prefeitura de Goiânia
+            DBMS_OUTPUT.PUT_LINE('DEBUG: Executando PROC_IMP_XMLNFSEHMM_MARTINS para layout GOIÂNIA...');
+
+            v_mensagem_result := NULL;
+            PROC_IMP_XMLNFSEHMM_MARTINS(
+                p_codusu    => p_codusu,
+                p_idsessao  => p_idsessao,
+                p_qtdlinhas => 1,
+                p_mensagem  => v_mensagem_result,
+                p_imp_xml   => 'S'
+            );
+
+            DBMS_OUTPUT.PUT_LINE('DEBUG: Procedure GOIÂNIA executada com sucesso. Mensagem: ' || NVL(v_mensagem_result, 'Nenhuma'));
+            p_mensagem := 'Layout GOIÂNIA processado: ' || NVL(v_mensagem_result, 'OK');
+
+        ELSIF v_layout_type = 'NACIONAL' THEN
+            -- Chamar procedure específica para layout ABRASF Nacional
+            DBMS_OUTPUT.PUT_LINE('DEBUG: Executando PROC_IMP_XMLNFSEHMM_NACIONAL para layout NACIONAL...');
+
+            v_mensagem_result := NULL;
+            PROC_IMP_XMLNFSEHMM_NACIONAL(
+                p_codusu    => p_codusu,
+                p_idsessao  => p_idsessao,
+                p_qtdlinhas => 1,
+                p_mensagem  => v_mensagem_result,
+                p_imp_xml   => 'S'
+            );
+
+            DBMS_OUTPUT.PUT_LINE('DEBUG: Procedure NACIONAL executada com sucesso. Mensagem: ' || NVL(v_mensagem_result, 'Nenhuma'));
+            p_mensagem := 'Layout NACIONAL processado: ' || NVL(v_mensagem_result, 'OK');
+
+        ELSE
+            RAISE_APPLICATION_ERROR(-20007, 'ERRO: Tipo de layout não suportado ou não identificado: ' || v_layout_type ||
+                                          '. Sequencia: ' || field_sequencia);
+        END IF;
+
+        DBMS_OUTPUT.PUT_LINE('DEBUG: ====================================================');
+        DBMS_OUTPUT.PUT_LINE('DEBUG: PROCESSAMENTO CONCLUÍDO COM SUCESSO');
+        DBMS_OUTPUT.PUT_LINE('DEBUG: Layout: ' || v_layout_type);
+        DBMS_OUTPUT.PUT_LINE('DEBUG: Sequência: ' || field_sequencia);
+        DBMS_OUTPUT.PUT_LINE('DEBUG: ====================================================');
+
+    END LOOP;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('DEBUG: ERRO na procedure PROC_IMP_XMLNFSEHMM_IM_MARTINS: ' || SQLERRM);
+        DBMS_OUTPUT.PUT_LINE('DEBUG: Código do erro: ' || SQLCODE);
+        RAISE_APPLICATION_ERROR(-20099, 'ERRO na procedure PROC_IMP_XMLNFSEHMM_IM_MARTINS: ' || SQLERRM ||
+                                       CHR(10) || 'Sequência sendo processada: ' || NVL(TO_CHAR(field_sequencia), 'N/A') ||
+                                       CHR(10) || 'Layout detectado: ' || NVL(v_layout_type, 'N/A'));
+END;
+/

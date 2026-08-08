@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="ExportadorNovidadesRlzJob" default="geral" basedir=".">
+
+	<property name="api_sankhya" value="${sk-java}workspaces\trunk\api_sankhya" />
+	<property name="templates.dir" value="${sk-java}workspaces\trunk\api_sankhya\templates\" />
+	<property name="eclipse.home" value="${sk-java}eclipse" />
+	<property name="default.jboss" value="${sk-java}AS\jboss-4.0.5.GA\server\default" />
+	<property name="jar.file" value="${basedir}/ws-exportador-novidades/ejb/extDesJava-ejb.jar" />
+
+	<target name="geral" description="Gera o pacote necessário para o MGE-Contabilidade-Model.">
+		<delete file="${jar.file}" />
+			
+		<jar destfile="${jar.file}">
+			<zipfileset dir="build/META-INF" prefix="META-INF">
+				<include name="*.*" />
+			</zipfileset>
+			<zipfileset dir="bin">
+				<include name="**/*.*" />
+				<exclude name="META-INF/*.*" />
+			</zipfileset>
+		</jar>
+		<echo>Efetuando o deploy em ${default.jboss}/deploy...</echo>
+			
+		<copy verbose="true" file="${jar.file}" todir="${default.jboss}/deploy" />
+	</target>
+
+	<target name="interfaces" description="Gera as interfaces EJB necessárias para a extensão do Desenvolvimento Java.">
+		<delete dir="${basedir}/ejbsrc">
+		</delete>
+		<ant dir="${basedir}" antfile="${basedir}/xdoclet-build.xml">
+		</ant>
+	</target>
+</project>

@@ -1,0 +1,67 @@
+<ion-view view-title="ATENDIMENTO" cache-view="false">
+
+	<ion-nav-buttons side="left">
+    	<button class="button button-icon button-clear icon ion-ios-arrow-back" style="color: white;" ng-click="goBack()">
+        </button>
+    </ion-nav-buttons>
+
+	<ion-content class="has-header padding task-content background-login atendimento-panel">
+		<div class="loading-spinner" ng-if="showLoading">
+			<div class="spinner"></div>
+		</div>
+		<div class="empty-data" ng-if="showError && !showLoading">
+			<div class="icon-panel">
+				<i class="icon ion-sad-outline"></i>
+			</div>
+            <span class="text-info">Não foi possível obter as informações. Verifique sua conexão com a internet.</span>
+        </div>
+	    <div ng-if="!showError && !showLoading">
+			<div class="row">
+		    	<div class="sac-img"></div>
+				<div class="text-left" style="font-size: 16px;">
+		    		SAC - Serviço
+		    		<br>de Atendimento
+		    		<br>ao Consumidor
+	    		</div>
+	    	</div>
+			<!-- <div class="row">
+				<div class="col text-center" style="font-size: 24px; color: #D85904; ">
+			    	0800 648 22 02
+		    	</div>
+	    	</div> -->
+			<div class="row" style="padding-bottom: 20px; border-bottom: 3px #D85904 solid;">
+	    	</div>
+	    	<div class="row" style="margin-top: 15px;">
+		    	<div class="contato-img" style="margin-right: 10px;"></div>
+				<div class="text-left"  style="font-size: 24px; color: #D85904; margin-top: 10px;">
+		    		Solicite o Contato
+	    		</div>
+	    	</div>
+	    	<div class="list" style="padding-top: 5px;">
+		    	<label class="item item-input input-credpar" style="margin-top: 10px;">
+					<input type="text" placeholder="CPF"  ng-model="data.cpfformat" disabled="false">
+		 		</label>
+		    	<label class="item item-input input-credpar" style="margin-top: 10px;">
+					<input type="text" placeholder="E-mail" ng-model="data.email">
+		 		</label>
+		    	<label class="item item-input input-credpar" style="margin-top: 10px;">
+					<input type="text" placeholder="Telefone" ng-model="data.telefone">
+		 		</label>
+	    	</div>
+	    	<div class="row">
+		    	<div class="col text-right">
+			    	<button class="btnAcessar" style="width: 130px; padding-bottom: 3px; height: 35px;" ng-click="enviar()">
+					  	Enviar
+					</button>
+		    	</div>
+	    	</div>
+			<div class="row" style="padding-bottom: 15px; border-bottom: 3px #D85904 solid;">
+	    	</div>
+	    	<div class="text-center" style="font-size: 24px; color: #D85904; margin-top: 10px;">
+	    		credpar.com.br
+	    	</div>
+	    	<div style="height: 125px;">
+        	</div>
+    	</div>
+	</ion-content> 
+</ion-view>

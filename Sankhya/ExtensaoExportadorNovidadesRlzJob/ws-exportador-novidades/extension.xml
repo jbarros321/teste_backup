@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<extension>
+  <id>ExportNovidadesReleases</id>
+  <description>Extensão para Exportar a Documentação das Novidades Releases</description>
+  <version>1.2</version>
+  <platform-min-version>3.7</platform-min-version>
+  <build-timestamp>23/05/2016 16:54:48</build-timestamp>
+  <vendor>
+    <id>647</id>
+    <name>Sankhya Gestão de Negócios</name>
+  </vendor>
+  <license-by-resource>
+    <default-module />
+  </license-by-resource>
+  <ui-mashups />
+</extension>
+

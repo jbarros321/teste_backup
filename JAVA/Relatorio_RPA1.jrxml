@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Relatorio_RPA" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true">
+	<property name="ireport.zoom" value="2.1961500000000007"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="ireport.definition"/>
+	<parameter name="PDIR_MODELO" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="DTAINICIAL" class="java.sql.Timestamp">
+		<parameterDescription><![CDATA[Dta.Inicial]]></parameterDescription>
+		<defaultValueExpression><![CDATA[null]]></defaultValueExpression>
+	</parameter>
+	<parameter name="DTFINAL" class="java.sql.Timestamp">
+		<parameterDescription><![CDATA[Dta.Final]]></parameterDescription>
+		<defaultValueExpression><![CDATA[null]]></defaultValueExpression>
+	</parameter>
+	<parameter name="CODMOTORISTA" class="java.lang.String">
+		<property name="NOMETABELA" value="TGFPAR"/>
+		<property name="PESQUISA" value="TRUE"/>
+		<parameterDescription><![CDATA[Motorista]]></parameterDescription>
+		<defaultValueExpression><![CDATA[null]]></defaultValueExpression>
+	</parameter>
+	<parameter name="P_PROJETO" class="java.math.BigDecimal" isForPrompting="false"/>
+	<queryString>
+		<![CDATA[WITH FretePorOrdem AS
+  (SELECT ORDEMCARGA,
+          CODPARCMOTORISTA,
+          SUM(VLRFRETE) AS VLRFRETE
+   FROM TGFORD
+   WHERE CODPARCMOTORISTA <> 0
+     AND CODVEICULO <> 0
+   AND (
+      (TRUNC(AD_DTINCLUSAO) >= TO_DATE(TO_CHAR($P{DTAINICIAL}, 'DD/MM/YYYY'), 'DD/MM/YYYY')
+       AND TRUNC(AD_DTINCLUSAO) <= TO_DATE(TO_CHAR($P{DTFINAL}, 'DD/MM/YYYY'), 'DD/MM/YYYY'))
+      OR $P{DTAINICIAL} IS NULL
+    )
+     AND VLRFRETE <>'0'
+   GROUP BY ORDEMCARGA,
+            CODPARCMOTORISTA),
+
+     FretePorMotorista AS
+  (SELECT CODPARCMOTORISTA,
+          SUM(VLRFRETE) AS VLRFRETE_TOTAL_MOTORISTA
+   FROM FretePorOrdem
+   GROUP BY CODPARCMOTORISTA)
+
+SELECT ORD.CODPARCMOTORISTA,
+       TRANSP.NOMEPARC                              AS MOTORISTA,
+       ORD.ORDEMCARGA,
+       ORD.AD_DTINCLUSAO,
+       PAR.NOMEPARC                                 AS CLIENTE,
+       CAB.NUMNOTA,
+       FPOR.VLRFRETE,
+       FPM.VLRFRETE_TOTAL_MOTORISTA
+FROM TGFORD ORD
+LEFT JOIN TGFCAB CAB               ON ORD.ORDEMCARGA = CAB.ORDEMCARGA
+LEFT JOIN TGFPAR PAR               ON CAB.CODPARC   = PAR.CODPARC
+INNER JOIN TGFPAR TRANSP           ON ORD.CODPARCMOTORISTA = TRANSP.CODPARC
+INNER JOIN FretePorOrdem FPOR      ON ORD.ORDEMCARGA = FPOR.ORDEMCARGA
+                                  AND ORD.CODPARCMOTORISTA = FPOR.CODPARCMOTORISTA
+INNER JOIN FretePorMotorista FPM   ON ORD.CODPARCMOTORISTA = FPM.CODPARCMOTORISTA
+WHERE ORD.CODPARCMOTORISTA <> 0
+  AND ORD.CODVEICULO <> 0
+ AND (
+      (TRUNC(ORD.AD_DTINCLUSAO) >= TO_DATE(TO_CHAR($P{DTAINICIAL}, 'DD/MM/YYYY'), 'DD/MM/YYYY')
+       AND TRUNC(ORD.AD_DTINCLUSAO) <= TO_DATE(TO_CHAR($P{DTFINAL}, 'DD/MM/YYYY'), 'DD/MM/YYYY'))
+      OR $P{DTAINICIAL} IS NULL
+    )
+  AND (ORD.CODPARCMOTORISTA = $P{CODMOTORISTA}
+       OR $P{CODMOTORISTA} IS NULL)
+ORDER BY TRANSP.NOMEPARC,
+         ORD.ORDEMCARGA]]>
+	</queryString>
+	<field name="CODPARCMOTORISTA" class="java.math.BigDecimal"/>
+	<field name="MOTORISTA" class="java.lang.String"/>
+	<field name="ORDEMCARGA" class="java.math.BigDecimal"/>
+	<field name="AD_DTINCLUSAO" class="java.sql.Timestamp"/>
+	<field name="CLIENTE" class="java.lang.String"/>
+	<field name="NUMNOTA" class="java.math.BigDecimal"/>
+	<field name="VLRFRETE" class="java.lang.Double"/>
+	<field name="VLRFRETE_TOTAL_MOTORISTA" class="java.math.BigDecimal"/>
+	<variable name="VLRFRETE_1" class="java.lang.Double" resetType="Group" resetGroup="CODPARCMOTORISTA" calculation="Sum">
+		<variableExpression><![CDATA[$F{VLRFRETE}]]></variableExpression>
+	</variable>
+	<variable name="VLRFRETE_2" class="java.lang.Integer" calculation="DistinctCount">
+		<variableExpression><![CDATA[$F{VLRFRETE}]]></variableExpression>
+	</variable>
+	<variable name="VLRFRETE_3" class="java.lang.Integer" resetType="Group" resetGroup="CODPARCMOTORISTA" calculation="Count">
+		<variableExpression><![CDATA[$F{VLRFRETE}]]></variableExpression>
+	</variable>
+	<variable name="VLRFRETE_4" class="java.lang.Double" resetType="Group" resetGroup="CODPARCMOTORISTA" calculation="Sum">
+		<variableExpression><![CDATA[$F{VLRFRETE}]]></variableExpression>
+	</variable>
+	<variable name="VLRFRETE_5" class="java.lang.Double" resetType="Group" resetGroup="ORDEMCARGA" calculation="Sum">
+		<variableExpression><![CDATA[$F{VLRFRETE}]]></variableExpression>
+	</variable>
+	<group name="CODPARCMOTORISTA">
+		<groupExpression><![CDATA[$F{CODPARCMOTORISTA}]]></groupExpression>
+		<groupHeader>
+			<band height="58">
+				<textField>
+					<reportElement x="0" y="29" width="55" height="19"/>
+					<textElement verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{CODPARCMOTORISTA}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="92" y="29" width="166" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{MOTORISTA}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement positionType="Float" x="363" y="29" width="71" height="19"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Total Frete:]]></text>
+				</staticText>
+				<line>
+					<reportElement x="0" y="54" width="555" height="1"/>
+					<graphicElement>
+						<pen lineStyle="Dashed"/>
+					</graphicElement>
+				</line>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="434" y="29" width="121" height="19"/>
+					<textElement verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{VLRFRETE_TOTAL_MOTORISTA}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="0" y="24" width="555" height="1"/>
+				</line>
+				<staticText>
+					<reportElement positionType="Float" x="0" y="9" width="78" height="12"/>
+					<textElement>
+						<font size="7" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Cod.Motorista]]></text>
+				</staticText>
+				<staticText>
+					<reportElement positionType="Float" x="92" y="9" width="166" height="12"/>
+					<textElement>
+						<font size="7" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Motorista]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="ORDEMCARGA">
+		<groupExpression><![CDATA[$F{ORDEMCARGA}]]></groupExpression>
+		<groupHeader>
+			<band height="37">
+				<textField>
+					<reportElement x="65" y="0" width="73" height="12"/>
+					<textElement>
+						<font size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{ORDEMCARGA}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="0" y="12" width="316" height="14"/>
+					<textElement>
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{CLIENTE}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="455" y="12" width="100" height="12"/>
+					<textElement verticalAlignment="Middle">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{NUMNOTA}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement positionType="Float" x="395" y="12" width="55" height="12"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<text><![CDATA[NF]]></text>
+				</staticText>
+				<staticText>
+					<reportElement positionType="Float" x="395" y="0" width="55" height="12"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Vlr.Frete]]></text>
+				</staticText>
+				<staticText>
+					<reportElement positionType="Float" x="0" y="0" width="55" height="12"/>
+					<textElement>
+						<font size="7" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Ordem Carga]]></text>
+				</staticText>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="455" y="0" width="100" height="12"/>
+					<textElement>
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Double"><![CDATA[$F{VLRFRETE}]]></textFieldExpression>
+				</textField>
+				<textField pattern="dd/MM/yyyy">
+					<reportElement x="239" y="0" width="77" height="12"/>
+					<textElement>
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{AD_DTINCLUSAO}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement positionType="Float" x="177" y="0" width="55" height="12"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Dta.OC]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="71" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="20" width="555" height="36"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Relatório de Agregados]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="421" y="56" width="34" height="13"/>
+				<textElement>
+					<font size="7" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Emissão:]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yy">
+				<reportElement x="455" y="56" width="100" height="13"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<image scaleImage="FillFrame">
+				<reportElement x="41" y="14" width="51" height="50"/>
+				<imageExpression class="java.lang.String"><![CDATA[$P{PDIR_MODELO}+ "Logo.bmp"]]></imageExpression>
+			</image>
+		</band>
+	</title>
+	<pageFooter>
+		<band height="14">
+			<textField>
+				<reportElement mode="Opaque" x="0" y="0" width="515" height="13" backcolor="#E6E6E6"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Página "+$V{PAGE_NUMBER}+" de"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement mode="Opaque" x="515" y="0" width="40" height="13" backcolor="#E6E6E6"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="EEEEE dd MMMMM yyyy">
+				<reportElement x="13" y="0" width="100" height="13"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

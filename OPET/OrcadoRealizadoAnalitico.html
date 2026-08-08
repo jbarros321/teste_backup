@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório Analítico - Orçado vs. Realizado</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 84% 4.9%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
+        }
+
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --primary: 210 40% 98%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 212.7 26.8% 83.9%;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+
+        .table-container {
+            position: relative;
+            overflow: auto;
+            flex-grow: 1;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background-color: hsl(var(--secondary));
+        }
+
+        tbody th,
+        thead th:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            background-color: hsl(var(--background));
+        }
+
+        thead th:first-child {
+            z-index: 30;
+        }
+
+        tbody tr:hover th,
+        tbody tr:hover td {
+            background-color: hsl(var(--accent));
+        }
+
+        .chevron-icon {
+            transition: transform 0.25s ease;
+        }
+
+        tr.natureza-row.expandable {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="h-full w-full antialiased">
+    <div id="component-container" class="flex flex-col h-full w-full bg-background text-foreground p-4 md:p-6">
+        <header class="flex-shrink-0 mb-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h1 class="text-xl font-bold text-primary">Relatório Analítico - Orçado vs. Realizado</h1>
+                    <p class="text-sm text-muted-foreground mt-1">Análise de performance por Natureza e Projeto.</p>
+                </div>
+                <button id="export-btn"
+                    class="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 inline-flex items-center gap-2 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="w-4 h-4">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" x2="12" y1="15" y2="3" />
+                    </svg>
+                    Exportar para Excel
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-grow flex flex-col border border-border rounded-lg overflow-hidden shadow-sm">
+            <div id="table-wrapper" class="table-container w-full h-full">
+                <table id="analytics-table" class="w-full text-sm text-left border-collapse">
+                    <thead id="table-head" class="bg-secondary text-secondary-foreground"></thead>
+                    <tbody id="table-body" class="bg-background divide-y divide-border"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const MITRA_UPDATE_EVENT_NAME = 'mitra-update-orcado-realizado-dinamico-report';
+
+        function updateMitra() {
+            console.log("Sinal de update para [Orçado vs Realizado Dinâmico] recebido.");
+            document.body.dispatchEvent(new CustomEvent(MITRA_UPDATE_EVENT_NAME));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const tableHead = document.getElementById('table-head');
+            const tableBody = document.getElementById('table-body');
+            const exportBtn = document.getElementById('export-btn');
+
+            let processedDataTree = [];
+            let allMonths = [];
+
+            const formatCurrency = v => (parseFloat(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            const formatPercentage = v => `${(parseFloat(v) || 0).toFixed(2)}%`;
+            const getVariationClass = v => {
+                const n = parseFloat(v) || 0;
+                return n > 0 ? 'text-green-600 dark:text-green-500' :
+                    n < 0 ? 'text-red-600 dark:text-red-500' :
+                        'text-muted-foreground';
+            };
+
+            function renderHeader(months) {
+                tableHead.innerHTML = '';
+
+                const row1 = document.createElement('tr');
+                row1.innerHTML = `<th class="px-4 py-3 font-semibold text-left border-b border-r border-border w-[350px] min-w-[350px]" rowspan="2">Natureza / Projeto</th>`;
+
+                months.forEach(m => {
+                    const th = document.createElement('th');
+                    th.colSpan = 6;
+                    th.className = "px-4 py-3 font-semibold text-center border-b border-r border-border";
+                    th.textContent = m;
+                    row1.appendChild(th);
+                });
+
+                row1.innerHTML += `<th colspan="6" class="px-4 py-3 font-semibold text-center bg-blue-100 dark:bg-blue-900/30 border-b border-border">Acumulado & Variação Total</th>`;
+
+                const row2 = document.createElement('tr');
+                let html = '';
+                const col = `
+                    <th class="px-4 py-3 font-semibold text-right border-b border-border w-[120px] min-w-[120px]">Orçado Receita</th>
+                    <th class="px-4 py-3 font-semibold text-right border-b border-border w-[120px] min-w-[120px]">Orçado Despesa</th>
+                    <th class="px-4 py-3 font-semibold text-right border-b border-border w-[120px] min-w-[120px]">Realizado Receita</th>
+                    <th class="px-4 py-3 font-semibold text-right border-b border-border w-[120px] min-w-[120px]">Realizado Despesa</th>
+                    <th class="px-4 py-3 font-semibold text-right border-b border-border w-[120px] min-w-[120px]">Var (R$)</th>
+                    <th class="px-4 py-3 font-semibold text-right border-b border-r border-border w-[100px] min-w-[100px]">Var (%)</th>
+                `;
+                months.forEach(() => html += col);
+                html += `
+                    <th class="px-4 py-3 font-semibold text-right bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-b border-border w-[150px] min-w-[150px]">Acum. Orçado R.</th>
+                    <th class="px-4 py-3 font-semibold text-right bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-b border-border w-[150px] min-w-[150px]">Acum. Orçado D.</th>
+                    <th class="px-4 py-3 font-semibold text-right bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-b border-border w-[150px] min-w-[150px]">Acum. Realizado R.</th>
+                    <th class="px-4 py-3 font-semibold text-right bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-b border-border w-[150px] min-w-[150px]">Acum. Realizado D.</th>
+                    <th class="px-4 py-3 font-semibold text-right bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-b border-border w-[150px] min-w-[150px]">Var. Total (R$)</th>
+                    <th class="px-4 py-3 font-semibold text-right bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-b border-border w-[120px] min-w-[120px]">Var. Total (%)</th>
+                `;
+                row2.innerHTML = html;
+
+                tableHead.append(row1, row2);
+            }
+
+            function renderRow(node, months, visible = true) {
+                const def = { orcado_r: 0, orcado_d: 0, realizado_r: 0, realizado_d: 0, var_rs: 0, var_perc: 0 };
+                const isNat = node.type === 'natureza';
+                const tr = document.createElement('tr');
+                tr.className = `${isNat ? 'natureza-row' : 'projeto-row'} ${visible ? '' : 'hidden'}`;
+                if (isNat) tr.dataset.codnat = node.codnat;
+                tr.dataset.parentCodnat = node.codnatpai || '';
+
+                let html = '';
+
+                if (isNat) {
+                    const hasChild = node.children?.length > 0;
+                    if (hasChild) tr.classList.add('expandable');
+                    html = `
+                        <th class="pl-4 pr-4 py-2 border-r border-border" style="padding-left: ${0.75 + (node.nivel - 1) * 1.5}rem;">
+                            <div class="flex items-center gap-2">
+                                ${hasChild ? `<svg class="chevron-icon w-4 h-4 text-muted-foreground ${node.isExpanded !== false ? 'rotate-90' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>` : '<div class="w-4 h-4"></div>'}
+                                <span class="${node.analitica === 'N' ? 'font-semibold' : 'font-normal'}">${node.nome}</span>
+                            </div>
+                        </th>`;
+                } else {
+                    tr.dataset.codemp = node.codemp || '';
+                    tr.dataset.codproj = node.codproj || '';
+                    tr.dataset.codcencus = node.codcencus || '';
+                    tr.dataset.codnat = node.parentCodnat || '';
+                    html = `
+                        <th class="pl-4 pr-4 py-2 font-normal text-muted-foreground border-r border-border" style="padding-left: ${0.75 + node.nivel * 1.5}rem;">
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4"></div>
+                                <span>${node.nome}</span>
+                            </div>
+                        </th>`;
+                }
+
+                months.forEach(m => {
+                    const d = node.totals.months[m] || def;
+                    html += `
+                        <td class="px-4 py-2 text-right">${formatCurrency(d.orcado_r)}</td>
+                        <td class="px-4 py-2 text-right">${formatCurrency(d.orcado_d)}</td>
+                        <td class="px-4 py-2 text-right">${formatCurrency(d.realizado_r)}</td>
+                        <td class="px-4 py-2 text-right">${formatCurrency(d.realizado_d)}</td>
+                        <td class="px-4 py-2 text-right ${getVariationClass(d.var_rs)}">${formatCurrency(d.var_rs)}</td>
+                        <td class="px-4 py-2 text-right ${getVariationClass(d.var_perc)} border-r border-border">${formatPercentage(d.var_perc)}</td>
+                    `;
+                });
+
+                const t = node.totals.acumulado || def;
+                html += `
+                    <td class="px-4 py-2 text-right bg-blue-50 dark:bg-blue-900/20">${formatCurrency(t.orcado_r)}</td>
+                    <td class="px-4 py-2 text-right bg-blue-50 dark:bg-blue-900/20">${formatCurrency(t.orcado_d)}</td>
+                    <td class="px-4 py-2 text-right bg-blue-50 dark:bg-blue-900/20">${formatCurrency(t.realizado_r)}</td>
+                    <td class="px-4 py-2 text-right bg-blue-50 dark:bg-blue-900/20">${formatCurrency(t.realizado_d)}</td>
+                    <td class="px-4 py-2 text-right bg-blue-50 dark:bg-blue-900/20 ${getVariationClass(t.var_rs)}">${formatCurrency(t.var_rs)}</td>
+                    <td class="px-4 py-2 text-right bg-blue-50 dark:bg-blue-900/20 ${getVariationClass(t.var_perc)}">${formatPercentage(t.var_perc)}</td>
+                `;
+
+                tr.innerHTML = html;
+                return tr;
+            }
+
+            function renderBody(tree, months) {
+                tableBody.innerHTML = '';
+                const frag = document.createDocumentFragment();
+
+                function append(nodes, visible) {
+                    nodes.forEach(node => {
+                        frag.appendChild(renderRow(node, months, visible));
+                        if (node.children?.length) {
+                            append(node.children, visible && node.isExpanded !== false);
+                        }
+                    });
+                }
+
+                append(tree, true);
+                tableBody.appendChild(frag);
+            }
+
+            function toggleNode(codnat) {
+                function findAndToggle(nodes) {
+                    for (const n of nodes) {
+                        if (n.codnat === codnat) {
+                            n.isExpanded = n.isExpanded === false ? true : false;
+                            return true;
+                        }
+                        if (n.children && findAndToggle(n.children)) return true;
+                    }
+                    return false;
+                }
+                findAndToggle(processedDataTree);
+                renderBody(processedDataTree, allMonths);
+            }
+
+            // =============================================
+            //                  EVENTOS
+            // =============================================
+            tableBody.addEventListener('click', e => {
+                const chevron = e.target.closest('.chevron-icon');
+                if (chevron) {
+                    e.stopPropagation();
+                    const tr = chevron.closest('tr');
+                    if (tr?.dataset?.codnat) toggleNode(tr.dataset.codnat);
+                    return;
+                }
+
+                const row = e.target.closest('tr.expandable');
+                if (row?.dataset?.codnat) {
+                    toggleNode(row.dataset.codnat);
+                    return;
+                }
+
+                const projRow = e.target.closest('tr.projeto-row');
+                if (projRow) {
+                    const ds = projRow.dataset;
+                    if (!ds.codemp || !ds.codproj || !ds.codcencus || !ds.codnat) return;
+
+                    Promise.all([
+                        setVariableMitra({ name: ':VAR_ORA_CODEMP_MODAL', content: ds.codemp }),
+                        setVariableMitra({ name: ':VAR_ORA_CODPROJ_MODAL', content: ds.codproj }),
+                        setVariableMitra({ name: ':VAR_ORA_CODCENCUS_MODAL', content: ds.codcencus }),
+                        setVariableMitra({ name: ':VAR_ORA_CODNAT_MODAL', content: ds.codnat })
+                    ])
+                        .then(() => modalMitra({ id: 81, width: 80, height: 90 }))
+                        .catch(err => console.error('Erro ao abrir modal:', err));
+                }
+            });
+
+            exportBtn.addEventListener('click', () => {
+                try {
+                    const wb = XLSX.utils.table_to_book(document.getElementById('analytics-table'), { sheet: "Orçado vs Realizado" });
+                    XLSX.writeFile(wb, "Relatorio_Orcado_vs_Realizado_Hierarquico.xlsx");
+                } catch (err) {
+                    console.error('Falha na exportação:', err);
+                }
+            });
+
+            document.body.addEventListener(MITRA_UPDATE_EVENT_NAME, loadAndRenderData);
+
+            // =============================================
+            //              CARREGAMENTO DE DADOS
+            // =============================================
+            async function loadAndRenderData() {
+                tableBody.innerHTML = `<tr><td colspan="99" class="text-center py-12 text-muted-foreground"><div class="flex justify-center items-center gap-3"><svg class="animate-spin h-6 w-6 text-primary" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Carregando...</div></td></tr>`;
+                tableHead.innerHTML = '';
+
+                try {
+                    if (!componentData?.queryDados || !componentData?.jdbcId || !componentData?.queryHierarquia) {
+                        throw new Error('Faltam parâmetros obrigatórios: queryDados, jdbcId ou queryHierarquia');
+                    }
+
+                    const [hierarchyResult, dataResult] = await Promise.all([
+                        queryMitra({ query: componentData.queryHierarquia, jdbcId: Number(componentData.jdbcId) }),
+                        queryMitra({ query: componentData.queryDados, jdbcId: Number(componentData.jdbcId) })
+                    ]);
+
+                    if (!hierarchyResult?.data?.length) {
+                        tableBody.innerHTML = `<tr><td colspan="99" class="text-center py-12 text-muted-foreground">Estrutura hierárquica não encontrada.</td></tr>`;
+                        return;
+                    }
+
+                    // Construção da árvore de naturezas
+                    const hHeaders = hierarchyResult.headers.map(h => (h.name || '').toUpperCase());
+                    const hCol = {
+                        CODNAT: hHeaders.indexOf('CODNAT'),
+                        DESCRNAT: hHeaders.indexOf('DESCRNAT'),
+                        CODNATPAI: hHeaders.indexOf('CODNATPAI'),
+                        ANALITICA: hHeaders.indexOf('ANALITICA'),
+                        NIVEL: hHeaders.indexOf('NIVEL')
+                    };
+
+                    const naturezaMap = new Map();
+                    const rootNodes = [];
+                    const defaultTotals = () => ({ months: {}, acumulado: { orcado_r: 0, orcado_d: 0, realizado_r: 0, realizado_d: 0, var_rs: 0, var_perc: 0 } });
+
+                    hierarchyResult.data.forEach(row => {
+                        const codnat = row[hCol.CODNAT];
+                        naturezaMap.set(codnat, {
+                            type: 'natureza',
+                            codnat: codnat,
+                            nome: `${codnat} - ${row[hCol.DESCRNAT] || ''}`,
+                            codnatpai: row[hCol.CODNATPAI],
+                            analitica: row[hCol.ANALITICA],
+                            nivel: parseInt(row[hCol.NIVEL] || 1, 10),
+                            children: [],
+                            isExpanded: true,  // inicia expandido (mude para false se preferir recolhido)
+                            totals: defaultTotals()
+                        });
+                    });
+
+                    naturezaMap.forEach(node => {
+                        const parent = naturezaMap.get(node.codnatpai);
+                        if (parent) {
+                            parent.children.push(node);
+                        } else {
+                            rootNodes.push(node);
+                        }
+                    });
+
+                    // Integração dos dados financeiros (projetos)
+                    const dHeaders = dataResult.headers.map(h => (h.name || '').toUpperCase());
+                    const dCol = {
+                        MES_ANO: dHeaders.indexOf('MES_ANO'),
+                        PROJETO_NOME: dHeaders.indexOf('PROJETO_NOME'),
+                        ORCADO_RECEITA: dHeaders.indexOf('ORCADO_RECEITA'),
+                        ORCADO_DESPESA: dHeaders.indexOf('ORCADO_DESPESA'),
+                        REALIZADO_RECEITA: dHeaders.indexOf('REALIZADO_RECEITA'),
+                        REALIZADO_DESPESA: dHeaders.indexOf('REALIZADO_DESPESA'),
+                        CODNAT: dHeaders.indexOf('CODNAT'),
+                        CODEMP: dHeaders.indexOf('CODEMP'),
+                        CODPROJ: dHeaders.indexOf('CODPROJ'),
+                        CODCENCUS: dHeaders.indexOf('CODCENCUS')
+                    };
+
+                    const monthsSet = new Set(dataResult.data.map(r => r[dCol.MES_ANO]));
+                    allMonths = [...monthsSet].sort();
+
+                    dataResult.data.forEach(row => {
+                        const codnat = row[dCol.CODNAT];
+                        const natNode = naturezaMap.get(codnat);
+                        if (!natNode || natNode.analitica !== 'S') return;
+
+                        const projName = row[dCol.PROJETO_NOME] || '(sem projeto)';
+                        let projNode = natNode.children.find(c => c.type === 'projeto' && c.nome === projName);
+
+                        if (!projNode) {
+                            projNode = {
+                                type: 'projeto',
+                                nome: projName,
+                                parentCodnat: codnat,
+                                nivel: natNode.nivel + 1,
+                                codemp: row[dCol.CODEMP] || '',
+                                codproj: row[dCol.CODPROJ] || '',
+                                codcencus: row[dCol.CODCENCUS] || '',
+                                totals: defaultTotals()
+                            };
+                            natNode.children.push(projNode);
+                        }
+
+                        const mes = row[dCol.MES_ANO];
+                        projNode.totals.months[mes] = {
+                            orcado_r: parseFloat(row[dCol.ORCADO_RECEITA]) || 0,
+                            orcado_d: parseFloat(row[dCol.ORCADO_DESPESA]) || 0,
+                            realizado_r: parseFloat(row[dCol.REALIZADO_RECEITA]) || 0,
+                            realizado_d: parseFloat(row[dCol.REALIZADO_DESPESA]) || 0
+                        };
+                    });
+
+                    // Cálculo de variações
+                    const calcVar = data => {
+                        const netO = data.orcado_r - data.orcado_d;
+                        const netR = data.realizado_r - data.realizado_d;
+                        data.var_rs = netR - netO;
+                        data.var_perc = netO !== 0 ? (data.var_rs / Math.abs(netO)) * 100 : 0;
+                    };
+
+                    function aggregate(node) {
+                        if (!node.children?.length) {
+                            if (node.type === 'projeto') {
+                                allMonths.forEach(m => {
+                                    const md = node.totals.months[m];
+                                    if (md) {
+                                        calcVar(md);
+                                        Object.keys(md).forEach(k => node.totals.acumulado[k] += md[k] || 0);
+                                    }
+                                });
+                                calcVar(node.totals.acumulado);
+                            }
+                            return node.totals;
+                        }
+
+                        node.totals = defaultTotals();
+
+                        node.children.forEach(child => {
+                            const ct = aggregate(child);
+                            allMonths.forEach(m => {
+                                const cmd = ct.months[m];
+                                if (cmd) {
+                                    if (!node.totals.months[m]) node.totals.months[m] = { orcado_r: 0, orcado_d: 0, realizado_r: 0, realizado_d: 0 };
+                                    Object.keys(cmd).forEach(k => node.totals.months[m][k] += cmd[k]);
+                                }
+                            });
+                            Object.keys(ct.acumulado).forEach(k => node.totals.acumulado[k] += ct.acumulado[k]);
+                        });
+
+                        allMonths.forEach(m => {
+                            if (node.totals.months[m]) calcVar(node.totals.months[m]);
+                        });
+                        calcVar(node.totals.acumulado);
+
+                        return node.totals;
+                    }
+
+                    rootNodes.forEach(aggregate);
+
+                    processedDataTree = rootNodes;
+
+                    renderHeader(allMonths);
+                    renderBody(processedDataTree, allMonths);
+
+                } catch (err) {
+                    console.error('Erro ao carregar relatório:', err);
+                    tableBody.innerHTML = `<tr><td colspan="99" class="text-center py-12 text-destructive">Erro: ${err.message}</td></tr>`;
+                }
+            }
+
+            // Inicialização
+            const waitForComponentData = setInterval(() => {
+                if (window.componentData?.queryDados && window.componentData?.queryHierarquia && window.queryMitra) {
+                    clearInterval(waitForComponentData);
+                    loadAndRenderData();
+                }
+            }, 200);
+
+            setTimeout(() => {
+                if (!window.componentData?.queryDados) {
+                    clearInterval(waitForComponentData);
+                    document.getElementById('component-container').innerHTML = `
+                        <div class="flex-1 flex items-center justify-center text-destructive p-10 text-center text-lg">
+                            Erro crítico: Não foi possível carregar as configurações do componente (componentData).
+                        </div>`;
+                }
+            }, 15000);
+        });
+    </script>
+</body>
+
+</html>

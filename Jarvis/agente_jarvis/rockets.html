@@ -1,0 +1,78 @@
+
+    <!DOCTYPE html>
+    <html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <title>SEXTA-FEIRA!</title>
+        <style>
+            body { 
+                margin: 0; 
+                background: #050505; 
+                overflow: hidden; 
+                display: flex; 
+                justify-content: center; 
+                align-items: center; 
+                height: 100vh;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+            .title {
+                color: #fff;
+                font-size: 5rem;
+                text-transform: uppercase;
+                letter-spacing: 10px;
+                z-index: 10;
+                text-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff;
+                animation: pulse 2s infinite;
+            }
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.1); opacity: 0.8; }
+            }
+            .rocket {
+                position: absolute;
+                bottom: -100px;
+                width: 20px;
+                height: 50px;
+                background: linear-gradient(to top, #ffcc00, #ff3300);
+                border-radius: 50% 50% 0 0;
+                animation: launch linear infinite;
+            }
+            @keyframes launch {
+                0% { transform: translateY(0); opacity: 1; }
+                100% { transform: translateY(-120vh); opacity: 0; }
+            }
+            .sparkle {
+                position: absolute;
+                width: 4px;
+                height: 4px;
+                background: white;
+                border-radius: 50%;
+                box-shadow: 0 0 10px white;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="title">Sextou, Senhor!</div>
+        <script>
+            function createRocket() {
+                const rocket = document.createElement('div');
+                rocket.className = 'rocket';
+                rocket.style.left = Math.random() * 100 + 'vw';
+                rocket.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                document.body.appendChild(rocket);
+                setTimeout(() => rocket.remove(), 3000);
+            }
+            setInterval(createRocket, 200);
+            
+            // Criar estrelas de fundo
+            for(let i=0; i<100; i++) {
+                const s = document.createElement('div');
+                s.className = 'sparkle';
+                s.style.top = Math.random() * 100 + 'vh';
+                s.style.left = Math.random() * 100 + 'vw';
+                document.body.appendChild(s);
+            }
+        </script>
+    </body>
+    </html>
+    

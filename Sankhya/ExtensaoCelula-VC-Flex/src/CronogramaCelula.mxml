@@ -1,0 +1,613 @@
+<?xml version="1.0" encoding="utf-8"?>
+<controls:DefaultSankhyaApplication 
+	preloader="br.com.sankhya.controls.managers.CustomPreloader"
+	xmlns:controls="br.com.sankhya.controls.*"
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	layout="vertical"
+	xmlns:timelinediagram="br.com.sankhya.controls.timelinediagram.*"
+	creationComplete="creationComplete()"
+	>
+	<mx:Script>
+		<![CDATA[
+			
+			import flash.utils.getDefinitionByName;
+			
+			import mx.controls.Alert;
+			import mx.core.Application;
+			import mx.managers.PopUpManager;
+			import mx.utils.StringUtil;
+			
+			import br.com.sankhya.controls.DefaultSankhyaApplication;
+			import br.com.sankhya.controls.HtmlToolTip;
+			import br.com.sankhya.controls.popup.SanPopUp;
+			import br.com.sankhya.controls.popup.SanPopUpManager;
+			import br.com.sankhya.controls.timelinediagram.LaneTitleRenderer;
+			import br.com.sankhya.controls.timelinediagram.TimeLineEvent;
+			import br.com.sankhya.controls.timelinediagram.TimeLineInterceptor;
+			import br.com.sankhya.controls.timelinediagram.TimeLineLane;
+			import br.com.sankhya.controls.timelinediagram.TimeLineTask;
+			import br.com.sankhya.extensions.celula.CelulaPopUp;
+			import br.com.sankhya.extensions.celula.EdicaoTarefaPopUp;
+			import br.com.sankhya.extensions.celula.ExecutanteTarefaPopUp;
+			import br.com.sankhya.extensions.celula.LaneTitleRenderCronograma;
+			import br.com.sankhya.extensions.celula.VersoesPopUp;
+			import br.com.sankhya.util.MessageUtils;
+			import br.com.sankhya.util.StringUtils;
+			import br.com.sankhya.util.Time;
+			import br.com.sankhya.util.datetime.DateUtil;
+			import br.com.sankhya.util.datetime.SanDate;
+			import br.com.sankhya.util.http.ServiceProxy;
+			
+			
+			private var _usuarioPodeAlterar:Boolean = false;
+			private var _alteracaoPermitida:Boolean = true;
+			private var _executantePopup:ExecutanteTarefaPopUp;
+			private var _popUpVersoes:VersoesPopUp;
+			private var _popUpCelula:CelulaPopUp;
+			private var _updatePlanned:Object;
+			private var _edicaoTarefaPopup:EdicaoTarefaPopUp;
+			
+			private static const KEY_DATAFIM_ORIGINAL:String = "ORIG_DTFIM";
+			
+			[Bindable][Embed(source="/assets/btnCelula.png")] 
+			private var _btnCelulaImg:Class;
+			
+			[Bindable][Embed(source="/assets/btnVersao.png")] 
+			private var _btnVersaoImg:Class;
+			
+			private function creationComplete():void{
+				HtmlToolTip.useThis();
+				
+				_updatePlanned = new Object();
+				
+				var interceptor:TimeLineInterceptor = new TimeLineInterceptor();
+				interceptor.addInterfaceMethod(TimeLineInterceptor.BEFORE_MODIFY_TASK, function(timeLine:TimeLineDiagram, lane:TimeLineLane, task:TimeLineTask, start:SanDate, end:SanDate):Boolean{
+					if(start.compareOnlyDateTo(end) > 0){
+						end.applyDateTime(start);
+					}
+					
+					_alteracaoPermitida = true;
+					
+					/**
+					 * Restrição de movimentação entre Desenvolvedores e Testers
+					 * 
+					
+					var isDev:String = lane.getDynamicProperty("ISDEV");
+					
+					
+					if (isDev != null && isDev != task.getDynamicProperty("ISDEV")) {
+						alteracaoPermitida = false;
+						
+						var msg:String = "Não é possível mover uma tarefa de ";
+						if (ehTarefaDesenvolvimento(task)) {
+							msg += "desenvolvimento para um tester.";
+						} else {
+							msg += "teste para um desenvolvedor.";
+						}
+						MessageUtils.showError("Erro ao mover tarefa", msg);
+					} else {
+						task.addDynamicProperty(KEY_DATAFIM_ORIGINAL, task.end.toString());
+					}
+					*/
+					if (Number(task.getDynamicProperty("NUMOS")) == -3 || Number(task.getDynamicProperty("NUMOS")) == -4) {
+						_alteracaoPermitida = false;
+						var msg:String = "Você deve utilizar a própria tela adicional de eventos para editar esta tarefa! Clique duas vezes na tarefa para ser redirecionado!";
+						MessageUtils.showError("Erro ao editar evento adicional", msg);
+					}
+					
+					task.addDynamicProperty(KEY_DATAFIM_ORIGINAL, task.end.toString());
+					
+					return _usuarioPodeAlterar && _alteracaoPermitida;
+				});
+				interceptor.addInterfaceMethod(TimeLineInterceptor.BEFORE_ADD_TASK, function(timeLine:TimeLineDiagram, lane:TimeLineLane, task:TimeLineTask):TimeLineTask{
+					atualizaToolTip(task, lane);
+					return task;
+				});
+				interceptor.addInterfaceMethod(TimeLineInterceptor.AFTER_MODIFY_TASK, function(timeLine:TimeLineDiagram, lane:TimeLineLane, task:TimeLineTask):void{
+					if ((_usuarioPodeAlterar && _alteracaoPermitida) == true) {
+						updateTask(task, lane);
+						atualizaToolTip(task, lane);
+					}
+				});
+				timeline.actionInterceptor = interceptor;
+				
+				loadConfigXML();
+			}
+			
+			private function ehTarefaDesenvolvimento(task:TimeLineTask):Boolean {
+				return task.getDynamicProperty("ISDEV") == "true";
+			}
+			
+			private function updateTask(task:TimeLineTask, lane:TimeLineLane):void {
+				var codUsu:String = lane.getDynamicProperty("CODUSU");
+				var dtIni:String = task.start.toString();
+				var dtIniOld:String = task.getDynamicProperty("DTINI");
+				var dtFim:String = task.end.toString();
+				var dtFimOld:String = task.getDynamicProperty("DTFIM");
+				var codUsuOld:String = task.getDynamicProperty("CODUSU");
+				var numOS:String = task.getDynamicProperty("NUMOS");
+				var numSprint:String = task.getDynamicProperty("NUMSPRINT");
+				var ciclo:String = task.getDynamicProperty("CICLO");
+				var tarefaQuebrada:String = task.getDynamicProperty("TAREFAQUEBRADA");
+				var numTarefa:String = task.getDynamicProperty("NUMTAREFA");
+				
+				task.addDynamicProperty("DTINI", dtIni);
+				task.addDynamicProperty("DTFIM", dtFim);
+				task.addDynamicProperty("CODUSU", codUsu);
+				
+				if (lane.getDynamicProperty("ISDEV") == null) {
+					lane.addDynamicProperty("ISDEV", task.getDynamicProperty("ISDEV"));
+				}
+				
+				if (ehTarefaDesenvolvimento(task)) {
+					task.addDynamicProperty("NOMEDEV", lane.getDynamicProperty("NOMEUSU"));
+				} else {
+					task.addDynamicProperty("NOMETESTE", lane.getDynamicProperty("NOMEUSU"));
+				}
+
+				var param:XML = <tarefa></tarefa>;
+				param.@NUMOS = numOS;
+				param.@CODUSU = codUsu;
+				param.@DTINI = dtIni;
+				param.@DTFIM = dtFim;
+				
+				
+				if (!ehCorrecaoErro(task) && !inUpdate(numOS, numSprint)) {
+					param.@NUMSPRINT = numSprint;
+					param.@CODUSUOLD = codUsuOld;
+					param.@DTINIOLD = dtIniOld;
+					param.@DTFIMOLD = dtFimOld;
+					param.@CICLO = ciclo;
+					param.@TAREFAQUEBRADA = tarefaQuebrada;
+					param.@NUMTAREFA = numTarefa;
+					
+					//Tarefas apenas planejadas, movemos as tarefas espelho dela que existe no executante do teste/dev para 
+					//não precisarmos fazer uma nova requisição
+					if (ehPlanejada(task)) {
+						setOnUpdate(numOS, numSprint);
+						moveSameTaksPlanned(task);						
+					} else {
+						moveSameTaks(task);
+					}
+					
+					ServiceProxy.callService(
+						"celula@CelulaSP.updateTask",
+						param,
+						function(ignored:*, result:XML):void{
+							
+							unsetOnUpdate(numOS, numSprint);
+						},
+						true
+					);	
+				} else if (ehCorrecaoErro(task) && !inUpdate(numOS, numSprint)) {
+					param.@DEVTASK = ehTarefaDesenvolvimento(task).toString();
+					
+					setOnUpdate(numOS, numSprint);
+					moveSameErrorTaks(task);
+					
+					ServiceProxy.callService(
+						"celula@CelulaSP.updateErrorTask",
+						param,
+						function(ignored:*, result:XML):void{
+							unsetOnUpdate(numOS, numSprint);
+						},
+						true
+					);
+				}
+				
+				task.removeDynamicProperty(KEY_DATAFIM_ORIGINAL);
+			}
+			
+			
+			
+			/*
+			
+			ATUALIZAÇÃO APENAS DOS EXECUTANTES EXIBIDOS NA TELA
+			
+			*/
+			
+			private function refreshTimelineOnly():void {
+				if (timeline.getAllLanes().length > 0) {
+					loadUsuariosXML();
+				}
+			}
+			
+			private function loadUsuariosXML(users:XML = null):void{
+				var param:XML = <cronograma></cronograma>;
+				
+				for each(var lane:TimeLineLane in timeline.getAllLanes()) {
+					var exec:XML = <executante></executante>;
+					exec.@ID = lane.getDynamicProperty("CODUSU");
+					exec.@NOME = lane.description;
+					param.appendChild(exec);
+				}
+				
+				var exibirIndefinido:XML = <indefinido></indefinido>;
+				exibirIndefinido.@VALOR = checkExibirIndefinido.selected ? "S" : "N";
+				
+				param.appendChild(exibirIndefinido);
+				
+				ServiceProxy.callService(
+					"celula@CelulaSP.loadSpecificScheduleDiagram",
+					param,
+					function(ignored:*, result:XML):void{
+						if (result.responseBody.cronogramaCelula["@podeAlterar"] != null) {
+							_usuarioPodeAlterar = result.responseBody.cronogramaCelula["@podeAlterar"] == "true" ? true : false;	
+						} else {
+							_usuarioPodeAlterar = false;
+						}
+						
+						timeline.loadConfig(result.responseBody.cronogramaCelula.timeline[0]);
+						
+						timeline.sortLanes("NOMEUSU", "string", true);
+						
+						if (_edicaoTarefaPopup) {
+							_edicaoTarefaPopup.needRefreshSchedule = false;
+						}
+						
+					},
+					true
+				);
+			}
+			
+			private function refresh():void {
+				loadConfigXML();
+			}
+			
+			private function loadConfigXML(users:XML = null):void{
+				var param:XML = <cronograma></cronograma>;
+				
+				var exibirIndefinido:XML = <indefinido></indefinido>;
+				exibirIndefinido.@VALOR = checkExibirIndefinido.selected ? "S" : "N";
+				
+				param.appendChild(exibirIndefinido);
+				
+				ServiceProxy.callService(
+					"celula@CelulaSP.loadScheduleDiagram",
+					param,
+					function(ignored:*, result:XML):void{
+						if (result.responseBody.cronogramaCelula["@podeAlterar"] != null) {
+							_usuarioPodeAlterar = result.responseBody.cronogramaCelula["@podeAlterar"] == "true" ? true : false;	
+						} else {
+							_usuarioPodeAlterar = false;
+						}
+						
+						timeline.loadConfig(result.responseBody.cronogramaCelula.timeline[0]);
+
+						timeline.sortLanes("NOMEUSU", "string", true);
+						
+						if (_edicaoTarefaPopup) {
+							_edicaoTarefaPopup.needRefreshSchedule = false;
+						}
+					},
+					true
+				);
+			}
+			
+			
+			private function moveSameTaksPlanned(currentTask:TimeLineTask):void {
+				var numOS:String = currentTask.getDynamicProperty("NUMOS");
+				var numSprint:String = currentTask.getDynamicProperty("NUMSPRINT");
+				
+				for each(var t:TimeLineTask in timeline.getAllTasks()) {
+					var taskOS:String = t.getDynamicProperty("NUMOS");
+					var taskSprint:String = t.getDynamicProperty("NUMSPRINT");
+					
+					if (ehPlanejada(t) && taskOS == numOS && taskSprint == numSprint) {
+						timeline.changeTask(t, currentTask.start, currentTask.end);				
+					}
+				}
+			}
+			
+			private function ehPlanejada(t:TimeLineTask):Boolean {
+				return t.getDynamicProperty("EMEXECUCAO") == "N" ? true : false
+			}
+			
+			private function moveSameTaks(currentTask:TimeLineTask):void {
+				//Podemos mover tarefas semelhantes do Teste, apenas quando a tarefa atual é de desenvolvimento
+				if (!ehTarefaDesenvolvimento(currentTask)) {
+					return;
+				}
+				
+				var numOS:String = currentTask.getDynamicProperty("NUMOS");
+				var numSprint:String = currentTask.getDynamicProperty("NUMSPRINT");
+				
+				for each(var t:TimeLineTask in timeline.getAllTasks()) {
+					var taskOS:String = t.getDynamicProperty("NUMOS");
+					var taskSprint:String = t.getDynamicProperty("NUMSPRINT");
+					
+					if (!ehPlanejada(t) && taskOS == numOS && taskSprint == numSprint && t != currentTask) {
+						var originalDtFim:SanDate = SanDate.parse(currentTask.getDynamicProperty(KEY_DATAFIM_ORIGINAL));
+						
+						if (originalDtFim.compareTo(t.start) < 0) {
+							var nextDay:SanDate = getNextValidDate(currentTask.end);
+							var taskToMove:TimeLineTask = t;
+							var days:int = getDays(t.start, t.end);
+							var newDateEnd:SanDate = addBusinessDays(currentTask.end.copy(), days);
+							
+							MessageUtils.confirm("Mover tarefas do teste", "Você deseja mover as tarefas do teste que estão planejadas após o fim dessa tarefa?", function():void{
+								timeline.changeTask(taskToMove, nextDay, newDateEnd);
+							});
+						}
+					}
+				}
+			}
+			
+			private function moveSameErrorTaks(currentTask:TimeLineTask):void {
+				var numOS:String = currentTask.getDynamicProperty("NUMOS");
+				
+				for each(var t:TimeLineTask in timeline.getAllTasks()) {
+					var taskOS:String = t.getDynamicProperty("NUMOS");
+					
+					if (ehCorrecaoErro(t) && ehCorrecaoErro(currentTask) && taskOS == numOS && t != currentTask) {
+						timeline.changeTask(t, currentTask.start, currentTask.end);
+					}
+				}
+			}
+			
+			private function addBusinessDays(date:SanDate, days:int):SanDate{
+				while(days > 0) {
+					date = getNextValidDate(date);
+					
+					days--;
+				}
+				
+				return date;
+			}
+			
+			private function getFunc(infos:String):String {
+				var partes:Array = infos.split("|");
+				return partes[0];
+			}
+			
+			private function getEmp(infos:String):String {
+				var partes:Array = infos.split("|");
+				return partes[1];
+			}
+			
+			private function editarTarefa(e:TimeLineEvent):void{
+				var task:TimeLineTask = e.properties.task;
+				var popUp:SanPopUp = SanPopUpManager.getPopUp(EdicaoTarefaPopUp.POPUP_ID);
+				if (Number(task.getDynamicProperty("NUMOS")) == -1) {
+					var codFer:int = Number(task.getDynamicProperty("NUMSPRINT"));
+					var codFunc:int = Number(getFunc(task.getDynamicProperty("EMEXECUCAO")));
+					var codEmp:int = Number(getEmp(task.getDynamicProperty("EMEXECUCAO")));
+					DefaultSankhyaApplication.openApp("br.com.sankhya.menu.adicional.TFPFERIAS", {SOLIC: codFer, CODFUNC: codFunc, CODEMP: codEmp});
+					return;
+				}
+				
+				if (Number(task.getDynamicProperty("NUMOS")) == -2) {
+					var codEstFer:int = Number(task.getDynamicProperty("NUMSPRINT"));
+					DefaultSankhyaApplication.openApp("br.com.sankhya.menu.adicional.TFPESTFERIAS", {CODEST: codEstFer});
+					return;
+				}
+				if (Number(task.getDynamicProperty("NUMOS")) == -3 || Number(task.getDynamicProperty("NUMOS")) == -4) {
+					var codEvento:int = Number(task.getDynamicProperty("NUMSPRINT"));
+					DefaultSankhyaApplication.openApp("br.com.sankhya.menu.adicional.EVENTOSADICIONAIS", {CODEVENTO: codEvento});
+					return;
+				}
+				
+				if (popUp == null) {
+					_edicaoTarefaPopup = new EdicaoTarefaPopUp();
+					_edicaoTarefaPopup.resourceID = DefaultSankhyaApplication.getInstance().getApplicationResourceID() + ".popup";
+					_edicaoTarefaPopup.enableEdition = _usuarioPodeAlterar;
+					
+					popUp = SanPopUpManager.create(
+						EdicaoTarefaPopUp.POPUP_ID,
+						"Editar informações da tarefa",
+						_edicaoTarefaPopup
+					);
+					
+					popUp.okLabel = "Salvar";
+					popUp.cancelLabel = "Fechar";
+					
+					popUp.enabledOkBtn = _usuarioPodeAlterar;
+				}
+				
+				_edicaoTarefaPopup.isErrorTask = ehCorrecaoErro(task);
+				
+				var props:Object = new Object();
+				props.lanes = timeline.getAllLanes();
+				props.inicio = task.start;
+				props.fim = task.end;				
+				props.currentLane = task.parent;
+				props.numOS = task.getDynamicProperty("NUMOS");
+				props.numSprint = task.getDynamicProperty("NUMSPRINT");
+				props.ciclo = task.getDynamicProperty("CICLO");
+				props.descricao = ehCorrecaoErro(task) ? ("Correção de erro: " + props.numOS) : task.description;
+				
+				popUp.width = ehCorrecaoErro(task) ? 400 : 700;
+				popUp.content.dataValue = props;
+				popUp.okFunction = function():void{
+					var p:Object = popUp.content.dataValue;
+					var start:SanDate = p.startDate == null ? task.start : p.startDate;
+					var end:SanDate = p.endDate == null ? task.end : p.endDate;
+					
+					if (start != task.start || end != p.end || task.parent != p.selectedLane) {
+						timeline.changeTask(task, start, end, p.selectedLane);				
+					}
+					
+					popUp.close();
+					
+					if (_edicaoTarefaPopup.needRefreshSchedule) {
+						refresh();
+					}
+				};
+				popUp.cancelFunction = function():void {
+					if (_edicaoTarefaPopup.needRefreshSchedule) {
+						refresh();
+					}
+				};
+				popUp.show();
+			}
+			
+			private function adicionarExecutante(e:Event):void {
+				if (_executantePopup == null) {
+					_executantePopup = new ExecutanteTarefaPopUp();
+					_executantePopup.onSave = function(props:Object):void{
+						var codUsu:String = props.codExecutante;
+						var nomeExecutante:String = props.nomeExecutante;
+						
+						if(StringUtils.emptyAsNull(codUsu) == null || StringUtils.emptyAsNull(nomeExecutante) == null){
+							MessageUtils.showAlert("Erro ao selecionar executante", "Por favor, informe um executante.");
+							return;
+						}
+						
+						var description:String = StringUtil.substitute("{0} - {1}", codUsu, nomeExecutante);
+						var lane:TimeLineLane = new TimeLineLane(timeline, description);
+						lane.addDynamicProperty("CODUSU", codUsu);
+						
+						var laneExists:Boolean = false;
+						
+						for each(var l:TimeLineLane in timeline.getAllLanes()){
+							if(l.getDynamicProperty("CODUSU") == codUsu){
+								laneExists = true;
+							}
+						}
+						
+						if (laneExists) {
+							MessageUtils.showAlert("Erro ao inserir executante",  "Esse executante já está presente no seu cronograma.");	
+						} else {
+							timeline.addLane(lane);							
+						}
+						
+						_executantePopup.hide();
+						refreshTimelineOnly();
+
+					};
+				}
+				
+				_executantePopup.clear();
+				
+				var position:Point = localToGlobal(new Point(mouseX, mouseY));
+				position.y += btnAddExe.height;
+				_executantePopup.show(position, true);
+			}
+			
+			private function abrirPopUpVersoes():void{
+				var p:Point = localToGlobal(new Point(mouseX, mouseY)); 
+				p.y += btnFiltroVersao.height;
+				
+				if(_popUpVersoes == null){
+					_popUpVersoes = new VersoesPopUp();
+					_popUpVersoes.title = "Selecione os ciclos de versões que deseja filtrar";
+					_popUpVersoes.onSave = refresh;
+					_popUpVersoes.width = 400;
+					_popUpVersoes.height = 500;
+				}
+				
+				_popUpVersoes.show(p, true);
+			}
+			
+			private function abrirPopUpCelula():void{
+				var p:Point = localToGlobal(new Point(mouseX, mouseY)); 
+				p.y += btnFiltroCelula.height;
+				
+				if(_popUpCelula == null){
+					_popUpCelula = new CelulaPopUp();
+					_popUpCelula.title = "Selecione as células que deseja filtrar";
+					_popUpCelula.onSave = refresh;
+					_popUpCelula.width = 400;
+					_popUpCelula.height = 500;
+				}
+				
+				_popUpCelula.show(p, true);
+			}
+			
+			private function atualizaToolTip(task:TimeLineTask, lane:TimeLineLane):void{
+				task.restoreToolTip();
+				
+				var toolTip:String = task.toolTip;
+				toolTip = toolTip.replace("${DT_INICIO}", task.start.dateFormat());
+				toolTip = toolTip.replace("${DT_FIM}", task.end.dateFormat());
+				
+				if (ehTarefaDesenvolvimento(task)) {
+					toolTip = toolTip.replace("${NOME_DEV}", lane.getDynamicProperty("NOMEUSU"));
+					toolTip = toolTip.replace("${NOME_TESTE}", task.getDynamicProperty("NOMETESTE"));
+				} else {
+					toolTip = toolTip.replace("${NOME_DEV}", task.getDynamicProperty("NOMEDEV"));
+					toolTip = toolTip.replace("${NOME_TESTE}", lane.getDynamicProperty("NOMEUSU"));					
+				}
+				
+				task.toolTip = toolTip;
+			}
+			
+			private function setOnUpdate(numOS:String, numSprint:String):void {
+				var key:String = getUpdateKey(numOS, numSprint);
+				
+				_updatePlanned[key] = true;
+			}
+			
+			private function unsetOnUpdate(numOS:String, numSprint:String):void {
+				var key:String = getUpdateKey(numOS, numSprint);
+				
+				if (_updatePlanned.hasOwnProperty(key)) {
+					_updatePlanned[key] = false;
+					
+					delete _updatePlanned[key];
+				}
+			}
+			
+			private function inUpdate(numOS:String, numSprint:String):Boolean {
+				var key:String = getUpdateKey(numOS, numSprint);
+				
+				return _updatePlanned.hasOwnProperty(key) && _updatePlanned[key];
+			}
+			
+			private function getUpdateKey(numOS:String, numSprint:String):String {
+				return numOS + "_" + numSprint;
+			}
+			
+			private function getDays(startDate:SanDate, endDate:SanDate):int{
+				var days:int = 1;
+				
+				while(startDate.compareTo(endDate) < 0) {
+					startDate = startDate.copy();
+					startDate.add(1, SanDate.DATE);
+					
+					if (isValidDate(startDate)) {
+						days++;						
+					}
+				}
+				
+				return days;
+			}
+			
+			private function getNextValidDate(date:SanDate):SanDate{
+				do {
+					date = date.copy();
+					date.add(1, SanDate.DATE);
+				} while(!isValidDate(date));
+				return date;
+			}
+			
+			private function isValidDate(date:SanDate):Boolean{
+				return timeline.ignoreWeekend || timeline.isWeekDay(date);
+			}
+			
+			private function ehCorrecaoErro(task:TimeLineTask):Boolean {
+				return Number(task.getDynamicProperty("NUMSPRINT")) < 0 ? true : false;
+			}
+			private function ehFeriasOuAdicional(task:TimeLineTask):Boolean {
+				return Number(task.getDynamicProperty("NUMSPRINT")) == 0 && Number(task.getDynamicProperty("NUMOS")) == 0 ? true : false;
+			}
+			private function abrirTela(tela:String):void {
+				DefaultSankhyaApplication.openApp("br.com.sankhya.menu.adicional." + tela, {});
+			}
+		]]>
+	</mx:Script>
+	<mx:VBox id="visaoGrafico" width="100%" height="100%">
+		<controls:GradienteBox height="40" width="100%"	direction="horizontal" horizontalGap="5">
+			<mx:Button styleName="btnRefresh" toolTip="Atualizar" click="refreshTimelineOnly()" buttonMode="true" />
+			<mx:Button id="btnFiltroVersao" label="Selecionar Ciclo de Versão" toolTip="Selecione o ciclo de versão que deseja filtrar" click="{abrirPopUpVersoes()}" buttonMode="true" icon="{_btnVersaoImg}"/>
+			<mx:Button id="btnFiltroCelula" label="Selecionar Célula" toolTip="Selecione a célula que deseja filtrar" click="{abrirPopUpCelula()}" buttonMode="true" icon="{_btnCelulaImg}"/>
+			<mx:Button id="btnAddExe" styleName="btnEquipe" label="Incluir executante" click="adicionarExecutante(event)" buttonMode="true" />
+			<mx:Button id="btnAddEventoAdicional" label="Incluir Evento Adicional" click='{abrirTela("EVENTOSADICIONAIS")}' buttonMode="true" icon="{_btnVersaoImg}" />
+			<mx:CheckBox id="checkExibirIndefinido" label="Exibir Indefinido" change="{refreshTimelineOnly()}" selected="false" />
+			<mx:HBox horizontalAlign="right" id="hboxVersion" width="100%">
+				<mx:Label id="lblVersionCronograma" text="v1.3" />
+			</mx:HBox>
+		</controls:GradienteBox>
+		<timelinediagram:TimeLineDiagram id="timeline" height="100%" width="100%" taskDoubleClick="editarTarefa(event)" laneTitleRenderer="{LaneTitleRenderCronograma}"/>
+	</mx:VBox>
+</controls:DefaultSankhyaApplication>

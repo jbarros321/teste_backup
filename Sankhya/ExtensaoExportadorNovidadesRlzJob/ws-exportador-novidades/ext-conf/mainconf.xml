@@ -1,0 +1,21 @@
+<configs>
+  <dataSources />
+  <defaultJbossPath />
+  <buildDir>C:\sk-java\workspace\trunk\ExtExportadorNovidadesRlzJob\ws-exportador-novidades</buildDir>
+  <exportDir>C:\Users\wender\Desktop</exportDir>
+  <recriaDefault>false</recriaDefault>
+  <cleanJboss>false</cleanJboss>
+  <devEnvironment>
+    <DataSource name="dsDevBase">
+      <dataBase>ORACLE</dataBase>
+      <host>192.168.0.193</host>
+      <sidInstance>industria</sidInstance>
+      <port>1521</port>
+      <user>EXTENSOES</user>
+      <pass>tecsis</pass>
+      <baseName />
+      <poolSizeMin>0</poolSizeMin>
+      <poolSizeMax>0</poolSizeMax>
+    </DataSource>
+  </devEnvironment>
+</configs>

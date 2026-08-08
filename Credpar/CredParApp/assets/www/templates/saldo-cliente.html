@@ -1,0 +1,53 @@
+<ion-view view-title="CONSULTA DE SALDO" cache-view="false">
+
+	<ion-nav-buttons side="left">
+    	<button class="button button-icon button-clear icon ion-ios-arrow-back" style="color: white;" ng-click="goBack()">
+        </button>
+    </ion-nav-buttons>
+    
+    <ion-content class="has-header padding task-content background-login has-foot">
+    	<div class="loading-spinner" ng-if="showLoading">
+			<div class="spinner"></div>
+		</div>
+		<div class="empty-data" ng-if="showError && !showLoading">
+			<div class="icon-panel">
+				<i class="icon ion-sad-outline"></i>
+			</div>
+            <span class="text-info" ng-if="data.mensagem == null">Não foi possível obter as informações. Verifique sua conexão com a internet.</span>
+            <span class="text-info" ng-if="data.mensagem != null">{{data.mensagem}}</span>
+        </div>
+	    <div class="center-panel" ng-if="!showError && !showLoading">
+    	
+	    	<div class="row">
+		    	<div class="cartao align-center">
+		    		<p class="nome-cartao">{{data.numeroCartao}}</P>
+		    		<p class="nome-cartao">{{data.nomeCartao}}</P>				    
+			    </div>
+		    </div>
+		    
+	    	<div class="row">
+	    		<div class="col numero-cartao text-center">
+	    			CARTÃO <span style="font-weight: bold;">{{data.numeroCartao}}</span>
+	    		</div>
+	    	</div>
+
+	    	<div class="row borderStyle buttonGradient align-center saldo">
+	    		<div class="col col-60">Limite Total</div>
+	    		<div class="col col-40 text-right">R$ {{data.limiteTotal}}</div>
+	    	</div>
+
+	    	<div class="row borderStyle buttonGradient align-center saldo">
+	    		<div class="col col-60">Limite Utilizado</div>
+	    		<div class="col col-40 text-right">R$ {{data.limiteUtilizado}}</div>
+	    	</div>
+
+	    	<div class="row borderStyle btnAcessar align-center saldo" style="margin-top: 25px;">
+	    		<div class="col col-60">Saldo Disponível</div>
+	    		<div class="col col-40 text-right">R$ {{data.saldo}}</div>
+	    	</div>
+
+    	</div>
+    	<div style="height: 125px;">
+        </div>
+    </ion-content>
+</ion-view>

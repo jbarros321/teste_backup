@@ -1,0 +1,31 @@
+<ion-view >
+    <ion-content class="background-login centralizeScroll removeHeader">
+    
+    	<div class="row row-center align-center"  style="width: 280px; font-size: 14px; font-weight: bold;">Selecione a sua região de atendimento</div>
+        <div class="row row-center align-center" >
+
+                <div class="col col-center" style="margin-left: -1em;">
+
+						<button 
+							class="button button-small button-light button-select icon-right ion-android-arrow-dropdown" 
+			                modal-select options="fieldServer.options"  
+			                ng-model="fieldServer.selection" 
+			                modal-title="Seleção de Cidade"  			                
+			                cancel-button="Cancelar"
+			                reset-button="Limpar valor"
+			                on-select="fieldServerChange(fieldServer)"
+			                on-reset="fieldServerChange(fieldServer)"
+			                has-search="true"
+			                search-placeholder="Procurar"
+			                cancel-search-button="Limpar">
+							{{ fieldServer.selection.NOMESERV || &apos;&nbsp;&nbsp;&nbsp;&apos; }}
+							<div class="option">
+			    				{{ option.NOMESERV }} <i class="radio-icon ion-checkmark"></i>
+							</div>
+						</button>
+            </div>
+        </div>
+    </ion-content>
+</ion-view>
+<!-- 			                on-select="fieldServerChange(fieldServer)" -->
+<!-- 			                on-reset="fieldServerChange(fieldServer)" -->

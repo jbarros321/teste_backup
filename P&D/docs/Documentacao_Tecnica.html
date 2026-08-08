@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentação Técnica - P&D</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+        }
+        body {
+            font-family: 'DejaVu Sans', 'Liberation Sans', Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+        }
+        h1 {
+            font-size: 24pt;
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 30px;
+            page-break-after: avoid;
+        }
+        h2 {
+            font-size: 20pt;
+            color: #34495e;
+            border-bottom: 2px solid #95a5a6;
+            padding-bottom: 8px;
+            margin-top: 25px;
+            page-break-after: avoid;
+        }
+        h3 {
+            font-size: 16pt;
+            color: #555;
+            margin-top: 20px;
+            page-break-after: avoid;
+        }
+        h4 {
+            font-size: 14pt;
+            color: #666;
+            margin-top: 15px;
+            page-break-after: avoid;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', 'DejaVu Sans Mono', monospace;
+            font-size: 10pt;
+        }
+        pre {
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            overflow-x: auto;
+            font-size: 10pt;
+            page-break-inside: avoid;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            display: block;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+            page-break-inside: avoid;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        table th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        ul, ol {
+            margin: 10px 0;
+            padding-left: 30px;
+        }
+        li {
+            margin: 5px 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 15px auto;
+            page-break-inside: avoid;
+        }
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        p {
+            margin: 10px 0;
+            text-align: justify;
+        }
+    </style>
+</head>
+<body>
+    <p><h2>Cadastro de Cargos e Precificação de Mão de Obra</h2></p>
+<br/>
+<ul><li><strong>Objetivo</strong>: documentar a implementação das personalizações descritas no arquivo <code>P&D/docs/P&D - Pré-Escopo de personalização Orçamento docx pdf-D4Sign.pdf</code>, com foco no cadastro de cargos e preparação para o fluxo de orçamento.</li><li><strong>Arquivos importados</strong>:</li></ul>
+<p>  - Documento base: <code>P&D/docs/P&D - Pré-Escopo de personalização Orçamento docx pdf-D4Sign.pdf</code>.</p>
+<p>  - Metadados do formulário: <code>P&D/docs/Metadados_AD_CARGOS.zip</code>.</p>
+<br/>
+<p><h3>Estrutura da Pasta</h3></p>
+<br/>
+<ul><li><code>P&D/</code> — diretório raiz do projeto de personalização.</li><li><code>P&D/docs/imagens/</code> — armazena as capturas de tela utilizadas na documentação.</li></ul>
+<p>  - <code>cadastro_campos.png</code> — estrutura dos campos da tela personalizada.</p>
+<p>  - <code>cadastro_registro.png</code> — formulário de inclusão/edição de cargo.</p>
+<p>  - <code>lista_registros.png</code> — grid com registros de exemplo.</p>
+<br/>
+<p><h3>Tela Personalizada <code>AD_CARGOS</code></h3></p>
+<br/>
+<ul><li><strong>Propósito</strong>: manter as informações de cargos, níveis, valores e unidades, servindo como base para a precificação automática solicitada no pré-escopo.</li><li><strong>Campos principais</strong>:</li></ul>
+<p>  - <code>NUCARGO</code>: identificador único.</p>
+<p>  - <code>CARGO</code>: nome do cargo.</p>
+<p>  - <code>NIVEL</code>: nível (Júnior, Pleno, Sênior).</p>
+<p>  - <code>VALOR</code>: valor por unidade (diária).</p>
+<p>  - <code>UN</code>: unidade padrão (ex.: diárias).</p>
+<p>  - <code>UNALT</code>: unidade alternativa (ex.: horas).</p>
+<br/>
+<p><h4>Estrutura dos Campos</h4></p>
+<br/>
+<p><img src="file:///home/lemoreira/git/personalizacoes/P&D/docs/imagens/cadastro_campos.png" alt="Tela de configuração dos campos" style="max-width: 100%; height: auto;" /></p>
+<br/>
+<ul><li>A tela personalizada contempla os campos previstos no documento, incluindo unidade padrão e alternativa.</li><li>O campo <code>NIVEL</code> foi configurado como lista de opções para suportar os níveis JR, PL e SR.</li><li><code>VALOR</code> utiliza o tipo numérico decimal para suportar valores monetários.</li></ul>
+<br/>
+<p><h4>Formulário de Cadastro</h4></p>
+<br/>
+<p><img src="file:///home/lemoreira/git/personalizacoes/P&D/docs/imagens/cadastro_registro.png" alt="Formulário de criação de cargo" style="max-width: 100%; height: auto;" /></p>
+<br/>
+<ul><li>Exemplo de cadastro de cargo com unidade padrão <code>DI (DIAS - DIÁRIAS)</code> e unidade alternativa <code>HR (HORAS)</code>.</li><li>O valor atribuído (ex.: R$ 10,00) representa a diária base para o nível selecionado.</li><li>A tela permite inserir múltiplos níveis por cargo, alinhando-se à exigência de precificação diferenciada por nível.</li></ul>
+<br/>
+<p><h4>Registros de Exemplo e Integração com a Central de Vendas</h4></p>
+<br/>
+<p><img src="file:///home/lemoreira/git/personalizacoes/P&D/docs/imagens/lista_registros.png" alt="Grid com registros exemplo" style="max-width: 100%; height: auto;" /></p>
+<br/>
+<ul><li>Foram cadastrados cargos de Eletricista, Engenheiro e Programador, cada um com níveis Júnior, Pleno e Sênior, incluindo valores diferenciados.</li><li>Esses registros servem para testar:</li></ul>
+<p>  - Cálculo automático de diárias no orçamento com base no cargo/nível.</p>
+<p>  - Conversão entre unidades padrão e alternativa quando necessário.</p>
+<ul><li><strong>Central de Vendas / Central de Notas:</strong> a descrição do item da grade agora concatena <em>descrição do cargo + nível</em> sempre que o campo <code>Nro cargo</code> estiver preenchido. Desta forma o usuário visualiza “Eletricista Júnior (JR)”, “Programador Pleno (PL)” etc. diretamente na tela de itens:</li></ul>
+<br/>
+<p><img src="imagens/itens_cargo_nivel.png" alt="Descrição do item exibindo cargo + nível" style="max-width: 100%; height: auto;" /></p>
+<br/>
+<p><h3>Parâmetros de Preferência para Cálculo Dinâmico</h3></p>
+<br/>
+<p><h4><code>NOMPROCCALCPRE</code></h4></p>
+<br/>
+<p><img src="file:///home/lemoreira/git/personalizacoes/P&D/docs/imagens/preferencia_procedure.png" alt="Preferência vinculada à procedure" style="max-width: 100%; height: auto;" /></p>
+<br/>
+<ul><li>A preferência <code>NOMPROCCALCPRE</code> foi configurada com o texto <code>STP_PRECO_DINAMICO</code>, garantindo que o sistema utilize a procedure personalizada para cálculo de preço dinâmico.</li><li>O parâmetro está localizado em <code>Preferências > Comercial > Diversas</code> e deve permanecer vinculado ao módulo e menu correspondentes para que a chamada ocorra durante o processo de orçamento.</li><li>O script da procedure está versionado em <code>P&D/STP_PRECO_DINAMICO.SQL</code>, permitindo reimplantação quando necessário.</li></ul>
+<br/>
+<p><h4><code>MINDIASCODPRAZO</code></h4></p>
+<br/>
+<ul><li><strong>Chave</strong>: <code>MINDIASCODPRAZO</code></li><li><strong>Descrição</strong>: "Mínimo de dias cobrança a prazo"</li><li><strong>Localização</strong>: <code>Preferências > Financeiro > Diversas</code></li><li><strong>Tipo</strong>: Inteiro</li><li><strong>Valor Padrão</strong>: <code>2</code></li><li><strong>Função</strong>: Define a partir de quantos dias o sistema começa a considerar o acréscimo de 2% a cada 30 dias no cálculo do preço dinâmico.</li><li><strong>Como Funciona</strong>:</li></ul>
+<p>  - Se o prazo máximo da condição de pagamento (<code>TGFPPG</code>) for menor que <code>MINDIASCODPRAZO</code>, não há acréscimo por prazo.</p>
+<p>  - Se o prazo máximo for maior ou igual a <code>MINDIASCODPRAZO</code>, o sistema calcula o acréscimo baseado na fórmula: <code>1 + (dias_considerados / 30) <em> 0.02</code></p>
+<p>  - Os dias considerados são calculados como: <code>prazo_maximo - (MINDIASCODPRAZO - 1)</code></p>
+<ul><li><strong>Exemplo</strong>: </li></ul>
+<p>  - Com <code>MINDIASCODPRAZO = 2</code> e prazo máximo de 90 dias:</p>
+<p>    - Dias considerados: <code>90 - (2 - 1) = 89 dias</code></p>
+<p>    - Incrementos de 30 dias: <code>CEIL(89 / 30) = 3</code></p>
+<p>    - Fator de prazo: <code>1 + 3 </em> 0.02 = 1.06</code> (acréscimo de 6%)</p>
+<ul><li><strong>Uso</strong>: Utilizado pela procedure <code>STP_PRECO_DINAMICO</code> e pela trigger <code>TRG_INC_UPD_TGFITE_REGRA_PD</code>.</li><li><strong>Observação</strong>: Se o parâmetro não estiver cadastrado, o sistema utiliza o valor padrão de <code>2</code> dias.</li></ul>
+<br/>
+<p><h4><code>FATORCUSINDERET</code></h4></p>
+<br/>
+<p><img src="imagens/parametro_fatorcusinderet.png" alt="Parâmetro FATORCUSINDERET" style="max-width: 100%; height: auto;" /></p>
+<br/>
+<ul><li><strong>Chave</strong>: <code>FATORCUSINDERET</code></li><li><strong>Descrição</strong>: "Fator Custos Indiretos"</li><li><strong>Localização</strong>: <code>Preferências > Comercial > Preços Alternativos</code></li><li><strong>Tipo</strong>: Número Decimal</li><li><strong>Valor Padrão</strong>: <code>0,8285</code></li><li><strong>Função</strong>: Define o fator multiplicador aplicado sobre o custo base para incluir custos indiretos. Este fator compensa o custo base maior retornado pela função <code>OBTEMCUSTO</code> e alinha o cálculo do sistema com a planilha de custos.</li><li><strong>Como Funciona</strong>:</li></ul>
+<p>  - Quando um produto utiliza custo obtido através da função <code>OBTEMCUSTO</code>, o sistema aplica este fator sobre o custo base antes de calcular o preço final.</p>
+<p>  - O fator é aplicado apenas para <strong>produtos</strong> (<code>USOPROD <> 'S'</code>) que <strong>não utilizam preço por cargo</strong> (<code>AD_PRECOCARGO <> 'S'</code>).</p>
+<p>  - Fórmula: <code>Custo Ajustado = Custo Base × FATORCUSINDERET</code></p>
+<p>  - Após aplicar o fator, o sistema calcula o preço final usando a margem de lucro configurada.</p>
+<p>  - <strong>IMPORTANTE</strong>: Este fator substitui o cálculo direto de custos indiretos, alinhando-se com a lógica da planilha de custos.</p>
+<ul><li><strong>Exemplo</strong>: </li></ul>
+<p>  - Com <code>FATORCUSINDERET = 0,8285</code> e custo base de R$ 138,62:</p>
+<p>    - Custo ajustado: <code>R$ 138,62 × 0,8285 = R$ 114,80</code></p>
+<p>    - Com margem de 30%: <code>Preço Final = R$ 114,80 / (1 - 0,30) = R$ 164,00</code></p>
+<ul><li><strong>Uso</strong>: Utilizado pela procedure <code>STP_PRECO_DINAMICO</code> para ajustar o custo base de produtos antes do cálculo do preço final.</li><li><strong>Observação</strong>: </li></ul>
+<p>  - O parâmetro é buscado apenas quando o item é um produto (<code>USOPROD <> 'S'</code>) que não utiliza preço por cargo (<code>AD_PRECOCARGO <> 'S'</code>).</p>
+<p>  - Se não estiver cadastrado, o sistema utiliza o valor padrão de <code>0,8285</code>.</p>
+<p>  - Este fator foi calculado para compensar o custo base maior retornado pela função <code>OBTEMCUSTO</code> e fazer o sistema calcular valores alinhados com a planilha de custos.</p>
+<p>  - O valor pode ser ajustado através do parâmetro do sistema sem necessidade de alterar código.</p>
+<br/>
+<p><h4><code>FATORMARGLUCSER</code></h4></p>
+<br/>
+<p><img src="imagens/parametro_fatormarglucser.png" alt="Parâmetro FATORMARGLUCSER" style="max-width: 100%; height: auto;" /></p>
+<br/>
+<ul><li><strong>Chave</strong>: <code>FATORMARGLUCSER</code></li><li><strong>Descrição</strong>: "Fator Margem Lucro Serviço"</li><li><strong>Localização</strong>: <code>Preferências > Comercial > Preços Alternativos</code></li><li><strong>Tipo</strong>: Número Decimal</li><li><strong>Valor Padrão</strong>: <code>2,00</code></li><li><strong>Função</strong>: Define o fator multiplicador aplicado ao preço base de serviços que utilizam preço por cargo (<code>AD_PRECOCARGO = 'S'</code> e <code>USOPROD = 'S'</code>).</li><li><strong>Como Funciona</strong>:</li></ul>
+<p>  - Quando um serviço utiliza preço por cargo, o sistema calcula o preço base a partir do valor cadastrado em <code>AD_CARGOS.VALOR</code>.</p>
+<p>  - Este fator é então aplicado multiplicando o preço base: <code>Preço Final = Preço Base × FATORMARGLUCSER</code></p>
+<p>  - Após aplicar o fator, são aplicados os incrementos de prazo de pagamento e carga tributária (se houver).</p>
+<p>  - <strong>IMPORTANTE</strong>: Este fator substitui a fórmula dinâmica baseada em margem para serviços com cargo, alinhando-se com a planilha de custos.</p>
+<ul><li><strong>Exemplo</strong>: </li></ul>
+<p>  - Com <code>FATORMARGLUCSER = 2,00</code> e preço base do cargo de R$ 1.319,74:</p>
+<p>    - Preço após fator: <code>R$ 1.319,74 × 2,00 = R$ 2.639,48</code></p>
+<p>    - Se houver incremento de prazo de 0% e carga tributária de 0%, o preço final será R$ 2.639,48</p>
+<ul><li><strong>Uso</strong>: Utilizado pela procedure <code>STP_PRECO_DINAMICO</code> e pela trigger <code>TRG_INC_UPD_TGFITE_REGRA_PD</code> para calcular o preço de serviços com cargo.</li><li><strong>Observação</strong>: </li></ul>
+<p>  - O parâmetro é buscado apenas quando o item é um serviço (<code>USOPROD = 'S'</code>) que utiliza preço por cargo (<code>AD_PRECOCARGO = 'S'</code>).</p>
+<p>  - Se não estiver cadastrado, o sistema utiliza o valor padrão de <code>2,00</code>.</p>
+<p>  - Este fator é aplicado <strong>antes</strong> dos incrementos de prazo e carga tributária.</p>
+<p>  - Para serviços que não usam cargo, a fórmula dinâmica baseada em margem continua sendo aplicada.</p>
+<br/>
+<p><h4><code>MARGLUCROSERV</code></h4></p>
+<br/>
+<p><img src="imagens/parametro_marglucroserv.png" alt="Parâmetro MARGLUCROSERV" style="max-width: 100%; height: auto;" /></p>
+<br/>
+<ul><li><strong>Chave</strong>: <code>MARGLUCROSERV</code></li><li><strong>Descrição</strong>: "Margem Lucro Mínima Serviço"</li><li><strong>Localização</strong>: <code>Preferências > Comercial > Preços Alternativos > Diversas</code></li><li><strong>Tipo</strong>: Número Decimal</li><li><strong>Valor Padrão</strong>: Configurável (exemplo: <code>30,00</code> = 30%)</li><li><strong>Função</strong>: Define a margem de lucro bruta mínima permitida para itens do tipo <strong>serviço/mão de obra</strong> (<code>USOPROD = 'S'</code>).</li><li><strong>Como Funciona</strong>:</li></ul>
+<p>  - A procedure <code>STP_MARGEM_LUCRO_MINIMA</code> verifica se a nota contém itens de serviço.</p>
+<p>  - Se houver itens de serviço, busca o valor de <code>AD_MARGLUCSERV</code> do cabeçalho da nota (<code>TGFCAB</code>).</p>
+<p>  - Compara <code>AD_MARGLUCSERV</code> com o valor mínimo configurado em <code>MARGLUCROSERV</code>.</p>
+<p>  - Se <code>AD_MARGLUCSERV < MARGLUCROSERV</code>, bloqueia a nota e retorna mensagem de erro.</p>
+<ul><li><strong>Exemplo</strong>: </li></ul>
+<p>  - Com <code>MARGLUCROSERV = 30,00</code> (30%) e margem informada na nota <code>AD_MARGLUCSERV = 25,00</code> (25%):</p>
+<p>    - Resultado: <code>25 < 30</code> = <strong>BLOQUEIO</strong></p>
+<p>    - Mensagem: "MARGEM LUCRO BRUTA SERVIÇOS: 25 INFERIOR AO MÍNIMO CONFIGURADO: MARGLUCROSERV VALOR: 30"</p>
+<ul><li><strong>Uso</strong>: Utilizado pela procedure <code>STP_MARGEM_LUCRO_MINIMA</code> para validar margem mínima de serviços.</li><li><strong>Observação</strong>: </li></ul>
+<p>  - O parâmetro é buscado apenas quando a nota contém itens de serviço.</p>
+<p>  - Se não estiver cadastrado e a nota tiver itens de serviço, a procedure lança erro orientando a criação do parâmetro.</p>
+<p>  - Permite configurar margens mínimas diferentes para serviços e produtos.</p>
+<br/>
+<p><h4><code>MARGLUCROPROD</code></h4></p>
+<br/>
+<p><img src="imagens/parametro_marglucroprod.png" alt="Parâmetro MARGLUCROPROD" style="max-width: 100%; height: auto;" /></p>
+<br/>
+<ul><li><strong>Chave</strong>: <code>MARGLUCROPROD</code></li><li><strong>Descrição</strong>: "Margem Lucro Mínima Produto"</li><li><strong>Localização</strong>: <code>Preferências > Comercial > Preços Alternativos > Diversas</code></li><li><strong>Tipo</strong>: Número Decimal</li><li><strong>Valor Padrão</strong>: Configurável (exemplo: <code>10,00</code> = 10%)</li><li><strong>Função</strong>: Define a margem de lucro bruta mínima permitida para itens do tipo <strong>produto/material</strong> (<code>USOPROD <> 'S'</code>).</li><li><strong>Como Funciona</strong>:</li></ul>
+<p>  - A procedure <code>STP_MARGEM_LUCRO_MINIMA</code> verifica se a nota contém itens de produto/material.</p>
+<p>  - Se houver itens de produto, busca o valor de <code>AD_MARGLUCPROD</code> do cabeçalho da nota (<code>TGFCAB</code>).</p>
+<p>  - Compara <code>AD_MARGLUCPROD</code> com o valor mínimo configurado em <code>MARGLUCROPROD</code>.</p>
+<p>  - Se <code>AD_MARGLUCPROD < MARGLUCROPROD</code>, bloqueia a nota e retorna mensagem de erro.</p>
+<ul><li><strong>Exemplo</strong>: </li></ul>
+<p>  - Com <code>MARGLUCROPROD = 10,00</code> (10%) e margem informada na nota <code>AD_MARGLUCPROD = 8,00</code> (8%):</p>
+<p>    - Resultado: <code>8 < 10</code> = <strong>BLOQUEIO</strong></p>
+<p>    - Mensagem: "MARGEM LUCRO BRUTA PRODUTOS: 8 INFERIOR AO MÍNIMO CONFIGURADO: MARGLUCROPROD VALOR: 10"</p>
+<ul><li><strong>Uso</strong>: Utilizado pela procedure <code>STP_MARGEM_LUCRO_MINIMA</code> para validar margem mínima de produtos.</li><li><strong>Observação</strong>: </li></ul>
+<p>  - O parâmetro é buscado apenas quando a nota contém itens de produto/material.</p>
+<p>  - Se não estiver cadastrado e a nota tiver itens de produto, a procedure lança erro orientando a criação do parâmetro.</p>
+<p>  - Permite configurar margens mínimas diferentes para serviços e produtos.</p>
+<p>  - Se a nota tiver ambos os tipos de itens, ambas as margens são validadas com seus respectivos mínimos.</p>
+<br/>
+<p><h3>Procedure de Preço Dinâmico (<code>P&D/STP_PRECO_DINAMICO.SQL</code>)</h3></p>
+<br/>
+<ul><li><strong>Objetivo</strong>: Calcula o preço dinâmico de um produto ou serviço considerando múltiplos fatores de negócio (preço base, margem de lucro, prazo de pagamento e carga tributária).</li><li><strong>Quando é chamada</strong>: Durante a digitação de itens em notas fiscais ou orçamentos, quando o sistema precisa calcular automaticamente o preço de venda.</li><li><strong>Fatores considerados no cálculo</strong>:</li></ul>
+<p>  1. Preço base da tabela de preços (TGFTAB) ou valor do cargo cadastrado (AD_CARGOS)</p>
+<p>  2. Custo base obtido através da função OBTEMCUSTO (para produtos sem cargo)</p>
+<p>  3. Fator de custos indiretos (FATORCUSINDERET) - apenas para produtos sem cargo</p>
+<p>  4. Margem de lucro bruta configurada no cabeçalho (AD_MARGLUCPROD ou AD_MARGLUCSERV)</p>
+<p>  5. Fator de margem de lucro para serviços (FATORMARGLUCSER) - apenas para serviços com cargo</p>
+<p>  6. Fator de prazo de pagamento (acréscimo de 2% a cada 30 dias)</p>
+<p>  7. Carga tributária do produto (AD_CARGATRIBUTARIA)</p>
+<ul><li><strong>Lógica de diferenciação entre produtos e serviços</strong>:</li></ul>
+<p>  - <strong>Identifica o tipo de item</strong>: Utiliza o campo <code>USOPROD</code> da tabela <code>TGFPRO</code> para determinar o tipo:</p>
+<p>    - Se <code>USOPROD = 'S'</code> → <strong>SERVIÇO/Mão de obra</strong></p>
+<p>    - Se <code>USOPROD <> 'S'</code> (qualquer outro valor, incluindo 'P') → <strong>PRODUTO/Material</strong></p>
+<p>  - <strong>Aplica cálculo específico baseado no tipo</strong>:</p>
+<p>    - <strong>Para SERVIÇOS com cargo</strong> (<code>USOPROD = 'S'</code> e <code>AD_PRECOCARGO = 'S'</code>):</p>
+<p>      - Usa fator configurável <code>FATORMARGLUCSER</code> (padrão: 2,00)</p>
+<p>      - Fórmula: <code>Preço Final = Preço Base × FATORMARGLUCSER × (1 + Incremento Prazo) × (1 + Carga Tributária)</code></p>
+<p>    - <strong>Para SERVIÇOS sem cargo</strong> (<code>USOPROD = 'S'</code> e <code>AD_PRECOCARGO <> 'S'</code>):</p>
+<p>      - Usa fórmula dinâmica com <code>AD_MARGLUCSERV</code> do cabeçalho da nota</p>
+<p>      - Fórmula: <code>Preço Final = Preço Base / (1 - (Margem Total / 100))</code></p>
+<p>    - <strong>Para PRODUTOS sem cargo</strong> (<code>USOPROD <> 'S'</code> e <code>AD_PRECOCARGO <> 'S'</code>):</p>
+<p>      - Obtém custo base através da função <code>OBTEMCUSTO</code></p>
+<p>      - Aplica fator de custos indiretos <code>FATORCUSINDERET</code> sobre o custo base</p>
+<p>      - Usa fórmula dinâmica com <code>AD_MARGLUCPROD</code> do cabeçalho da nota</p>
+<p>      - Fórmula: <code>Preço Final = (Custo Base × FATORCUSINDERET) / (1 - (Margem Total / 100))</code></p>
+<p>    - <strong>Para PRODUTOS com cargo</strong> (<code>USOPROD <> 'S'</code> e <code>AD_PRECOCARGO = 'S'</code>):</p>
+<p>      - Usa preço do cargo (não aplica FATORCUSINDERET)</p>
+<p>      - Usa fórmula dinâmica com <code>AD_MARGLUCPROD</code> do cabeçalho da nota</p>
+<p>      - Fórmula: <code>Preço Final = Preço Base / (1 - (Margem Total / 100))</code></p>
+<p>  - <strong>Fórmula de cálculo para produtos sem cargo</strong>: </p>
+<p>    <pre><code class="language-">    Preço Final = (Custo Base × FATORCUSINDERET) / (1 - (Margem Total / 100))</p>
+<p>    Onde:</p>
+<p>      Custo Base = Obtido através da função OBTEMCUSTO</p>
+<p>      FATORCUSINDERET = Fator de custos indiretos (padrão: 0,8285)</p>
+<p>      Margem Total = Margem Produto + Carga Tributária</p>
+<p>      IMPORTANTE: Incremento de prazo NÃO é incluído aqui, será aplicado no total da nota (VLRNOTA)</p>
+<p>    </code></pre></p>
+<p>  - <strong>Fórmula de cálculo para produtos com cargo e serviços sem cargo</strong>: </p>
+<p>    <pre><code class="language-">    Preço Final = Preço Base / (1 - (Margem Total / 100))</p>
+<p>    Onde:</p>
+<p>      Preço Base = Preço do cargo ou preço da tabela</p>
+<p>      Margem Total = Margem (Produto/Serviço) + Carga Tributária</p>
+<p>      IMPORTANTE: Incremento de prazo NÃO é incluído aqui, será aplicado no total da nota (VLRNOTA)</p>
+<p>    </code></pre></p>
+<p>  - <strong>Fórmula de cálculo para serviços com cargo</strong>:</p>
+<p>    <pre><code class="language-">    Preço Final = Preço Base × FATORMARGLUCSER × (1 + Carga Tributária / 100)</p>
+<p>    Onde:</p>
+<p>      Preço Base = Valor do cargo (AD_CARGOS.VALOR) ou preço alternativo calculado</p>
+<p>      FATORMARGLUCSER = Fator configurável (padrão: 2,00)</p>
+<p>      IMPORTANTE: Incremento de prazo NÃO é incluído aqui, será aplicado no total da nota (VLRNOTA)</p>
+<p>    </code></pre></p>
+<p>  - <strong>Incremento de Prazo de Pagamento</strong>:</p>
+<p>    - O incremento de prazo (2% a cada 30 dias) <strong>NÃO é aplicado nos itens individuais</strong>.</p>
+<p>    - É aplicado <strong>apenas no total final da nota</strong> (<code>TGFCAB.VLRNOTA</code>) pela trigger <code>TRG_INC_UPD_TGFITE_REGRA_PD</code>.</p>
+<p>    - Fórmula do incremento: <code>VLRNOTA = Soma dos Itens × (1 + Incremento Prazo / 100)</code></p>
+<p>    - Onde: <code>Incremento Prazo = CEIL((Prazo Máximo - (MINDIASCODPRAZO - 1)) / 30) × 2</code></p>
+<p>    - Isso garante que o incremento seja aplicado sobre o total (Serviços + Materiais), conforme a planilha de custos.</p>
+<ul><li><strong>Fluxo de execução</strong>:</li></ul>
+<p>  1. Obtém dados do formulário através da sessão (P_IDSESSAO)</p>
+<p>  2. Busca preço base na tabela de preços vigente</p>
+<p>  3. Verifica se produto usa preço por cargo e ajusta se necessário</p>
+<p>  4. Obtém o custo base através da função OBTEMCUSTO (para produtos sem cargo)</p>
+<p>  5. Obtém o fator de custos indiretos (FATORCUSINDERET) do parâmetro do sistema</p>
+<p>  6. Obtém margens de lucro do cabeçalho da nota (AD_MARGLUCPROD e AD_MARGLUCSERV)</p>
+<p>  7. Obtém o fator de margem de lucro para serviços (FATORMARGLUCSER) do parâmetro do sistema</p>
+<p>  8. Identifica o tipo do item através de USOPROD</p>
+<p>  9. Aplica o fator de custos indiretos (se produto sem cargo) ou seleciona a margem/fator conforme o tipo</p>
+<p>  10. Calcula fator de ajuste por prazo de pagamento (retornado no JSON, mas não aplicado no preço do item)</p>
+<p>  11. Aplica todas as margens (sem incremento de prazo) e retorna preço final em formato JSON</p>
+<p>  12. <strong>IMPORTANTE</strong>: O incremento de prazo é calculado e retornado no JSON (<code>FATOR_PRAZO</code>), mas <strong>não é aplicado no preço do item</strong>. Ele será aplicado no total da nota (VLRNOTA) pelas triggers.</p>
+<ul><li><strong>Retorno</strong>: JSON com o preço calculado e fator de prazo</li></ul>
+<p>  <pre><code class="language-json">  {</p>
+<p>    "PRECO": "150.50",</p>
+<p>    "FATOR_PRAZO": "1.06"</p>
+<p>  }</p>
+<p>  </code></pre></p>
+<ul><li>A procedure <code>STP_PRECO_DINAMICO.SQL</code> foi criada para calcular o preço dos itens conforme o pré-escopo:</li></ul>
+<p>  - Prioriza valores cadastrados em <code>AD_CARGOS</code>, usando a diária/nível como base.</p>
+<p>  - Quando não há cargo, utiliza o preço obtido via <code>STP_OBTEM_PRECO2</code> a partir da tabela vigente.</p>
+<p>  - <strong>Identifica o tipo de item</strong>: Utiliza o campo <code>USOPROD</code> da tabela <code>TGFPRO</code> para determinar se é produto (<code>'P'</code>) ou serviço (<code>'S'</code>).</p>
+<p>  - <strong>Aplica margem específica</strong>: Utiliza <code>AD_MARGLUCPROD</code> para produtos e <code>AD_MARGLUCSERV</code> para serviços, ambos do cabeçalho da nota (<code>TGFCAB</code>).</p>
+<p>  - Aplica o acréscimo de 2% a cada 30 dias com base no maior prazo configurado na condição de pagamento (<code>TGFPPG</code>).</p>
+<ul><li><strong>Validação recente</strong>: para um cargo com valor base de R$ 15,38 e condição de pagamento com prazo máximo de 90 dias, a procedure retornou R$ 16,30. O ajuste corresponde ao fator <code>1 + (90/30)<em>0,02 = 1,06</code>, confirmando o acréscimo de 6% previsto para prazos prolongados.</li><li>Arquivo disponível em <code>P&D/STP_PRECO_DINAMICO.SQL</code>.</li></ul>
+<br/>
+<p><h3>Próximos Passos Recomendados</h3></p>
+<br/>
+<ul><li><strong>Fluxo de Orçamento</strong>: validar se a seleção de modalidade e o lançamento de mão de obra consomem os dados do cadastro dos cargos.</li><li><strong>Impostos e Percentuais</strong>: implementar/confirmar regras de separação de materiais e serviços, especialmente para Empreitada Global (item 6.1 do pré-escopo).</li><li><strong>Conversão para Pedido de Venda</strong>: garantir a consolidação dos itens de serviço em um único item no pedido, com percentuais exibidos conforme exigido.</li></ul>
+<br/>
+<p><h3>Metadados Exportados</h3></p>
+<br/>
+<ul><li><strong>Arquivo</strong>: <code>P&D/docs/Metadados_AD_CARGOS.zip</code></li><li><strong>Descrição</strong>: Arquivo contendo os metadados completos da tela personalizada <code>AD_CARGOS</code>, exportado diretamente do Navegador Sankhya.</li><li><strong>Conteúdo</strong>: O arquivo ZIP contém todas as configurações da tela, incluindo:</li></ul>
+<p>  - Estrutura de campos e propriedades</p>
+<p>  - Configurações de validação</p>
+<p>  - Layouts e formatações</p>
+<p>  - Relacionamentos e dependências</p>
+<p>  - Configurações de permissões (se aplicável)</p>
+<ul><li><strong>Uso</strong>: Este arquivo permite recriar a tela <code>AD_CARGOS</code> em qualquer ambiente Sankhya sem necessidade de reconfiguração manual.</li><li><strong>Como importar em outro ambiente</strong>:</li></ul>
+<p>  1. Abra o <strong>Navegador Sankhya</strong> e acesse <code>Construtor de Telas</code>.</p>
+<p>  2. Utilize a opção <code>Importar</code> (geralmente no menu de ações ou botão de importação).</p>
+<p>  3. Selecione o arquivo <code>Metadados_AD_CARGOS.zip</code> do diretório <code>P&D/docs/</code>.</p>
+<p>  4. Siga o assistente de importação para restaurar a tela com todos os campos e configurações.</p>
+<p>  5. Verifique se a tela foi criada corretamente acessando <code>AD_CARGOS</code> no sistema.</p>
+<ul><li><strong>Importante</strong>:</li></ul>
+<p>  - O arquivo deve ser mantido versionado junto à documentação para facilitar reinstalações ou migrações.</p>
+<p>  - Sempre que houver alterações significativas na tela <code>AD_CARGOS</code>, o arquivo deve ser reexportado e atualizado no repositório.</p>
+<p>  - Antes de importar em ambiente de produção, recomenda-se testar em ambiente de homologação.</p>
+<p>  - Verifique se há dependências de outras telas ou objetos que precisam ser criados antes da importação.</p>
+<br/>
+<p><h2>Apuração de Margens na Central de Notas (<code>P&D/STP_MARGEM_LUCRO_MINIMA.SQL</code>)</h2></p>
+<br/>
+<p>As diretrizes reforçadas no e-mail </em>“Personalizações P&D - GP Alano e Natyeli”<em> foram endereçadas com os artefatos abaixo:</p>
+<br/>
+<ul><li><strong>Campos AD em <code>TGFCAB</code></strong>: criados para exibir margem mínima, margem informada e composição percentual de mão de obra/material (conforme screenshots anexadas ao e-mail). Os campos principais são:</li></ul>
+<p>  - <code>AD_COMPOSICAO</code>: Destaca no cabeçalho o texto “Composição: X% mão de obra e Y% material”, como mostrado abaixo:</p>
+<p>  - <code>AD_MARGLUCPROD</code>: <strong>Margem de Lucro Produtos</strong> - Margem de lucro aplicada sobre itens do tipo produto/material.</p>
+<p>  - <code>AD_MARGLUCSERV</code>: <strong>Margem de Lucro Serviços</strong> - Margem de lucro aplicada sobre itens do tipo serviço/mão de obra.</p>
+<br/>
+<p><img src="imagens/cabecalho_ad_composicao.png" alt="Campo AD_COMPOSICAO na TGFCAB" style="max-width: 100%; height: auto;" /></p>
+<br/>
+<ul><li><strong>Procedure <code>STP_MARGEM_LUCRO_MINIMA.SQL</code></strong>:</li></ul>
+<p>  - Verifica os itens da nota para identificar se há serviços (<code>USOPROD = 'S'</code>) e/ou produtos (<code>USOPROD <> 'S'</code>).</p>
+<p>  - Lê os parâmetros <code>MARGLUCROSERV</code> e <code>MARGLUCROPROD</code> (Preferências > Comercial > Preços Alternativos > Diversas) conforme necessário.</p>
+<p>  - Compara cada margem com seu respectivo mínimo:</p>
+<p>    - Se a nota tem itens de serviço → valida <code>AD_MARGLUCSERV</code> contra <code>MARGLUCROSERV</code></p>
+<p>    - Se a nota tem itens de produto → valida <code>AD_MARGLUCPROD</code> contra <code>MARGLUCROPROD</code></p>
+<p>    - Se tem ambos os tipos → valida ambas as margens com seus respectivos mínimos</p>
+<p>  - Retorna <code>P_SUCESSO = 'N'</code> e mensagem detalhada quando alguma margem estiver abaixo do mínimo, permitindo que a regra de liberação bloqueie o orçamento/nota.</p>
+<p>  - <code>P_CODUSULIB</code> permanece reservado para evoluções de workflow, mas já é inicializado em zero.</p>
+<ul><li><strong>Parâmetros flexíveis</strong>: basta ajustar <code>MARGLUCROSERV</code> e/ou <code>MARGLUCROPROD</code> para alterar os limites mínimos sem necessidade de recompilar código.</li><li><strong>Como usar</strong>: invoque a procedure como validação da Central de Notas/Orçamento e use <code>P_MENSAGEM</code> para orientar o vendedor (vide imagens do e-mail "Apuração de margens de lucro").</li><li><strong>Regra de Negócio / Liberação</strong>:</li></ul>
+<p>  - Criado o evento “Liberação Margem Lucro Minima Bruta” (cód. 1000) em </em>Eventos p/ Liberação de Regras de Negócio<em>.</p>
+<p>  - Esse evento deve chamar a procedure <code>STP_MARGEM_LUCRO_MINIMA</code> no momento da aprovação/confirmar orçamento.</p>
+<p>  - Se <code>P_SUCESSO = 'N'</code>, bloqueia o processo e aciona o fluxo de liberação para o usuário autorizado (mantendo o histórico no módulo de liberação).</p>
+<p>  - Regra configurada em <strong>Central de Vendas > Regras de Negócio</strong>:</p>
+<p>    - Tipo de expressão: <code>Stored Procedure</code></p>
+<p>    - Onde: <code>Portais</code></p>
+<p>    - Quando: <code>Inclusão/Alteração Cabeçalho</code></p>
+<p>    - Evento de Liberação: <code>1000 - Liberação Margem Lucro Mínima</code></p>
+<p>    - Nome da rotina: <code>STP_MARGEM_LUCRO_MINIMA</code></p>
+<p><img src="imagens/regra_negocio_margem.png" alt="Regra de negócio Liberação Margem" style="max-width: 100%; height: auto;" /></p>
+<br/>
+<p><h2>Configuração da TOP para Agrupamento (NFSe Empreitada Global)</h2></p>
+<br/>
+<p>Para que a nota de serviço consolide todos os itens do pedido em um único serviço, foram adicionados estes campos personalizados em <code>TGFTOP</code> (capturas disponíveis no e-mail citado):</p>
+<br/>
+<p><img src="imagens/top_agrupamento.png" alt="Campos adicionais na TOP" style="max-width: 100%; height: auto;" /></p>
+<br/>
+<table>
+<tr>
+<th>Campo</th>
+<th>Descrição</th>
+<th>Utilização</th>
+</tr>
+<tr>
+<td><code>AD_AGRUPATDITENS</code> (checkbox)</td>
+<td>“Agrupa todos os itens”</td>
+<td>Define se a operação gera nota consolidada.</td>
+</tr>
+<tr>
+<td><code>AD_SERVEMPREITADA</code> (inteiro)</td>
+<td>“Prestação de serviços por empreitada global”</td>
+<td>Guarda o <code>CODPROD</code> do item agregador lançado na nota de destino.</td>
+</tr>
+</table>
+<br/>
+<p>Somente quando ambos estiverem preenchidos (<code>AD_AGRUPATDITENS = 'S'</code> e código válido em <code>AD_SERVEMPREITADA</code>) a regra de agrupamento é executada.</p>
+<br/>
+<p><h3>Trigger <code>TRG_INC_UPD_TGFITE_REGRA_PD.SQL</code> (<code>P&D/TRG_INC_UPD_TGFITE_REGRA_PD.SQL</code>)</h3></p>
+<br/>
+<ul><li><strong>Objetivo</strong>: Implementa regras de validação e cálculo automático de preços para produtos que utilizam preço por cargo, além de processar produtos sem cargo aplicando o fator de custos indiretos. Também aplica o incremento de prazo no total da nota (VLRNOTA).</li><li><strong>Quando executa</strong>: <strong>COMPOUND TRIGGER</strong> com <code>BEFORE EACH ROW</code> e <code>AFTER STATEMENT</code> em <code>TGFITE</code>.</li><li><strong>Estrutura</strong>:</li></ul>
+<p>  - <strong>BEFORE EACH ROW</strong>: Calcula preços dos itens individualmente antes de inserir/atualizar.</p>
+<p>  - <strong>AFTER STATEMENT</strong>: Aplica incremento de prazo no total da nota (VLRNOTA) após todos os itens serem processados.</p>
+<ul><li><strong>Condições de execução</strong>:</li></ul>
+<p>  - <strong>Para produtos com preço por cargo</strong> (<code>AD_PRECOCARGO = 'S'</code>): Aplica validações e cálculos específicos.</p>
+<p>  - <strong>Para produtos sem preço por cargo</strong> (<code>AD_PRECOCARGO <> 'S'</code> e <code>USOPROD <> 'S'</code>): Aplica fator de custos indiretos (FATORCUSINDERET) e calcula preço usando margem.</p>
+<ul><li><strong>Regras de validação aplicadas</strong> (apenas para produtos com <code>AD_PRECOCARGO = 'S'</code>):</li></ul>
+<p>  - Se o tipo de operação usa "Preço de Venda" (<code>USARPRECOCUSTO = 'N'</code>), o campo <code>AD_NUCARGO</code> passa a ser obrigatório.</p>
+<p>  - Garante que a unidade informada no item corresponde à unidade padrão do cargo (HR) ou unidade alternativa cadastrada.</p>
+<p>  - Caso o usuário utilize a unidade alternativa, a trigger converte a quantidade seguindo <code>DIVMULT</code> + <code>QTDHORAS</code>.</p>
+<p>  - Ajusta <code>CODVOL</code> para a unidade padrão do cargo e impede gravação quando não houver unidade alternativa configurada.</p>
+<p>  - Ajusta quantidade automaticamente para itens com unidade DI (dias) usando o valor de <code>AD_DIASTRAB</code> do cabeçalho.</p>
+<ul><li><strong>Lógica de diferenciação entre produtos e serviços</strong>:</li></ul>
+<p>  - <strong>Identifica o tipo de item</strong>: Busca o campo <code>USOPROD</code> da tabela <code>TGFPRO</code> para determinar o tipo:</p>
+<p>    - Se <code>USOPROD = 'S'</code> → <strong>SERVIÇO/Mão de obra</strong></p>
+<p>    - Se <code>USOPROD <> 'S'</code> (qualquer outro valor) → <strong>PRODUTO/Material</strong></p>
+<p>  - <strong>Aplica cálculo específico baseado no tipo</strong>:</p>
+<p>    - <strong>Para SERVIÇOS com cargo</strong> (<code>USOPROD = 'S'</code> e <code>AD_PRECOCARGO = 'S'</code>):</p>
+<p>      - Usa fator configurável <code>FATORMARGLUCSER</code> (padrão: 2,00) obtido do parâmetro do sistema</p>
+<p>      - Fórmula: <code>Preço Final = Preço Base × FATORMARGLUCSER × (1 + Carga Tributária / 100)</code></p>
+<p>      - <strong>IMPORTANTE</strong>: O incremento de prazo NÃO é aplicado aqui, apenas no total da nota (VLRNOTA)</p>
+<p>    - <strong>Para SERVIÇOS sem cargo</strong> (<code>USOPROD = 'S'</code> e <code>AD_PRECOCARGO <> 'S'</code>):</p>
+<p>      - Usa fórmula dinâmica com <code>AD_MARGLUCSERV</code> do cabeçalho da nota</p>
+<p>      - Fórmula: <code>Preço Final = Preço Base / (1 - (Margem Total / 100))</code></p>
+<p>    - <strong>Para PRODUTOS com cargo</strong> (<code>USOPROD <> 'S'</code> e <code>AD_PRECOCARGO = 'S'</code>):</p>
+<p>      - Usa <code>AD_MARGLUCPROD</code> do cabeçalho da nota</p>
+<p>      - Fórmula: <code>Preço Final = Preço Base / (1 - (Margem Total / 100))</code></p>
+<p>    - <strong>Para PRODUTOS sem cargo</strong> (<code>USOPROD <> 'S'</code> e <code>AD_PRECOCARGO <> 'S'</code>):</p>
+<p>      - Obtém custo base através da função <code>OBTEMCUSTO</code></p>
+<p>      - Aplica fator de custos indiretos <code>FATORCUSINDERET</code> sobre o custo base</p>
+<p>      - Usa fórmula dinâmica com <code>AD_MARGLUCPROD</code> do cabeçalho da nota</p>
+<p>      - Fórmula: <code>Preço Final = (Custo Base × FATORCUSINDERET) / (1 - (Margem Total / 100))</code></p>
+<p>  - <strong>Cálculo do preço final para produtos com cargo</strong>:</p>
+<p>    <pre><code class="language-">    Preço Final = Preço Base / (1 - (Margem Total / 100))</p>
+<p>    Onde:</p>
+<p>      Preço Base = Preço do cargo (HR) ou preço alternativo (outras unidades)</p>
+<p>      Margem Total = Margem Produto + Carga Tributária</p>
+<p>      IMPORTANTE: Incremento de prazo NÃO é incluído aqui</p>
+<p>    </code></pre></p>
+<p>  - <strong>Cálculo do preço final para produtos sem cargo</strong>:</p>
+<p>    <pre><code class="language-">    Preço Final = (Custo Base × FATORCUSINDERET) / (1 - (Margem Total / 100))</p>
+<p>    Onde:</p>
+<p>      Custo Base = Obtido através da função OBTEMCUSTO</p>
+<p>      FATORCUSINDERET = Fator de custos indiretos (padrão: 0,8285)</p>
+<p>      Margem Total = Margem Produto + Carga Tributária</p>
+<p>      IMPORTANTE: Incremento de prazo NÃO é incluído aqui</p>
+<p>    </code></pre></p>
+<p>  - <strong>Cálculo do preço final para serviços com cargo</strong>:</p>
+<p>    <pre><code class="language-">    Preço Final = Preço Base × FATORMARGLUCSER × (1 + Carga Tributária / 100)</p>
+<p>    Onde:</p>
+<p>      Preço Base = Preço do cargo (HR) ou preço alternativo (outras unidades)</p>
+<p>      FATORMARGLUCSER = Fator configurável (padrão: 2,00)</p>
+<p>      IMPORTANTE: Incremento de prazo NÃO é incluído aqui</p>
+<p>    </code></pre></p>
+<ul><li><strong>Cálculo de VLRTOT conforme fórmula da planilha</strong>:</li></ul>
+<p>  - <strong>Para PRODUTOS</strong>: <code>VLRTOT = ((VLRUNIT × QTDNEG) - VLRDESC) × (1 + AD_CARGATRIBUTARIA / 100)</code></p>
+<p>    - A carga tributária é aplicada <strong>APÓS</strong> subtrair o desconto</p>
+<p>    - O desconto (<code>VLRDESC</code>) é sempre subtraído antes de aplicar outros fatores</p>
+<p>  - <strong>Para SERVIÇOS</strong>: <code>VLRTOT = ((VLRUNIT × QTDNEG) - VLRDESC) + VALOR_TGFDIN</code></p>
+<p>    - O valor de <code>TGFDIN</code> é somado ao subtotal (após desconto)</p>
+<p>    - O desconto (<code>VLRDESC</code>) é sempre subtraído antes de somar o TGFDIN</p>
+<ul><li><strong>Funcionalidades</strong>:</li></ul>
+<p>  - Calcula o acréscimo por prazo de pagamento (2% a cada 30 dias) usando o parâmetro <code>MINDIASCODPRAZO</code>, mas aplica apenas no total da nota (VLRNOTA) no <code>AFTER STATEMENT</code>.</p>
+<p>  - Obtém o fator de margem de lucro para serviços (<code>FATORMARGLUCSER</code>) do parâmetro do sistema.</p>
+<p>  - Obtém o fator de custos indiretos (<code>FATORCUSINDERET</code>) do parâmetro do sistema para produtos sem cargo.</p>
+<p>  - Aplica a margem correta ou o fator conforme o tipo, junto com a carga tributária (sem incremento de prazo no item).</p>
+<p>  - Ajusta automaticamente <code>:NEW.VLRUNIT</code> e <code>:NEW.VLRTOT</code> com os valores calculados conforme fórmula da planilha.</p>
+<p>  - No <code>AFTER STATEMENT</code>, atualiza <code>TGFCAB.VLRNOTA</code> com a soma direta dos <code>VLRTOT</code> dos itens (sem incremento de prazo, conforme planilha).</p>
+<p>  - Bloqueia a operação com mensagem de erro se validações falharem.</p>
+<ul><li><strong>Observação</strong>: Usa <code>Fpodevalidar('TGFITE')</code> para verificar se deve validar (retorna FALSE durante sincronização de dados).</li><li><strong>Correções aplicadas</strong>:</li></ul>
+<p>  - O cálculo de <code>VLRTOT</code> foi ajustado para seguir exatamente a fórmula da planilha de custos</p>
+<p>  - Para produtos sem cargo que não conseguem obter custo base, a carga tributária é aplicada mesmo assim se o item já tiver <code>VLRUNIT</code> definido</p>
+<p>  - O incremento de prazo foi removido do <code>AFTER STATEMENT</code> para alinhar com a planilha (VLRNOTA = soma direta dos itens)</p>
+<br/>
+<p><h3>Trigger <code>TRG_INC_UPD_TGFCAB_REGRA_PD.SQL</code> (<code>P&D/TRG_INC_UPD_TGFCAB_REGRA_PD.SQL</code>) - <strong>DEPRECADA</strong></h3></p>
+<br/>
+<p>> ⚠️ <strong>ATENÇÃO</strong>: Esta trigger foi substituída pelo botão de ação Java <code>ConsolidarItensNota</code> que é executado via botão de ação. Ver seção "Botão de Ação de Consolidação de Itens de Nota" abaixo para mais detalhes.</p>
+<br/>
+<ul><li><strong>Objetivo</strong>: Consolida múltiplos itens de uma nota de origem em um único item de serviço na nota de destino, aplicando margens diferenciadas para mão de obra e material.</li><li><strong>Quando executa</strong>: <strong>AFTER INSERT OR UPDATE</strong> em <code>TGFCAB</code> (após inserir/atualizar o cabeçalho da nota).</li><li><strong>Tipo</strong>: COMPOUND TRIGGER (processa múltiplas linhas de forma eficiente).</li><li><strong>Estrutura</strong>:</li></ul>
+<p>  - <strong>AFTER EACH ROW</strong>: Coleta NUNOTAs únicas que foram inseridas/atualizadas.</p>
+<p>  - <strong>AFTER STATEMENT</strong>: Processa agrupamento de itens chamando <code>PROCESSAR_NUNOTA</code>.</p>
+<ul><li><strong>Condição de execução para agrupamento</strong>: Apenas quando a TOP está configurada para agrupar itens:</li></ul>
+<p>  - <code>AD_AGRUPATDITENS = 'S'</code> (flag de agrupamento ativado)</p>
+<p>  - <code>AD_SERVEMPREITADA</code> preenchido (código do produto de serviço consolidado)</p>
+<ul><li><strong>Lógica de diferenciação entre produtos e serviços</strong>:</li></ul>
+<p>  - <strong>Identifica o tipo de cada item</strong>: Utiliza o campo <code>USOPROD</code> da tabela <code>TGFPRO</code> para classificar os itens:</p>
+<p>    - Se <code>USOPROD = 'S'</code> → <strong>SERVIÇO/Mão de obra</strong> → soma em <code>V_TOTAL_MAO_OBRA</code></p>
+<p>    - Se <code>USOPROD <> 'S'</code> (qualquer outro valor) → <strong>PRODUTO/Material</strong> → soma em <code>V_TOTAL_MATERIAL</code></p>
+<p>  - <strong>Aplica margens específicas no cálculo do total proporcional</strong>:</p>
+<p>    - Sobre o total de <strong>mão de obra</strong> (<code>V_TOTAL_MAO_OBRA</code>) → aplica <code>AD_MARGLUCSERV</code></p>
+<p>    - Sobre o total de <strong>material</strong> (<code>V_TOTAL_MATERIAL</code>) → aplica <code>AD_MARGLUCPROD</code></p>
+<p>  - <strong>Fórmula de cálculo</strong>:</p>
+<p>    <pre><code class="language-">    Total Proporcional = Total Geral + </p>
+<p>                         (Total Mão de Obra </em> AD_MARGLUCSERV / 100) + </p>
+<p>                         (Total Material <em> AD_MARGLUCPROD / 100) + </p>
+<p>                         Total Despesas</p>
+<p>    </code></pre></p>
+<ul><li><strong>Passo a passo da consolidação</strong>:</li></ul>
+<p>  1. Localiza a nota/pedido de origem via <code>TGFVAR</code> antes de limpar os vínculos.</p>
+<p>  2. Soma todos os itens da nota de destino diferenciando por tipo:</p>
+<p>     - Itens com <code>USOPROD = 'S'</code> → contabilizados como mão de obra</p>
+<p>     - Itens com <code>USOPROD <> 'S'</code> → contabilizados como material</p>
+<p>  3. Remove todos os itens existentes da nota de destino.</p>
+<p>  4. Insere apenas um item consolidado com quantidade 1 e valor total proporcional (<code>CODPROD</code> obtido de <code>AD_SERVEMPREITADA</code>).</p>
+<p>  5. Calcula os percentuais de mão de obra/material:</p>
+<p>     - Percentual Mão de Obra = (Total Mão de Obra / Total Geral) </em> 100</p>
+<p>     - Percentual Material = 100 - Percentual Mão de Obra</p>
+<p>  6. Gera o texto de composição: <code>"Composição: X% mão de obra e Y% material"</code>.</p>
+<p>     - O texto é concatenado na <code>OBSERVACAO</code> do item consolidado.</p>
+<p>     - Também é gravado em <code>TGFCAB.AD_COMPOSICAO</code> e acrescentado à <code>OBSERVACAO</code> do cabeçalho.</p>
+<p>  7. Atualiza o valor da nota (<code>VLRNOTA</code>) com o total proporcional calculado.</p>
+<p>  8. Recria <code>TGFVAR</code> com a sequência 1 -> 1 e marca o documento de origem (<code>TGFCAB</code> e <code>TGFITE</code>) como não pendente.</p>
+<ul><li><strong>Observação importante</strong>: </li></ul>
+<p>  - Todos os itens da nota destino são <strong>REMOVIDOS</strong> e substituídos por 1 item único. Esta trigger deve rodar <strong>APÓS</strong> qualquer trigger/processo que dependa da estrutura original dos itens.</p>
+<p>  - O incremento de prazo foi removido do <code>AFTER STATEMENT</code> para alinhar com a planilha de custos (VLRNOTA = soma direta dos itens).</p>
+<br/>
+<p>> <strong>Imagens</strong>: utilize as capturas anexadas ao e-mail (campos destacados no construtor, grid de itens agrupados etc.) para enriquecer a documentação visual salva em <code>P&D/imagens/</code>.</p>
+<br/>
+<p><h3>Botão de Ação de Consolidação de Itens de Nota (<code>P&D/src/br/com/pd/action/botaoAcao/ConsolidarItensNota.java</code>)</h3></p>
+<br/>
+<ul><li><strong>Objetivo</strong>: Substitui a trigger <code>TRG_INC_UPD_TGFCAB_REGRA_PD</code> e consolida múltiplos itens de uma nota de origem em um único item de serviço em uma nova nota de destino, aplicando margens diferenciadas para mão de obra e material. Executada via botão de ação para proporcionar controle manual e feedback ao usuário.</li><li><strong>Tipo</strong>: Botão de Ação Java - Rotina Java</li><li><strong>Arquivo</strong>: <code>P&D/src/br/com/pd/action/botaoAcao/ConsolidarItensNota.java</code></li><li><strong>Quando é chamada</strong>: Executada manualmente pelo usuário através de botão de ação na tela de TGFCAB (Notas Fiscais/Negociações).</li></ul>
+<br/>
+<p><h4>🔄 Migração da Trigger para Botão de Ação</h4></p>
+<br/>
+<p><strong>Motivos da Migração:</strong></p>
+<ul><li>✅ <strong>Controle manual</strong>: Execução sob demanda pelo usuário</li><li>✅ <strong>Flexibilidade</strong>: Possibilidade de validar antes de executar</li><li>✅ <strong>Transparência</strong>: Feedback imediato ao usuário sobre o processamento</li><li>✅ <strong>Manutenibilidade</strong>: Mais fácil de debugar e ajustar</li></ul>
+<br/>
+<p><strong>⚠️ IMPORTANTE</strong>: Antes de configurar o botão de ação, é <strong>ESSENCIAL</strong> remover a trigger antiga:</p>
+<br/>
+<p><pre><code class="language-sql">DROP TRIGGER "SANKHYA"."TRG_INC_UPD_TGFCAB_REGRA_PD";</p>
+<p></code></pre></p>
+<br/>
+<p><strong>Razão</strong>: A trigger executava automaticamente em INSERT/UPDATE, o que pode causar conflitos com a execução manual via botão de ação.</p>
+<br/>
+<p><h4>🔧 Configuração do Botão de Ação</h4></p>
+<br/>
+<p><strong>Passo 1: Compilar o Projeto Java</strong></p>
+<br/>
+<ol><li><strong>Pré-requisitos</strong>:</li></ol>
+<p>   - Java JDK 8</p>
+<p>   - Maven 3.6+</p>
+<p>   - JARs Sankhya na pasta <code>lib/</code> (ver <code>P&D/README.md</code> para lista completa)</p>
+<br/>
+<ol><li><strong>Compilar o projeto</strong>:</li></ol>
+<p>   <pre><code class="language-bash">   cd P&D</p>
+<p>   mvn clean package</p>
+<p>   </code></pre></p>
+<br/>
+<ol><li><strong>O JAR será gerado em</strong>: <code>target/consolidar-itens-nota-1.0.0.jar</code></li></ol>
+<br/>
+<p><strong>Passo 2: Instalar no Sankhya</strong></p>
+<br/>
+<ol><li><strong>Upload do JAR</strong>:</li></ol>
+<p>   - Copie o JAR gerado para o servidor Sankhya</p>
+<p>   - Faça upload através do módulo Java do Sankhya</p>
+<br/>
+<p><strong>Passo 3: Configurar no Construtor de Telas</strong></p>
+<br/>
+<ol><li><strong>Acesse o Construtor de Telas</strong></li></ol>
+<p>   - Menu: <code>Ferramentas > Construtor de Telas</code></p>
+<p>   - Ou atalho: <code>Ctrl + Shift + C</code></p>
+<br/>
+<ol><li><strong>Localize a Tabela TGFCAB</strong></li></ol>
+<p>   - Procure por: <code>TGFCAB</code> (Cabeçalho de Notas Fiscais/Negociações)</p>
+<br/>
+<ol><li><strong>Abra a Aba "Ações"</strong></li></ol>
+<p>   - Selecione a aba "Ações" na parte inferior da tela</p>
+<br/>
+<ol><li><strong>Criar Nova Ação</strong></li></ol>
+<p>   - Clique no botão <code>+</code> (Adicionar) ou <code>Novo</code></p>
+<p>   - Tipo de ação: <strong>"Rotina Java"</strong></p>
+<br/>
+<ol><li><strong>Preencher Dados da Ação</strong></li></ol>
+<br/>
+<table>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+<tr>
+<td><strong>Descrição</strong></td>
+<td><code>Consolidar Itens de Nota</code></td>
+</tr>
+<tr>
+<td><strong>Classe</strong></td>
+<td><code>br.com.pd.action.botaoAcao.ConsolidarItensNota</code></td>
+</tr>
+<tr>
+<td><strong>Depois de executar, recarregar</strong></td>
+<td><code>Os registros selecionados</code> (recomendado) ou <code>Toda a grade</code></td>
+</tr>
+</table>
+<br/>
+<ol><li><strong>Configurar Parâmetros</strong> (se necessário):</li></ol>
+<p>   - <code>CODTIPOPER_DEST</code>: Código da TOP de destino (obrigatório, tipo: Pesquisa)</p>
+<p>   - <code>SERIENOTA</code>: Série da nota (opcional, tipo: Texto)</p>
+<br/>
+<ol><li><strong>Salvar a Ação</strong></li></ol>
+<p>   - Clique em <code>Salvar</code> ou <code>OK</code></p>
+<p>   - Feche o Construtor de Telas</p>
+<br/>
+<p><h4>🎯 Como Usar</h4></p>
+<br/>
+<p><strong>Executar a Ação:</strong></p>
+<br/>
+<ol><li><strong>Abra a Tela de Notas Fiscais</strong></li></ol>
+<p>   - Menu: <code>Comercial > Notas Fiscais > Notas Fiscais</code></p>
+<p>   - Ou através do grid de TGFCAB</p>
+<br/>
+<ol><li><strong>Selecione as Notas</strong></li></ol>
+<p>   - Selecione uma ou mais notas no grid</p>
+<p>   - A ação só processa notas que atendem às condições (ver validações abaixo)</p>
+<br/>
+<ol><li><strong>Execute o Botão de Ação</strong></li></ol>
+<p>   - Clique no botão <strong>"Consolidar Itens de Nota"</strong> na barra de ações</p>
+<p>   - Ou use o menu de ações do grid</p>
+<br/>
+<ol><li><strong>Aguarde o Processamento</strong></li></ol>
+<p>   - O sistema processará cada nota selecionada</p>
+<p>   - Uma mensagem será exibida ao final com o resultado:</p>
+<p>     <pre><code class="language-">     Processamento concluído: 2 nota(s) processada(s), 1 ignorada(s), 0 erro(s).</p>
+<p>     Detalhes: Nota 12345: já foi processada anteriormente</p>
+<p>     </code></pre></p>
+<br/>
+<p><h4>✅ Validações Realizadas</h4></p>
+<br/>
+<p>O botão de ação valida automaticamente:</p>
+<br/>
+<ol><li>✅ <strong>Parâmetro CODTIPOPER_DEST</strong> informado e válido</li><li>✅ <strong>TOP de destino existe</strong> e está configurada para agrupamento (<code>AD_AGRUPATDITENS = 'S'</code>)</li><li>✅ <strong>Produto de serviço</strong> definido (<code>AD_SERVEMPREITADA IS NOT NULL</code>)</li><li>✅ <strong>Nota de origem existe</strong> no banco de dados</li><li>✅ <strong>Nota de origem está pendente</strong> (<code>PENDENTE = 'S'</code>)</li><li>✅ <strong>Nota de origem está liberada</strong> (<code>STATUSNOTA = 'L'</code>)</li></ol>
+<br/>
+<p>Se alguma validação falhar, a nota será <strong>ignorada</strong> e uma mensagem será registrada no retorno.</p>
+<br/>
+<p><h4>📊 O Que o Botão de Ação Faz</h4></p>
+<br/>
+<p><strong>Processamento de Cada Nota:</strong></p>
+<br/>
+<ol><li><strong>Calcula Totais</strong></li></ol>
+<p>   - Soma todos os valores dos itens (VLRTOT) da nota de origem</p>
+<p>   - Separa mão de obra (<code>USOPROD = 'S'</code>) vs material (<code>USOPROD <> 'S'</code>)</p>
+<p>   - Calcula percentuais de composição</p>
+<br/>
+<ol><li><strong>Cria Nova Nota</strong></li></ol>
+<p>   - Cria uma nova nota de destino usando APIs nativas do Sankhya (CACHelper)</p>
+<p>   - Preserva dados da nota de origem (empresa, parceiro, vendedor, etc.)</p>
+<p>   - Usa a TOP de destino configurada</p>
+<br/>
+<ol><li><strong>Cria Item Consolidado</strong></li></ol>
+<p>   - Cria <strong>1 único item</strong> com o produto de serviço (<code>AD_SERVEMPREITADA</code>)</p>
+<p>   - Define quantidade = 1 e valor = total consolidado</p>
+<p>   - Adiciona observação: <code>Composição: XX% mão de obra e YY% material</code></p>
+<p>   - O sistema calcula automaticamente impostos, custos e demais valores através das APIs nativas</p>
+<br/>
+<ol><li><strong>Atualiza Vínculos</strong></li></ol>
+<p>   - Marca nota de origem como não pendente (<code>PENDENTE = 'N'</code>)</p>
+<p>   - O vínculo TGFVAR é criado automaticamente pelo sistema quando necessário</p>
+<br/>
+<p><strong>Lógica de diferenciação entre produtos e serviços:</strong></p>
+<ul><li>Utiliza o campo <code>USOPROD</code> da tabela <code>TGFPRO</code> para classificar os itens:</li></ul>
+<p>  - Se <code>USOPROD = 'S'</code> → <strong>SERVIÇO/Mão de obra</strong> → soma em <code>totalMaoObra</code></p>
+<p>  - Se <code>USOPROD <> 'S'</code> → <strong>PRODUTO/Material</strong> → soma em <code>totalMaterial</code></p>
+<ul><li><strong>IMPORTANTE</strong>: O botão de ação <strong>não aplica margens</strong> no cálculo do total consolidado. Ele apenas soma os valores dos itens (VLRTOT) e cria uma nova nota com o total. As margens são aplicadas automaticamente pelo sistema através das regras de negócio configuradas.</li></ul>
+<br/>
+<p><h4>🐛 Troubleshooting</h4></p>
+<br/>
+<p><strong>Problema: "Classe não encontrada" ou "Erro ao carregar classe"</strong></p>
+<br/>
+<ul><li>Verifique se o JAR foi compilado e instalado corretamente:</li></ul>
+<p>  <pre><code class="language-bash">  # Verificar se o JAR foi gerado</p>
+<p>  ls -lh target/consolidar-itens-nota-1.0.0.jar</p>
+<p>  </code></pre></p>
+<ul><li>Verifique se o JAR foi feito upload no módulo Java do Sankhya</li><li>Verifique se a classe está correta: <code>br.com.pd.action.botaoAcao.ConsolidarItensNota</code></li><li>Verifique se todas as dependências (JARs Sankhya) estão disponíveis no servidor</li></ul>
+<br/>
+<p><strong>Problema: "Nenhuma nota foi processada"</strong></p>
+<br/>
+<p><strong>Possíveis Causas:</strong></p>
+<ul><li>Parâmetro <code>CODTIPOPER_DEST</code> não foi informado ou é inválido</li><li>TOP de destino não existe ou não está configurada corretamente</li><li>Notas selecionadas não estão pendentes (<code>PENDENTE <> 'S'</code>)</li><li>Notas selecionadas não estão liberadas (<code>STATUSNOTA <> 'L'</code>)</li><li>Notas não possuem itens</li></ul>
+<br/>
+<p><strong>Verificação:</strong></p>
+<p><pre><code class="language-sql">-- Verificar se TOP está configurada</p>
+<p>SELECT CODTIPOPER, DHTIPOPER, AD_AGRUPATDITENS, AD_SERVEMPREITADA</p>
+<p>FROM TGFTOP</p>
+<p>WHERE CODTIPOPER = :CODTIPOPER_DEST</p>
+<p>  AND AD_AGRUPATDITENS = 'S'</p>
+<p>  AND AD_SERVEMPREITADA IS NOT NULL;</p>
+<br/>
+<p>-- Verificar status da nota</p>
+<p>SELECT NUNOTA, PENDENTE, STATUSNOTA, COUNT(<em>) AS QTD_ITENS</p>
+<p>FROM TGFCAB CAB</p>
+<p>LEFT JOIN TGFITE ITE ON ITE.NUNOTA = CAB.NUNOTA</p>
+<p>WHERE CAB.NUNOTA = :NUNOTA</p>
+<p>GROUP BY NUNOTA, PENDENTE, STATUSNOTA;</p>
+<p></code></pre></p>
+<br/>
+<p><strong>Problema: Erro durante execução</strong></p>
+<br/>
+<ul><li>Verifique os logs de erro no retorno da mensagem do botão de ação</li><li>O botão de ação registra detalhes dos erros na mensagem de retorno</li><li>Verifique os logs do servidor Sankhya para mais detalhes</li><li>Verifique se há itens na nota antes de executar:</li></ul>
+<p>  <pre><code class="language-sql">  SELECT COUNT(</em>) </p>
+<p>  FROM TGFITE </p>
+<p>  WHERE NUNOTA = :NUNOTA;</p>
+<p>  </code></pre></p>
+<ul><li>Verifique se o produto de serviço (<code>AD_SERVEMPREITADA</code>) existe e está ativo:</li></ul>
+<p>  <pre><code class="language-sql">  SELECT CODPROD, DESCRPROD, ATIVO</p>
+<p>  FROM TGFPRO</p>
+<p>  WHERE CODPROD = :AD_SERVEMPREITADA;</p>
+<p>  </code></pre></p>
+<br/>
+<p><h4>📝 Exemplo de Uso</h4></p>
+<br/>
+<p><strong>Cenário: Consolidar 3 Notas</strong></p>
+<br/>
+<ol><li><strong>Selecionar 3 notas</strong> no grid:</li></ol>
+<p>   - Nota 1001: Pendente e liberada, com itens</p>
+<p>   - Nota 1002: Não está pendente (<code>PENDENTE = 'N'</code>)</p>
+<p>   - Nota 1003: Não está liberada (<code>STATUSNOTA <> 'L'</code>)</p>
+<br/>
+<ol><li><strong>Executar botão de ação</strong> (após informar <code>CODTIPOPER_DEST</code>)</li></ol>
+<br/>
+<ol><li><strong>Resultado:</strong></li></ol>
+<p>   <pre><code class="language-">   Processamento concluído.</p>
+<p>   Notas processadas: 1</p>
+<p>   Erros: 0</p>
+<p>   </code></pre></p>
+<br/>
+<ol><li><strong>Verificar resultado:</strong></li></ol>
+<p>   <pre><code class="language-sql">   -- Verificar nova nota criada (buscar pela data/hora de criação)</p>
+<p>   SELECT NUNOTA, DTNEG, VLRNOTA, OBSERVACAO</p>
+<p>   FROM TGFCAB</p>
+<p>   WHERE DTNEG >= TRUNC(SYSDATE)</p>
+<p>   ORDER BY DTNEG DESC;</p>
+<br/>
+<p>   -- Verificar item consolidado</p>
+<p>   SELECT NUNOTA, SEQUENCIA, CODPROD, VLRTOT, OBSERVACAO</p>
+<p>   FROM TGFITE</p>
+<p>   WHERE NUNOTA = :NUNOTA_NOVA;</p>
+<br/>
+<p>   -- Verificar se nota origem foi marcada como não pendente</p>
+<p>   SELECT NUNOTA, PENDENTE, STATUSNOTA</p>
+<p>   FROM TGFCAB</p>
+<p>   WHERE NUNOTA = 1001;</p>
+<p>   </code></pre></p>
+<br/>
+<p><h4>📌 Notas Importantes</h4></p>
+<br/>
+<ul><li>⚠️ O botão de ação <strong>cria uma nova nota</strong> (não modifica a nota de origem)</li><li>⚠️ A nota de origem <strong>deve estar pendente</strong> (<code>PENDENTE = 'S'</code>) e <strong>liberada</strong> (<code>STATUSNOTA = 'L'</code>)</li><li>⚠️ O processamento é <strong>irreversível</strong> - a nota de origem será marcada como não pendente</li><li>✅ O botão de ação pode ser executado <strong>múltiplas vezes</strong> na mesma nota (cada execução cria uma nova nota)</li><li>✅ O botão de ação utiliza <strong>APIs nativas do Sankhya</strong> (CACHelper), garantindo que todas as regras de negócio sejam aplicadas</li><li>✅ O sistema calcula automaticamente impostos, custos e demais valores através das APIs nativas</li><li>✅ O vínculo entre notas (TGFVAR) é criado automaticamente pelo sistema quando necessário</li></ul>
+<br/>
+<p><h4>🔗 Referências</h4></p>
+<br/>
+<ul><li><a href="https://developer.sankhya.com.br/docs/rotina-java">Documentação Sankhya: Rotina Java</a></li><li>Arquivo original (deprecado): <code>TRG_INC_UPD_TGFCAB_REGRA_PD.SQL</code></li><li>Implementação atual: <code>P&D/src/br/com/pd/action/botaoAcao/ConsolidarItensNota.java</code></li><li>README do projeto: <code>P&D/README.md</code></li></ul>
+<br/>
+<p><h3>Referências</h3></p>
+<br/>
+<ul><li>Documentação oficial da Sankhya sobre configuração de preço dinâmico: <https://ajuda.sankhya.com.br/hc/pt-br/articles/360045110953-Pre%C3%A7o-Din%C3%A2mico>.</li></ul>
+<br/>
+<p><h2>Resumo de Parâmetros do Sistema</h2></p>
+<br/>
+<table>
+<tr>
+<th>Parâmetro</th>
+<th>Tipo</th>
+<th>Localização</th>
+<th>Valor Padrão</th>
+<th>Função</th>
+</tr>
+<tr>
+<td><code>NOMPROCCALCPRE</code></td>
+<td>Texto</td>
+<td>Preferências > Comercial > Diversas</td>
+<td><code>STP_PRECO_DINAMICO</code></td>
+<td>Define a procedure personalizada para cálculo de preço dinâmico</td>
+</tr>
+<tr>
+<td><code>MINDIASCODPRAZO</code></td>
+<td>Inteiro</td>
+<td>Preferências > Financeiro > Diversas</td>
+<td><code>2</code></td>
+<td>Define a partir de quantos dias começa o acréscimo de 2% a cada 30 dias</td>
+</tr>
+<tr>
+<td><code>FATORCUSINDERET</code></td>
+<td>Número Decimal</td>
+<td>Preferências > Comercial > Preços Alternativos</td>
+<td><code>0,8285</code></td>
+<td>Define o fator multiplicador para custos indiretos de produtos</td>
+</tr>
+<tr>
+<td><code>FATORMARGLUCSER</code></td>
+<td>Número Decimal</td>
+<td>Preferências > Comercial > Preços Alternativos</td>
+<td><code>2,00</code></td>
+<td>Define o fator multiplicador para serviços com preço por cargo</td>
+</tr>
+<tr>
+<td><code>MARGLUCROSERV</code></td>
+<td>Número Decimal</td>
+<td>Preferências > Comercial > Preços Alternativos > Diversas</td>
+<td>Configurável</td>
+<td>Define a margem de lucro bruta mínima permitida para serviços</td>
+</tr>
+<tr>
+<td><code>MARGLUCROPROD</code></td>
+<td>Número Decimal</td>
+<td>Preferências > Comercial > Preços Alternativos > Diversas</td>
+<td>Configurável</td>
+<td>Define a margem de lucro bruta mínima permitida para produtos</td>
+</tr>
+</table>
+<br/>
+<p><h3>Detalhamento dos Parâmetros</h3></p>
+<br/>
+<p><h4><code>NOMPROCCALCPRE</code></h4></p>
+<ul><li><strong>Obrigatório</strong>: Sim</li><li><strong>Uso</strong>: Utilizado pelo sistema para chamar a procedure de preço dinâmico durante o processo de orçamento</li><li><strong>Observação</strong>: Deve permanecer vinculado ao módulo e menu correspondentes</li></ul>
+<br/>
+<p><h4><code>MINDIASCODPRAZO</code></h4></p>
+<ul><li><strong>Obrigatório</strong>: Não (usa valor padrão <code>2</code> se não configurado)</li><li><strong>Uso</strong>: Utilizado pela procedure <code>STP_PRECO_DINAMICO</code> e pela trigger <code>TRG_INC_UPD_TGFITE_REGRA_PD</code></li><li><strong>Fórmula de Cálculo</strong>: </li></ul>
+<p>  - Dias considerados = <code>prazo_maximo - (MINDIASCODPRAZO - 1)</code></p>
+<p>  - Incrementos = <code>CEIL(dias_considerados / 30)</code></p>
+<p>  - Fator = <code>1 + incrementos <em> 0.02</code></p>
+<br/>
+<p><h4><code>MARGLUCROSERV</code></h4></p>
+<ul><li><strong>Obrigatório</strong>: Sim (quando a nota contém itens de serviço)</li><li><strong>Uso</strong>: Utilizado pela procedure <code>STP_MARGEM_LUCRO_MINIMA</code> para validar margem mínima de serviços</li><li><strong>Observação</strong>: </li></ul>
+<p>  - O parâmetro é buscado apenas quando a nota contém itens com <code>USOPROD = 'S'</code></p>
+<p>  - Se não configurado e a nota tiver itens de serviço, a procedure lança erro orientando a criação do parâmetro</p>
+<p>  - Permite margem mínima diferente para serviços (ex: 30%) e produtos (ex: 10%)</p>
+<br/>
+<p><h4><code>MARGLUCROPROD</code></h4></p>
+<ul><li><strong>Obrigatório</strong>: Sim (quando a nota contém itens de produto/material)</li><li><strong>Uso</strong>: Utilizado pela procedure <code>STP_MARGEM_LUCRO_MINIMA</code> para validar margem mínima de produtos</li><li><strong>Observação</strong>: </li></ul>
+<p>  - O parâmetro é buscado apenas quando a nota contém itens com <code>USOPROD <> 'S'</code></p>
+<p>  - Se não configurado e a nota tiver itens de produto, a procedure lança erro orientando a criação do parâmetro</p>
+<p>  - Permite margem mínima diferente para produtos (ex: 10%) e serviços (ex: 30%)</p>
+<p>  - Se a nota tiver ambos os tipos, ambas as margens são validadas com seus respectivos mínimos</p>
+<br/>
+<p><h2>Lógica de Diferenciação entre Produtos e Serviços</h2></p>
+<br/>
+<p>Todos os objetos implementados utilizam a mesma lógica para diferenciar produtos de serviços, garantindo consistência em todo o sistema:</p>
+<br/>
+<p><h3>Campo Identificador: <code>USOPROD</code> (Tabela <code>TGFPRO</code>)</h3></p>
+<br/>
+<ul><li><strong>Localização</strong>: Campo <code>USOPROD</code> na tabela <code>TGFPRO</code> (Cadastro de Produtos)</li><li><strong>Valores possíveis</strong>:</li></ul>
+<p>  - <code>'S'</code> = <strong>SERVIÇO/Mão de obra</strong></p>
+<p>  - Qualquer outro valor (incluindo <code>'P'</code>, <code>NULL</code>, etc.) = <strong>PRODUTO/Material</strong></p>
+<br/>
+<p><h3>Regra de Aplicação de Margens</h3></p>
+<br/>
+<p>A regra é aplicada de forma consistente em todos os objetos:</p>
+<br/>
+<table>
+<tr>
+<th>Condição</th>
+<th>Tipo Identificado</th>
+<th>Margem Utilizada</th>
+<th>Campo no Cabeçalho</th>
+</tr>
+<tr>
+<td><code>USOPROD = 'S'</code></td>
+<td><strong>SERVIÇO/Mão de obra</strong></td>
+<td><code>AD_MARGLUCSERV</code></td>
+<td>Margem de Lucro Serviços</td>
+</tr>
+<tr>
+<td><code>USOPROD <> 'S'</code></td>
+<td><strong>PRODUTO/Material</strong></td>
+<td><code>AD_MARGLUCPROD</code></td>
+<td>Margem de Lucro Produtos</td>
+</tr>
+</table>
+<br/>
+<p><h3>Objetos que Utilizam Esta Lógica</h3></p>
+<br/>
+<ol><li><strong><code>STP_PRECO_DINAMICO</code></strong>: Seleciona a margem correta para calcular o preço dinâmico</li><li><strong><code>STP_MARGEM_LUCRO_MINIMA</code></strong>: Valida a margem mínima baseada no tipo de itens da nota</li><li><strong><code>TRG_INC_UPD_TGFITE_REGRA_PD</code></strong>: Aplica a margem correta no cálculo do preço do item</li><li><strong><code>ConsolidarItensNota</code> (Botão de Ação Java)</strong>: Consolida itens de uma nota de origem em uma nova nota de destino (substitui <code>TRG_INC_UPD_TGFCAB_REGRA_PD</code>)</li><li><strong><code>TRG_INC_UPD_TGFCAB_REGRA_PD</code></strong>: ⚠️ <strong>DEPRECADA</strong> - Substituída por <code>ConsolidarItensNota</code> (botão de ação Java)</li></ol>
+<br/>
+<p><h3>Exemplo Prático</h3></p>
+<br/>
+<p><strong>Cenário</strong>: Uma nota contém 3 itens:</p>
+<ul><li>Item 1: Produto com <code>USOPROD = 'P'</code> → usa <code>AD_MARGLUCPROD</code></li><li>Item 2: Serviço com <code>USOPROD = 'S'</code> → usa <code>AD_MARGLUCSERV</code></li><li>Item 3: Material com <code>USOPROD = NULL</code> → usa <code>AD_MARGLUCPROD</code> (qualquer valor diferente de 'S')</li></ul>
+<br/>
+<p><strong>Resultado</strong>: Cada item terá sua margem aplicada corretamente conforme seu tipo.</p>
+<br/>
+<p><h2>Campos Personalizados (AD) - Resumo</h2></p>
+<br/>
+<p><h3>Tabela <code>TGFCAB</code> (Cabeçalho de Notas)</h3></p>
+<br/>
+<table>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Descrição</th>
+<th>Utilização</th>
+</tr>
+<tr>
+<td><code>AD_MARGLUCPROD</code></td>
+<td>Numérico</td>
+<td>Margem de Lucro Produtos</td>
+<td>Margem de lucro aplicada sobre itens do tipo produto/material. Utilizado por <code>STP_PRECO_DINAMICO</code> e <code>TRG_INC_UPD_TGFITE_REGRA_PD</code>. <strong>Campo digitado pelo usuário.</strong></td>
+</tr>
+<tr>
+<td><code>AD_MARGLUCSERV</code></td>
+<td>Numérico</td>
+<td>Margem de Lucro Serviços</td>
+<td>Margem de lucro aplicada sobre itens do tipo serviço/mão de obra. Utilizado por <code>STP_PRECO_DINAMICO</code> e <code>TRG_INC_UPD_TGFITE_REGRA_PD</code>. <strong>Campo digitado pelo usuário.</strong></td>
+</tr>
+<tr>
+<td><code>AD_TOTALPROD</code></td>
+<td>Numérico</td>
+<td>Total de Produtos</td>
+<td>Total calculado de produtos conforme fórmula da planilha: <code>SUM(((VLRUNIT </em> QTDNEG) - VLRDESC) <em> (1 + AD_CARGATRIBUTARIA / 100))</code>. <strong>Campo calculado via SELECT no dicionário de dados.</strong></td>
+</tr>
+<tr>
+<td><code>AD_TOTALSERV</code></td>
+<td>Numérico</td>
+<td>Total de Serviços</td>
+<td>Total calculado de serviços conforme fórmula da planilha: <code>SUM((VLRUNIT </em> QTDNEG) - VLRDESC) + SUM(COALESCE(TGFDIN.VALOR, 0))</code>. <strong>Campo calculado via SELECT no dicionário de dados.</strong></td>
+</tr>
+<tr>
+<td><code>AD_TOTALPROP</code></td>
+<td>Numérico</td>
+<td>Total da Proposta</td>
+<td>Total da proposta calculado conforme fórmula da planilha, somando produtos e serviços com suas respectivas fórmulas. <strong>Campo calculado via SELECT no dicionário de dados.</strong></td>
+</tr>
+<tr>
+<td><code>AD_LUCRLIQPROD</code></td>
+<td>Numérico</td>
+<td>Lucro Líquido Produtos</td>
+<td>Lucro líquido de produtos calculado como: <code>AD_TOTALPROD <em> (AD_MARGLUCPROD / 100)</code>. <strong>Campo calculado via SELECT no dicionário de dados.</strong></td>
+</tr>
+<tr>
+<td><code>AD_LUCRLIQSERV</code></td>
+<td>Numérico</td>
+<td>Lucro Líquido Serviços</td>
+<td>Lucro líquido de serviços calculado como: <code>AD_TOTALSERV </em> (AD_MARGLUCSERV / 100)</code>. <strong>Campo calculado via SELECT no dicionário de dados.</strong></td>
+</tr>
+<tr>
+<td><code>AD_LUCRLIQPROP</code></td>
+<td>Numérico</td>
+<td>Lucro Líquido Proposta</td>
+<td>Lucro líquido da proposta calculado como: <code>AD_LUCRLIQPROD + AD_LUCRLIQSERV</code>. <strong>Campo calculado via SELECT no dicionário de dados.</strong></td>
+</tr>
+<tr>
+<td><code>AD_COMPOSICAO</code></td>
+<td>Texto</td>
+<td>Composição percentual</td>
+<td>Texto com composição percentual de mão de obra e material (ex: "Composição: X% mão de obra e Y% material"). Utilizado pelo botão de ação <code>ConsolidarItensNota</code> para armazenar a composição na observação do item consolidado.</td>
+</tr>
+<tr>
+<td><code>AD_DIASTRAB</code></td>
+<td>Numérico</td>
+<td>Dias trabalhados</td>
+<td>Quantidade de dias trabalhados utilizada para ajuste de quantidade em itens com unidade DI (dias).</td>
+</tr>
+</table>
+<br/>
+<p><h3>Tabela <code>TGFTOP</code> (Tipos de Operação)</h3></p>
+<br/>
+<table>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Descrição</th>
+<th>Utilização</th>
+</tr>
+<tr>
+<td><code>AD_AGRUPATDITENS</code></td>
+<td>Checkbox</td>
+<td>Agrupa todos os itens</td>
+<td>Define se a operação gera nota consolidada.</td>
+</tr>
+<tr>
+<td><code>AD_SERVEMPREITADA</code></td>
+<td>Inteiro</td>
+<td>Prestação de serviços por empreitada global</td>
+<td>Guarda o <code>CODPROD</code> do item agregador lançado na nota de destino.</td>
+</tr>
+</table>
+<br/>
+<p><h3>Tabela <code>TGFITE</code> (Itens)</h3></p>
+<br/>
+<table>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Descrição</th>
+<th>Utilização</th>
+</tr>
+<tr>
+<td><code>AD_NUCARGO</code></td>
+<td>Numérico</td>
+<td>Número do cargo</td>
+<td>Código do cargo selecionado para itens que usam preço por cargo. Obrigatório quando o produto tem <code>AD_PRECOCARGO = 'S'</code> e o TOP usa "Preço de Venda".</td>
+</tr>
+</table>
+<br/>
+<p><h3>Tabela <code>TGFPRO</code> (Produtos)</h3></p>
+<br/>
+<table>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Descrição</th>
+<th>Utilização</th>
+</tr>
+<tr>
+<td><code>AD_PRECOCARGO</code></td>
+<td>Checkbox</td>
+<td>Usa preço por cargo</td>
+<td>Define se o produto utiliza preço baseado em cargos cadastrados em <code>AD_CARGOS</code>.</td>
+</tr>
+<tr>
+<td><code>AD_CARGATRIBUTARIA</code></td>
+<td>Numérico</td>
+<td>Carga tributária</td>
+<td>Percentual de carga tributária aplicado sobre produtos. Utilizado no cálculo de <code>VLRTOT</code> conforme fórmula da planilha.</td>
+</tr>
+<tr>
+<td><code>USOPROD</code></td>
+<td>Texto (1)</td>
+<td>Uso do produto</td>
+<td>Identifica o tipo: <code>'S'</code> = Serviço/Mão de obra, <code>'P'</code> ou outro = Produto/Material. Utilizado para aplicar a margem correta (<code>AD_MARGLUCSERV</code> ou <code>AD_MARGLUCPROD</code>).</td>
+</tr>
+</table>
+<br/>
+<p><h2>Campos Calculados no Dicionário de Dados</h2></p>
+<br/>
+<p>Os campos abaixo são calculados automaticamente através de SELECTs configurados no dicionário de dados do Sankhya. Eles utilizam as fórmulas da planilha de custos para garantir consistência.</p>
+<br/>
+<p><h3>Total de Produtos (AD_TOTALPROD)</h3></p>
+<br/>
+<ul><li><strong>Tipo</strong>: <code>#type.sql#</code></li><li><strong>Fórmula</strong>: <code>SUM(((VLRUNIT × QTDNEG) - VLRDESC) × (1 + AD_CARGATRIBUTARIA / 100))</code></li><li><strong>SELECT</strong>:</li></ul>
+<p><pre><code class="language-sql">SELECT SUM(((I.VLRUNIT <em> I.QTDNEG) - I.VLRDESC) </em> (1 + NVL(P.AD_CARGATRIBUTARIA, 0) / 100)) AS TOTOTALPROD</p>
+<p>FROM TGFITE I</p>
+<p>INNER JOIN TGFPRO P ON I.CODPROD = P.CODPROD</p>
+<p>WHERE P.USOPROD <> 'S'</p>
+<p>  AND I.NUNOTA = TGFCAB.NUNOTA</p>
+<p></code></pre></p>
+<br/>
+<p><h3>Total de Serviços (AD_TOTALSERV)</h3></p>
+<br/>
+<ul><li><strong>Tipo</strong>: <code>#type.sql#</code></li><li><strong>Fórmula</strong>: <code>SUM((VLRUNIT × QTDNEG) - VLRDESC) + SUM(COALESCE(TGFDIN.VALOR, 0))</code></li><li><strong>SELECT</strong>:</li></ul>
+<p><pre><code class="language-sql">SELECT SUM((I.VLRUNIT <em> I.QTDNEG) - I.VLRDESC) + SUM(COALESCE(D.VALOR, 0)) AS TOTALSERV</p>
+<p>FROM TGFITE I</p>
+<p>JOIN TGFPRO P ON P.CODPROD = I.CODPROD</p>
+<p>LEFT JOIN TGFDIN D ON D.NUNOTA = I.NUNOTA AND D.SEQUENCIA = I.SEQUENCIA</p>
+<p>WHERE P.USOPROD = 'S'</p>
+<p>  AND I.NUNOTA = TGFCAB.NUNOTA</p>
+<p></code></pre></p>
+<br/>
+<p><h3>Total da Proposta (AD_TOTALPROP)</h3></p>
+<br/>
+<ul><li><strong>Tipo</strong>: <code>#type.sql#</code></li><li><strong>Fórmula</strong>: Soma dos totais de produtos e serviços conforme suas respectivas fórmulas</li><li><strong>SELECT</strong>:</li></ul>
+<p><pre><code class="language-sql">SELECT SUM(</p>
+<p>    CASE </p>
+<p>        WHEN P.USOPROD <> 'S' THEN </p>
+<p>            ((I.VLRUNIT </em> I.QTDNEG) - I.VLRDESC) <em> (1 + COALESCE(P.AD_CARGATRIBUTARIA, 0) / 100)</p>
+<p>        ELSE </p>
+<p>            ((I.VLRUNIT </em> I.QTDNEG) - I.VLRDESC) + COALESCE(D.VALOR, 0)</p>
+<p>    END</p>
+<p>) AS TOTALGERAL</p>
+<p>FROM TGFITE I</p>
+<p>JOIN TGFPRO P ON P.CODPROD = I.CODPROD</p>
+<p>LEFT JOIN TGFDIN D ON D.NUNOTA = I.NUNOTA AND D.SEQUENCIA = I.SEQUENCIA</p>
+<p>WHERE I.NUNOTA = TGFCAB.NUNOTA</p>
+<p></code></pre></p>
+<br/>
+<p><h3>Lucro Líquido Produtos (AD_LUCRLIQPROD)</h3></p>
+<br/>
+<ul><li><strong>Tipo</strong>: <code>#type.sql#</code></li><li><strong>Fórmula</strong>: <code>AD_TOTALPROD × (AD_MARGLUCPROD / 100)</code></li><li><strong>SELECT</strong>:</li></ul>
+<p><pre><code class="language-sql">SELECT SUM(((I.VLRUNIT <em> I.QTDNEG) - I.VLRDESC) </em> (1 + NVL(P.AD_CARGATRIBUTARIA, 0) / 100)) <em> </p>
+<p>       NVL(AD_MARGLUCPROD, 0) / 100 AS AD_LUCRLIQPROD</p>
+<p>FROM TGFITE I</p>
+<p>INNER JOIN TGFPRO P ON I.CODPROD = P.CODPROD</p>
+<p>WHERE P.USOPROD <> 'S'</p>
+<p>  AND I.NUNOTA = TGFCAB.NUNOTA</p>
+<p></code></pre></p>
+<br/>
+<p><h3>Lucro Líquido Serviços (AD_LUCRLIQSERV)</h3></p>
+<br/>
+<ul><li><strong>Tipo</strong>: <code>#type.sql#</code></li><li><strong>Fórmula</strong>: <code>AD_TOTALSERV × (AD_MARGLUCSERV / 100)</code></li><li><strong>SELECT</strong>:</li></ul>
+<p><pre><code class="language-sql">SELECT (SUM((I.VLRUNIT </em> I.QTDNEG) - I.VLRDESC) + SUM(COALESCE(D.VALOR, 0))) <em> </p>
+<p>       NVL(AD_MARGLUCSERV, 0) / 100 AS AD_LUCRLIQSERV</p>
+<p>FROM TGFITE I</p>
+<p>JOIN TGFPRO P ON P.CODPROD = I.CODPROD</p>
+<p>LEFT JOIN TGFDIN D ON D.NUNOTA = I.NUNOTA AND D.SEQUENCIA = I.SEQUENCIA</p>
+<p>WHERE P.USOPROD = 'S'</p>
+<p>  AND I.NUNOTA = TGFCAB.NUNOTA</p>
+<p></code></pre></p>
+<br/>
+<p><h3>Lucro Líquido Proposta (AD_LUCRLIQPROP)</h3></p>
+<br/>
+<ul><li><strong>Tipo</strong>: <code>#type.sql#</code></li><li><strong>Fórmula</strong>: <code>AD_LUCRLIQPROD + AD_LUCRLIQSERV</code></li><li><strong>SELECT</strong>:</li></ul>
+<p><pre><code class="language-sql">SELECT </p>
+<p>    (SELECT SUM(((I2.VLRUNIT </em> I2.QTDNEG) - I2.VLRDESC) <em> (1 + NVL(P2.AD_CARGATRIBUTARIA, 0) / 100)) </em> </p>
+<p>            NVL(AD_MARGLUCPROD, 0) / 100</p>
+<p>     FROM TGFITE I2</p>
+<p>     INNER JOIN TGFPRO P2 ON I2.CODPROD = P2.CODPROD</p>
+<p>     WHERE P2.USOPROD <> 'S'</p>
+<p>       AND I2.NUNOTA = TGFCAB.NUNOTA)</p>
+<p>    +</p>
+<p>    (SELECT (SUM((I3.VLRUNIT <em> I3.QTDNEG) - I3.VLRDESC) + SUM(COALESCE(D3.VALOR, 0))) </em> </p>
+<p>            NVL(AD_MARGLUCSERV, 0) / 100</p>
+<p>     FROM TGFITE I3</p>
+<p>     JOIN TGFPRO P3 ON P3.CODPROD = I3.CODPROD</p>
+<p>     LEFT JOIN TGFDIN D3 ON D3.NUNOTA = I3.NUNOTA AND D3.SEQUENCIA = I3.SEQUENCIA</p>
+<p>     WHERE P3.USOPROD = 'S'</p>
+<p>       AND I3.NUNOTA = TGFCAB.NUNOTA) AS AD_LUCRLIQPROP</p>
+<p>FROM TGFCAB</p>
+<p>WHERE TGFCAB.NUNOTA = TGFCAB.NUNOTA</p>
+<p></code></pre></p>
+<br/>
+<p><h3>Observações sobre os Campos Calculados</h3></p>
+<br/>
+<ul><li>Todos os campos calculados seguem exatamente as fórmulas da planilha de custos</li><li>Os SELECTs são executados automaticamente pelo sistema quando os campos são acessados</li><li>Os valores são recalculados sempre que há alteração nos itens da nota</li><li>Os campos de lucro líquido dependem dos campos de total (<code>AD_TOTALPROD</code> e <code>AD_TOTALSERV</code>) e das margens digitadas (<code>AD_MARGLUCPROD</code> e <code>AD_MARGLUCSERV</code>)</li></ul>
+<br/>
+<br/>
+<br/>
+<br/>
+</body>
+</html>

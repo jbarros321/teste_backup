@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Detalhamento Técnico - Integração Sankhya ↔ Performaxxi</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.min.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Detalhamento Técnico - Integração Sankhya ↔︎
+Performaxxi</h1>
+</header>
+<h1 id="detalhamento-técnico---integração-sankhya-performaxxi">📋
+DETALHAMENTO TÉCNICO - INTEGRAÇÃO SANKHYA ↔︎ PERFORMAXXI</h1>
+<h2 id="resumo-executivo">📊 RESUMO EXECUTIVO</h2>
+<p><strong>Projeto</strong>: Sistema de Integração GuaranaMineiro<br />
+<strong>Versão</strong>: 1.0.0<br />
+<strong>Data</strong>: Agosto 2025<br />
+<strong>Responsável Técnico</strong>: Vagner Oliveira<br />
+<strong>Período de Atuação</strong>: 04/08/2025 até hoje<br />
+<strong>Ambiente</strong>: Homologação → Produção<br />
+<strong>Status</strong>: ✅ <strong>PROJETO CONCLUÍDO E
+FUNCIONAL</strong></p>
+<h3 id="objetivo">🎯 Objetivo</h3>
+<p>Sistema de integração completa entre o sistema Sankhya e a plataforma
+Performaxxi já implementado e operacional, automatizando processos de
+roteirização, notificação de recebimentos e consulta de comprovantes de
+entrega.</p>
+<hr />
+<h2 id="arquitetura-do-sistema">🏗️ ARQUITETURA DO SISTEMA</h2>
+<h3 id="componentes-principais">Componentes Principais</h3>
+<ul>
+<li><strong>Sankhya Framework</strong>: Sistema ERP base</li>
+<li><strong>Performaxxi API</strong>: Plataforma de roteirização e
+logística</li>
+<li><strong>Módulos de Integração</strong>: 3 módulos
+especializados</li>
+<li><strong>Sistema de Logs</strong>: Controle e auditoria
+unificados</li>
+</ul>
+<h3 id="fluxo-de-dados">Fluxo de Dados</h3>
+<pre><code>Sankhya → PerformaxxiAPI → Performaxxi → Notificação/Processamento</code></pre>
+<hr />
+<h2 id="cronograma-detalhado---projeto-concluído">📅 CRONOGRAMA
+DETALHADO - PROJETO CONCLUÍDO</h2>
+<h3 id="fase-1-serviço-de-importação-de-pedidos">🚀 FASE 1: SERVIÇO DE
+IMPORTAÇÃO DE PEDIDOS</h3>
+<p><strong>Duração Total</strong>: 44 horas<br />
+<strong>Período</strong>: 04/08/2025 - 08/08/2025 (5 dias úteis)<br />
+<strong>Status</strong>: ✅ <strong>CONCLUÍDO</strong></p>
+<h4 id="tarefas-detalhadas">📋 Tarefas Detalhadas</h4>
+<table>
+<colgroup>
+<col style="width: 6%" />
+<col style="width: 17%" />
+<col style="width: 15%" />
+<col style="width: 13%" />
+<col style="width: 30%" />
+<col style="width: 17%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Tarefa</th>
+<th>Horas</th>
+<th>Dias</th>
+<th>Responsável</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Autenticação</strong></td>
+<td>8h</td>
+<td>1 dia</td>
+<td>Dev Senior</td>
+<td>✅ Concluído</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Criar tela de log/Módulo de integração</strong></td>
+<td>4h</td>
+<td>0.5 dia</td>
+<td>Dev Senior</td>
+<td>✅ Concluído</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Criar chamada para buscar os pedidos de
+importação</strong></td>
+<td>12h</td>
+<td>1.5 dias</td>
+<td>Dev Senior</td>
+<td>✅ Concluído</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Registrar log e campo para retirar o pedido da
+consulta</strong></td>
+<td>4h</td>
+<td>0.5 dia</td>
+<td>Dev Senior</td>
+<td>✅ Concluído</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Acompanhamento das requisições, documentação</strong></td>
+<td>12h</td>
+<td>1.5 dias</td>
+<td>Dev Senior</td>
+<td>✅ Concluído</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Levantamento</strong></td>
+<td>4h</td>
+<td>0.5 dia</td>
+<td>Dev Senior</td>
+<td>✅ Concluído</td>
+</tr>
+</tbody>
+</table>
+<h4 id="especificações-técnicas---fase-1">🔧 Especificações Técnicas -
+Fase 1</h4>
+<p><strong>Endpoint</strong>:
+<code>https://www.performaxxi.com.br/API.REST/importacao/pedidos</code><br />
+<strong>Método</strong>: POST<br />
+<strong>Autenticação</strong>: Basic Auth<br />
+<strong>Formato</strong>: JSON</p>
+<p><strong>Campos Obrigatórios</strong>: - <code>numeroPedido</code>:
+String (máx 50 chars) - <code>dataPedido</code>: Date (YYYY-MM-DD) -
+<code>identificadorCliente</code>: String (máx 50 chars) -
+<code>nomeCliente</code>: String (máx 100 chars) -
+<code>endereco</code>: String (máx 200 chars) - <code>cidade</code>:
+String (máx 50 chars) - <code>estado</code>: String (2 chars) -
+<code>CEP</code>: String (máx 10 chars) - <code>telefone</code>: String
+(máx 20 chars) - <code>valorTotalPedido</code>: Decimal -
+<code>pesoTotalPedido</code>: Decimal - <code>volumeTotalPedido</code>:
+Decimal</p>
+<p><strong>Validações</strong>: - Campos obrigatórios não podem ser
+nulos - Strings devem respeitar limites de caracteres - Valores
+numéricos devem ser positivos - Datas devem estar no formato correto</p>
+<hr />
+<h3 id="fase-2-serviço-de-notificação-de-recebimentos">💰 FASE 2:
+SERVIÇO DE NOTIFICAÇÃO DE RECEBIMENTOS</h3>
+<p><strong>Duração Total</strong>: 30 horas<br />
+<strong>Período</strong>: 11/08/2025 - 14/08/2025 (4 dias úteis)<br />
+<strong>Status</strong>: ✅ <strong>CONCLUÍDO</strong></p>
+<h4 id="tarefas-detalhadas-1">📋 Tarefas Detalhadas</h4>
+<table>
+<colgroup>
+<col style="width: 6%" />
+<col style="width: 17%" />
+<col style="width: 15%" />
+<col style="width: 13%" />
+<col style="width: 30%" />
+<col style="width: 17%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Tarefa</th>
+<th>Horas</th>
+<th>Dias</th>
+<th>Responsável</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7</td>
+<td><strong>Criar consulta para buscar os recebimentos no
+Sankhya</strong></td>
+<td>4h</td>
+<td>0.5 dia</td>
+<td>Dev Senior</td>
+<td>✅ Concluído</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>Enviar a informação de pagamento para a
+PerforMAX</strong></td>
+<td>12h</td>
+<td>1.5 dias</td>
+<td>Dev Senior</td>
+<td>✅ Concluído</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>Registrar os logs na tela criada, tratando por
+módulo</strong></td>
+<td>4h</td>
+<td>0.5 dia</td>
+<td>Dev Senior</td>
+<td>✅ Concluído</td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>Acompanhamento das requisições, documentação</strong></td>
+<td>6h</td>
+<td>1 dia</td>
+<td>Dev Senior</td>
+<td>✅ Concluído</td>
+</tr>
+<tr>
+<td>11</td>
+<td><strong>Levantamento</strong></td>
+<td>4h</td>
+<td>0.5 dia</td>
+<td>Dev Senior</td>
+<td>✅ Concluído</td>
+</tr>
+</tbody>
+</table>
+<h4 id="especificações-técnicas---fase-2">🔧 Especificações Técnicas -
+Fase 2</h4>
+<p><strong>Endpoint</strong>:
+<code>https://www.performaxxi.com.br/API.REST/rota/enviomensagemrota</code><br />
+<strong>Método</strong>: POST<br />
+<strong>Autenticação</strong>: Basic Auth<br />
+<strong>Formato</strong>: JSON</p>
+<p><strong>Trigger</strong>: Baixa de títulos na tabela
+<code>TGFFIN</code><br />
+<strong>Tabela de Log</strong>: <code>AD_RECEBIMENTOLOG</code></p>
+<p><strong>Estrutura da Mensagem</strong>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;idRastreador&quot;</span><span class="fu">:</span> <span class="st">&quot;REC_123456&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;data&quot;</span><span class="fu">:</span> <span class="st">&quot;2025-01-15&quot;</span><span class="fu">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;classe&quot;</span><span class="fu">:</span> <span class="st">&quot;RECEBIMENTO&quot;</span><span class="fu">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;conjunto&quot;</span><span class="fu">:</span> <span class="st">&quot;FINANCEIRO&quot;</span><span class="fu">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;idCliente&quot;</span><span class="fu">:</span> <span class="st">&quot;12345&quot;</span><span class="fu">,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;mensagem&quot;</span><span class="fu">:</span> <span class="st">&quot;Dados do recebimento em JSON&quot;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<hr />
+<h3 id="fase-3-consulta-de-comprovantes-de-entrega">📦 FASE 3: CONSULTA
+DE COMPROVANTES DE ENTREGA</h3>
+<p><strong>Duração Total</strong>: 26 horas<br />
+<strong>Período</strong>: 15/08/2025 - 19/08/2025 (3.5 dias úteis)<br />
+<strong>Status</strong>: ✅ <strong>CONCLUÍDO</strong></p>
+<h4 id="tarefas-detalhadas-2">📋 Tarefas Detalhadas</h4>
+<table>
+<colgroup>
+<col style="width: 6%" />
+<col style="width: 17%" />
+<col style="width: 15%" />
+<col style="width: 13%" />
+<col style="width: 30%" />
+<col style="width: 17%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Tarefa</th>
+<th>Horas</th>
+<th>Dias</th>
+<th>Responsável</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>12</td>
+<td><strong>Consultar API dos comprovantes de entrega</strong></td>
+<td>8h</td>
+<td>1 dia</td>
+<td>Dev Senior</td>
+<td>✅ Concluído</td>
+</tr>
+<tr>
+<td>13</td>
+<td><strong>Atualizar os dados dos comprovantes de entrega no
+Sankhya</strong></td>
+<td>8h</td>
+<td>1 dia</td>
+<td>Dev Senior</td>
+<td>✅ Concluído</td>
+</tr>
+<tr>
+<td>14</td>
+<td><strong>Acompanhamento das requisições, documentação</strong></td>
+<td>6h</td>
+<td>1 dia</td>
+<td>Dev Senior</td>
+<td>✅ Concluído</td>
+</tr>
+<tr>
+<td>15</td>
+<td><strong>Levantamento</strong></td>
+<td>4h</td>
+<td>0.5 dia</td>
+<td>Dev Senior</td>
+<td>✅ Concluído</td>
+</tr>
+</tbody>
+</table>
+<h4 id="especificações-técnicas---fase-3">🔧 Especificações Técnicas -
+Fase 3</h4>
+<p><strong>Endpoint</strong>:
+<code>https://www.performaxxi.com.br/API.REST/entrega/comprovantes/veiculo/{data}/{idRastreador}/{classe}/{conjunto}</code><br />
+<strong>Método</strong>: GET<br />
+<strong>Autenticação</strong>: Basic Auth<br />
+<strong>Formato</strong>: JSON</p>
+<p><strong>Parâmetros</strong>: - <code>data</code>: Data da consulta
+(YYYY-MM-DD) - <code>idRastreador</code>: ID do veículo/rastreador -
+<code>classe</code>: Classe do comprovante - <code>conjunto</code>:
+Conjunto de dados</p>
+<p><strong>Resposta</strong>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;Sucesso&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;MensagemErro&quot;</span><span class="fu">:</span> <span class="kw">null</span><span class="fu">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;Valor&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;codigoEntrega&quot;</span><span class="fu">:</span> <span class="st">&quot;ENT001&quot;</span><span class="fu">,</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;identificadorCliente&quot;</span><span class="fu">:</span> <span class="st">&quot;CLI123&quot;</span><span class="fu">,</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;urlAcesso&quot;</span><span class="fu">:</span> <span class="st">&quot;https://app.performaxxi.com.br/comprovante/ENT001&quot;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<hr />
+<h2 id="acompanhamento-técnico-adicional">🎯 ACOMPANHAMENTO TÉCNICO
+ADICIONAL</h2>
+<h3 id="horas-de-acompanhamento-técnico">📊 HORAS DE ACOMPANHAMENTO
+TÉCNICO</h3>
+<p><strong>Total de Horas de Acompanhamento</strong>: 32 horas<br />
+<strong>Período</strong>: 20/08/2025 até hoje (4 dias úteis)<br />
+<strong>Status</strong>: 🔄 <strong>EM ANDAMENTO</strong></p>
+<h4 id="detalhamento-do-acompanhamento">📋 Detalhamento do
+Acompanhamento</h4>
+<table>
+<colgroup>
+<col style="width: 4%" />
+<col style="width: 42%" />
+<col style="width: 10%" />
+<col style="width: 9%" />
+<col style="width: 21%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Atividade de Acompanhamento</th>
+<th>Horas</th>
+<th>Dias</th>
+<th>Responsável</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>16</td>
+<td><strong>Monitoramento e otimização do sistema</strong></td>
+<td>8h</td>
+<td>1 dia</td>
+<td>Dev Senior</td>
+<td>🔄 Em andamento</td>
+</tr>
+<tr>
+<td>17</td>
+<td><strong>Suporte técnico e resolução de incidentes</strong></td>
+<td>8h</td>
+<td>1 dia</td>
+<td>Dev Senior</td>
+<td>🔄 Em andamento</td>
+</tr>
+<tr>
+<td>18</td>
+<td><strong>Análise de performance e ajustes</strong></td>
+<td>8h</td>
+<td>1 dia</td>
+<td>Dev Senior</td>
+<td>🔄 Em andamento</td>
+</tr>
+<tr>
+<td>19</td>
+<td><strong>Documentação técnica e treinamento</strong></td>
+<td>8h</td>
+<td>1 dia</td>
+<td>Dev Senior</td>
+<td>🔄 Em andamento</td>
+</tr>
+</tbody>
+</table>
+<h4 id="atividades-de-acompanhamento-detalhadas">🔧 Atividades de
+Acompanhamento Detalhadas</h4>
+<p><strong>Monitoramento Contínuo (8h)</strong>: - Verificação diária
+dos logs de execução - Análise de métricas de performance -
+Monitoramento da conectividade com API Performaxxi - Verificação de
+integridade dos dados</p>
+<p><strong>Suporte Técnico (8h)</strong>: - Resolução de incidentes
+reportados - Investigação de falhas de integração - Ajustes de
+configuração conforme necessário - Suporte aos usuários finais</p>
+<p><strong>Análise de Performance (8h)</strong>: - Otimização de
+consultas SQL - Ajuste de timeouts e retry policies - Análise de
+gargalos de performance - Implementação de melhorias</p>
+<p><strong>Documentação e Treinamento (8h)</strong>: - Atualização da
+documentação técnica - Criação de manuais de operação - Treinamento da
+equipe de suporte - Documentação de procedimentos</p>
+<hr />
+<h2 id="cronograma-consolidado">⏰ CRONOGRAMA CONSOLIDADO</h2>
+<h3 id="semana-1-0408---08082025---concluída">📅 Semana 1 (04/08 -
+08/08/2025) - ✅ CONCLUÍDA</h3>
+<ul>
+<li><strong>04/08</strong>: Autenticação (8h) ✅</li>
+<li><strong>05/08</strong>: Tela de log + Busca de pedidos (8h) ✅</li>
+<li><strong>06/08</strong>: Busca de pedidos (4h) + Log de pedidos (4h)
+✅</li>
+<li><strong>07/08</strong>: Acompanhamento e documentação (8h) ✅</li>
+<li><strong>08/08</strong>: Levantamento Fase 1 (4h) + Início Fase 2
+(4h) ✅</li>
+</ul>
+<h3 id="semana-2-1108---14082025---concluída">📅 Semana 2 (11/08 -
+14/08/2025) - ✅ CONCLUÍDA</h3>
+<ul>
+<li><strong>11/08</strong>: Consulta recebimentos (4h) + Envio
+pagamentos (4h) ✅</li>
+<li><strong>12/08</strong>: Envio pagamentos (8h) ✅</li>
+<li><strong>13/08</strong>: Logs por módulo (4h) + Acompanhamento (4h)
+✅</li>
+<li><strong>14/08</strong>: Acompanhamento e documentação (6h) +
+Levantamento (2h) ✅</li>
+</ul>
+<h3 id="semana-3-1508---19082025---concluída">📅 Semana 3 (15/08 -
+19/08/2025) - ✅ CONCLUÍDA</h3>
+<ul>
+<li><strong>15/08</strong>: Consulta comprovantes (8h) ✅</li>
+<li><strong>16/08</strong>: Atualização no Sankhya (8h) ✅</li>
+<li><strong>19/08</strong>: Acompanhamento e documentação (6h) +
+Levantamento (4h) ✅</li>
+</ul>
+<h3 id="semana-4-2008-até-hoje---acompanhamento-técnico">📅 Semana 4
+(20/08 até hoje) - 🔄 ACOMPANHAMENTO TÉCNICO</h3>
+<ul>
+<li><strong>20/08</strong>: Monitoramento e otimização (8h) 🔄</li>
+<li><strong>21/08</strong>: Suporte técnico e resolução de incidentes
+(8h) 🔄</li>
+<li><strong>22/08</strong>: Análise de performance e ajustes (8h)
+🔄</li>
+<li><strong>Hoje</strong>: Documentação técnica e treinamento (8h)
+🔄</li>
+</ul>
+<hr />
+<h2 id="resumo-final-de-horas">📊 RESUMO FINAL DE HORAS</h2>
+<h3 id="total-de-horas-do-projeto">🎯 TOTAL DE HORAS DO PROJETO</h3>
+<table>
+<thead>
+<tr>
+<th>Fase</th>
+<th>Horas</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Fase 1</strong>: Importação de Pedidos</td>
+<td>44h</td>
+<td>✅ Concluído</td>
+</tr>
+<tr>
+<td><strong>Fase 2</strong>: Notificação de Recebimentos</td>
+<td>30h</td>
+<td>✅ Concluído</td>
+</tr>
+<tr>
+<td><strong>Fase 3</strong>: Comprovantes de Entrega</td>
+<td>26h</td>
+<td>✅ Concluído</td>
+</tr>
+<tr>
+<td><strong>Acompanhamento Técnico</strong></td>
+<td>32h</td>
+<td>🔄 Em andamento</td>
+</tr>
+<tr>
+<td><strong>TOTAL GERAL</strong></td>
+<td><strong>132h</strong></td>
+<td><strong>100% Planejado</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="distribuição-por-responsável">📈 DISTRIBUIÇÃO POR
+RESPONSÁVEL</h3>
+<ul>
+<li><strong>Dev Senior</strong>: 132h (100%)</li>
+<li><strong>Dev Pleno</strong>: 0h (0%)</li>
+<li><strong>Tech Lead</strong>: 0h (0%)</li>
+<li><strong>Analista</strong>: 0h (0%)</li>
+<li><strong>Acompanhamento</strong>: 32h (24%)</li>
+</ul>
+<h3 id="horas-gastas-até-hoje">⏰ HORAS GASTAS ATÉ HOJE</h3>
+<h4 id="horas-concluídas-100">✅ <strong>HORAS CONCLUÍDAS
+(100%)</strong></h4>
+<ul>
+<li><strong>Fase 1</strong>: 44h (04/08 - 08/08/2025) ✅</li>
+<li><strong>Fase 2</strong>: 30h (11/08 - 14/08/2025) ✅<br />
+</li>
+<li><strong>Fase 3</strong>: 26h (15/08 - 19/08/2025) ✅</li>
+<li><strong>Subtotal Concluído</strong>: <strong>100 horas</strong></li>
+</ul>
+<h4 id="horas-em-andamento-acompanhamento-técnico">🔄 <strong>HORAS EM
+ANDAMENTO (Acompanhamento Técnico)</strong></h4>
+<ul>
+<li><strong>20/08</strong>: Monitoramento e otimização (8h) 🔄</li>
+<li><strong>21/08</strong>: Suporte técnico e resolução de incidentes
+(8h) 🔄</li>
+<li><strong>22/08</strong>: Análise de performance e ajustes (8h)
+🔄</li>
+<li><strong>Hoje</strong>: Documentação técnica e treinamento (8h)
+🔄</li>
+<li><strong>Subtotal Em Andamento</strong>: <strong>32
+horas</strong></li>
+</ul>
+<h4 id="total-de-horas-até-hoje">📊 <strong>TOTAL DE HORAS ATÉ
+HOJE</strong></h4>
+<ul>
+<li><strong>Horas Concluídas</strong>: 100h ✅</li>
+<li><strong>Horas Em Andamento</strong>: 32h 🔄</li>
+<li><strong>TOTAL ATÉ HOJE</strong>: <strong>132 horas</strong></li>
+</ul>
+<h4 id="resumo-executivo-1">🎯 <strong>RESUMO EXECUTIVO</strong></h4>
+<ul>
+<li>✅ <strong>100 horas</strong> já foram <strong>100%
+executadas</strong> (todas as 3 fases principais)</li>
+<li>🔄 <strong>32 horas</strong> estão <strong>em andamento</strong>
+(acompanhamento técnico)</li>
+<li>📊 <strong>Total</strong>: <strong>132 horas</strong> de trabalho do
+Dev Senior</li>
+<li>🚀 <strong>Status</strong>: Projeto <strong>100% funcional</strong>
+com acompanhamento técnico contínuo</li>
+</ul>
+<hr />
+<h2 id="especificações-técnicas-detalhadas">🛠️ ESPECIFICAÇÕES TÉCNICAS
+DETALHADAS</h2>
+<h3 id="autenticação">🔐 Autenticação</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode java"><code class="sourceCode java"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Configuração de autenticação</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">static</span> <span class="dt">final</span> <span class="bu">String</span> API_USERNAME <span class="op">=</span> <span class="st">&quot;GuaranaMineiroTI&quot;</span><span class="op">;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">static</span> <span class="dt">final</span> <span class="bu">String</span> API_PASSWORD <span class="op">=</span> <span class="st">&quot;R3!Vhc@mFuYU1pbmVpcm86&quot;</span><span class="op">;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">static</span> <span class="dt">final</span> <span class="bu">String</span> AMBIENTE_ATIVO <span class="op">=</span> <span class="st">&quot;HOMOLOGACAO&quot;</span><span class="op">;</span></span></code></pre></div>
+<h3 id="endpoints-da-api">🌐 Endpoints da API</h3>
+<ul>
+<li><strong>Produção</strong>:
+<code>https://www.performaxxi.com.br</code></li>
+<li><strong>Homologação</strong>:
+<code>https://www.rotaonline.com.br</code></li>
+</ul>
+<h3 id="tabelas-de-controle">📊 Tabelas de Controle</h3>
+<ol type="1">
+<li><strong>AD_INTPERFORMAXXILOG</strong>: Logs de integração de
+pedidos</li>
+<li><strong>AD_RECEBIMENTOLOG</strong>: Logs de recebimentos</li>
+<li><strong>AD_COMPROVANTES</strong>: Comprovantes de entrega</li>
+</ol>
+<h3 id="fluxos-de-integração">🔄 Fluxos de Integração</h3>
+<h4 id="fluxo-1-envio-de-pedidos">Fluxo 1: Envio de Pedidos</h4>
+<pre><code>Sankhya → Validação → PerformaxxiAPI → Performaxxi → Roteirização</code></pre>
+<h4 id="fluxo-2-notificação-de-recebimentos">Fluxo 2: Notificação de
+Recebimentos</h4>
+<pre><code>TGFFIN (Baixa) → Trigger → PerformaxxiAPI → Performaxxi → Motorista</code></pre>
+<h4 id="fluxo-3-consulta-de-comprovantes">Fluxo 3: Consulta de
+Comprovantes</h4>
+<pre><code>Agendamento → PerformaxxiAPI → Performaxxi → Sankhya (Atualização)</code></pre>
+<hr />
+<h2 id="métricas-e-kpis">📈 MÉTRICAS E KPIs</h2>
+<h3 id="indicadores-de-performance">🎯 Indicadores de Performance</h3>
+<ul>
+<li><strong>Taxa de Sucesso</strong>: &gt; 95%</li>
+<li><strong>Tempo de Resposta</strong>: &lt; 30 segundos</li>
+<li><strong>Disponibilidade</strong>: 99.9%</li>
+<li><strong>Throughput</strong>: 1000 pedidos/hora</li>
+</ul>
+<h3 id="monitoramento">📊 Monitoramento</h3>
+<ul>
+<li>Logs de execução em tempo real</li>
+<li>Alertas automáticos para falhas</li>
+<li>Dashboard de métricas</li>
+<li>Relatórios de performance</li>
+</ul>
+<hr />
+<h2 id="acompanhamento-técnico">🔧 ACOMPANHAMENTO TÉCNICO</h2>
+<h3 id="checklist-de-qualidade">📋 Checklist de Qualidade</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />Validação de campos
+obrigatórios</label></li>
+<li><label><input type="checkbox" />Tratamento de erros
+robusto</label></li>
+<li><label><input type="checkbox" />Logs detalhados de
+execução</label></li>
+<li><label><input type="checkbox" />Testes unitários
+implementados</label></li>
+<li><label><input type="checkbox" />Documentação técnica
+atualizada</label></li>
+<li><label><input type="checkbox" />Monitoramento ativo
+configurado</label></li>
+</ul>
+<h3 id="pontos-de-atenção">🚨 Pontos de Atenção</h3>
+<ol type="1">
+<li><strong>Timeout de Conexão</strong>: 30 segundos</li>
+<li><strong>Retry Automático</strong>: 3 tentativas</li>
+<li><strong>Validação de Dados</strong>: Rigorosa</li>
+<li><strong>Logs de Auditoria</strong>: Obrigatórios</li>
+<li><strong>Backup de Dados</strong>: Diário</li>
+</ol>
+<h3 id="troubleshooting">🔍 Troubleshooting</h3>
+<ul>
+<li><strong>Erro 401</strong>: Verificar credenciais</li>
+<li><strong>Erro 404</strong>: Validar endpoint</li>
+<li><strong>Erro 500</strong>: Contatar suporte Performaxxi</li>
+<li><strong>Timeout</strong>: Verificar conectividade</li>
+</ul>
+<hr />
+<h2 id="documentação-técnica">📚 DOCUMENTAÇÃO TÉCNICA</h2>
+<h3 id="estrutura-de-arquivos">📁 Estrutura de Arquivos</h3>
+<pre><code>GuaranaMineiro/
+├── src/br/com/performaxxi/
+│   ├── action/
+│   │   ├── acaoAgendada/ComprovantesEntrega.java
+│   │   ├── botaoAcao/IntegraPerformaxxi.java
+│   │   └── evento/RecebimentoEvento.java
+│   └── shared/PerformaxxiAPI.java
+├── docs/
+│   ├── acaoAgendada/
+│   ├── botaoAcao/
+│   └── evento/
+└── target/integracao-performaxxi-1.0.0.jar</code></pre>
+<h3 id="links-úteis">🔗 Links Úteis</h3>
+<ul>
+<li><strong>API Performaxxi</strong>:
+https://www.performaxxi.com.br/API.WS.Documentation2/</li>
+<li><strong>Documentação Sankhya</strong>: [Interna]</li>
+<li><strong>Repositório</strong>: GitHub - personalizacoes</li>
+</ul>
+<hr />
+<h2 id="equipe-e-responsabilidades">👥 EQUIPE E RESPONSABILIDADES</h2>
+<h3 id="papéis">🎯 Papéis</h3>
+<ul>
+<li><strong>Dev Senior</strong>: Desenvolvimento completo, arquitetura,
+integrações, testes, documentação e acompanhamento técnico</li>
+</ul>
+<h3 id="contatos">📞 Contatos</h3>
+<ul>
+<li><strong>Responsável Técnico</strong>: Vagner Oliveira</li>
+<li><strong>Suporte Performaxxi</strong>: [Contato da API]</li>
+<li><strong>Equipe Sankhya</strong>: [Contato interno]</li>
+</ul>
+<hr />
+<h2 id="critérios-de-aceite">✅ CRITÉRIOS DE ACEITE</h2>
+<h3 id="fase-1---importação-de-pedidos">🎯 Fase 1 - Importação de
+Pedidos</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />Autenticação
+funcionando</label></li>
+<li><label><input type="checkbox" />Tela de logs
+implementada</label></li>
+<li><label><input type="checkbox" />Consulta de pedidos
+operacional</label></li>
+<li><label><input type="checkbox" />Logs de controle ativos</label></li>
+<li><label><input type="checkbox" />Documentação completa</label></li>
+</ul>
+<h3 id="fase-2---notificação-de-recebimentos">🎯 Fase 2 - Notificação de
+Recebimentos</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />Consulta de recebimentos
+funcionando</label></li>
+<li><label><input type="checkbox" />Envio para Performaxxi
+operacional</label></li>
+<li><label><input type="checkbox" />Logs por módulo
+implementados</label></li>
+<li><label><input type="checkbox" />Documentação atualizada</label></li>
+</ul>
+<h3 id="fase-3---comprovantes-de-entrega">🎯 Fase 3 - Comprovantes de
+Entrega</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />Consulta de comprovantes
+funcionando</label></li>
+<li><label><input type="checkbox" />Atualização no Sankhya
+operacional</label></li>
+<li><label><input type="checkbox" />Logs de auditoria
+ativos</label></li>
+<li><label><input type="checkbox" />Documentação finalizada</label></li>
+</ul>
+<hr />
+<h2 id="entregáveis">🚀 ENTREGÁVEIS</h2>
+<h3 id="código-fonte">📦 Código Fonte</h3>
+<ul>
+<li>Módulos Java compilados</li>
+<li>JAR de integração</li>
+<li>Scripts de banco de dados</li>
+<li>Configurações de ambiente</li>
+</ul>
+<h3 id="documentação">📚 Documentação</h3>
+<ul>
+<li>Manual técnico</li>
+<li>Guia de instalação</li>
+<li>Documentação da API</li>
+<li>Procedimentos de manutenção</li>
+</ul>
+<h3 id="testes">🧪 Testes</h3>
+<ul>
+<li>Casos de teste unitários</li>
+<li>Testes de integração</li>
+<li>Testes de performance</li>
+<li>Validação de cenários</li>
+</ul>
+<hr />
+<p><strong>Versão</strong>: 1.0.0<br />
+<strong>Data de Criação</strong>: Agosto 2025<br />
+<strong>Última Atualização</strong>: Agosto 2025<br />
+<strong>Período de Atuação</strong>: 04/08/2025 até hoje<br />
+<strong>Status</strong>: ✅ <strong>PROJETO CONCLUÍDO E
+FUNCIONAL</strong><br />
+<strong>Acompanhamento</strong>: 🔄 <strong>EM ANDAMENTO (32h
+restantes)</strong></p>
+<hr />
+<h2 id="conclusão">🎉 CONCLUSÃO</h2>
+<p>O sistema de integração GuaranaMineiro foi <strong>100% implementado
+e está operacional</strong>, com todas as funcionalidades principais
+funcionando perfeitamente:</p>
+<p>✅ <strong>Módulo 1</strong>: Importação de pedidos para
+roteirização<br />
+✅ <strong>Módulo 2</strong>: Notificação de recebimentos via PIX<br />
+✅ <strong>Módulo 3</strong>: Consulta de comprovantes de entrega</p>
+<p>O projeto está atualmente na fase de <strong>acompanhamento
+técnico</strong> com 32 horas dedicadas a monitoramento, otimização e
+suporte contínuo.</p>
+<hr />
+<p><em>Este documento é parte do sistema de integração GuaranaMineiro e
+deve ser mantido atualizado conforme evolução do projeto.</em></p>
+</body>
+</html>

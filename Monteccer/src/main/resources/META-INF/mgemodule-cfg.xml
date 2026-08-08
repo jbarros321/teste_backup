@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+    <name>integracao-monteccer</name>
+    <version>1.0.0</version>
+    <type>java</type>
+    <main-class>br.com.monteccer.action.botaoAcao.IntegraMonteccer</main-class>
+    <description>Integracao Monteccer - Geracao de DANFEs</description>
+</module>

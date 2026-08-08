@@ -1,0 +1,38 @@
+================================================================================
+PED_IN - Expedição de Mercadorias (232 caracteres por linha)
+================================================================================
+Artefato: TSL_20251204113734.zip
+================================================================================
+
+CABEÇALHO (apenas para referência - não deve estar nos arquivos reais):
+--------------------------------------------------------------------------------
+CNPJ           Ordem Frete          Número Pedido  ItemPed Código Produto                                  Número Palete             Quantidade       Peso               Dt.Fab DE Dt.Fab ATÉ  Lote                     CNPJ Cliente     
+--------------------------------------------------------------------------------
+
+DADOS (formato real dos arquivos gerados):
+--------------------------------------------------------------------------------
+43072916000160 00000000000000003754 000000003754 000002 0000000001140                                      09020014026               0000000000307,43 000000000000307,43 06/11/2025 06/11/2025 061125-D                  07216100000107 
+43072916000160 00000000000000003754 000000003754 000001 0000000001127                                      09020014025               0000000000443,13 000000000000443,13 06/11/2025 06/11/2025 061125-D                  07216100000107 
+
+================================================================================
+Estrutura dos campos (conforme PDF TSL V1.2):
+  [0-14]    CNPJ (15 caracteres) - OBRIGATÓRIO ✓ - Numérico com espaço ao final
+  [15-35]   Ordem Frete (21 caracteres) - OBRIGATÓRIO ✓ - Numérico com zeros à esquerda
+  [36-48]   Número Pedido (13 caracteres) - OBRIGATÓRIO ✓ - Numérico com zeros à esquerda
+  [49-55]   Item Pedido (7 caracteres) - OBRIGATÓRIO ✓ - Numérico com zeros à esquerda
+  [56-106]  Código Produto (51 caracteres) - OBRIGATÓRIO ✓ - Numérico com zeros à esquerda
+  [107-132] Número Palete (26 caracteres) - OPCIONAL - Alfanumérico com espaços à direita
+  [133-149] Quantidade (17 caracteres) - OBRIGATÓRIO ✓ - Numérico com vírgula decimal
+  [150-168] Peso (19 caracteres) - OBRIGATÓRIO ✓ - Numérico com vírgula decimal
+  [169-179] Data Fabricação DE (11 caracteres) - OBRIGATÓRIO ✓ - Formato DD/MM/YYYY
+  [180-190] Data Fabricação ATÉ (11 caracteres) - OBRIGATÓRIO ✓ - Formato DD/MM/YYYY
+  [191-216] Lote (26 caracteres) - OPCIONAL - Alfanumérico com espaços à direita
+  [217-231] CNPJ Cliente (15 caracteres) - OBRIGATÓRIO ✓ - Numérico com espaço ao final
+================================================================================
+
+Legenda:
+  OBRIGATÓRIO ✓ = Campo deve estar preenchido (conforme especificação TSL V1.2)
+  OPCIONAL = Campo pode estar vazio (preenchido com espaços)
+  
+Observação: Todos os campos devem terminar com espaço em branco conforme especificação:
+"AO FINAL DE CADA CAMPO CONTEM 1 CARACTERE EM BRANCO"

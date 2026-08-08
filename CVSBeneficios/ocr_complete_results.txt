@@ -1,0 +1,75 @@
+=== EXTRACAO COMPLETA - COMPROVANTE DE ENTREGA ===
+Data: 03/10/2025 12:24:19
+
+=== Screenshot_2.jpg ===
+Periodo: 20 a 30
+Mes Referencia: 9/2025
+Pedido: 1826806
+Empresa: 
+Colaborador: 
+Endereco: FRANCISCO ANTONIO DA LUZ 212 CASA 2 - JD MACEDONIA SAO PAULO
+Nome da Cesta: KBPX
+Qtde: 1
+Emissao: 
+NF-e: 3025412
+Matric: 
+CEP: 
+Guia: 228-Ef
+Codigo de Barras: 9338394
+
+==================================================
+
+=== Screenshot_1.jpg ===
+Periodo: 20 a 30
+Mes Referencia: 9/2025
+Pedido: 
+Empresa: VIACAO GATUSA TRANSPORTES URBANOS LTDA
+Colaborador: GUSTAVO DE SUSA TT
+Endereco: 
+Nome da Cesta: GATUSA
+Qtde: 1
+Emissao: 16/09/2025
+NF-e: 
+Matric: 
+CEP: 
+Guia: 
+Codigo de Barras: 9339231
+
+==================================================
+
+=== Screenshot_1.jpeg ===
+Periodo: 
+Mes Referencia: 9/2025
+Pedido: 1827816
+Empresa: 
+Colaborador: NEUZA FERRARES DA SILVA
+Endereco: RUA ANANIAS CARMELINO PIRES 185 - JARDIM PANORAMA TABOAO DA SERRA
+Nome da Cesta: GATUSA
+Qtde: 1
+Emissao: 18/09/2025
+NF-e: 
+Matric: 
+CEP: 
+Guia: 
+Codigo de Barras: 9339180
+
+==================================================
+
+=== Screenshot_1.png ===
+Periodo: 
+Mes Referencia: 9/2025
+Pedido: 1827816
+Empresa: 
+Colaborador: 
+Endereco: RUA ANANIAS CARMELINO PIRES 185 - JARDIM PANORAMA TABOAO DA SERRA
+Nome da Cesta: GATUSA
+Qtde: 1
+Emissao: 18/09/2025
+NF-e: 
+Matric: 
+CEP: 
+Guia: 
+Codigo de Barras: 9339180
+
+==================================================
+

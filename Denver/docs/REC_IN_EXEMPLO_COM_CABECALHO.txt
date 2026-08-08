@@ -1,0 +1,38 @@
+================================================================================
+REC_IN - Recebimento de Mercadorias Integrado (619 caracteres por linha)
+================================================================================
+Artefato: TSL_20251204113734.zip
+================================================================================
+
+CABEÇALHO (apenas para referência - não deve estar nos arquivos reais):
+--------------------------------------------------------------------------------
+CNPJ           Nota Fiscal     ItemNF Número Palete          Código Produto                                     Identificador Caixa            Peso Caixa        Data Prod  Data Venc  Lote                      Info Complementar                                                                                                                                                                                                                                                                                                                                                                                               ValorUnit
+--------------------------------------------------------------------------------
+
+DADOS (formato real dos arquivos gerados):
+--------------------------------------------------------------------------------
+43072916000160 000000003776 000001 09020014025               0000000001127                                      09020014025                    00000000000001,00 06/11/2025 07/05/2027 061125-D                  CHORIZO INTEIRO                                                                                                                                                                                                                                                                                                                                                                                                  00046,03 
+43072916000160 000000003776 000002 09020014026               0000000001140                                      09020014026                    00000000000001,00 06/11/2025 07/05/2027 061125-D                  ANCHO INTEIRO                                                                                                                                                                                                                                                                                                                                                                                                    00063,11 
+
+================================================================================
+Estrutura dos campos (conforme PDF TSL V1.2):
+  [0-14]    CNPJ (15 caracteres) - OBRIGATÓRIO ✓ - Numérico com espaço ao final
+  [15-27]   Nota Fiscal (13 caracteres) - OBRIGATÓRIO ✓ - Numérico com zeros à esquerda
+  [28-34]   Item NF (7 caracteres) - OBRIGATÓRIO ✓ - Numérico com zeros à esquerda
+  [35-60]   Número Palete (26 caracteres) - OBRIGATÓRIO ✓ - Alfanumérico com espaços à direita
+  [61-111]  Código Produto (51 caracteres) - OBRIGATÓRIO ✓ - Numérico com zeros à esquerda
+  [112-142] Identificador Caixa (31 caracteres) - OPCIONAL - Alfanumérico com espaços à direita
+  [143-160] Peso Caixa (18 caracteres) - OBRIGATÓRIO ✓ - Numérico com vírgula decimal
+  [161-171] Data Produção (11 caracteres) - OBRIGATÓRIO ✓ - Formato DD/MM/YYYY
+  [172-182] Data Vencimento (11 caracteres) - OBRIGATÓRIO ✓ - Formato DD/MM/YYYY
+  [183-208] Lote (26 caracteres) - OPCIONAL - Alfanumérico com espaços à direita
+  [209-609] Info Complementar (401 caracteres) - OPCIONAL - Alfanumérico com espaços à direita
+  [610-618] Valor Unitário (9 caracteres) - OBRIGATÓRIO ✓ - Numérico com vírgula decimal
+================================================================================
+
+Legenda:
+  OBRIGATÓRIO ✓ = Campo deve estar preenchido (conforme especificação TSL V1.2)
+  OPCIONAL = Campo pode estar vazio (preenchido com espaços)
+  
+Observação: Todos os campos devem terminar com espaço em branco conforme especificação:
+"AO FINAL DE CADA CAMPO CONTEM 1 CARACTERE EM BRANCO"

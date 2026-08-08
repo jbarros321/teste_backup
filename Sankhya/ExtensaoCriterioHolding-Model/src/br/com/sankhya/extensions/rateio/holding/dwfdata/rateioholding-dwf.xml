@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE metadata-provider >
+<metadata-provider batch-fetch-size="200"
+		data-source="java:/MGEDS"
+		event-listener="br.com.sankhya.modelcore.dwfdata.DynamicEntityLoader"
+		name="rateioholding-dwf"
+		parent="mge-dwf"
+		use-ejb="false"
+		verbose="false"
+>
+	<container-config commit-type-d-refresh-rate="120" entity-cache-max-idle="1800" entity-cache-max-size="5000" instance-cache-max-size="2000" />
+	<descriptor name="CriterioRateioHolding" location="br/com/sankhya/extensions/rateio/holding/dwfdata/CriterioRateioHolding.xml"/>
+	<descriptor name="ItemCriterioRateioHolding" location="br/com/sankhya/extensions/rateio/holding/dwfdata/ItemCriterioRateioHolding.xml"/>
+	<descriptor name="ViewRateioHoldingSimAnalitica" location="br/com/sankhya/extensions/rateio/holding/dwfdata/ViewRateioHoldingSimAnalitica.xml"/>
+	<descriptor name="DescontoRepasseVisita" location="br/com/sankhya/extensions/rateio/holding/dwfdata/DescontoRepasseVisita.xml"/>
+	<descriptor name="InvalidacaoVag" location="br/com/sankhya/extensions/rateio/holding/dwfdata/InvalidacaoVag.xml"/>
+	<descriptor name="ViewFinanceiroRepasseVisita" location="br/com/sankhya/extensions/rateio/holding/dwfdata/ViewFinanceiroRepasseVisita.xml"/>
+	<descriptor name="ViewDescontoVAG" location="br/com/sankhya/extensions/rateio/holding/dwfdata/ViewDescontoVAG.xml"/>
+</metadata-provider>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

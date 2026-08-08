@@ -1,0 +1,28 @@
+.texto-status{
+	display: none !important;
+}
+
+.icon-close-cancel{
+	display: none !important;
+}
+
+.btn-importar{
+	width: 155px;
+}
+
+.btn-importar .transparente {
+	width: 150px;
+	top: -4px;
+}
+
+.btn-importar .transparente:before {
+   content: "Importar arquivo";
+}
+
+.btn-importar .img-src{
+	bottom: 3px !important;
+}
+
+.btn-importar #input-file{
+	border: none;
+}

@@ -1,0 +1,26 @@
+ESCOPO DE ATIVIDADE - MIGRAÇÃO CONTÁBIL E FLUXO DE CAIXA (FGF)
+
+ASSUNTO: Migração da Operação 73000 (GOB TAX – AUDITT) e ajustes de Fluxo de Caixa.
+
+1. OBJETIVO DA DEMANDA
+Realizar o ajuste técnico no esqueleto da estrutura da operação 73000 – OPERAÇÃO-GOB TAX – AUDITT, bem como a reestruturação da ação responsável por gerar os dados desta operação e suas despesas a partir de 01/jan/26, com os devidos ajustes no Fluxo de Caixa.
+
+2. DETALHAMENTO TÉCNICO
+- Ajuste no Esqueleto da Estrutura: Reconfiguração da base estrutural que sustenta os dados da CR 73000.
+- Reestruturação da Ação de Geração: Ajuste na lógica da rotina/ação que processa e gera os dados de despesas desde 01/jan/26.
+- Ajustes no Fluxo de Caixa: Sincronização da nova estrutura com a visão do Fluxo de Caixa da empresa.
+
+3. PLANEJAMENTO DE EXECUÇÃO
+- Tempo Estimado: 5 Horas
+- Período de Referência: A partir de 01 de Janeiro de 2026.
+
+4. CRONOGRAMA DE ATIVIDADES (5H)
+- Ajustes no esqueleto da estrutura técnica: 1h
+- Reestruturação da lógica na ação que gera os dados: 2h
+- Validação no Fluxo de Caixa e verificações finais: 2h
+
+---
+Data: 01/04/2026
+Status: Aguardando Início / Planejamento Concluído.
+Solicitante: FGF
+Execução: Jonatan Barros

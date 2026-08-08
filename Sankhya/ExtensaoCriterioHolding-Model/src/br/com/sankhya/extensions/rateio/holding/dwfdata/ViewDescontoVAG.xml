@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE entity>
+
+<entity name="ViewDescontoVAG" main-object="ViewDescontoVAG" commit-type="B" isView="true">
+	<runtime max-results="1000" timeout="20" load-on-find="true" />
+</entity>
+

@@ -1,0 +1,36 @@
+SELECT 
+	CODUSU, 
+	CODSERV, 
+	CODSIT, 
+	CODOCOROS, 
+	NUMETAPA 
+FROM 
+  TCSITE 
+WHERE  
+	NUMOS = ? 
+	AND CODUSU = (
+		SELECT  
+   		CODUSUREM 
+		FROM  
+			TCSITE 
+		WHERE 
+			NUMOS = ? 
+			AND NUMITEM = ? 
+		) 
+	AND TERMEXEC = (
+		SELECT 
+			MAX (TERMEXEC) 
+      	FROM 
+			TCSITE 
+		WHERE 
+			NUMOS = ? 
+      		AND CODUSU = (
+				SELECT 
+					CODUSUREM 
+				FROM 
+					TCSITE 
+				WHERE 
+					NUMOS = ? 
+					AND NUMITEM = ?
+			)
+		)

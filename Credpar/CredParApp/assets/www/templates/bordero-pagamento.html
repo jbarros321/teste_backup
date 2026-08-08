@@ -1,0 +1,38 @@
+<ion-view view-title="BORDERÔ DE PAGAMENTO" cache-view="false">
+
+	<ion-nav-buttons side="left">
+    	<button class="button button-icon button-clear icon ion-ios-arrow-back" style="color: white" ng-click="goBack()">
+        </button>
+    </ion-nav-buttons>
+    
+    <ion-content class="background-login" >    	
+    	<div class="txtPeriodo">
+    		<span>PERÍODO DE VENCIMENTO</span>
+    	</div>
+    	<div style="display: inline-block; padding: 10px;">
+    		<div style="display: inline-block;">
+    			<label class="item item-input fieldDtBordero">
+		    		<input type="date" ng-model="bordero.DTINI" placeholder="DATA">
+		  		</label>
+    		</div>
+   			<div class="calendar-35x35-img"></div>
+    	</div>
+    	<div >
+    		<span style="vertical-align: middle;">até</span>
+    	</div>
+    	<div style="display: inline-block; padding: 10px;">
+    		<div style="display: inline-block;">
+    			<label class="item item-input fieldDtBordero">
+		    		<input type="date"  ng-model="bordero.DTFIN" ng-app=" "placeholder="DATA">
+		  		</label>
+    		</div>
+   			<div class="calendar-35x35-img"></div>
+    	</div>
+    	<div style="margin-bottom: 40px;text-align: center;">
+	        <button class="button btnAcessar" style="width: 230px;" ng-click="getAutorizacoesBordero($event)">
+	        	<i class="calendar-35x35-img"></i>
+			  Buscar Títulos
+			</button>
+		</div >
+    </ion-content>
+</ion-view>

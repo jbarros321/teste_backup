@@ -1,0 +1,2336 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<metadata>
+  <exportInfo>
+    <exportTime>01/11/2025 05:35:39</exportTime>
+    <systemVersion>4.35b232</systemVersion>
+    <systemCharSet>ISO-8859-1</systemCharSet>
+    <dbMetadata>
+      <dbUser>MARTINS</dbUser>
+      <urlConnection><![CDATA[jdbc:oracle:thin:@oradbcs.grupomrp.com.br:1521/pdb.sndb.nvmvcn.oraclevcn.com]]></urlConnection>
+      <jdbcDriver><![CDATA[Oracle JDBC driver 19.3.0.0.0]]></jdbcDriver>
+      <DBMS><![CDATA[Oracle - Oracle Database 19c Standard Edition 2 Release 19.0.0.0.0 - Production
+Version 19.19.0.0.0]]></DBMS>
+    </dbMetadata>
+  </exportInfo>
+  <instances>
+    <instance name="AD_XMLNFSEHMMC" isUpdate="false">
+      <instanceDescription><![CDATA[Importar NFS-e Hotel Mega Modas]]></instanceDescription>
+      <tableInfo name="AD_XMLNFSEHMMC" sequenceType="A" sequenceField="SEQUENCIA">
+        <tableDescription><![CDATA[Importar NFS-e Hotel Mega Modas]]></tableDescription>
+        <primaryKey>
+          <SEQUENCIA />
+        </primaryKey>
+      </tableInfo>
+      <fields>
+        <field name="SEQUENCIA" systemField="N" dataType="I" presentationType="P" calculated="N" allowSearch="S" allowDefault="S" visibleOnSearch="S" allowNull="N" size="10">
+          <description><![CDATA[Sequência]]></description>
+        </field>
+        <field name="DHREGISTRO" systemField="N" dataType="H" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Data Registro]]></description>
+          <expression><![CDATA[$ctx_dh_atual]]></expression>
+          <properties>
+            <prop name="nullable"><![CDATA[S]]></prop>
+            <prop name="UITabName"><![CDATA[__main]]></prop>
+            <prop name="visivel"><![CDATA[S]]></prop>
+            <prop name="readOnly"><![CDATA[S]]></prop>
+            <prop name="requerido"><![CDATA[N]]></prop>
+            <prop name="combobox"><![CDATA[N]]></prop>
+          </properties>
+        </field>
+        <field name="CODUSU" systemField="N" dataType="I" presentationType="P" calculated="N" allowSearch="S" allowDefault="S" visibleOnSearch="S" allowNull="S" size="5">
+          <description><![CDATA[Cód. Usuário]]></description>
+          <expression><![CDATA[$ctx_usuario_logado]]></expression>
+          <properties>
+            <prop name="nullable"><![CDATA[S]]></prop>
+            <prop name="UITabName"><![CDATA[__main]]></prop>
+            <prop name="visivel"><![CDATA[S]]></prop>
+            <prop name="readOnly"><![CDATA[S]]></prop>
+            <prop name="requerido"><![CDATA[N]]></prop>
+            <prop name="combobox"><![CDATA[N]]></prop>
+          </properties>
+        </field>
+        <field name="OBSERVACAO" systemField="N" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Obsevação]]></description>
+          <properties>
+            <prop name="nullable"><![CDATA[S]]></prop>
+            <prop name="UITabName"><![CDATA[__main]]></prop>
+            <prop name="visivel"><![CDATA[S]]></prop>
+            <prop name="readOnly"><![CDATA[N]]></prop>
+            <prop name="requerido"><![CDATA[S]]></prop>
+            <prop name="combobox"><![CDATA[N]]></prop>
+          </properties>
+        </field>
+        <field name="XML" systemField="N" dataType="C" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[xml]]></description>
+          <properties>
+            <prop name="nullable"><![CDATA[S]]></prop>
+            <prop name="UITabName"><![CDATA[XML]]></prop>
+            <prop name="visivel"><![CDATA[N]]></prop>
+            <prop name="readOnly"><![CDATA[S]]></prop>
+            <prop name="requerido"><![CDATA[N]]></prop>
+            <prop name="combobox"><![CDATA[N]]></prop>
+          </properties>
+        </field>
+      </fields>
+      <relationShip>
+        <relation entityName="Usuario" type="I" insert="N" update="N" remove="N">
+          <targetInfo systemInstance="S" tableName="TSIUSU" />
+          <fields>
+            <field localName="CODUSU" targetName="CODUSU" />
+          </fields>
+        </relation>
+        <relation entityName="AD_XMLNFSEHMM" type="I" insert="N" update="N" remove="N">
+          <targetInfo systemInstance="N" tableName="AD_XMLNFSEHMM" />
+          <fields>
+            <field localName="SEQUENCIA" targetName="SEQUENCIA" />
+          </fields>
+        </relation>
+      </relationShip>
+      <actions>
+        <action type="SP">
+          <description><![CDATA[Reprocessar XML já importado]]></description>
+          <actionConfig>
+            <dbCall name="PROC_IMP_XMLNFSEHMM_MARTINS" refreshType="NONE" txManual="false" rootEntity="AD_XMLNFSEHMMC" />
+          </actionConfig>
+          <storedProcedure><![CDATA[CREATE OR REPLACE  PROCEDURE "PROC_IMP_XMLNFSEHMM_MARTINS" (
+    p_codusu    number, -- Codigo do usuario logado
+    p_idsessao  varchar2, -- Identificador da execucao. Serve para buscar informacoes dos parametros/campos da execucao.
+    p_qtdlinhas number, -- Informa a quantidade de registros selecionados no momento da execucao.
+    p_mensagem  varchar2, -- Caso seja passada uma mensagem aqui, ela sera exibida como uma informacao ao usuario.
+    p_imp_xml   varchar2 default 'N'
+)
+AS
+  field_sequencia number;
+  v_qtdreg        number;
+  v_titulo        varchar2(4000);
+  v_mensagem      varchar2(4000);
+  v_incluir       boolean := true;
+  v_qtdinc        number := 0;
+  -- Variaveis de debug
+  v_debug         varchar2(4000);
+  v_erro_detalhe  varchar2(4000);
+  v_xml_tamanho   number;
+  v_formato_detec varchar2(50);
+  v_qtd_erros     number := 0;
+  v_qtd_dup        number := 0;
+  v_xml_existe     number;
+  v_sqlcode        number;
+  v_erro_prefixo   varchar2(100);
+begin
+  /*
+  Autor: Rodrigo Coutinho
+  Data/Hora da Implementacao: 17/08/2021
+  Justificativa da Implementacao: Importacao de XMLs de notas fiscais de servico do Hotel Mega Modas
+  Ajustes: 29/10/2025 - Migracao para formato Nacional (NFS-e Nacional)
+  */
+
+  -- Os valores informados pelo formulario de parametros, podem ser obtidos com as funcoes:
+  --     ACT_INT_PARAM
+  --     ACT_DEC_PARAM
+  --     ACT_TXT_PARAM
+  --     ACT_DTA_PARAM
+  -- Estas funcoes recebem 2 argumentos:
+  --     ID DA SESSAO - Identificador da execucao (Obtido atraves de P_IDSESSAO))
+  --     NOME DO PARAMETRO - Determina qual parametro deve se deseja obter.
+
+  -- DEBUG: Validacao inicial de parametros
+  begin
+    if p_codusu is null then
+      raise_application_error(-20001, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS]: Codigo de usuario nao informado (p_codusu esta null)');
+    end if;
+    
+    if p_idsessao is null or trim(p_idsessao) is null then
+      raise_application_error(-20002, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS]: ID da sessao nao informado (p_idsessao esta null ou vazio)');
+    end if;
+    
+    if p_qtdlinhas is null or p_qtdlinhas < 1 then
+      raise_application_error(-20003, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS]: Quantidade de linhas invalida (p_qtdlinhas=' || nvl(to_char(p_qtdlinhas), 'NULL') || ')');
+    end if;
+    
+    if p_qtdlinhas > 1 then
+      raise_application_error(-20004, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS]: Favor selecionar apenas uma linha para processamento. Linhas selecionadas: ' || p_qtdlinhas);
+    end if;
+    
+  exception
+    when others then
+      raise_application_error(-20000, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS] - Validacao inicial: ' || sqlerrm);
+  end;
+
+  for i in 1 .. p_qtdlinhas -- Este loop permite obter o valor de campos dos registros envolvidos na execucao.
+  loop
+    -- A variavel "I" representa o registro corrente.
+    -- Para obter o valor dos campos utilize uma das seguintes funcoes:
+    --     ACT_INT_FIELD (Retorna o valor de um campo tipo NUMERICO INTEIRO))
+    --     ACT_DEC_FIELD (Retorna o valor de um campo tipo NUMERICO DECIMAL))
+    --     ACT_TXT_FIELD (Retorna o valor de um campo tipo TEXTO),
+    --     ACT_DTA_FIELD (Retorna o valor de um campo tipo DATA)
+    -- Estas funcoes recebem 3 argumentos:
+    --     ID DA SESSAO - Identificador da execucao (Obtido atraves do parametro P_IDSESSAO))
+    --     NUMERO DA LINHA - Relativo a qual linha selecionada.
+    --     NOME DO CAMPO - Determina qual campo deve ser obtido.
+    
+    -- DEBUG: Obter sequencia
+    begin
+      field_sequencia := act_int_field(p_idsessao, i, 'SEQUENCIA');
+      
+      if field_sequencia is null then
+        raise_application_error(-20005, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS]: Campo SEQUENCIA nao encontrado ou esta null. Verifique se o registro foi selecionado corretamente.');
+      end if;
+      
+    exception
+      when others then
+        raise_application_error(-20006, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS] - Erro ao obter campo SEQUENCIA: ' || sqlerrm || ' (Linha: ' || i || ')');
+    end;
+  
+    -- DEBUG: Verificar se existem registros ja importados
+    begin
+      select count(1)
+        into v_qtdreg
+        from ad_xmlnfsehmm x
+       where x.sequencia = field_sequencia;
+    exception
+      when others then
+        raise_application_error(-20007, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS] - Erro ao verificar registros existentes (sequencia=' || field_sequencia || '): ' || sqlerrm);
+    end;
+  
+    if v_qtdreg = 0 then
+      v_incluir := true;
+    else
+    
+      if p_imp_xml = 'S' then
+        -- Se p_imp_xml = 'S', sempre apaga e inclui novamente
+        begin
+          delete ad_xmlnfsehmm x where x.sequencia = field_sequencia;
+          v_incluir := true;
+        exception
+          when others then
+            raise_application_error(-20008, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS] - Erro ao deletar registros existentes (sequencia=' || field_sequencia || '): ' || sqlerrm);
+        end;
+      elsif p_imp_xml = 'N' then
+      
+        -- Senao, faz uma pergunta ao usuario.
+        v_titulo   := 'Movimentos ja existentes na grade';
+        v_mensagem := 'Ja existem ' || v_qtdreg ||
+                      ' notas na grade. Deseja apaga-las e incluir novamente?' ||
+                      '<br>' ||
+                      '<br>Clicar "Sim" para apagar e incluir novamente' ||
+                      '<br>Clicar "Nao" para incluir apenas faltantes' ||
+                      '<br>Clicar "Cancela" para cancelar o processamento';
+        v_incluir  := act_escolher_simnao(v_titulo,
+                                          v_mensagem,
+                                          p_idsessao,
+                                          i) = 'S';
+      
+        if v_incluir then
+          begin
+            delete ad_xmlnfsehmm x where x.sequencia = field_sequencia;
+          exception
+            when others then
+              raise_application_error(-20009, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS] - Erro ao deletar registros apos confirmacao do usuario (sequencia=' || field_sequencia || '): ' || sqlerrm);
+          end;
+        end if;
+      
+      end if;
+    
+    end if;
+  
+    -- DEBUG: Verificar se XML existe na tabela
+    begin
+      select count(1), nvl(length(xml), 0)
+        into v_xml_existe, v_xml_tamanho
+        from ad_xmlnfsehmmc
+       where sequencia = field_sequencia;
+      
+      if v_xml_existe = 0 then
+        raise_application_error(-20010, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS]: Registro nao encontrado na tabela AD_XMLNFSEHMMC (sequencia=' || field_sequencia || ')');
+      end if;
+      
+      if v_xml_tamanho = 0 then
+        raise_application_error(-20011, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS]: Campo XML esta vazio ou null (sequencia=' || field_sequencia || ')');
+      end if;
+      
+    exception
+      when no_data_found then
+        raise_application_error(-20012, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS]: Registro nao encontrado na tabela AD_XMLNFSEHMMC (sequencia=' || field_sequencia || ')');
+      when others then
+        raise_application_error(-20013, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS] - Erro ao verificar XML na tabela: ' || sqlerrm || ' (sequencia=' || field_sequencia || ')');
+    end;
+
+    -- DEBUG: Tentar fazer parse do XML para validar se esta bem formado
+    begin
+      declare
+        v_xml_test xmltype;
+        v_xml_content clob;
+      begin
+        select xml into v_xml_content
+          from ad_xmlnfsehmmc
+         where sequencia = field_sequencia
+           and xml is not null
+           and rownum = 1;
+        
+        if v_xml_content is null or length(trim(v_xml_content)) = 0 then
+          raise_application_error(-20023, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS]: XML esta vazio ou null (sequencia=' || field_sequencia || ')');
+        end if;
+        
+        -- Tentar fazer parse do XML
+        begin
+          v_xml_test := xmltype(v_xml_content);
+        exception
+          when others then
+            raise_application_error(-20024, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS]: XML mal formado ou invalido. ' ||
+                                              'Erro de parse: ' || sqlerrm || 
+                                              ' (sequencia=' || field_sequencia || 
+                                              ', tamanho=' || length(v_xml_content) || ')');
+        end;
+      end;
+    exception
+      when others then
+        -- Capturar sqlcode e sqlerrm em variaveis antes de qualquer operacao
+        v_sqlcode := sqlcode;
+        v_erro_detalhe := sqlerrm;
+        -- Verificar se e um erro de aplicacao tratado (range -20000 a -20999)
+        if v_sqlcode >= -20024 and v_sqlcode <= -20023 then
+          -- Erro ja tratado, re-lancar
+          raise;
+        else
+          -- Erro nao esperado durante validacao XML
+          raise_application_error(-20025, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS] - Erro ao validar XML: ' || 
+                                            v_erro_detalhe || ' (sequencia=' || field_sequencia || ')');
+        end if;
+    end;
+
+    -- DEBUG: Processar XML e detectar formato
+    begin
+      for nfs in (with t_xml as
+                     (select replace(replace('<xmlt>' ||
+                                            replace(replace(replace(replace(nvl(xml, ''),
+                                                    chr(26),
+                                                    null),
+                                                    'xmlns="http://www.abrasf.org.br/nfse.xsd"',
+                                                    null),
+                                                    'xmlns="http://nfse.abrasf.org.br"',
+                                                    null),
+                                                    'xmlns="http://nfse.goiania.go.gov.br/xsd/nfse_gyn_v02.xsd"',
+                                                    null) || '</xmlt>',
+                                            chr(10),
+                                            null),
+                                    chr(13),
+                                    null) as xml,
+                            case when instr(upper(nvl(xml, '')), 'GERARNFSERESPONSE') > 0 then 'NACIONAL'
+                                 when instr(upper(nvl(xml, '')), 'TOMADORSERVICO') > 0 then 'NACIONAL'
+                                 else 'REGIONAL'
+                            end as formato_xml
+                       from ad_xmlnfsehmmc
+                      where sequencia = field_sequencia
+                        and xml is not null),
+                  -- Formato Nacional (com GerarNfseResponse e TomadorServico)
+                  nacional as
+                   (select t.numero,
+                           t.codigoverificacao,
+                           ad_ctb.fc_datexmlnfe(t.dataemissao) as dataemissao,
+                           replace(t.basecalculo, '.', ',') as basecalculo,
+                           replace(t.aliquota, '.', ',') as aliquota,
+                           replace(t.valoriss, '.', ',') as valoriss,
+                           t.numerorps,
+                           t.serierps,
+                           t.tiporps,
+                           ad_ctb.fc_datexmlnfe(t.dataemissaorps) as dataemissaorps,
+                           ad_ctb.fc_datexmlnfe(t.competencia) as competencia,
+                           replace(t.valorservicos, '.', ',') as valorservicos,
+                           replace(t.valordeducoes, '.', ',') as valordeducoes,
+                           replace(t.valorpis, '.', ',') as valorpis,
+                           replace(t.valorcofins, '.', ',') as valorcofins,
+                           replace(t.valorinss, '.', ',') as valorinss,
+                           replace(t.valorir, '.', ',') as valorir,
+                           replace(t.valorcsll, '.', ',') as valorcsll,
+                           replace(t.valoriss2, '.', ',') as valoriss2,
+                           replace(t.aliquota2, '.', ',') as aliquota2,
+                           replace(t.descontoincondicionado, '.', ',') as descontoincondicionado,
+                           t.issretido,
+                           t.codigotributacaomunicipio,
+                           t.discriminacao,
+                           t.codigomunicipio,
+                           t.exigibilidadeiss,
+                           t.municipioincidencia,
+                           t.cnpj_prestador,
+                           t.inscricaomunicipal_prestador,
+                           t.cpf_tomador,
+                           t.cnpj_tomador,
+                           t.inscricaomunicipal_tomador,
+                           t.razaosocial_tomador,
+                           t.endereco_tomador,
+                           t.numero_tomador,
+                           t.complemento_tomador,
+                           t.bairro_tomador,
+                           t.codigomunicipio_tomador,
+                           t.uf_tomador,
+                           t.cep_tomador,
+                           t.optantesimplesnacional
+                      from t_xml,
+                           xmltable('/xmlt/GerarNfseResponse/GerarNfseResposta/ListaNfse/CompNfse'
+                                    passing xmltype(t_xml.xml) columns --
+                                    numero varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/Numero',
+                                    codigoverificacao varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/CodigoVerificacao',
+                                    dataemissao varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DataEmissao',
+                                    basecalculo varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/ValoresNfse/BaseCalculo',
+                                    aliquota varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/ValoresNfse/Aliquota',
+                                    valoriss varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/ValoresNfse/ValorIss',
+                                    numerorps varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Rps/IdentificacaoRps/Numero',
+                                    serierps varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Rps/IdentificacaoRps/Serie',
+                                    tiporps varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Rps/IdentificacaoRps/Tipo',
+                                    dataemissaorps varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Rps/DataEmissao',
+                                    competencia varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Competencia',
+                                    valorservicos varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/ValorServicos',
+                                    valordeducoes varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/ValorDeducoes',
+                                    valorpis varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/ValorPis',
+                                    valorcofins varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/ValorCofins',
+                                    valorinss varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/ValorInss',
+                                    valorir varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/ValorIr',
+                                    valorcsll varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/ValorCsll',
+                                    valoriss2 varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/ValorIss',
+                                    aliquota2 varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/Aliquota',
+                                    descontoincondicionado varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Valores/DescontoIncondicionado',
+                                    issretido varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/IssRetido',
+                                    codigotributacaomunicipio varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/CodigoTributacaoMunicipio',
+                                    discriminacao varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/Discriminacao',
+                                    codigomunicipio varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/CodigoMunicipio',
+                                    exigibilidadeiss varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/ExigibilidadeISS',
+                                    municipioincidencia varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Servico/MunicipioIncidencia',
+                                    cnpj_prestador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Prestador/CpfCnpj/Cnpj',
+                                    inscricaomunicipal_prestador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Prestador/InscricaoMunicipal',
+                                    cpf_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/IdentificacaoTomador/CpfCnpj/Cpf',
+                                    cnpj_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/IdentificacaoTomador/CpfCnpj/Cnpj',
+                                    inscricaomunicipal_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/IdentificacaoTomador/InscricaoMunicipal',
+                                    razaosocial_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/RazaoSocial',
+                                    endereco_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/Endereco/Endereco',
+                                    numero_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/Endereco/Numero',
+                                    complemento_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/Endereco/Complemento',
+                                    bairro_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/Endereco/Bairro',
+                                    codigomunicipio_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/Endereco/CodigoMunicipio',
+                                    uf_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/Endereco/Uf',
+                                    cep_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/TomadorServico/Endereco/Cep',
+                                    optantesimplesnacional varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/OptanteSimplesNacional') t
+                     where t_xml.formato_xml = 'NACIONAL'),
+                  -- Formato Regional (sem GerarNfseResponse, usa Tomador e Prestador)
+                  regional as
+                   (select t.numero,
+                           t.codigoverificacao,
+                           ad_ctb.fc_datexmlnfe(t.dataemissao) as dataemissao,
+                           replace(t.basecalculo, '.', ',') as basecalculo,
+                           replace(t.aliquota, '.', ',') as aliquota,
+                           replace(t.valoriss, '.', ',') as valoriss,
+                           t.numerorps,
+                           t.serierps,
+                           t.tiporps,
+                           ad_ctb.fc_datexmlnfe(t.dataemissaorps) as dataemissaorps,
+                           ad_ctb.fc_datexmlnfe(t.competencia) as competencia,
+                           replace(t.valorservicos, '.', ',') as valorservicos,
+                           replace(t.valordeducoes, '.', ',') as valordeducoes,
+                           replace(t.valorpis, '.', ',') as valorpis,
+                           replace(t.valorcofins, '.', ',') as valorcofins,
+                           replace(t.valorinss, '.', ',') as valorinss,
+                           replace(t.valorir, '.', ',') as valorir,
+                           replace(t.valorcsll, '.', ',') as valorcsll,
+                           replace(t.valoriss2, '.', ',') as valoriss2,
+                           replace(t.aliquota2, '.', ',') as aliquota2,
+                           replace(t.descontoincondicionado, '.', ',') as descontoincondicionado,
+                           t.issretido,
+                           t.codigotributacaomunicipio,
+                           t.discriminacao,
+                           t.codigomunicipio,
+                           t.exigibilidadeiss,
+                           t.municipioincidencia,
+                           t.cnpj_prestador,
+                           t.inscricaomunicipal_prestador,
+                           t.cpf_tomador,
+                           t.cnpj_tomador,
+                           t.inscricaomunicipal_tomador,
+                           t.razaosocial_tomador,
+                           t.endereco_tomador,
+                           t.numero_tomador,
+                           t.complemento_tomador,
+                           t.bairro_tomador,
+                           t.codigomunicipio_tomador,
+                           t.uf_tomador,
+                           t.cep_tomador,
+                           t.optantesimplesnacional
+                      from t_xml,
+                           xmltable('/xmlt/GerarNfseResposta/ListaNfse/CompNfse'
+                                    passing xmltype(t_xml.xml) columns --
+                                    numero varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/Numero',
+                                    codigoverificacao varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/CodigoVerificacao',
+                                    dataemissao varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DataEmissao',
+                                    basecalculo varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/ValoresNfse/BaseCalculo',
+                                    aliquota varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/ValoresNfse/Aliquota',
+                                    valoriss varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/ValoresNfse/ValorIss',
+                                    numerorps varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/IdentificacaoRps/Numero',
+                                    serierps varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/IdentificacaoRps/Serie',
+                                    tiporps varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/IdentificacaoRps/Tipo',
+                                    dataemissaorps varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/DataEmissao',
+                                    competencia varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Competencia',
+                                    valorservicos varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/ValorServicos',
+                                    valordeducoes varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/ValorDeducoes',
+                                    valorpis varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/ValorPis',
+                                    valorcofins varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/ValorCofins',
+                                    valorinss varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/ValorInss',
+                                    valorir varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/ValorIr',
+                                    valorcsll varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/ValorCsll',
+                                    valoriss2 varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/ValorIss',
+                                    aliquota2 varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/Aliquota',
+                                    descontoincondicionado varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Valores/DescontoIncondicionado',
+                                    issretido varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/IssRetido',
+                                    codigotributacaomunicipio varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/CodigoTributacaoMunicipio',
+                                    discriminacao varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/Discriminacao',
+                                    codigomunicipio varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/CodigoMunicipio',
+                                    exigibilidadeiss varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/ExigibilidadeISS',
+                                    municipioincidencia varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Servico/MunicipioIncidencia',
+                                    cnpj_prestador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Prestador/IdentificacaoPrestador/CpfCnpj/Cnpj',
+                                    inscricaomunicipal_prestador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Prestador/IdentificacaoPrestador/InscricaoMunicipal',
+                                    cpf_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/IdentificacaoTomador/CpfCnpj/Cpf',
+                                    cnpj_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/IdentificacaoTomador/CpfCnpj/Cnpj',
+                                    inscricaomunicipal_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/IdentificacaoTomador/InscricaoMunicipal',
+                                    razaosocial_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/RazaoSocial',
+                                    endereco_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/Endereco/Endereco',
+                                    numero_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/Endereco/Numero',
+                                    complemento_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/Endereco/Complemento',
+                                    bairro_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/Endereco/Bairro',
+                                    codigomunicipio_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/Endereco/CodigoMunicipio',
+                                    uf_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/Endereco/Uf',
+                                    cep_tomador varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/Tomador/Endereco/Cep',
+                                    optantesimplesnacional varchar2(4000) path
+                                    '/CompNfse/Nfse/InfNfse/DeclaracaoPrestacaoServico/OptanteSimplesNacional') t
+                     where t_xml.formato_xml = 'REGIONAL')
+                  select * from nacional
+                  union all
+                  select * from regional) t
+      loop
+      
+        -- DEBUG: Validar campos obrigatorios antes do insert
+        begin
+          if nfs.numero is null then
+            raise_application_error(-20014, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS]: Campo NUMERO da nota fiscal nao encontrado no XML (sequencia=' || field_sequencia || ')');
+          end if;
+          
+          if nfs.numerorps is null then
+            raise_application_error(-20015, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS]: Campo NUMERORPS nao encontrado no XML (sequencia=' || field_sequencia || ', numero=' || nvl(to_char(nfs.numero), 'NULL') || ')');
+          end if;
+          
+          -- Validar formato detectado
+          begin
+            select formato_xml into v_formato_detec
+              from (select case when instr(upper(nvl(xml, '')), 'GERARNFSERESPONSE') > 0 then 'NACIONAL'
+                                when instr(upper(nvl(xml, '')), 'TOMADORSERVICO') > 0 then 'NACIONAL'
+                                else 'REGIONAL'
+                           end as formato_xml
+                      from ad_xmlnfsehmmc
+                     where sequencia = field_sequencia);
+          exception
+            when others then
+              null; -- Ignora erro na validacao de formato
+          end;
+          
+        exception
+          when others then
+            -- Capturar sqlcode e sqlerrm em variaveis antes de qualquer operacao
+            v_sqlcode := sqlcode;
+            v_erro_detalhe := sqlerrm;
+            -- Verificar se e um erro de aplicacao tratado (range -20000 a -20999)
+            if v_sqlcode >= -20015 and v_sqlcode <= -20014 then
+              -- Erro ja tratado, re-lancar
+              raise;
+            else
+              -- Erro nao esperado durante validacao de campos
+              raise_application_error(-20016, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS] - Validacao de campos obrigatorios: ' || 
+                                                v_erro_detalhe || ' (numero=' || nvl(to_char(nfs.numero), 'NULL') || 
+                                                ', numerorps=' || nvl(to_char(nfs.numerorps), 'NULL') || ')');
+            end if;
+        end;
+        
+        -- Insert do registro
+        begin
+          insert into ad_xmlnfsehmm
+          (sequencia,
+           numero,
+           numerorps,
+           codigoverificacao,
+           dataemissao,
+           basecalculo,
+           aliquota,
+           valoriss,
+           serie,
+           tipo,
+           dataemissaorps,
+           competencia,
+           valorservicos,
+           valordeducoes,
+           valorpis,
+           valorcofins,
+           valorinss,
+           valorir,
+           valorcsll,
+           valoriss2,
+           aliquota2,
+           descontoincondicionado,
+           issretido,
+           codigotributacaomunicipio,
+           discriminacao,
+           codigomunicipio,
+           exigibilidadeiss,
+           municipioincidencia,
+           cnpj_prestador,
+           inscricaomunicipal_prestador,
+           cpf_cnpj_tomador,
+           inscricaomunicipal_tomador,
+           razaosocial_tomador,
+           endereco_tomador,
+           numero_tomador,
+           complemento_tomador,
+           bairro_tomador,
+           codigomunicipio_tomador,
+           uf_tomador,
+           cep_tomador,
+           optantesimplesnacional)
+        values
+          (field_sequencia,
+           nfs.numero,
+           nfs.numerorps,
+           nfs.codigoverificacao,
+           nfs.dataemissao,
+           nfs.basecalculo,
+           nfs.aliquota,
+           nfs.valoriss,
+           nfs.serierps,
+           nfs.tiporps,
+           nfs.dataemissaorps,
+           nfs.competencia,
+           nfs.valorservicos,
+           nfs.valordeducoes,
+           nfs.valorpis,
+           nfs.valorcofins,
+           nfs.valorinss,
+           nfs.valorir,
+           nfs.valorcsll,
+           nfs.valoriss2,
+           nfs.aliquota2,
+           nfs.descontoincondicionado,
+           nfs.issretido,
+           nfs.codigotributacaomunicipio,
+           nfs.discriminacao,
+           nfs.codigomunicipio,
+           nfs.exigibilidadeiss,
+           nfs.municipioincidencia,
+           nfs.cnpj_prestador,
+           nfs.inscricaomunicipal_prestador,
+           nvl(nfs.cpf_tomador, nfs.cnpj_tomador),
+           nfs.inscricaomunicipal_tomador,
+           nfs.razaosocial_tomador,
+           nfs.endereco_tomador,
+           nfs.numero_tomador,
+           nfs.complemento_tomador,
+           nfs.bairro_tomador,
+           nfs.codigomunicipio_tomador,
+           nfs.uf_tomador,
+           nfs.cep_tomador,
+           nfs.optantesimplesnacional);
+          v_qtdinc := v_qtdinc + 1;
+        exception
+          when dup_val_on_index then
+            -- DEBUG: Duplicata detectada
+            v_qtd_dup := v_qtd_dup + 1;
+            v_debug := 'AVISO [PROC_IMP_XMLNFSEHMM_MARTINS]: Nota duplicada ignorada (sequencia=' || field_sequencia || 
+                      ', numero=' || nvl(to_char(nfs.numero), 'NULL') || 
+                      ', numerorps=' || nvl(to_char(nfs.numerorps), 'NULL') || ')';
+            -- Nao levanta excecao, apenas registra na variavel de debug
+            null;
+          when others then
+            -- DEBUG: Erro no insert
+            -- Capturar sqlcode e sqlerrm em variaveis antes de qualquer operacao
+            v_sqlcode := sqlcode;
+            v_erro_detalhe := sqlerrm;
+            v_qtd_erros := v_qtd_erros + 1;
+            v_debug := 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS] - Erro ao inserir nota (sequencia=' || field_sequencia || 
+                      ', numero=' || nvl(to_char(nfs.numero), 'NULL') || 
+                      ', numerorps=' || nvl(to_char(nfs.numerorps), 'NULL') || 
+                      ', erro=' || substr(v_erro_detalhe, 1, 500) || ')';
+            
+            -- Verificar se nao e erro de constraint (duplicata, foreign key, etc)
+            -- SQLCODE -1: unique constraint violation
+            -- SQLCODE -2291: integrity constraint violated - parent key not found
+            -- SQLCODE -2292: integrity constraint violated - child record found
+            if v_sqlcode not in (-1, -2291, -2292) then
+              -- Erro critico, nao e apenas constraint
+              raise_application_error(-20017, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS] - Erro ao inserir nota fiscal: ' || 
+                                                v_erro_detalhe || ' (sequencia=' || field_sequencia || 
+                                                ', numero=' || nvl(to_char(nfs.numero), 'NULL') || 
+                                                ', numerorps=' || nvl(to_char(nfs.numerorps), 'NULL') || ')');
+            end if;
+            -- Se for erro de constraint, apenas registra e continua (nao levanta excecao)
+        end;
+      
+      end loop;
+      
+    exception
+      when others then
+        -- Erro no processamento do XML (parse, formato invalido, etc)
+        v_erro_detalhe := sqlerrm;
+        
+        -- Tentar identificar o formato do XML para ajudar no debug
+        begin
+          select case when instr(upper(nvl(xml, '')), 'GERARNFSERESPONSE') > 0 then 'NACIONAL'
+                      when instr(upper(nvl(xml, '')), 'TOMADORSERVICO') > 0 then 'NACIONAL'
+                      else 'REGIONAL'
+                 end as formato_xml
+            into v_formato_detec
+            from ad_xmlnfsehmmc
+           where sequencia = field_sequencia
+             and rownum = 1;
+        exception
+          when others then
+            v_formato_detec := 'INDETERMINADO';
+        end;
+        
+        raise_application_error(-20018, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS] - Erro ao processar XML: ' || 
+                                          v_erro_detalhe || 
+                                          ' (sequencia=' || field_sequencia || 
+                                          ', formato_detectado=' || v_formato_detec || 
+                                          ', tamanho_xml=' || v_xml_tamanho || ')');
+    end;
+  
+    -- DEBUG: Montar mensagem de retorno detalhada
+    begin
+      if v_qtdinc > 0 then
+        p_mensagem := v_qtdinc || ' registro(s) atualizado(s)';
+        
+        if v_qtd_dup > 0 then
+          p_mensagem := p_mensagem || '. ' || v_qtd_dup || ' registro(s) duplicado(s) ignorado(s)';
+        end if;
+        
+        if v_qtd_erros > 0 then
+          p_mensagem := p_mensagem || '. ' || v_qtd_erros || ' registro(s) com erro (verifique logs)';
+        end if;
+      else
+        -- DEBUG: Nenhum registro processado
+        begin
+          select case when instr(upper(nvl(xml, '')), 'GERARNFSERESPONSE') > 0 then 'NACIONAL'
+                      when instr(upper(nvl(xml, '')), 'TOMADORSERVICO') > 0 then 'NACIONAL'
+                      else 'REGIONAL'
+                 end as formato_xml
+            into v_formato_detec
+            from ad_xmlnfsehmmc
+           where sequencia = field_sequencia
+             and rownum = 1;
+        exception
+          when others then
+            v_formato_detec := 'INDETERMINADO';
+        end;
+        
+        raise_application_error(-20019, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS]: Nenhum registro foi processado. ' ||
+                                          'Verifique: 1) Se o XML esta bem formatado, ' ||
+                                          '2) Se o formato esta correto (detectado: ' || v_formato_detec || '), ' ||
+                                          '3) Se o XML contem notas fiscais validas. ' ||
+                                          '(sequencia=' || field_sequencia || 
+                                          ', tamanho_xml=' || v_xml_tamanho || ')');
+      end if;
+      
+    exception
+      when others then
+        -- Capturar sqlcode e sqlerrm em variaveis antes de qualquer operacao
+        v_sqlcode := sqlcode;
+        v_erro_detalhe := sqlerrm;
+        -- Verificar se e erro especifico de nenhum registro processado
+        if v_sqlcode = -20019 then
+          -- Erro ja tratado, re-lancar
+          raise;
+        else
+          -- Erro inesperado ao montar mensagem, nao levanta excecao, apenas registra
+          p_mensagem := v_qtdinc || ' registro(s) processado(s). Erro ao montar mensagem: ' || v_erro_detalhe;
+        end if;
+    end;
+  
+    -- DEBUG: Atualizar registro principal
+    begin
+      update ad_xmlnfsehmmc c
+         set c.dhregistro = current_date,
+             c.codusu     = p_codusu
+       where c.sequencia = field_sequencia;
+      
+      if sql%rowcount = 0 then
+        raise_application_error(-20020, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS]: Nenhum registro foi atualizado na tabela AD_XMLNFSEHMMC (sequencia=' || field_sequencia || ')');
+      end if;
+      
+    exception
+      when others then
+        raise_application_error(-20021, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS] - Erro ao atualizar registro principal: ' || 
+                                          sqlerrm || ' (sequencia=' || field_sequencia || ')');
+    end;
+  
+  end loop;
+  
+  -- DEBUG: Validacao final - apenas se nao houve nenhum registro processado e nenhum erro foi tratado
+  if v_qtdinc = 0 and v_qtd_erros = 0 and v_qtd_dup = 0 then
+    raise_application_error(-20022, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS]: Nenhum registro foi processado. Verifique o formato do XML e se contem notas fiscais validas.');
+  end if;
+
+exception
+  when others then
+    -- DEBUG: Capturar qualquer erro nao tratado e fornecer informacoes detalhadas
+    begin
+      v_erro_detalhe := sqlerrm;
+      
+      -- Tentar obter informacoes adicionais se possivel
+      begin
+        if field_sequencia is not null then
+          begin
+            select count(1), nvl(length(xml), 0)
+              into v_xml_existe, v_xml_tamanho
+              from ad_xmlnfsehmmc
+             where sequencia = field_sequencia;
+          exception
+            when others then
+              null;
+          end;
+        end if;
+      exception
+        when others then
+          null;
+      end;
+      
+      -- Se nao for um erro ja tratado com raise_application_error, adiciona contexto
+      -- Verificar se a mensagem ja contem o prefixo do erro tratado
+      v_erro_prefixo := 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS]';
+      if instr(v_erro_detalhe, v_erro_prefixo) > 0 then
+        -- Ja e um erro tratado pela procedure, apenas re-raise
+        raise;
+      else
+        -- Erro nao tratado - adiciona contexto e levanta com codigo generico
+        raise_application_error(-20099, 'ERRO [PROC_IMP_XMLNFSEHMM_MARTINS] - Erro nao tratado: ' || 
+                                          v_erro_detalhe || 
+                                          ' (sequencia=' || nvl(to_char(field_sequencia), 'NULL') || 
+                                          ', qtd_processados=' || nvl(to_char(v_qtdinc), '0') || 
+                                          ', qtd_erros=' || nvl(to_char(v_qtd_erros), '0') || ')');
+      end if;
+    end;
+
+END;]]></storedProcedure>
+        </action>
+      </actions>
+    </instance>
+    <instance name="AD_XMLNFSEHMM" isUpdate="false">
+      <instanceDescription><![CDATA[NFSe]]></instanceDescription>
+      <tableInfo name="AD_XMLNFSEHMM" sequenceType="M">
+        <tableDescription><![CDATA[Importar NFS-e Hotel Mega Modas]]></tableDescription>
+        <primaryKey>
+          <NUMERO />
+          <NUMERORPS />
+          <SEQUENCIA />
+        </primaryKey>
+      </tableInfo>
+      <fields>
+        <field name="NUMERO" systemField="N" dataType="I" presentationType="P" calculated="N" allowSearch="S" allowDefault="S" visibleOnSearch="S" allowNull="N">
+          <description><![CDATA[Numero]]></description>
+        </field>
+        <field name="NUMERORPS" systemField="N" dataType="I" presentationType="P" calculated="N" allowSearch="S" allowDefault="S" visibleOnSearch="S" allowNull="N">
+          <description><![CDATA[Numero RPS]]></description>
+        </field>
+        <field name="SEQUENCIA" systemField="N" dataType="I" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="N">
+          <description><![CDATA[Sequência]]></description>
+        </field>
+        <field name="CODIGOVERIFICACAO" systemField="N" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Codigo Verificação]]></description>
+        </field>
+        <field name="DATAEMISSAO" systemField="N" dataType="H" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Data Emissão]]></description>
+        </field>
+        <field name="BASECALCULO" systemField="N" dataType="F" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Base Cálculo]]></description>
+        </field>
+        <field name="ALIQUOTA" systemField="N" dataType="F" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Alíquota]]></description>
+        </field>
+        <field name="VALORISS" systemField="N" dataType="F" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Valor Iss]]></description>
+        </field>
+        <field name="SERIE" systemField="N" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Série]]></description>
+        </field>
+        <field name="TIPO" systemField="N" dataType="S" presentationType="O" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Tipo]]></description>
+          <options>
+            <option value="1"><![CDATA[1-RPS]]></option>
+            <option value="2"><![CDATA[2-Nota Fiscal Conjugada (Mista)]]></option>
+            <option value="3" default="S"><![CDATA[3-Cupom]]></option>
+          </options>
+        </field>
+        <field name="DATAEMISSAORPS" systemField="N" dataType="D" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Data Emissão Rps]]></description>
+        </field>
+        <field name="COMPETENCIA" systemField="N" dataType="H" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Competência]]></description>
+        </field>
+        <field name="VALORSERVICOS" systemField="N" dataType="F" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Valor Serviços]]></description>
+        </field>
+        <field name="VALORDEDUCOES" systemField="N" dataType="F" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Valor Deduções]]></description>
+        </field>
+        <field name="VALORPIS" systemField="N" dataType="F" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Valor Pis]]></description>
+        </field>
+        <field name="VALORCOFINS" systemField="N" dataType="F" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Valor Cofins]]></description>
+        </field>
+        <field name="VALORINSS" systemField="N" dataType="F" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Valor Inss]]></description>
+        </field>
+        <field name="VALORIR" systemField="N" dataType="F" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Valor Ir]]></description>
+        </field>
+        <field name="VALORCSLL" systemField="N" dataType="F" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Valor Csll]]></description>
+        </field>
+        <field name="VALORISS2" systemField="N" dataType="F" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Valor Iss 2]]></description>
+        </field>
+        <field name="ALIQUOTA2" systemField="N" dataType="F" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Alíquota 2]]></description>
+        </field>
+        <field name="DESCONTOINCONDICIONADO" systemField="N" dataType="F" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Desconto Incondicionado]]></description>
+        </field>
+        <field name="ISSRETIDO" systemField="N" dataType="S" presentationType="O" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Iss Retido]]></description>
+          <options>
+            <option value="1"><![CDATA[1-Sim]]></option>
+            <option value="2" default="S"><![CDATA[2-Não]]></option>
+          </options>
+        </field>
+        <field name="CODIGOTRIBUTACAOMUNICIPIO" systemField="N" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Código Tributação Município]]></description>
+        </field>
+        <field name="DISCRIMINACAO" systemField="N" dataType="S" presentationType="T" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Discriminação]]></description>
+        </field>
+        <field name="CODIGOMUNICIPIO" systemField="N" dataType="I" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Codigo Município]]></description>
+        </field>
+        <field name="EXIGIBILIDADEISS" systemField="N" dataType="S" presentationType="O" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Exigibilidade ISS]]></description>
+          <options>
+            <option value="1"><![CDATA[1-Exigível]]></option>
+            <option value="2"><![CDATA[2-Não incidência]]></option>
+            <option value="3"><![CDATA[3-Isenção]]></option>
+            <option value="4"><![CDATA[4-Exportação]]></option>
+            <option value="5"><![CDATA[5-Imunidade]]></option>
+            <option value="6"><![CDATA[6-Exigibilidade Suspensa por Decisão Judicial]]></option>
+            <option value="7" default="S"><![CDATA[7-Exigibilidade Suspensa por ProcessoAdministrativo]]></option>
+          </options>
+        </field>
+        <field name="MUNICIPIOINCIDENCIA" systemField="N" dataType="I" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Municipio Incidência]]></description>
+        </field>
+        <field name="CNPJ_PRESTADOR" systemField="N" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Cnpj Prestador]]></description>
+        </field>
+        <field name="INSCRICAOMUNICIPAL_PRESTADOR" systemField="N" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Inscricao Municipal Prestador]]></description>
+        </field>
+        <field name="CPF_CNPJ_TOMADOR" systemField="N" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Cpf / Cnpj Tomador]]></description>
+        </field>
+        <field name="INSCRICAOMUNICIPAL_TOMADOR" systemField="N" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Inscrição Municipal Tomador]]></description>
+        </field>
+        <field name="RAZAOSOCIAL_TOMADOR" systemField="N" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Razão Social Tomador]]></description>
+        </field>
+        <field name="ENDERECO_TOMADOR" systemField="N" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Endereço Tomador]]></description>
+        </field>
+        <field name="NUMERO_TOMADOR" systemField="N" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Número Tomador]]></description>
+        </field>
+        <field name="COMPLEMENTO_TOMADOR" systemField="N" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Complemento Tomador]]></description>
+        </field>
+        <field name="BAIRRO_TOMADOR" systemField="N" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Bairro Tomador]]></description>
+        </field>
+        <field name="CODIGOMUNICIPIO_TOMADOR" systemField="N" dataType="I" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Codigo Município - Tomador]]></description>
+        </field>
+        <field name="UF_TOMADOR" systemField="N" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[UF Tomador]]></description>
+        </field>
+        <field name="CEP_TOMADOR" systemField="N" dataType="S" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Cep Tomador]]></description>
+        </field>
+        <field name="OPTANTESIMPLESNACIONAL" systemField="N" dataType="S" presentationType="O" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Optante Simples Nacional]]></description>
+          <options>
+            <option value="1"><![CDATA[1-Sim]]></option>
+            <option value="2" default="S"><![CDATA[2-Não]]></option>
+          </options>
+        </field>
+        <field name="NUNOTA" systemField="N" dataType="I" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Nro. Único]]></description>
+          <properties>
+            <prop name="nullable"><![CDATA[S]]></prop>
+            <prop name="visivel"><![CDATA[S]]></prop>
+            <prop name="readOnly"><![CDATA[S]]></prop>
+            <prop name="requerido"><![CDATA[N]]></prop>
+            <prop name="combobox"><![CDATA[N]]></prop>
+          </properties>
+        </field>
+        <field name="CODPARC" systemField="N" dataType="I" presentationType="P" calculated="N" allowSearch="S" allowDefault="S" visibleOnSearch="S" allowNull="S" size="10">
+          <description><![CDATA[Cód. Parceiro]]></description>
+        </field>
+        <field name="CODEMP" systemField="N" dataType="I" presentationType="P" calculated="N" allowSearch="S" allowDefault="S" visibleOnSearch="S" allowNull="S" size="5">
+          <description><![CDATA[Cód. Empresa]]></description>
+          <properties>
+            <prop name="nullable"><![CDATA[S]]></prop>
+            <prop name="visivel"><![CDATA[S]]></prop>
+            <prop name="readOnly"><![CDATA[S]]></prop>
+            <prop name="requerido"><![CDATA[N]]></prop>
+            <prop name="combobox"><![CDATA[N]]></prop>
+          </properties>
+        </field>
+        <field name="STATUS" systemField="N" dataType="S" presentationType="O" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Status]]></description>
+          <options>
+            <option value="S"><![CDATA[Processado com Sucesso]]></option>
+            <option value="N" default="S"><![CDATA[Erro]]></option>
+          </options>
+          <properties>
+            <prop name="nullable"><![CDATA[S]]></prop>
+            <prop name="visivel"><![CDATA[S]]></prop>
+            <prop name="readOnly"><![CDATA[S]]></prop>
+            <prop name="requerido"><![CDATA[N]]></prop>
+            <prop name="combobox"><![CDATA[N]]></prop>
+          </properties>
+        </field>
+        <field name="OBSPROC" systemField="N" dataType="S" presentationType="T" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Observação Processamento]]></description>
+          <properties>
+            <prop name="nullable"><![CDATA[S]]></prop>
+            <prop name="visivel"><![CDATA[S]]></prop>
+            <prop name="readOnly"><![CDATA[S]]></prop>
+            <prop name="requerido"><![CDATA[N]]></prop>
+            <prop name="combobox"><![CDATA[N]]></prop>
+          </properties>
+        </field>
+        <field name="CODUSU" systemField="N" dataType="I" presentationType="P" calculated="N" allowSearch="S" allowDefault="S" visibleOnSearch="S" allowNull="S" size="5">
+          <description><![CDATA[Cód. Usuário Processamento NF]]></description>
+          <properties>
+            <prop name="nullable"><![CDATA[S]]></prop>
+            <prop name="visivel"><![CDATA[S]]></prop>
+            <prop name="readOnly"><![CDATA[S]]></prop>
+            <prop name="requerido"><![CDATA[N]]></prop>
+            <prop name="combobox"><![CDATA[N]]></prop>
+          </properties>
+        </field>
+        <field name="DHALTER" systemField="N" dataType="H" presentationType="P" calculated="N" allowSearch="N" allowDefault="S" visibleOnSearch="S" allowNull="S">
+          <description><![CDATA[Data/Hora Processamento]]></description>
+          <properties>
+            <prop name="nullable"><![CDATA[S]]></prop>
+            <prop name="visivel"><![CDATA[S]]></prop>
+            <prop name="readOnly"><![CDATA[S]]></prop>
+            <prop name="requerido"><![CDATA[N]]></prop>
+            <prop name="combobox"><![CDATA[N]]></prop>
+          </properties>
+        </field>
+      </fields>
+      <relationShip>
+        <relation entityName="Parceiro" type="I" insert="N" update="N" remove="N">
+          <targetInfo systemInstance="S" tableName="TGFPAR" />
+          <fields>
+            <field localName="CODPARC" targetName="CODPARC" />
+          </fields>
+        </relation>
+        <relation entityName="Empresa" type="I" insert="N" update="N" remove="N">
+          <targetInfo systemInstance="S" tableName="TSIEMP" />
+          <fields>
+            <field localName="CODEMP" targetName="CODEMP" />
+          </fields>
+        </relation>
+        <relation entityName="Usuario" type="I" insert="N" update="N" remove="N">
+          <targetInfo systemInstance="S" tableName="TSIUSU" />
+          <fields>
+            <field localName="CODUSU" targetName="CODUSU" />
+          </fields>
+        </relation>
+      </relationShip>
+      <actions>
+        <action type="SP">
+          <description><![CDATA[Gerar Notas Portal de Vendas]]></description>
+          <actionConfig>
+            <dbCall name="PROC_GERA_NFSE_PORTAIS_MARTINS" refreshType="SEL" txManual="false" rootEntity="AD_XMLNFSEHMM" />
+            <params>
+              <promptParam label="Registros a serem processados" name="REGISTROS" required="true" saveLast="false" options="SELECIONADO=Registro Selecionado;TODOS=Todos os registros da grade" paramType="SO" />
+              <promptParam label="Cadastrar Parceiros Faltantes?" name="CADPARC" required="false" saveLast="false" paramType="B" />
+            </params>
+          </actionConfig>
+          <storedProcedure><![CDATA[CREATE OR REPLACE  PROCEDURE "PROC_GERA_NFSE_PORTAIS_MARTINS" (p_codusu    number, -- Código do usuário logado
+                                                             p_idsessao  varchar2, -- Identificador da execução. Serve para buscar informações dos parâmetros/campos da execução.
+                                                             p_qtdlinhas number, -- Informa a quantidade de registros selecionados no momento da execução.
+                                                             p_mensagem  out varchar2 -- Caso seja passada uma mensagem aqui, ela será exibida como uma informação ao usuário.
+                                                             ) as
+  field_numero     number;
+  field_numerorps  number;
+  field_sequencia  number;
+  v_codtipoper     tgfcab.codtipoper%type;
+  v_dhtipoper      tgfcab.dhtipoper%type;
+  v_tipmov         tgfcab.tipmov%type;
+  v_atualfin       tgftop.atualfin%type;
+  v_tipatualfin    tgftop.tipatualfin%type;
+  v_codcencus      tgfcab.codcencus%type;
+  v_codnat         tgfcab.codnat%type;
+  v_codprod        tgfite.codprod%type;
+  v_usoprod        tgfite.usoprod%type;
+  v_codvol         tgfite.codvol%type;
+  v_codtipvenda    tgfcab.codtipvenda%type;
+  v_dhtipvenda     tgfcab.dhtipvenda%type;
+  v_codfiltro      number := 3; --3-Configurações para Importação XML NFS-e Hotel Mega Modas // "Centro Telas Adicionais » Parâmetro de Relatórios Personalizados"
+  v_erro           varchar2(4000);
+  param_registros  varchar2(4000);
+  param_cadparc    varchar2(4000);
+  v_nunota         number;
+  v_incluir_cab    varchar2(100);
+  v_vlrnota        float;
+  v_vlrdesdob_acum float;
+  v_nufin          number;
+  v_qtdinc         number := 0;
+  v_qtderr         number := 0;
+  v_qtdexistia     number := 0;
+  v_codtiptit      number;
+  v_qtddias        number;
+  v_vlrdif_fin     float;
+  v_desdob         number;
+  v_codend         number;
+  v_codbai         number;
+  v_codcid         number;
+
+begin
+  /*
+  Autor: Rodrigo Coutinho
+  Data/Hora da Implementação: 17/08/2021
+  Justificativa da Implementação: Geração de notas fiscais de serviço do Hotel Mega Modas no portal de vendas
+  */
+
+  -- Os valores informados pelo formulário de parâmetros, podem ser obtidos com as funções:
+  --     ACT_INT_PARAM
+  --     ACT_DEC_PARAM
+  --     ACT_TXT_PARAM
+  --     ACT_DTA_PARAM
+  -- Estas funções recebem 2 argumentos:
+  --     ID DA SESSÃO - Identificador da execução (Obtido através de P_IDSESSAO))
+  --     NOME DO PARAMETRO - Determina qual parametro deve se deseja obter.
+
+  param_registros := act_txt_param(p_chave => p_idsessao,
+                                   p_nome  => 'REGISTROS');
+  param_cadparc   := nvl(act_txt_param(p_chave => p_idsessao,
+                                       p_nome  => 'CADPARC'),
+                         'N');
+
+  --Identificar o Tipo de Operação
+  begin
+    select t.codtipoper,
+           t.dhalter,
+           t.tipmov,
+           t.atualfin,
+           t.tipatualfin
+      into v_codtipoper,
+           v_dhtipoper,
+           v_tipmov,
+           v_atualfin,
+           v_tipatualfin
+      from ad_relparmtop f
+     inner join tgftop_ultlinha t
+        on t.codtipoper = f.codtipoper
+       and t.ativo = 'S'
+     where f.nurelparm = v_codfiltro;
+  exception
+    when no_data_found then
+      v_erro := 'Não Identificado Tipo de Operação no parâmetro 3, ou o informado não está ativo.';
+    when too_many_rows then
+      v_erro := 'Identificado mais de um Tipo de Operação no parâmetro 3.';
+  end;
+
+  --Identificar a Natureza
+  begin
+    select f.codnat
+      into v_codnat
+      from ad_relparmnat f
+     inner join tgfnat n
+        on n.codnat = f.codnat
+       and n.ativa = 'S'
+       and n.analitica = 'S'
+     where f.nurelparm = v_codfiltro;
+  exception
+    when no_data_found then
+      v_erro := v_erro ||
+                '<br>Não Identificada Natureza no parâmetro 3, ou a informada não está ativa e analítica.';
+    when too_many_rows then
+      v_erro := v_erro ||
+                '<br>Identificada mais de uma Natureza no parâmetro 3.';
+  end;
+
+  --Identificar o Centro de Resultado
+  begin
+    select f.codcencus
+      into v_codcencus
+      from ad_relparmcus f
+     inner join tsicus c
+        on c.codcencus = f.codcencus
+       and c.ativo = 'S'
+       and c.analitico = 'S'
+     where f.nurelparm = v_codfiltro;
+  exception
+    when no_data_found then
+      v_erro := v_erro ||
+                '<br>Não Identificado Centro de Resultado no parâmetro 3, ou o informado não está ativo e analítica.';
+    when too_many_rows then
+      v_erro := v_erro ||
+                '<br>Identificado mais de um Centro de Resultado no parâmetro 3.';
+  end;
+
+  --Identificar o Serviço
+  begin
+    select f.codprod,
+           p.usoprod,
+           p.codvol
+      into v_codprod,
+           v_usoprod,
+           v_codvol
+      from ad_relparmserv f
+     inner join tgfpro p
+        on p.codprod = f.codprod
+       and p.ativo = 'S'
+     where f.nurelparm = v_codfiltro;
+  exception
+    when no_data_found then
+      v_erro := v_erro ||
+                '<br>Não Identificado Serviço no parâmetro 3, ou o informado não está ativo.';
+    when too_many_rows then
+      v_erro := v_erro ||
+                '<br>Identificado mais de um Serviço no parâmetro 3.';
+  end;
+
+  --Identificar o Tipo de Negociação
+  begin
+    select f.codtipvenda,
+           t.dhalter
+      into v_codtipvenda,
+           v_dhtipvenda
+      from ad_relparmtpv f,
+           tgftpv        t
+     where f.nurelparm = v_codfiltro
+       and t.codtipvenda = f.codtipvenda
+       and t.dhalter = (select max(tt.dhalter)
+                          from tgftpv tt
+                         where tt.codtipvenda = t.codtipvenda)
+       and t.ativo = 'S';
+  exception
+    when no_data_found then
+      v_erro := v_erro ||
+                '<br>Não Identificado Tipo de Negociação no parâmetro 3, ou o informado não está ativo.';
+    when too_many_rows then
+      v_erro := v_erro ||
+                '<br>Identificado mais de um tipo de Negociação no parâmetro 3.';
+  end;
+
+  if trim(v_erro) is not null then
+    p_mensagem := 'Processamento abortado. Verificar erros abaixo: ' ||
+                  chr(13) || chr(13) || v_erro;
+    return;
+  end if;
+
+  for i in 1 .. p_qtdlinhas -- Este loop permite obter o valor de campos dos registros envolvidos na execução.
+  loop
+    -- A variável "I" representa o registro corrente.
+    -- Para obter o valor dos campos utilize uma das seguintes funções:
+    --     ACT_INT_FIELD (Retorna o valor de um campo tipo NUMÉRICO INTEIRO))
+    --     ACT_DEC_FIELD (Retorna o valor de um campo tipo NUMÉRICO DECIMAL))
+    --     ACT_TXT_FIELD (Retorna o valor de um campo tipo TEXTO),
+    --     ACT_DTA_FIELD (Retorna o valor de um campo tipo DATA)
+    -- Estas funções recebem 3 argumentos:
+    --     ID DA SESSÃO - Identificador da execução (Obtido através do parâmetro P_IDSESSAO))
+    --     NÚMERO DA LINHA - Relativo a qual linha selecionada.
+    --     NOME DO CAMPO - Determina qual campo deve ser obtido.
+    field_numero    := act_int_field(p_idsessao, i, 'NUMERO');
+    field_numerorps := act_int_field(p_idsessao, i, 'NUMERORPS');
+    field_sequencia := act_int_field(p_idsessao, i, 'SEQUENCIA');
+  
+    for reg in (select n.numero,
+                       n.numerorps,
+                       n.codigoverificacao,
+                       n.dataemissao,
+                       n.basecalculo,
+                       n.aliquota,
+                       n.valoriss,
+                       n.serie,
+                       n.tipo,
+                       n.dataemissaorps,
+                       n.competencia,
+                       n.valorservicos,
+                       n.valordeducoes,
+                       n.valorpis,
+                       n.valorcofins,
+                       n.valorinss,
+                       n.valorir,
+                       n.valorcsll,
+                       n.valoriss2,
+                       n.aliquota2,
+                       n.descontoincondicionado,
+                       n.issretido,
+                       n.codigotributacaomunicipio,
+                       n.discriminacao,
+                       n.codigomunicipio,
+                       n.exigibilidadeiss,
+                       n.municipioincidencia,
+                       n.cnpj_prestador,
+                       n.inscricaomunicipal_prestador,
+                       n.cpf_cnpj_tomador,
+                       n.inscricaomunicipal_tomador,
+                       n.razaosocial_tomador,
+                       n.endereco_tomador,
+                       n.numero_tomador,
+                       n.complemento_tomador,
+                       n.bairro_tomador,
+                       n.codigomunicipio_tomador,
+                       n.uf_tomador,
+                       n.cep_tomador,
+                       n.optantesimplesnacional,
+                       n.sequencia,
+                       n.xml,
+                       n.nunota,
+                       n.codparc,
+                       n.codemp,
+                       n.status
+                  from ad_xmlnfsehmm n
+                 where n.sequencia = field_sequencia
+                   and ((param_registros = 'SELECIONADO' and
+                       n.numero = field_numero and
+                       n.numerorps = field_numerorps) or
+                       param_registros = 'TODOS'))
+    loop
+    
+      v_incluir_cab := 'N';
+    
+      update ad_xmlnfsehmm n
+         set n.status  = 'N',
+             n.obsproc = null,
+             n.codusu  = p_codusu,
+             n.dhalter = current_date
+       where n.numero = reg.numero
+         and n.numerorps = reg.numerorps
+         and n.sequencia = reg.sequencia;
+    
+      --identificar parceiro
+      begin
+        select p.codparc
+          into reg.codparc
+          from tgfpar p
+         where p.cgc_cpf = reg.cpf_cnpj_tomador
+           and p.ativo = 'S'
+           and p.cliente = 'S'
+           and rownum = 1;
+      
+        update ad_xmlnfsehmm n
+           set n.codparc = reg.codparc,
+               n.codusu  = p_codusu,
+               n.dhalter = current_date
+         where n.numero = reg.numero
+           and n.numerorps = reg.numerorps
+           and n.sequencia = reg.sequencia;
+      
+      exception
+        when no_data_found then
+          if param_cadparc = 'N' then
+          
+            update ad_xmlnfsehmm n
+               set n.status  = 'N',
+                   n.obsproc = n.obsproc || chr(13) ||
+                               'Parceiro com CPF/CNPJ "' ||
+                               reg.cpf_cnpj_tomador ||
+                               ' não identificado, ou não ativo ou não marcado como Cliente.',
+                   n.codusu  = p_codusu,
+                   n.dhalter = current_date
+             where n.numero = reg.numero
+               and n.numerorps = reg.numerorps
+               and n.sequencia = reg.sequencia;
+          
+            v_incluir_cab := 'ERRO_PARC_EMP';
+          
+          else
+          
+            begin
+            
+              stp_keygen_tgfnum(p_arquivo => 'TGFPAR',
+                                p_codemp  => 1,
+                                p_tabela  => 'TGFPAR',
+                                p_campo   => 'CODPARC',
+                                p_dsync   => 0,
+                                p_ultcod  => reg.codparc);
+            
+              begin
+                select cep.codcid,
+                       cep.codbai,
+                       cep.codend
+                  into v_codcid,
+                       v_codbai,
+                       v_codend
+                  from tsicep cep
+                 inner join tsicid cid
+                    on cid.codcid = cep.codcid
+                 where cep.cep = reg.cep_tomador
+                   and rownum = 1;
+              exception
+                when no_data_found then
+                  v_codcid := null;
+                  v_codbai := 0;
+                  v_codend := 0;
+              end;
+            
+              if nvl(v_codcid, 0) = 0 then
+              
+                select nvl(min(tsicid.codcid), 0)
+                  into v_codcid
+                  from tsicid
+                 where tsicid.codmundms = reg.codigomunicipio_tomador;
+              
+                if v_codcid = 0 then
+                
+                  update ad_xmlnfsehmm n
+                     set n.status  = 'N',
+                         n.obsproc = n.obsproc || chr(13) ||
+                                     'Erro ao incluir Parceiro com CPF/CNPJ "' ||
+                                     reg.cpf_cnpj_tomador || ': ' ||
+                                     'Não identificada cidade com o código do município de tomador ' ||
+                                     reg.codigomunicipio_tomador,
+                         n.codusu  = p_codusu,
+                         n.dhalter = current_date
+                   where n.numero = reg.numero
+                     and n.numerorps = reg.numerorps
+                     and n.sequencia = reg.sequencia;
+                
+                  v_incluir_cab := 'ERRO_PARC_EMP';
+                
+                end if;
+              
+              end if;
+            
+              if nvl(v_codcid, 0) <> 0 then
+              
+                insert into tgfpar
+                  (codparc,
+                   codparcmatriz,
+                   dtcad,
+                   dtalter,
+                   cliente,
+                   fornecedor,
+                   transportadora,
+                   vendedor,
+                   agencia,
+                   codtipparc,
+                   codbco,
+                   classificms,
+                   estabtransp,
+                   ativo,
+                   motorista,
+                   professor,
+                   aluno,
+                   codusu,
+                   simples,
+                   temipi,
+                   cgc_cpf,
+                   nomeparc,
+                   razaosocial,
+                   tippessoa,
+                   codend,
+                   numend,
+                   codbai,
+                   codcid,
+                   cep,
+                   telefone,
+                   identinscestad,
+                   observacoes)
+                values
+                  (reg.codparc, --codparc,
+                   reg.codparc, --codparcmatriz,
+                   current_date, --dtcad,
+                   current_date, --dtalter,
+                   'S', --cliente,
+                   'N', --fornecedor,
+                   'N', --transportadora,
+                   'N', --vendedor,
+                   'N', --agencia,
+                   10304000, --codtipparc,     --CLIENTES HOTEL MEGA MODAS
+                   0, --codbco,
+                   'C', --classificms,         --C-Consumidor Final Não Contribuinte
+                   'N', --estabtransp,         --N-Não contribuinte
+                   'S', --ativo,
+                   'N', --motorista,
+                   'N', --professor,
+                   'N', --aluno,
+                   p_codusu, --codusu,
+                   'N', --simples,
+                   'N', --temipi,
+                   reg.cpf_cnpj_tomador, --cgc_cpf,
+                   substr(upper(reg.razaosocial_tomador),1,40), --nomeparc,
+                   substr(upper(reg.razaosocial_tomador),1,40), --razaosocial,
+                   (case
+                     when length(trim(reg.cpf_cnpj_tomador)) > 11 then
+                      'J'
+                     else
+                      'F'
+                   end), --tippessoa,
+                   v_codend, --codend,
+                   reg.numero_tomador, --numend,
+                   v_codbai, --codbai,
+                   v_codcid, --codcid,
+                   reg.cep_tomador, --cep,
+                   null, --telefone,
+                   null, --identinscestad,
+                   'Importado conforme nota fiscal de serviços Hotel Mega Modas com número ' ||
+                   reg.numero || ' emitida em ' ||
+                   to_char(reg.dataemissao, 'dd/mm/rrrr') --observacoes
+                   );
+              
+                update ad_xmlnfsehmm n
+                   set n.codparc = reg.codparc,
+                       n.codusu  = p_codusu,
+                       n.dhalter = current_date
+                 where n.numero = reg.numero
+                   and n.numerorps = reg.numerorps
+                   and n.sequencia = reg.sequencia;
+              
+              end if;
+            
+            exception
+              when others then
+                v_erro := sqlerrm;
+                update ad_xmlnfsehmm n
+                   set n.status  = 'N',
+                       n.obsproc = n.obsproc || chr(13) ||
+                                   'Erro ao incluir Parceiro com CPF/CNPJ "' ||
+                                   reg.cpf_cnpj_tomador || ': ' || v_erro,
+                       n.codusu  = p_codusu,
+                       n.dhalter = current_date
+                 where n.numero = reg.numero
+                   and n.numerorps = reg.numerorps
+                   and n.sequencia = reg.sequencia;
+              
+                v_incluir_cab := 'ERRO_PARC_EMP';
+              
+            end;
+          end if;
+        
+      end;
+    
+      --identificar empresda
+      begin
+        select e.codemp
+          into reg.codemp
+          from tsiemp e
+         inner join tgfemp p
+            on p.codemp = e.codemp
+         where e.cgc = reg.cnpj_prestador
+           and p.ativo = 'S'
+           and rownum = 1;
+      
+        update ad_xmlnfsehmm n
+           set n.codemp  = reg.codemp,
+               n.codusu  = p_codusu,
+               n.dhalter = current_date
+         where n.numero = reg.numero
+           and n.numerorps = reg.numerorps
+           and n.sequencia = reg.sequencia;
+      
+      exception
+        when no_data_found then
+          update ad_xmlnfsehmm n
+             set n.status  = 'N',
+                 n.obsproc = n.obsproc || chr(13) || 'Empresa com CNPJ "' ||
+                             reg.cnpj_prestador ||
+                             ' não identificada ou não está ativa.',
+                 n.codusu  = p_codusu,
+                 n.dhalter = current_date
+           where n.numero = reg.numero
+             and n.numerorps = reg.numerorps
+             and n.sequencia = reg.sequencia;
+        
+          v_incluir_cab := 'ERRO_PARC_EMP';
+        
+      end;
+    
+      -- se não identificou parceiro ou empresa, já interrompe o processamento deste registro
+      if v_incluir_cab = 'ERRO_PARC_EMP' then
+      
+        v_qtderr := v_qtderr + 1;
+        goto sai_reg;
+      
+      end if;
+    
+      --verificar se nota já existe
+      begin
+      
+        select c.nunota
+          into v_nunota
+          from tgfcab c
+         where c.ad_codigoverificacao_nfse_hmm = reg.codigoverificacao
+           and c.numnota = reg.numerorps
+           and c.numnfse = reg.numero
+           and rownum = 1;
+      
+        if nvl(reg.nunota, 0) <> v_nunota then
+          update ad_xmlnfsehmm n
+             set n.nunota  = v_nunota,
+                 n.codusu  = p_codusu,
+                 n.dhalter = current_date
+           where n.numero = reg.numero
+             and n.numerorps = reg.numerorps
+             and n.sequencia = reg.sequencia;
+        end if;
+      
+        v_qtdexistia := v_qtdexistia + 1;
+      
+        update ad_xmlnfsehmm n
+           set n.status  = 'S',
+               n.obsproc = 'Processado com sucesso',
+               n.codusu  = p_codusu,
+               n.dhalter = current_date
+         where n.numero = reg.numero
+           and n.numerorps = reg.numerorps
+           and n.sequencia = reg.sequencia;
+      
+        v_incluir_cab := 'N';
+      
+      exception
+        when no_data_found then
+        
+          stp_keygen_tgfnum(p_arquivo => 'TGFCAB',
+                            p_codemp  => 1,
+                            p_tabela  => 'TGFCAB',
+                            p_campo   => 'NUNOTA',
+                            p_dsync   => 0,
+                            p_ultcod  => v_nunota);
+        
+          v_incluir_cab := 'S';
+        
+      end;
+    
+      if v_incluir_cab = 'S' then
+      
+        begin
+        
+          savepoint gravar_nota;
+        
+          if nvl(reg.issretido, '2') = '1' then
+            reg.issretido := 'S';
+          else
+            reg.issretido := 'N';
+          end if;
+        
+          v_vlrnota := reg.valorservicos - nvl(reg.descontoincondicionado, 0) -
+                       (case
+                         when reg.issretido = 'S' then
+                          reg.valoriss
+                         else
+                          0
+                       end) - nvl(reg.valorpis, 0) - nvl(reg.valorcofins, 0) -
+                       nvl(reg.valorinss, 0) - nvl(reg.valorir, 0) -
+                       nvl(reg.valorcsll, 0);
+        
+          insert into tgfcab
+            (nunota,
+             codemp,
+             codcencus,
+             numnota,
+             numnfse,
+             serienota,
+             dtneg,
+             dtfatur,
+             dtentsai,
+             dtmov,
+             codempnegoc,
+             codparc,
+             rateado,
+             codveiculo,
+             codtipoper,
+             dhtipoper,
+             tipmov,
+             codtipvenda,
+             dhtipvenda,
+             tipipiemb,
+             tipfrete,
+             vlrnota,
+             vlrdesctotitem,
+             qtdvol,
+             pendente,
+             aprovado,
+             statusnota,
+             codusu,
+             irfretido,
+             dtalter,
+             codusuinc,
+             ad_codigoverificacao_nfse_hmm,
+             codnat,
+             observacao,
+             baseiss,
+             vlriss,
+             issretido,
+             codcid,
+             codcidprest)
+          values
+            (v_nunota, --NUNOTA,
+             reg.codemp, --CODEMP,
+             v_codcencus, --CODCENCUS,
+             reg.numerorps, --NUMNOTA,
+             reg.numero, --NUMNFSE
+             substr(reg.serie, 1, 1), --SERIENOTA
+             reg.dataemissao, --DTNEG,
+             reg.dataemissao, --DTFATUR,
+             reg.dataemissao, --DTENTSAI,
+             reg.dataemissao, --DTMOV,
+             reg.codemp, --CODEMPNEGOC,
+             reg.codparc, --CODPARC,
+             'N', --RATEADO,
+             0, --CODVEICULO,
+             v_codtipoper, -- CODTIPOPER,
+             v_dhtipoper, -- DHTIPOPER,
+             v_tipmov, -- TIPMOV,
+             v_codtipvenda, --CODTIPVENDA,
+             v_dhtipvenda, --DHTIPVENDA,
+             'N', --TIPIPIEMB,
+             'S', --TIPFRETE,
+             v_vlrnota, --VLRNOTA,
+             nvl(reg.descontoincondicionado, 0), --VLRDESCTOTITEM
+             1, --QTDVOL,
+             'N', --PENDENTE,
+             'S', --APROVADO,
+             'L', --STATUSNOTA,
+             p_codusu, --CODUSU,
+             'N', --IRFRETIDO,
+             sysdate, --DTALTER,
+             p_codusu, --CODUSUINC
+             reg.codigoverificacao, --AD_CODIGOVERIFICACAO_NFSE_HMM
+             v_codnat, --CODNAT
+             reg.discriminacao, --OBSERVACAO
+             nvl(reg.basecalculo, 0), --BASEISS,
+             nvl(reg.valoriss, 0), --VLRISS,
+             reg.issretido, --ISSRETIDO
+             nvl((select min(tsicid.codcid)
+                   from tsicid
+                  where tsicid.codmundms = reg.codigomunicipio),
+                 0), --codcid,
+             nvl((select min(tsicid.codcid)
+                   from tsicid
+                  where tsicid.codmundms = reg.municipioincidencia),
+                 0) --codcidprest
+             );
+        
+          insert into tgfite
+            (nunota,
+             sequencia,
+             codemp,
+             codprod,
+             codlocalorig,
+             controle,
+             usoprod,
+             codcfo,
+             qtdneg,
+             qtdconferida,
+             vlrunit,
+             vlrtot,
+             vlrdesc,
+             baseiss,
+             aliqiss,
+             vlriss,
+             vlrcus,
+             vlripi,
+             basesubstit,
+             vlrsubst,
+             pendente,
+             codvol,
+             atualestoque,
+             reserva,
+             statusnota,
+             codusu,
+             dtalter,
+             qtdformula,
+             atualestterc,
+             terceiros,
+             vlrretencao,
+             statuslote,
+             observacao,
+             codtribiss)
+          values
+            (v_nunota, --NUNOTA
+             1, --SEQUENCIA
+             reg.codemp, --CODEMP
+             v_codprod, --CODPROD
+             0, --CODLOCALORIG
+             ' ', --CONTROLE
+             v_usoprod, --USOPROD
+             0, --CODCFO
+             1, --QTDNEG
+             0, --QTDCONFERIDA
+             reg.valorservicos, --VLRUNIT
+             reg.valorservicos, --VLRTOT
+             nvl(reg.descontoincondicionado, 0), --VLRDESC
+             nvl(reg.basecalculo, 0), --BASEISS,
+             nvl(reg.aliquota, 0), --ALIQISS,
+             nvl(reg.valoriss, 0), --VLRISS,
+             0, --VLRCUS
+             0, --VLRIPI
+             0, --BASESUBSTIT
+             0, --VLRSUBST
+             'N', --PENDENTE
+             v_codvol, --CODVOL
+             0, --ATUALESTOQUE
+             'N', --RESERVA
+             'L', --STATUSNOTA
+             p_codusu, --CODUSU
+             sysdate, --DTALTER
+             0, --QTDFORMULA
+             'N', --ATUALESTTERC
+             'N', --TERCEIROS
+             0, --VLRRETENCAO
+             'N', --STATUSLOTE
+             '', --OBSERVACAO
+             (case when
+              nvl(reg.valoriss, 0) > 0 and nvl(reg.issretido, 'N') = 'N' then 0 --00 - Tributado
+              when
+              nvl(reg.valoriss, 0) > 0 and nvl(reg.issretido, 'N') = 'S' then 1 --01 - Tributado com ISS Retido
+              else 6 --06 - Isento
+              end)
+             --CODTRIBISS
+             );
+        
+          --retenção de pis
+          if nvl(reg.valorpis, 0) > 0 then
+          
+            insert into tgfimn
+              (nunota,
+               sequencia,
+               codimp,
+               codcid,
+               base,
+               valor,
+               aliquota,
+               tipimp,
+               digitado,
+               tipoimposto)
+            values
+              (v_nunota, --nunota,
+               1, --sequencia,
+               1 /*pis*/, --codimp,
+               0, --codcid,
+               reg.valorservicos, --base,
+               reg.valorpis, --valor,
+               round(func_divide_nm(reg.valorpis, reg.valorservicos) * 100,
+                     2), --aliquota,
+               -1, --tipimp,
+               'N', --digitado,
+               0 --tipoimposto
+               );
+          
+          end if;
+        
+          --retenção de Cofins
+          if nvl(reg.valorcofins, 0) > 0 then
+          
+            insert into tgfimn
+              (nunota,
+               sequencia,
+               codimp,
+               codcid,
+               base,
+               valor,
+               aliquota,
+               tipimp,
+               digitado,
+               tipoimposto)
+            values
+              (v_nunota, --nunota,
+               1, --sequencia,
+               3 /*cofins*/, --codimp,
+               0, --codcid,
+               reg.valorservicos, --base,
+               reg.valorcofins, --valor,
+               round(func_divide_nm(reg.valorcofins, reg.valorservicos) * 100,
+                     2), --aliquota,
+               -1, --tipimp,
+               'N', --digitado,
+               0 --tipoimposto
+               );
+          
+          end if;
+        
+          --retenção de inss
+          if nvl(reg.valorinss, 0) > 0 then
+          
+            insert into tgfimn
+              (nunota,
+               sequencia,
+               codimp,
+               codcid,
+               base,
+               valor,
+               aliquota,
+               tipimp,
+               digitado,
+               tipoimposto)
+            values
+              (v_nunota, --nunota,
+               1, --sequencia,
+               5 /*inss*/, --codimp,
+               0, --codcid,
+               reg.valorservicos, --base,
+               reg.valorinss, --valor,
+               round(func_divide_nm(reg.valorinss, reg.valorservicos) * 100,
+                     2), --aliquota,
+               -1, --tipimp,
+               'N', --digitado,
+               0 --tipoimposto
+               );
+          
+          end if;
+        
+          --retenção de ir
+          if nvl(reg.valorir, 0) > 0 then
+          
+            insert into tgfimn
+              (nunota,
+               sequencia,
+               codimp,
+               codcid,
+               base,
+               valor,
+               aliquota,
+               tipimp,
+               digitado,
+               tipoimposto)
+            values
+              (v_nunota, --nunota,
+               1, --sequencia,
+               4 /*ir*/, --codimp,
+               0, --codcid,
+               reg.valorservicos, --base,
+               reg.valorir, --valor,
+               round(func_divide_nm(reg.valorir, reg.valorservicos) * 100,
+                     2), --aliquota,
+               -1, --tipimp,
+               'N', --digitado,
+               0 --tipoimposto
+               );
+          
+          end if;
+        
+          --retenção de csll
+          if nvl(reg.valorcsll, 0) > 0 then
+          
+            insert into tgfimn
+              (nunota,
+               sequencia,
+               codimp,
+               codcid,
+               base,
+               valor,
+               aliquota,
+               tipimp,
+               digitado,
+               tipoimposto)
+            values
+              (v_nunota, --nunota,
+               1, --sequencia,
+               2 /*csll*/, --codimp,
+               0, --codcid,
+               reg.valorservicos, --base,
+               reg.valorcsll, --valor,
+               round(func_divide_nm(reg.valorcsll, reg.valorservicos) * 100,
+                     2), --aliquota,
+               -1, --tipimp,
+               'N', --digitado,
+               0 --tipoimposto
+               );
+          
+          end if;
+        
+          --inserir financeiro
+          /*
+          v_atualfin
+          -1 Despesas
+          0  Não atualizar
+          1  Receitas
+          */
+          /*
+          v_tipatualfin
+          I Incluir
+          P Provisionar
+          */
+          if v_atualfin <> 0
+             and v_tipatualfin = 'I' then
+          
+            v_vlrdesdob_acum := 0;
+            v_vlrdif_fin     := 0;
+            v_desdob         := 0;
+          
+            for pgto in (select doc.numero,
+                                doc.numerorps,
+                                doc.cpf_cnpj_tomador,
+                                doc.valorservicos,
+                                trim(ad_ctb.fc_csv(p_texto       => replace(t.column_value,
+                                                                            'PAGAMENTOS:',
+                                                                            null),
+                                                   p_posicao     => 1,
+                                                   p_delimitador => ':')) as forma_pgto,
+                                func_limpa_texto(replace(replace(ad_ctb.fc_csv(p_texto       => replace(t.column_value,
+                                                                                                        'PAGAMENTOS:',
+                                                                                                        null),
+                                                                               p_posicao     => 2,
+                                                                               p_delimitador => ':'),
+                                                                 ',',
+                                                                 null),
+                                                         '.',
+                                                         ','),
+                                                 9) as valor_pgto,
+                                doc.valoriss as valor_iss     --ALTERADO 21/10/2021 LIZARDO          
+                           from ad_xmlnfsehmm doc
+                           left join table(explode('+', substr(doc.discriminacao, instr(doc.discriminacao, 'PAGAMENTOS:'), 4000))) t
+                             on 1 = 1
+                          where doc.numero = reg.numero
+                            and doc.numerorps = reg.numerorps
+                            and doc.sequencia = reg.sequencia)
+            loop
+            
+              stp_keygen_tgfnum(p_arquivo => 'TGFFIN',
+                                p_codemp  => 1,
+                                p_tabela  => 'TGFFIN',
+                                p_campo   => 'NUFIN',
+                                p_dsync   => 0,
+                                p_ultcod  => v_nufin);
+            
+              begin
+                select t.codtiptit,
+                       nvl(t.qtddias, 0)
+                  into v_codtiptit,
+                       v_qtddias
+                  from ad_relparmtit t
+                 inner join tgftit tit
+                    on tit.codtiptit = t.codtiptit
+                   and tit.ativo = 'S'
+                 where t.nurelparm = 3
+                   and upper(trim(t.texto)) = upper(trim(pgto.forma_pgto))
+                   and rownum = 1;
+              exception
+                when no_data_found then
+                  raise_application_error(-20101,
+                                          'Não identificado DExPARA válido para a forma de pagamento "' ||
+                                          pgto.forma_pgto || '"');
+              end;
+            
+              v_desdob := v_desdob + 1;
+            
+              insert into tgffin
+                (nufin,
+                 codemp,
+                 numnota,
+                 numnfse,
+                 serienota,
+                 dtneg,
+                 dhmov,
+                 dtvencinic,
+                 dtvenc,
+                 codparc,
+                 codtipoper,
+                 dhtipoper,
+                 codbco,
+                 codnat,
+                 codcencus,
+                 vlrdesdob,
+                 recdesp,
+                 provisao,
+                 origem,
+                 dtentsai,
+                 dtalter,
+                 codusu,
+                 codtiptit,
+                 historico,
+                 nunota,
+                 desdobramento)
+              values
+                (v_nufin, --nufin,
+                 reg.codemp, --codemp,
+                 reg.numerorps, --numnota,
+                 reg.numero, --numnfse
+                 substr(reg.serie, 1, 1), --serienota
+                 reg.dataemissao, --dtneg,
+                 reg.dataemissao, --dhmov,
+                 reg.dataemissao + v_qtddias, --dtvencinic,
+                 reg.dataemissao + v_qtddias, --dtvenc,
+                 reg.codparc, --codparc,
+                 v_codtipoper, --codtipoper,
+                 v_dhtipoper, --dhtipoper,
+                 0, --codbco,
+                 v_codnat, --codnat,
+                 v_codcencus, --codcencus,
+                 (pgto.valor_pgto - pgto.valor_iss), --vlrdesdob, --ALTERADO 21/10/2021 LIZARDO
+                 v_atualfin, --recdesp,
+                 (case when v_tipatualfin = 'I' then 'N' else 'S' end), --provisao,
+                 'E', --origem,
+                 reg.dataemissao, --dtentsai,
+                 sysdate, --dtalter,
+                 p_codusu, --codusu,
+                 v_codtiptit, --codtiptit,
+                 substr(reg.discriminacao, 1, 255), --historico
+                 v_nunota, --nunota
+                 v_desdob --desdobramento
+                 )
+              returning vlrdesdob + v_vlrdesdob_acum into v_vlrdesdob_acum;
+            
+            end loop;
+          
+            if v_vlrnota > v_vlrdesdob_acum then
+            
+              for ppg in (select p.*,
+                                 v_vlrnota - v_vlrdesdob_acum as dif_fin
+                            from tgfppg p
+                           where p.codtipvenda = v_codtipvenda
+                           order by p.sequencia)
+              loop
+              
+                stp_keygen_tgfnum(p_arquivo => 'TGFFIN',
+                                  p_codemp  => 1,
+                                  p_tabela  => 'TGFFIN',
+                                  p_campo   => 'NUFIN',
+                                  p_dsync   => 0,
+                                  p_ultcod  => v_nufin);
+              
+                v_desdob := v_desdob + 1;
+              
+                insert into tgffin
+                  (nufin,
+                   codemp,
+                   numnota,
+                   serienota,
+                   dtneg,
+                   dhmov,
+                   dtvencinic,
+                   dtvenc,
+                   codparc,
+                   codtipoper,
+                   dhtipoper,
+                   codbco,
+                   codnat,
+                   codcencus,
+                   vlrdesdob,
+                   recdesp,
+                   provisao,
+                   origem,
+                   dtentsai,
+                   dtalter,
+                   codusu,
+                   codtiptit,
+                   historico,
+                   nunota)
+                values
+                  (v_nufin, --nufin,
+                   reg.codemp, --codemp,
+                   reg.numerorps, --numnota,
+                   substr(reg.serie, 1, 1), --serienota
+                   reg.dataemissao, --dtneg,
+                   reg.dataemissao, --dhmov,
+                   reg.dataemissao + ppg.prazo, --dtvencinic,
+                   reg.dataemissao + ppg.prazo, --dtvenc,
+                   reg.codparc, --codparc,
+                   v_codtipoper, --codtipoper,
+                   v_dhtipoper, --dhtipoper,
+                   nvl(ppg.codbcopad, 0), --codbco,
+                   (case when nvl(ppg.codnatpad, 0) = 0 then v_codnat else
+                    ppg.codnatpad end), --codnat,
+                   (case when nvl(ppg.codcencuspad, 0) = 0 then v_codcencus else
+                    ppg.codcencuspad end), --codcencus,
+                   round(ppg.dif_fin * ppg.percentual, 2), --vlrdesdob,
+                   v_atualfin, --recdesp,
+                   (case when v_tipatualfin = 'I' then 'N' else 'S' end), --provisao,
+                   'E', --origem,
+                   reg.dataemissao, --dtentsai,
+                   sysdate, --dtalter,
+                   p_codusu, --codusu,
+                   nvl(ppg.codtiptitpad, 0), --codtiptit,
+                   substr('Ajustes no valor de ' ||
+                          round(ppg.dif_fin * ppg.percentual, 2) ||
+                          ' devida diferença entre valor da nota e total dos financeiros do xml  //  ' ||
+                          reg.discriminacao,
+                          1,
+                          255), --historico
+                   v_nunota --nunota
+                   )
+                returning vlrdesdob + v_vlrdesdob_acum into v_vlrdesdob_acum;
+              
+                v_vlrdif_fin := v_vlrdif_fin +
+                                round(ppg.dif_fin * ppg.percentual, 2);
+              
+              end loop;
+            
+              if v_vlrdesdob_acum <> v_vlrnota then
+              
+                update tgffin f
+                   set f.vlrdesdob = f.vlrdesdob +
+                                     (v_vlrnota - v_vlrdesdob_acum)
+                 where f.nunota = v_nunota
+                   and f.nufin = (select max(ff.nufin)
+                                    from tgffin ff
+                                   where ff.nunota = v_nunota);
+              
+                v_vlrdif_fin := v_vlrdif_fin +
+                                (v_vlrnota - v_vlrdesdob_acum);
+              
+              end if;
+            
+            end if;
+          
+          end if;
+        
+          update ad_xmlnfsehmm n
+             set n.status  = 'S',
+                 n.obsproc = 'Processado com sucesso' || (case
+                               when nvl(v_vlrdif_fin, 0) <> 0 then
+                                chr(13) || chr(13) ||
+                                'Ajustada diferença de ' || v_vlrdif_fin ||
+                                ' devida diferença entre valor da nota e total dos financeiros do xml'
+                               else
+                                null
+                             end),
+                 n.nunota  = v_nunota,
+                 n.codusu  = p_codusu,
+                 n.dhalter = current_date
+           where n.numero = reg.numero
+             and n.numerorps = reg.numerorps
+             and n.sequencia = reg.sequencia;
+        
+          v_qtdinc := v_qtdinc + 1;
+        
+        exception
+          when others then
+          
+            v_erro := sqlerrm;
+          
+            rollback to gravar_nota;
+          
+            update ad_xmlnfsehmm n
+               set n.status  = 'N',
+                   n.obsproc = n.obsproc || chr(13) ||
+                               'Erro de processamento: ' || v_erro,
+                   n.codusu  = p_codusu,
+                   n.dhalter = current_date
+             where n.numero = reg.numero
+               and n.numerorps = reg.numerorps
+               and n.sequencia = reg.sequencia;
+          
+            v_qtderr := v_qtdinc + 1;
+          
+        end;
+      
+      end if;
+    
+      <<sai_reg>>
+      null;
+    
+    end loop;
+  
+  end loop;
+
+  p_mensagem := v_qtdinc || ' notas incluídas.<br>' || --
+                v_qtderr || ' notas com erro de processamento.<br>' || --
+                v_qtdexistia || ' notas já processadas anteriormente';
+
+end;]]></storedProcedure>
+        </action>
+      </actions>
+    </instance>
+  </instances>
+</metadata>
+

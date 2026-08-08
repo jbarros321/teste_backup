@@ -1,0 +1,80 @@
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 40px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h3 { color: #1a5276; background-color: #ebf5fb; padding: 10px; border-left: 5px solid #3498db; margin-top: 25px; }
+        .step-number { background-color: #3498db; color: white; padding: 2px 8px; border-radius: 50%; font-weight: bold; margin-right: 10px; }
+        .note { background-color: #fef9e7; border: 1px solid #f7dc6f; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .success { color: #27ae60; font-weight: bold; }
+        .error { color: #c0392b; font-weight: bold; }
+        .highlight { background-color: #fff9c4; font-weight: bold; padding: 2px 4px; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .divider { border-top: 1px solid #eee; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>📘 Guia de Envio de Acerto (Vendedores Desligados)</h1>
+
+    <p>Este documento orienta o processo de acerto financeiro e comunicação para vendedores desligados. Siga a ordem rigorosamente.</p>
+
+    <div class="divider"></div>
+
+    <div class="note">
+        <strong>🔍 Pré-requisito: Cadastro do E-mail Particular</strong><br>
+        Verifique se o campo "E-MAIL PARTICULAR" no cadastro do vendedor está preenchido. Como o vendedor foi desligado, o sistema enviará o acerto para o e-mail pessoal. <b>Sem este dado, o envio falhará!</b>
+    </div>
+
+    <h3>1️⃣ Passo: Preencher os "Dias Trabalhados"</h3>
+    <p>Se o vendedor recebe <span class="highlight">Remuneração Fixa</span>, informe os dias trabalhados no mês do desligamento.</p>
+    <ul>
+        <li><strong>Fazer onde:</strong> Na aba de fechamento, coluna "DIAS TRABALHADOS".</li>
+        <li><strong>Importância:</strong> Essencial para o cálculo proporcional. Sem este dado, as notas não serão geradas.</li>
+    </ul>
+
+    <h3>2️⃣ Passo: Gerar as Notas (Pedidos de Compra)</h3>
+    <p>Com os dias preenchidos, processe o pagamento oficial.</p>
+    <ul>
+        <li><strong>Ação:</strong> Clique no botão de ações (⚡) e selecione <span class="highlight">"Gerar Pedidos/Notas de Comissão"</span>.</li>
+        <li>Este passo cria o documento financeiro oficial que o vendedor assinará.</li>
+    </ul>
+
+    <h3>3️⃣ Passo: Enviar o E-mail de Acerto (Botão de Desligados)</h3>
+    <p><span class="error">CUIDADO:</span> Utilize o botão de desligados, que é SEPARADO do de ativos.</p>
+    <ol>
+        <li>Selecione o vendedor.</li>
+        <li>Vá em <b>Botão de Ações</b> (⚡).</li>
+        <li>Selecione: <b>"Enviar E-mail de Acerto (Vendedor Desligado)"</b>.</li>
+        <li>Isso gerará a tabela com Fixo + Comissões + Comissão Futura - Antecipações.</li>
+    </ol>
+
+    <div class="divider"></div>
+
+    <h3>📧 O que o Vendedor Recebe?</h3>
+    <p>O vendedor receberá uma tabela com:</p>
+    <ul>
+        <li><span class="success">✅ Fixo / Remuneração</span></li>
+        <li><span class="success">✅ Comissões do Mês</span></li>
+        <li><span class="success">✅ Comissão Futura</span></li>
+        <li><span class="success">✅ Extras e Reembolsos</span></li>
+        <li><span class="error">❌ Desconto de Adiantamentos</span></li>
+        <li><strong>💰 VALOR LÍQUIDO FINAL</strong></li>
+    </ul>
+
+    <h3>⚙️ OBJETOS TÉCNICOS (Para Suporte e TI)</h3>
+    <ul>
+        <li><b>Gerador do E-mail SQL:</b> STP_EMAILVENDDESLIGADO_SATIS</li>
+        <li><b>Cálculo do Resumo:</b> DB_ATUALIZA_RESUMO_FECH</li>
+        <li><b>Geração de Notas:</b> STP_FECHA_COMISSAO_SATIS</li>
+        <li><b>Tabelas Base:</b> AD_DBFECHCOMFIN e AD_DBFECHCOMNOTASA</li>
+    </ul>
+
+    <p style="font-size: 0.9em; font-style: italic; color: #777; margin-top: 50px;">
+        Em caso de dúvidas sobre cálculos ou suporte técnico, entre em contato com o setor de Sistemas.
+    </p>
+
+</body>
+</html>

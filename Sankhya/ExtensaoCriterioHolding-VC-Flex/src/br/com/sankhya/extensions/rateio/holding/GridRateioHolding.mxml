@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:ui="br.com.sankhya.db.ui.*" 
+	xmlns:controls="br.com.sankhya.controls.*" 
+	xmlns:db="br.com.sankhya.db.*"
+	xmlns:datagrid="br.com.sankhya.controls.datagrid.*"
+	xmlns:dwf="br.com.sankhya.dwf.*"
+	implements="br.com.sankhya.db.IDBCriteriaProvider"
+	creationComplete="creationComplete()"
+	preinitialize="preInicializar()"
+	width="100%"
+	height="100%">
+
+	<mx:Script>
+		<![CDATA[
+			import mx.utils.ObjectUtil;
+			import mx.controls.Button;
+			import mx.core.Container;
+			import br.com.sankhya.util.http.ServiceProxy;
+			import br.com.sankhya.util.datetime.DateUtil;
+			import br.com.sankhya.db.IDBCriteria;
+			import br.com.sankhya.db.DBCriteriaParameter;
+			import br.com.sankhya.db.DBCriteria;
+			import mx.controls.dataGridClasses.DataGridColumn;
+			import br.com.sankhya.controls.DefaultSankhyaApplication;
+			import mx.formatters.DateFormatter;
+			import br.com.sankhya.util.MessageUtils;
+			import br.com.sankhya.db.StandAloneField;
+			import br.com.sankhya.db.StandAloneDataSet;
+			
+			[Bindable]
+			private var dsSimulacaoSintetico:StandAloneDataSet;
+			
+			private var _ordem:int;
+			private var _nuCnd:int;
+			private var _datIni:Date;
+			private var _datFim:Date;
+			private var _calcImpRetidos:Boolean;
+			private var _datNegociacao:Date;
+			private var _datVencimento:Date;
+			private var _codTipTitulo:int = 0;
+			private var _codTipOperacao:int = 0;
+			private var _historico:String;
+			
+			private var _ehRepasse:Boolean;
+			private var _ehAnalitico:Boolean;
+			
+			private var _topBars:Array;
+			
+			private var _elemsBeforeGrid:Array;
+			
+			[Bindable]
+			private var _mostrarAnalitico:Boolean;
+			
+			public function set ordem(ordem:int):void {
+				_ordem = ordem;
+			}
+			
+			public function set nuCnd(nuCnd:int):void {
+				_nuCnd = nuCnd;
+			}
+			
+			public function set datIni(datIni:Date):void {
+				_datIni = datIni;
+			}
+			
+			public function set datFim(datFim:Date):void {
+				_datFim = datFim;
+			}
+			
+			public function set calcImpRetidos(calcImpRetidos:Boolean):void {
+				_calcImpRetidos = calcImpRetidos;
+			}
+			
+			public function set datNegociacao(datNegociacao:Date):void {
+				_datNegociacao = datNegociacao;
+			}
+			
+			public function set datVencimento(datVencimento:Date):void {
+				_datVencimento = datVencimento;
+			}
+			
+			public function set codTipTitulo(codTipTitulo:int):void {
+				_codTipTitulo = codTipTitulo;
+			}
+			
+			public function set codTipOperacao(codTipOperacao:int):void {
+				_codTipOperacao = codTipOperacao;
+			}
+			
+			public function set historico(historico:String):void {
+				_historico = historico;
+			}
+			
+			public function set ehRepasse(ehRepasse:Boolean): void {
+				_ehRepasse = ehRepasse;
+			}
+			
+			public function set ehAnalitico(ehAnalitico:Boolean): void{
+				_ehAnalitico = ehAnalitico;
+			}
+			
+			public function set topBars(topBars:Array):void {
+				if(_topBars == null) {
+					_topBars = new Array();
+				}
+				for each (var child:DisplayObject in topBars) {
+					_topBars.push(child);
+				}
+			}
+			
+			public function get topBars():Array {
+				return _topBars;
+			}
+			
+			public function addElemBeforeGrid(elem:DisplayObject):void {
+				if(elem != null) {
+					if(_elemsBeforeGrid == null) {
+						_elemsBeforeGrid = new Array();
+					}
+					_elemsBeforeGrid.push(elem);
+				}
+			} 
+			
+			private function preInicializar():void {
+				dsSimulacaoSintetico = new StandAloneDataSet();
+				dsSimulacaoSintetico.providerName = "mge@CRUDServiceProvider";
+				dsSimulacaoSintetico.loadRecordsFromServer = false;
+				dsSimulacaoSintetico.loadMetadataFromServer = false;
+				
+				var designFields:Array = new Array();
+				
+				var codEmp:StandAloneField = new StandAloneField("CODEMP","Cód. Emp.","I");
+				designFields.push(codEmp);
+				
+				var codNat:StandAloneField = new StandAloneField("CODNAT","Cód. Nat.","I");
+				designFields.push(codNat);
+				
+				var codCResult:StandAloneField = new StandAloneField("CODCENCUS","Cód. C. Result.","I");
+				designFields.push(codCResult);
+				
+				var codProj:StandAloneField = new StandAloneField("CODPROJ","Cód. Proj.","I");
+				designFields.push(codProj);
+				
+				var codParc:StandAloneField = new StandAloneField("CODPARC","Cód. Parceiro.","I");
+				designFields.push(codParc);
+				
+				var valor:StandAloneField = new StandAloneField("VALOR","Valor","F");
+				designFields.push(valor);
+				
+				var natureza:StandAloneField = new StandAloneField("DESCRNAT","Natureza","S");
+				designFields.push(natureza);
+				
+				var centroDeResultado:StandAloneField = new StandAloneField("DESCRCENCUS","Centro de Resultado","S");
+				designFields.push(centroDeResultado);
+				
+				var projeto:StandAloneField = new StandAloneField("IDENTIFICACAO","Projeto","S");
+				designFields.push(projeto);
+				
+				var parceiro:StandAloneField = new StandAloneField("NOMEPARC","Parceiro","S");
+				designFields.push(parceiro);
+				
+				var recDesp:StandAloneField = new StandAloneField("RECDESP","Rec./Desp.","S");
+				designFields.push(recDesp);
+				
+				dsSimulacaoSintetico.designFields = designFields;
+			}
+	
+			private function creationComplete():void {
+				dsSimulacaoAnalitica.addDBCriteriaProvider(this);
+				viewStack.selectedIndex = 1;
+				
+				if(_elemsBeforeGrid != null) {
+					for each (var elem:DisplayObject in _elemsBeforeGrid) {
+						hBoxBeforeGrid.addChild(elem);
+					}
+				}
+			}
+			
+			public function isCriteriaProviderLoaded(callThisOnLoad:Function):Boolean{
+				return true;
+			}
+			
+			public function getCriteria():IDBCriteria {
+				var dbCriteria:DBCriteria = new DBCriteria();
+				var expressao:String;
+				var parametro:Array = new Array();
+				var s:String = String(_calcImpRetidos);
+				
+				dsSimulacaoAnalitica.addTXProperty("br.sankhya.mgefin.rateio.holding.valor.com.imposto", s);
+				
+				expressao = " DHBAIXA >= ? ";
+				parametro.push(new DBCriteriaParameter("D", DateUtil.dateFormat(_datIni)));
+				
+				expressao += " AND DHBAIXA <= ? ";
+				parametro.push(new DBCriteriaParameter("D", DateUtil.dateFormat(_datFim)));
+				
+				if(_ehRepasse) {
+					expressao += " AND NOT EXISTS (SELECT 1 FROM TGFFRP FRP WHERE FRP.NUFINORIG = this.NUFIN) ";
+					expressao += " AND (0 = ? OR this.ORDEM = ?) ";
+					parametro.push(new DBCriteriaParameter("N", String(_ordem))) ;
+					parametro.push(new DBCriteriaParameter("N", String(_ordem)));
+				} else {
+					expressao += " AND (0 = ? OR this.NUCND = ?) ";
+					parametro.push(new DBCriteriaParameter("N", String(_nuCnd)));
+					parametro.push(new DBCriteriaParameter("N", String(_nuCnd)));
+				}
+				
+				dbCriteria.expression = expressao;
+				dbCriteria.parameters = parametro;
+				
+				return dbCriteria;
+			}
+			
+			public function simularAnalitico():void {
+				dsSimulacaoAnalitica.refresh();
+				_mostrarAnalitico = true;
+				viewStack.selectedIndex = 0;
+			}
+			
+			public function simularSintetico():void{
+				var formatter : DateFormatter;
+				formatter = new DateFormatter();
+				formatter.formatString = "DD/MM/YYYY";
+				
+				ServiceProxy.callService(
+					"2a3rateioHolding@RateioHoldingSP.simulaRateioSintetico",
+					<parametros ordem={_ordem} nuCnd={_nuCnd} datIni={formatter.format(_datIni)} datFim={formatter.format(_datFim)} calcImpRetidos={_calcImpRetidos}/>,
+					function(ignored:*, result:XML):void{
+						var itensSimulacaoSintetica:XMLList = result.responseBody.itensSimulacaoSintetica;
+
+						dsSimulacaoSintetico.clearDataSet();
+						
+						for each(var item:XML in itensSimulacaoSintetica.item){
+							var itemSimulacaoSintetica:Object = new Object();
+
+							itemSimulacaoSintetica.CODEMP = DBDataSet.strToTypedData(item.@CODEMP, "I");
+							itemSimulacaoSintetica.CODNAT = DBDataSet.strToTypedData(item.@CODNAT, "I");
+							itemSimulacaoSintetica.CODCENCUS = DBDataSet.strToTypedData(item.@CODCENCUS, "I");
+							itemSimulacaoSintetica.CODPROJ = DBDataSet.strToTypedData(item.@CODPROJ, "I");
+							itemSimulacaoSintetica.CODPARC = DBDataSet.strToTypedData(item.@CODPARC, "I");
+							itemSimulacaoSintetica.VALOR = DBDataSet.strToTypedData(item.@VALOR, "F");
+							itemSimulacaoSintetica.DESCRNAT = DBDataSet.strToTypedData(item.@DESCRNAT, "S");
+							itemSimulacaoSintetica.DESCRCENCUS = DBDataSet.strToTypedData(item.@DESCRCENCUS, "S");
+							itemSimulacaoSintetica.IDENTIFICACAO = DBDataSet.strToTypedData(item.@IDENTIFICACAO, "S");
+							itemSimulacaoSintetica.NOMEPARC = DBDataSet.strToTypedData(item.@NOMEPARC, "S");
+							itemSimulacaoSintetica.RECDESP = DBDataSet.strToTypedData(item.@RECDESP, "S");
+
+							dsSimulacaoSintetico.addTransientRecord(itemSimulacaoSintetica);
+						}
+
+						dsSimulacaoSintetico.refresh();
+						_mostrarAnalitico = false;						
+						viewStack.selectedIndex = 1;
+					},
+					true
+				);
+			}
+			
+			public function gerarSintetico():void {
+				var formatter : DateFormatter;
+				formatter = new DateFormatter();
+				formatter.formatString = "DD/MM/YYYY";
+				
+				ServiceProxy.callService(
+					"2a3rateioHolding@RateioHoldingSP.gerarRateioSintetico",
+					<params 
+						ordem={_ordem} 
+						nuCnd={_nuCnd} 
+						datIni={formatter.format(_datIni)} 
+						datFim={formatter.format(_datFim)} 
+						calcImpRetidos={_calcImpRetidos}
+						dtNegociacao={formatter.format(_datNegociacao)}
+						dtVencimento={formatter.format(_datVencimento)} 
+						codTipTitulo={_codTipTitulo}
+						codTipOperacao={_codTipOperacao}
+						historico={_historico}
+					/>,
+					function(ignored:*, result:XML):void{
+						MessageUtils.showInfo(MessageUtils.TITLE_INFORMATION,"Rateio Gerado com Sucesso!");
+						dsSimulacaoAnalitica.refresh();
+						dsSimulacaoSintetico.refresh();
+					},
+					true
+				);
+			}
+			
+			public function refreshTopBars():void {
+				if(_topBars != null) {
+					for each (var child:DisplayObject in _topBars) {
+						if(hBoxButtons != null) {
+							hBoxButtons.addChild(child);
+						}
+					}
+				}
+			}
+			
+			private function clone(source:Object): *{
+			    var buffer:ByteArray = new ByteArray();
+			    buffer.writeObject(source);
+			    buffer.position = 0;
+			    return buffer.readObject();
+			}
+		]]>
+	</mx:Script>
+
+	<db:DBDataSet id="dsSimulacaoAnalitica" entity="ViewRateioHoldingSimAnalitica" crudListener="br.com.sankhya.extensions.rateio.holding.listeners.RateioHoldingCrudListener" providerName="mge@CRUDServiceProvider" orderBy="this.NUFIN">
+		<db:designFields>
+			<db:Field pattern="*"/>
+		</db:designFields>
+	</db:DBDataSet>
+	
+	<mx:VBox width="100%" height="100%">
+		<controls:GradienteBox  width="100%" direction="vertical" horizontalGap="4" verticalAlign="middle">
+			<mx:VBox width="100%">
+				<mx:HBox width="100%">
+					<controls:GridConfig id="gridAnaliticoConfig" configName="{DefaultSankhyaApplication.getInstance().getApplicationResourceID() + '.gradeAnaliticaRateioHolding'}" targetGrid="{gridAnaliticoRateioHolding}" visible="{_mostrarAnalitico}" includeInLayout="{_mostrarAnalitico}"/>
+					<controls:GridConfig id="gridSinteticoConfig" configName="{DefaultSankhyaApplication.getInstance().getApplicationResourceID() + '.gradeSinteticoRateioHolding'}" targetGrid="{gridSinteticoRateioHolding}" visible="{!_mostrarAnalitico}" includeInLayout="{!_mostrarAnalitico}"/>
+					<mx:VRule height="20"/>
+					<mx:HBox id="hBoxButtons" width="100%"/>
+					<mx:HBox horizontalAlign="right" width="100%">
+						<controls:RowsCounter id="rowsCounterGridAnalitico" visible="{_mostrarAnalitico}" includeInLayout="{_mostrarAnalitico}" sourceList="{gridAnaliticoRateioHolding}"/>
+						<controls:RowsCounter id="rowsCounterGridSintetico" visible="{!_mostrarAnalitico}" includeInLayout="{!_mostrarAnalitico}" sourceList="{gridSinteticoRateioHolding}"/>  
+					</mx:HBox>
+				</mx:HBox>
+				<mx:HBox width="100%" id="hBoxBeforeGrid" horizontalAlign="left"/>
+			</mx:VBox>
+		</controls:GradienteBox>
+		<mx:ViewStack id="viewStack" width="100%" height="100%" creationPolicy="all">
+			<mx:VBox>
+				<ui:DBDataGrid width="100%" height="100%" id="gridAnaliticoRateioHolding" dataSet="{dsSimulacaoAnalitica}"/>
+			</mx:VBox>
+			<mx:VBox>
+				<ui:DBDataGrid width="100%" height="100%" id="gridSinteticoRateioHolding" dataSet="{dsSimulacaoSintetico}"/>
+			</mx:VBox>
+		</mx:ViewStack>
+	</mx:VBox>
+</mx:VBox>

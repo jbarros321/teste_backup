@@ -1,0 +1,37 @@
+<ion-view >
+    <ion-content class="has-footer removeHeader">
+        <div class="row row-center" ng-style="{'height': windowHeight}">
+            <div class="col welcome-home">
+                <div style="margin-top: 10px; ">
+                    <h3 class="colorText">{{cityName}}</h3>
+                </div>
+                <div class="padding" style="text-align: center; padding-bottom: 0px;">
+	                <div class="list list-inset" style="text-align: left; background: transparent;">
+	                    <label class="item item-input buttonGradient borderStyle" style="border-radius: 8px;">
+	                        <input type="text" placeholder="Email" ng-model="account.userName" style="color: black;font-size: 14px;font-weight: bold;" ng-disabled="isDefaultProviderConnection">
+	                    </label>
+	                    
+	                    <label class="item item-input buttonGradient borderStyle" style="margin-top: 5px;border-radius: 8px;">
+	                        <input type="password" placeholder="Senha" ng-model="account.password" style="color: black;font-size: 14px;font-weight: bold;" ng-disabled="isDefaultProviderConnection" ng-enter="login()">
+	                    </label>
+	                </div>
+
+	                <div class="padding" style="text-align: right; padding-bottom: 0px;">
+	                	<div class="row">
+	                		<div class="col">
+			                	<a ng-click="esqueciMinhaSenha()">
+				                    Esqueceu sua senha?
+				                </a>
+			                </div>
+			                <div class="col">
+			                    <button class="btnAcessar" style="width: 125px;" ng-click="login()" >
+			                        ACESSAR
+			                    </button>
+		                    </div>
+	                    </div>
+	                </div>
+                </div>
+            </div>
+        </div>
+    </ion-content>
+</ion-view>

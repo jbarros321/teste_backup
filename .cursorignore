@@ -1,0 +1,55 @@
+# Arquivos e pastas ignorados pelo Cursor IA no nível raiz
+
+# Build e compilação
+**/target/
+**/*.class
+**/*.jar
+**/*.war
+**/*.ear
+
+# IDE
+**/.idea/
+**/.vscode/
+**/*.iml
+**/*.ipr
+**/*.iws
+
+# Sistema
+**/.DS_Store
+**/Thumbs.db
+**/*.swp
+**/*.swo
+**/*~
+
+# Logs
+**/*.log
+**/logs/
+
+# Temporários
+**/tmp/
+**/temp/
+**/*.tmp
+
+# Bibliotecas externas (JARs do Sankhya - muito grandes)
+**/lib/*.jar
+
+# Arquivos CSV de tabelas (muito grandes para indexação)
+**/docs/tabelas/*.csv
+Template/docs/tabelas/*.csv
+
+# Arquivos binários grandes
+**/*.rar
+**/*.zip
+**/*.pdf
+**/*.docx
+**/*.xlsx
+**/*.mp4
+
+# Cursor
+.cursor/
+
+# SatyaPass exemplos (muitos arquivos)
+SatyaPass/exemplos/**/*.java
+
+# ZDevDoc (documentação extensa - consultar quando necessário)
+ZDevDoc/**/*.md

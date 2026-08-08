@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="pedido_de_compra" language="groovy" pageWidth="595" pageHeight="842" columnWidth="545" leftMargin="30" rightMargin="20" topMargin="30" bottomMargin="20" whenResourceMissingType="Empty">
+	<property name="ireport.zoom" value="1.6105100000000017"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["./"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="PK_NUNOTA" class="java.math.BigDecimal" isForPrompting="false">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="PDIR_MODELO" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["/"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT DISTINCT CAB.CODVEND AS CODVEND, PAR.CODPARC AS CODPARC,
+                CAB.CODEMP AS CODEMP, EMP.RAZAOSOCIAL AS RAZAOSOCIAL,
+                DECODE (CAB.DTPREVENT,
+                        NULL, ' ',
+                        TRIM (TO_CHAR (CAB.DTPREVENT))
+                       ) AS ENTREGA,
+                   SUBSTR (EMP.CGC, 1, 2)
+                || '.'
+                || SUBSTR (EMP.CGC, 3, 3)
+                || '.'
+                || SUBSTR (EMP.CGC, 6, 3)
+                || '/'
+                || SUBSTR (EMP.CGC, 9, 4)
+                || '-'
+                || SUBSTR (EMP.CGC, 13) AS CNPJEMPRESA,
+                EMP.INSCESTAD AS IE,
+                INITCAP (TRIM (EMP.NOMEFANTASIA)) AS NOMEFANTASIA,
+                   INITCAP (TRIM (ENDE.TIPO))
+                || '. '
+                || INITCAP (TRIM (ENDE.NOMEEND))
+                || ', '
+                || EMP.NUMEND
+                || ', Bairro: '
+                || INITCAP (TRIM (BAIE.NOMEBAI))
+                || ', Cidade: '
+                || INITCAP (TRIM (CIDE.NOMECID))
+                || '-'
+                || TRIM (UFSE.UF)
+                || ', Cep: '
+                || SUBSTR (TRIM (EMP.CEP), 1, 2)
+                || '.'
+                || SUBSTR (TRIM (EMP.CEP), 3, 3)
+                || '-'
+                || SUBSTR (TRIM (EMP.CEP), 6, 3) AS ENDERECOEMPRESA,
+                TRIM (TO_CHAR (CAB.NUMNOTA)) AS NUMNOTA,
+                   TRIM (TO_CHAR (SYSDATE, 'DD/MM/YYYY'))
+                || ' ás '
+                || TRIM (TO_CHAR (SYSDATE, 'HH:MM:SS')) AS EMISSAO,
+                CASE
+                   WHEN TRIM (TO_CHAR (CAB.DTVAL, 'DD/MM/YYYY')) IS NULL
+                      THEN TRIM (TO_CHAR (CAB.DTNEG, 'DD/MM/YYYY'))
+                   WHEN TRIM (TO_CHAR (CAB.DTVAL, 'DD/MM/YYYY')) <
+                            TRIM (TO_CHAR (CAB.DTNEG, 'DD/MM/YYYY'))
+                      THEN TRIM (TO_CHAR (CAB.DTNEG, 'DD/MM/YYYY'))
+                   ELSE TRIM (TO_CHAR (CAB.DTVAL, 'DD/MM/YYYY'))
+                END AS DTVAL,
+                TRIM (VEN.EMAIL) AS EMAIL,
+                TRIM (TO_CHAR (   '('
+                               || SUBSTR (EMP.TELEFONE, 1, 2)
+                               || ')'
+                               || SUBSTR (EMP.TELEFONE, 3, 6)
+                               || '-'
+                               || SUBSTR (EMP.TELEFONE, 9, 4)
+                               || ' / '
+                               || '('
+                               || SUBSTR (EMP.FAX, 1, 2)
+                               || ')'
+                               || SUBSTR (EMP.FAX, 3, 6)
+                               || '-'
+                               || SUBSTR (EMP.FAX, 9, 4)
+                              )
+                     ) AS TELFAX,
+                DECODE (TPV.CODTIPVENDA,
+                        0, ' ',
+                        INITCAP (TRIM (TPV.DESCRTIPVENDA))
+                       ) AS DESCRTIPVENDA,
+                DECODE (PAR.CODPARC,
+                        0, ' ',
+                           TRIM (TO_CHAR (PAR.CODPARC))
+                        || ' - '
+                        || INITCAP (TRIM (PAR.NOMEPARC))
+                       ) AS PARCEIRO,
+                DECODE (PAR.CODPARC,
+                        0, ' ',
+                        INITCAP (TRIM (PAR.NOMEPARC))
+                       ) AS NOMEPARC,
+                DECODE (LENGTH (TRIM (PAR.CGC_CPF)),
+                        11, ' CPF: ',
+                        NULL, ' ',
+                        ' CNPJ: '
+                       ) AS TIPOPESSOA,
+                DECODE (LENGTH (TRIM (CGC_CPF)),
+                        14, SUBSTR (TRIM (CGC_CPF), 1, 2)
+                         || '.'
+                         || SUBSTR (TRIM (CGC_CPF), 3, 3)
+                         || '.'
+                         || SUBSTR (TRIM (CGC_CPF), 6, 3)
+                         || '/'
+                         || SUBSTR (TRIM (CGC_CPF), 9, 4)
+                         || '-'
+                         || SUBSTR (TRIM (CGC_CPF), 13, 2),
+                        11, SUBSTR (TRIM (CGC_CPF), 1, 3)
+                         || '.'
+                         || SUBSTR (TRIM (CGC_CPF), 4, 3)
+                         || '.'
+                         || SUBSTR (TRIM (CGC_CPF), 7, 3)
+                         || '-'
+                         || SUBSTR (TRIM (CGC_CPF), 10, 2),
+                        TRIM (CGC_CPF)
+                       ) AS CGC_CPF,
+                DECODE (TRIM (PAR.IDENTINSCESTAD),
+                        NULL, ' ',
+                        TRIM (PAR.IDENTINSCESTAD)
+                       ) AS IDENTINSCESTAD,
+                DECODE (END.CODEND,
+                        0, ' ',
+                           INITCAP (TRIM (END.TIPO))
+                        || ' '
+                        || INITCAP (TRIM (END.NOMEEND))
+                        || ', '
+                        || TRIM (TO_CHAR (PAR.NUMEND))
+                       ) AS ENDERECO,
+                DECODE (BAI.CODBAI,
+                        0, ' ',
+                        INITCAP (TRIM (BAI.NOMEBAI))
+                       ) AS BAIRRO,
+                DECODE (CID.CODCID,
+                        0, ' ',
+                        INITCAP (TRIM (CID.NOMECID)) || ' - ' || TRIM (UFS.UF)
+                       ) AS CIDADE,
+                CASE
+                   WHEN ENDR.NOMEEND = '<SEM ENDERECO>'
+                   AND END.NOMEEND <> '<SEM ENDERECO>'
+                      THEN    INITCAP (TRIM (END.TIPO))
+                           || ' '
+                           || INITCAP (TRIM (END.NOMEEND))
+                           || ', '
+                           || TRIM (PAR.NUMEND)
+                   WHEN ENDR.NOMEEND <> '<SEM ENDERECO>'
+                   AND END.NOMEEND = '<SEM ENDERECO>'
+                      THEN    INITCAP (TRIM (ENDR.TIPO))
+                           || ' '
+                           || INITCAP (TRIM (ENDR.NOMEEND))
+                           || ', '
+                           || TRIM (CPL.NUMRECEB)
+                   WHEN ENDR.CODEND <> END.CODEND
+                   AND CPL.NUMRECEB <> PAR.NUMEND
+                      THEN    INITCAP (TRIM (ENDR.TIPO))
+                           || ' '
+                           || INITCAP (TRIM (ENDR.NOMEEND))
+                           || ', '
+                           || TRIM (CPL.NUMRECEB)
+                   ELSE ''
+                END AS ENDERECORECEB,
+                CASE
+                   WHEN TRIM (BAIR.CODBAI) = 0
+                      THEN ''
+                   WHEN INITCAP (TRIM (BAIR.NOMEBAI)) <>
+                             INITCAP (TRIM (BAI.NOMEBAI))
+                      THEN INITCAP (TRIM (BAIR.NOMEBAI))
+                   ELSE ''
+                END AS BAIRRORECEBIMETO,
+                CASE
+                   WHEN CIDR.CODCID = 0 AND CID.CODCID > 0
+                      THEN    INITCAP (TRIM (CID.NOMECID))
+                           || ' - '
+                           || TRIM (UFS.UF)
+                   WHEN CIDR.CODCID > 0 AND CID.CODCID = 0
+                      THEN    INITCAP (TRIM (CIDR.NOMECID))
+                           || ' - '
+                           || TRIM (UFSR.UF)
+                   WHEN CIDR.CODCID = 0 AND CID.CODCID > 0
+                      THEN    INITCAP (TRIM (CID.NOMECID))
+                           || ' - '
+                           || TRIM (UFS.UF)
+                   ELSE ''
+                END AS CIDRECEBIMENTO,
+                DECODE (VEN.CODVEND,
+                        0, ' ',
+                           TRIM (VEN.CODVEND)
+                        || ' - '
+                        || INITCAP (TRIM (VEN.APELIDO))
+                       ) AS VENDEDOR,
+                TRIM (TO_CHAR (CAB.DTNEG, 'DD/MM/YYYY')) AS NEGOCIACAO,
+                INITCAP (TRIM (USU.NOMEUSU)) AS USERNAME,
+                NVL(PAR.EMAILNFE, PAR.EMAIL) AS EMAILFOR,
+                TRIM(PAR.TELEFONE) AS TELFORN
+           FROM TGFCAB CAB
+      LEFT JOIN TSIEMP EMP  ON CAB.CODEMP = EMP.CODEMP
+      LEFT JOIN TSIEND ENDE ON ENDE.CODEND = EMP.CODEND
+      LEFT JOIN TSIBAI BAIE ON BAIE.CODBAI = EMP.CODBAI
+      LEFT JOIN TSICID CIDE ON CIDE.CODCID = EMP.CODCID
+      LEFT JOIN TSIUFS UFSE ON UFSE.CODUF = CIDE.UF
+      LEFT JOIN TGFVEN VEN  ON VEN.CODVEND = CAB.CODVEND
+      LEFT JOIN TGFTPV TPV  ON TPV.CODTIPVENDA = CAB.CODTIPVENDA
+      LEFT JOIN TGFPAR PAR  ON PAR.CODPARC = CAB.CODPARC
+      LEFT JOIN TSIEND END  ON END.CODEND = PAR.CODEND
+      LEFT JOIN TSIBAI BAI  ON BAI.CODBAI = PAR.CODBAI
+      LEFT JOIN TSICID CID  ON CID.CODCID = PAR.CODCID
+      LEFT JOIN TSIUFS UFS  ON UFS.CODUF = CID.UF
+      LEFT JOIN TGFCPL CPL  ON CPL.CODPARC = PAR.CODPARC
+      LEFT JOIN TSICID CIDR ON CIDR.CODCID = CPL.CODCIDRECEB
+      LEFT JOIN TSIUFS UFSR ON UFSR.CODUF = CIDR.UF
+      LEFT JOIN TSIBAI BAIR ON BAIR.CODBAI = CPL.CODBAIRECEB
+      LEFT JOIN TSIEND ENDR ON ENDR.CODEND = CPL.CODENDRECEB
+      LEFT JOIN TSIUSU USU  ON USU.CODUSU = Stp_Get_Codusulogado
+           WHERE CAB.NUNOTA = $P{PK_NUNOTA}]]>
+	</queryString>
+	<field name="CODVEND" class="java.math.BigDecimal"/>
+	<field name="CODPARC" class="java.math.BigDecimal"/>
+	<field name="CODEMP" class="java.math.BigDecimal"/>
+	<field name="RAZAOSOCIAL" class="java.lang.String"/>
+	<field name="ENTREGA" class="java.lang.String"/>
+	<field name="CNPJEMPRESA" class="java.lang.String"/>
+	<field name="IE" class="java.lang.String"/>
+	<field name="NOMEFANTASIA" class="java.lang.String"/>
+	<field name="ENDERECOEMPRESA" class="java.lang.String"/>
+	<field name="NUMNOTA" class="java.lang.String"/>
+	<field name="EMISSAO" class="java.lang.String"/>
+	<field name="DTVAL" class="java.lang.String"/>
+	<field name="EMAIL" class="java.lang.String"/>
+	<field name="TELFAX" class="java.lang.String"/>
+	<field name="DESCRTIPVENDA" class="java.lang.String"/>
+	<field name="PARCEIRO" class="java.lang.String"/>
+	<field name="NOMEPARC" class="java.lang.String"/>
+	<field name="TIPOPESSOA" class="java.lang.String"/>
+	<field name="CGC_CPF" class="java.lang.String"/>
+	<field name="IDENTINSCESTAD" class="java.lang.String"/>
+	<field name="ENDERECO" class="java.lang.String"/>
+	<field name="BAIRRO" class="java.lang.String"/>
+	<field name="CIDADE" class="java.lang.String"/>
+	<field name="ENDERECORECEB" class="java.lang.String"/>
+	<field name="BAIRRORECEBIMETO" class="java.lang.String"/>
+	<field name="CIDRECEBIMENTO" class="java.lang.String"/>
+	<field name="VENDEDOR" class="java.lang.String"/>
+	<field name="NEGOCIACAO" class="java.lang.String"/>
+	<field name="USERNAME" class="java.lang.String"/>
+	<field name="EMAILFOR" class="java.lang.String"/>
+	<field name="TELFORN" class="java.lang.String"/>
+	<pageHeader>
+		<band height="128">
+			<textField>
+				<reportElement x="63" y="15" width="337" height="24" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="SansSerif" size="20" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{RAZAOSOCIAL}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="400" y="15" width="145" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" Pedido: " + $F{NUMNOTA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="400" y="27" width="145" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" Emissão: " + $F{EMISSAO}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="63" width="188" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+					<topPen lineWidth="0.25" lineStyle="Solid"/>
+					<leftPen lineWidth="0.25" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid"/>
+					<rightPen lineWidth="0.25" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" e-mail: " + $F{EMAIL}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="188" y="63" width="212" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+					<topPen lineWidth="0.25" lineStyle="Solid"/>
+					<leftPen lineWidth="0.25" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid"/>
+					<rightPen lineWidth="0.25" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" Tel/Fax: " + $F{TELFAX}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="400" y="51" width="145" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+					<topPen lineWidth="0.25" lineStyle="Solid"/>
+					<leftPen lineWidth="0.25" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid"/>
+					<rightPen lineWidth="0.25" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" Condição de pagamento"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="92" width="400" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+					<topPen lineWidth="0.25" lineStyle="Solid"/>
+					<leftPen lineWidth="0.25" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid"/>
+					<rightPen lineWidth="0.25" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" Fornecedor: " + $F{PARCEIRO}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="104" width="400" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+					<topPen lineWidth="0.25" lineStyle="Solid"/>
+					<leftPen lineWidth="0.25" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid"/>
+					<rightPen lineWidth="0.25" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" Endereço: " + $F{ENDERECO} + " Bairro: " + $F{BAIRRO} + " Cidade: " + $F{CIDADE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="400" y="92" width="145" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+					<topPen lineWidth="0.25" lineStyle="Solid"/>
+					<leftPen lineWidth="0.25" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid"/>
+					<rightPen lineWidth="0.25" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{TIPOPESSOA} + $F{CGC_CPF}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="400" y="104" width="145" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+					<topPen lineWidth="0.25" lineStyle="Solid"/>
+					<leftPen lineWidth="0.25" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid"/>
+					<rightPen lineWidth="0.25" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" Insc. Estad.: " + $F{IDENTINSCESTAD}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="400" y="63" width="145" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+					<topPen lineWidth="0.25" lineStyle="Solid"/>
+					<leftPen lineWidth="0.25" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid"/>
+					<rightPen lineWidth="0.25" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" Comprador: " + $F{VENDEDOR}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="39" width="188" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+					<topPen lineWidth="0.25" lineStyle="Solid"/>
+					<leftPen lineWidth="0.25" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid"/>
+					<rightPen lineWidth="0.25" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" CNPJ: " + $F{CNPJEMPRESA}]]></textFieldExpression>
+			</textField>
+			<image>
+				<reportElement x="0" y="15" width="63" height="24">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<imageExpression class="java.lang.String"><![CDATA[new java.io.File($P{PDIR_MODELO},"Eletromac.jpg").getCanonicalPath()]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="0" y="75" width="545" height="17">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="14" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[Orçamento de Compra]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="0" y="51" width="400" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+					<topPen lineWidth="0.25" lineStyle="Solid"/>
+					<leftPen lineWidth="0.25" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid"/>
+					<rightPen lineWidth="0.25" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" Endereço: " + $F{ENDERECOEMPRESA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="188" y="39" width="212" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+					<topPen lineWidth="0.25" lineStyle="Solid"/>
+					<leftPen lineWidth="0.25" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid"/>
+					<rightPen lineWidth="0.25" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" I.E: " + $F{IE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="400" y="39" width="145" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+					<topPen lineWidth="0.25" lineStyle="Solid"/>
+					<leftPen lineWidth="0.25" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid"/>
+					<rightPen lineWidth="0.25" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" Entrega: " + $F{ENTREGA}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement mode="Opaque" x="527" y="1" width="18" height="12" isRemoveLineWhenBlank="true" backcolor="#FFFFFF"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Opaque" x="429" y="1" width="98" height="12" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" Página "+$V{PAGE_NUMBER}+" de"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="116" width="400" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+					<topPen lineWidth="0.25" lineStyle="Solid"/>
+					<leftPen lineWidth="0.25" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid"/>
+					<rightPen lineWidth="0.25" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" E-mail do Fornecedor: " + $F{EMAILFOR}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="400" y="116" width="145" height="12" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} == 1]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25" lineStyle="Solid"/>
+					<topPen lineWidth="0.25" lineStyle="Solid"/>
+					<leftPen lineWidth="0.25" lineStyle="Solid"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid"/>
+					<rightPen lineWidth="0.25" lineStyle="Solid"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" Telefone: " + $F{TELFORN}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="12">
+			<subreport isUsingCache="true">
+				<reportElement key="itens_pedido_de_compra" isPrintRepeatedValues="false" x="0" y="0" width="545" height="12"/>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "itens_pedido_de_compra.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="12">
+			<staticText>
+				<reportElement x="0" y="0" width="545" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[Não válido como recibo - usado somente como orçamento de compra]]></text>
+			</staticText>
+		</band>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="24">
+			<textField>
+				<reportElement x="0" y="12" width="545" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Pedido de compra impresso por: " + $F{USERNAME} + " dia " + $F{EMISSAO}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="0" width="545" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[Não válido como recibo - usado somente como orçamento de compra]]></text>
+			</staticText>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="15">
+			<subreport>
+				<reportElement key="subtotais_pedido_de_compra" x="0" y="3" width="545" height="12"/>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "subtotais_pedido_de_compra.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</summary>
+</jasperReport>

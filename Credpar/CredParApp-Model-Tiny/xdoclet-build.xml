@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="XDoclet Generator" default="_xdoclet_generation_">
+	<property file="xdoclet-build.properties" />
+	<property name="xdoclet.basedir" value="${eclipse.home}/plugins/org.jboss.ide.eclipse.xdoclet.core_2.0.1.GA" />
+	<property name="jboss.net.version" value="4.0" />
+	<path id="project.classpath">
+		<pathelement location="bin" />
+		<pathelement location="${eclipse.home}/plugins/org.jboss.ide.eclipse.jdt.j2ee.core_1.6.0.GA/lib/j2ee-1.4/ejb-api.jar" />
+		<pathelement location="${eclipse.home}/plugins/org.jboss.ide.eclipse.jdt.j2ee.core_1.6.0.GA/lib/j2ee-1.4/jacc-api.jar" />
+		<pathelement location="${eclipse.home}/plugins/org.jboss.ide.eclipse.jdt.j2ee.core_1.6.0.GA/lib/j2ee-1.4/jca-api.jar" />
+		<pathelement location="${eclipse.home}/plugins/org.jboss.ide.eclipse.jdt.j2ee.core_1.6.0.GA/lib/j2ee-1.4/jms-api.jar" />
+		<pathelement location="${eclipse.home}/plugins/org.jboss.ide.eclipse.jdt.j2ee.core_1.6.0.GA/lib/j2ee-1.4/jsp-api.jar" />
+		<pathelement location="${eclipse.home}/plugins/org.jboss.ide.eclipse.jdt.j2ee.core_1.6.0.GA/lib/j2ee-1.4/jta-api.jar" />
+		<pathelement location="${eclipse.home}/plugins/org.jboss.ide.eclipse.jdt.j2ee.core_1.6.0.GA/lib/j2ee-1.4/servlet-api.jar" />
+		<pathelement location="${eclipse.home}/plugins/org.jboss.ide.eclipse.jdt.j2ee.core_1.6.0.GA/lib/j2ee-1.4/sql-api.jar" />
+		<pathelement location="../api_outros/Jboss_326/activation.jar" />
+		<pathelement location="../api_outros/Jboss_326/jboss.jar" />
+		<pathelement location="../api_outros/Jboss_326/jbossall-client.jar" />
+		<pathelement location="../api_outros/Jboss_326/jboss-j2ee.jar" />
+		<pathelement location="../api_outros/Jboss_326/jboss-system.jar" />
+		<pathelement location="../api_outros/antlr.jar" />
+		<pathelement location="../api_outros/barbecue-1.1.jar" />
+		<pathelement location="../api_outros/bsh-1.3.0.jar" />
+		<pathelement location="../api_outros/bsh-core-2.0b4.jar" />
+		<pathelement location="../api_outros/commons-beanutils.jar" />
+		<pathelement location="../api_outros/commons-codec-1.3.jar" />
+		<pathelement location="../api_outros/commons-collections.jar" />
+		<pathelement location="../api_outros/commons-digester-1.7.jar" />
+		<pathelement location="../api_outros/commons-httpclient-3.0.1.jar" />
+		<pathelement location="../api_outros/commons-jexl-1.0.jar" />
+		<pathelement location="../api_outros/commons-logging.jar" />
+		<pathelement location="../api_outros/commons-validator.jar" />
+		<pathelement location="../api_outros/dwr.jar" />
+		<pathelement location="../api_outros/itext-1.3.1.jar" />
+		<pathelement location="../api_outros/jakarta-oro.jar" />
+		<pathelement location="../api_outros/jasperreports-1.1.0.jar" />
+		<pathelement location="../api_outros/jaxen-core.jar" />
+		<pathelement location="../api_outros/jaxen-jdom.jar" />
+		<pathelement location="../api_outros/JBarcodeBean-1.1.5.jar" />
+		<pathelement location="../api_outros/jcommon-1.0.0.jar" />
+		<pathelement location="../api_outros/jdom.jar" />
+		<pathelement location="../api_outros/jfreechart-1.0.3.jar" />
+		<pathelement location="../api_outros/jml-1.0b3-full.jar" />
+		<pathelement location="../api_outros/jsqlparser.jar" />
+		<pathelement location="../api_outros/jstl.jar" />
+		<pathelement location="../api_outros/jtds-1.2.jar" />
+		<pathelement location="../api_outros/jts.jar" />
+		<pathelement location="../api_outros/jxl.jar" />
+		<pathelement location="../api_outros/jxls-core-0.9.6.jar" />
+		<pathelement location="../api_outros/log4j-1.2.14.jar" />
+		<pathelement location="../api_outros/mail.jar" />
+		<pathelement location="../api_outros/ojdbc14.jar" />
+		<pathelement location="../api_outros/poi-3.0.1-FINAL-20070705.jar" />
+		<pathelement location="../api_outros/RXTXcomm.jar" />
+		<pathelement location="../api_outros/saxpath.jar" />
+		<pathelement location="../api_outros/servlet.jar" />
+		<pathelement location="../api_outros/servlet-api.jar" />
+		<pathelement location="../api_outros/smslib-2.1.2.jar" />
+		<pathelement location="../api_outros/spring.jar" />
+		<pathelement location="../api_outros/sqljdbc.jar" />
+		<pathelement location="../api_outros/standard.jar" />
+		<pathelement location="../api_outros/struts.jar" />
+		<pathelement location="../api_outros/struts-el.jar" />
+		<pathelement location="../api_outros/xstream-1.3.jar" />
+		<pathelement location="../api_sankhya_tiny/dwf.jar" />
+		<pathelement location="../api_sankhya_tiny/filterengine.jar" />
+		<pathelement location="../api_sankhya_tiny/jape.jar" />
+		<pathelement location="../api_sankhya_tiny/jaxen-core.jar" />
+		<pathelement location="../api_sankhya_tiny/jaxen-jdom.jar" />
+		<pathelement location="../api_sankhya_tiny/jboleto.jar" />
+		<pathelement location="../api_sankhya_tiny/jbossaddons.jar" />
+		<pathelement location="../api_sankhya_tiny/jdom-jaxen-jboss.jar" />
+		<pathelement location="../api_sankhya_tiny/mgecom-model-client.jar" />
+		<pathelement location="../api_sankhya_tiny/mgefin-model-client.jar" />
+		<pathelement location="../api_sankhya_tiny/mge-modelcore-client.jar" />
+		<pathelement location="../api_sankhya_tiny/mge-modulemgr.jar" />
+		<pathelement location="../api_sankhya_tiny/mge-os-client.jar" />
+		<pathelement location="../api_sankhya_tiny/mge-param.jar" />
+		<pathelement location="../api_sankhya_tiny/mgeserv-model-client.jar" />
+		<pathelement location="../api_sankhya_tiny/mge-table.jar" />
+		<pathelement location="../api_sankhya_tiny/reflectdao.jar" />
+		<pathelement location="../api_sankhya_tiny/sancrypt.jar" />
+		<pathelement location="../api_sankhya_tiny/san-jasper-client.jar" />
+		<pathelement location="../api_sankhya_tiny/sank-controller-util.jar" />
+		<pathelement location="../api_sankhya_tiny/sankhya-commons.jar" />
+		<pathelement location="../api_sankhya_tiny/sannfe.jar" />
+		<pathelement location="../api_sankhya_tiny/sanSMS-client.jar" />
+		<pathelement location="../api_sankhya_tiny/sanutil.jar" />
+		<pathelement location="../api_sankhya_tiny/sanws.jar" />
+		<pathelement location="../api_outros/commons-io-2.1.jar" />
+		<pathelement location="../api_outros/commons-fileupload-1.2.2.jar" />
+	</path>
+	<path id="xdoclet.classpath">
+		<path refid="project.classpath" />
+		<fileset dir="${xdoclet.basedir}">
+			<include name="*.jar" />
+			<exclude name="xdoclet-module-jboss-net-*.jar" />
+		</fileset>
+		<fileset dir="${xdoclet.basedir}">
+			<include name="xdoclet-module-jboss-net-${jboss.net.version}*.jar" />
+		</fileset>
+	</path>
+	<target name="_xdoclet_generation_" depends="N65540" />
+	<target name="N65540" description="EJB">
+		<taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask" classpathref="xdoclet.classpath" />
+		<ejbdoclet ejbSpec="2.0" excludedTags="@version,@author,@todo" destDir="src" force="" verbose="true" addedTags="@xdoclet-generated at ${TODAY},@copyright The XDoclet Team,@author XDoclet,@version ${version}">
+			<fileset dir="src" includes="com/credparapp/model/services/*Bean.java">
+			</fileset>
+			<remoteinterface destDir="ejbsrc">
+			</remoteinterface>
+			<localinterface destDir="ejbsrc">
+			</localinterface>
+			<homeinterface destDir="ejbsrc">
+			</homeinterface>
+			<localhomeinterface destDir="ejbsrc">
+			</localhomeinterface>
+			<entitybmp  destDir="ejbsrc">
+			</entitybmp>
+			<session destDir="ejbsrc">
+			</session>
+			<deploymentdescriptor xmlencoding="ISO-8859-1" validateXML="false" schema="" destDir="build/META-INF" destinationFile="tinyejb-ejb-jar.xml">
+			</deploymentdescriptor>
+			<jboss Version="3.0" destDir="build/META-INF">
+			</jboss>
+		</ejbdoclet>
+
+		<move file="${basedir}/build/META-INF/jboss.xml" tofile="${basedir}/build/META-INF/tinyejb-jboss.xml" verbose="true" overwrite="true">
+		</move>
+
+		<replaceregexp file="${basedir}/build/META-INF/tinyejb-jboss.xml" match="&lt;\!DOCTYPE.*&gt;" replace="" byline="true" />
+
+		<copy file="../api_sankhya/templates/empty-ejb-jar.xml" tofile="${basedir}/build/META-INF/ejb-jar.xml" overwrite="true" />
+		<copy file="../api_sankhya/templates/empty-jboss.xml" tofile="${basedir}/build/META-INF/jboss.xml" overwrite="true" />
+
+		<replaceregexp file="${basedir}/build/META-INF/tinyejb-ejb-jar.xml" match="&lt;\!DOCTYPE.*&gt;" replace="" byline="true" />
+	</target>
+</project>

@@ -1,0 +1,2576 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playground e Agentes — Guia do Gestor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    :root {
+      --color-primary: #2563eb;
+      --color-primary-bg: #eff6ff;
+      --color-bg: #f8fafc;
+      --color-surface: #ffffff;
+      --color-surface-2: #f1f5f9;
+      --color-text: #0f172a;
+      --color-text-secondary: #475569;
+      --color-border: #e2e8f0;
+      --color-nav-hover: #f1f5f9;
+      --color-glow: rgba(37, 99, 235, .12);
+      --glass-bg: rgba(255, 255, 255, .7);
+      --glass-border: rgba(255, 255, 255, .3);
+    }
+
+    html.dark {
+      --color-primary: #60a5fa;
+      --color-primary-bg: #1e293b;
+      --color-bg: #070b14;
+      --color-surface: rgba(15, 23, 42, .65);
+      --color-surface-2: rgba(30, 41, 59, .5);
+      --color-text: #f1f5f9;
+      --color-text-secondary: #94a3b8;
+      --color-border: rgba(56, 89, 160, .2);
+      --color-nav-hover: rgba(30, 41, 59, .6);
+      --color-glow: rgba(96, 165, 250, .2);
+      --glass-bg: rgba(15, 23, 42, .55);
+      --glass-border: rgba(56, 89, 160, .18);
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.6;
+      transition: background .4s, color .4s
+    }
+
+    html.dark body {
+      background: #070b14;
+      background-image: radial-gradient(ellipse at 20% 50%, rgba(30, 58, 138, .15) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(37, 99, 235, .08) 0%, transparent 50%), radial-gradient(ellipse at 50% 80%, rgba(29, 78, 216, .06) 0%, transparent 50%)
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    @keyframes slideRight {
+      from {
+        opacity: 0;
+        transform: translateX(-20px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0)
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .45
+      }
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { box-shadow: 0 0 20px var(--color-glow) }
+      50% { box-shadow: 0 0 40px var(--color-glow), 0 0 60px var(--color-glow) }
+    }
+
+    @keyframes headerGlow {
+      0%, 100% { opacity: .15 }
+      50% { opacity: .45 }
+    }
+
+    @keyframes gradientShift {
+      0% {
+        background-position: 0% 50%
+      }
+
+      50% {
+        background-position: 100% 50%
+      }
+
+      100% {
+        background-position: 0% 50%
+      }
+    }
+
+    @keyframes bounceIn {
+      0% {
+        transform: scale(.9);
+        opacity: 0
+      }
+
+      60% {
+        transform: scale(1.03)
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1
+      }
+    }
+
+    @keyframes chevronBounce {
+
+      0%,
+      100% {
+        transform: translateY(0)
+      }
+
+      50% {
+        transform: translateY(3px)
+      }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity .6s cubic-bezier(.22, 1, .36, 1), transform .6s cubic-bezier(.22, 1, .36, 1)
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0)
+    }
+
+    .reveal-delay-1 {
+      transition-delay: .1s
+    }
+
+    .reveal-delay-2 {
+      transition-delay: .2s
+    }
+
+    .reveal-delay-3 {
+      transition-delay: .3s
+    }
+
+    .reveal-slide {
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: opacity .5s cubic-bezier(.22, 1, .36, 1), transform .5s cubic-bezier(.22, 1, .36, 1)
+    }
+
+    .reveal-slide.visible {
+      opacity: 1;
+      transform: translateX(0)
+    }
+
+    .doc-header {
+      padding: 2.5rem .75rem 3rem;
+      border-bottom: 1px solid var(--glass-border);
+      background: linear-gradient(135deg, var(--color-primary-bg) 0%, var(--color-bg) 70%);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px)
+    }
+
+    html.dark .doc-header {
+      background: linear-gradient(135deg, rgba(15, 23, 42, .8) 0%, rgba(7, 11, 20, .9) 50%, rgba(15, 23, 42, .7) 100%);
+      border-bottom-color: rgba(56, 89, 160, .15)
+    }
+
+    .doc-header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 50%, rgba(37, 99, 235, .25) 0%, transparent 50%);
+      animation: headerGlow 4s ease-in-out infinite;
+      pointer-events: none
+    }
+
+    html.dark .doc-header::before {
+      background: radial-gradient(circle at 30% 50%, rgba(96, 165, 250, .3) 0%, transparent 50%)
+    }
+
+    @media(min-width:768px) {
+      .doc-header {
+        padding: 2.5rem .75rem 3rem
+      }
+    }
+
+    .header-inner {
+      max-width: 72rem;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 1rem;
+      position: relative;
+      z-index: 1
+    }
+
+    .logo-svg .logo-fill {
+      fill: var(--color-text);
+      transition: fill .4s
+    }
+
+    html.dark .logo-svg .logo-fill {
+      fill: #cbd5e1
+    }
+
+    .header-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: .75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-primary);
+      color: #fff;
+      transition: transform .3s, box-shadow .3s
+    }
+
+    html.dark .header-icon {
+      box-shadow: 0 0 16px rgba(96, 165, 250, .3)
+    }
+
+    .header-icon:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 16px var(--color-glow)
+    }
+
+    .header-label {
+      font-size: .7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--color-primary);
+      margin-bottom: .5rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem
+    }
+
+    .header-title {
+      font-size: 1.875rem;
+      font-weight: 700;
+      margin-bottom: .5rem;
+      color: var(--color-text);
+      animation: fadeIn .8s ease
+    }
+
+    html.dark .header-title {
+      background: linear-gradient(135deg, #f1f5f9, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text
+    }
+
+    @media(min-width:768px) {
+      .header-title {
+        font-size: 2.25rem
+      }
+    }
+
+    .header-subtitle {
+      font-size: 1rem;
+      color: var(--color-text-secondary);
+      max-width: 40rem;
+      line-height: 1.7;
+      animation: fadeIn 1s ease .2s both
+    }
+
+    .theme-toggle {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: .5rem;
+      padding: .5rem;
+      cursor: pointer;
+      color: var(--color-text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .3s cubic-bezier(.22, 1, .36, 1);
+      position: relative;
+      z-index: 1;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px)
+    }
+
+    html.dark .theme-toggle {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .2)
+    }
+
+    .theme-toggle:hover {
+      background: var(--color-nav-hover);
+      transform: rotate(30deg) scale(1.05);
+      box-shadow: 0 4px 12px var(--color-glow)
+    }
+
+    html.dark .theme-toggle:hover {
+      background: rgba(96, 165, 250, .1);
+      box-shadow: 0 4px 16px rgba(96, 165, 250, .15)
+    }
+
+    .theme-toggle:active {
+      transform: rotate(90deg) scale(.95)
+    }
+
+    .page-wrap {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 2rem 0 2rem .25rem;
+      display: flex;
+      gap: 2.5rem
+    }
+
+    @media(min-width:1024px) {
+      .page-wrap {
+        padding: 2rem 0 2rem .5rem
+      }
+    }
+
+    .sidebar {
+      display: none;
+      width: 16rem;
+      flex-shrink: 0
+    }
+
+    @media(min-width:1024px) {
+      .sidebar {
+        display: block
+      }
+    }
+
+    .sidebar nav {
+      position: sticky;
+      top: 1.5rem
+    }
+
+    html.dark .sidebar nav {
+      background: rgba(15, 23, 42, .4);
+      border-radius: .75rem;
+      padding: 1rem;
+      border: 1px solid rgba(56, 89, 160, .1);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px)
+    }
+
+    .sidebar-label {
+      font-size: .7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--color-text-secondary);
+      margin-bottom: .75rem
+    }
+
+    .sidebar-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: .625rem;
+      padding: .5rem .75rem;
+      border-radius: .5rem;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      transition: all .2s cubic-bezier(.22, 1, .36, 1);
+      position: relative;
+      overflow: hidden
+    }
+
+    .sidebar-btn::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 3px;
+      background: var(--color-primary);
+      border-radius: 0 2px 2px 0;
+      transform: scaleY(0);
+      transition: transform .25s cubic-bezier(.22, 1, .36, 1)
+    }
+
+    .sidebar-btn:hover {
+      background: var(--color-nav-hover);
+      transform: translateX(4px)
+    }
+
+    .sidebar-btn.active {
+      background: var(--color-nav-hover)
+    }
+
+    .sidebar-btn.active::before {
+      transform: scaleY(1)
+    }
+
+    .sidebar-btn .icon {
+      width: 15px;
+      height: 15px;
+      color: var(--color-text-secondary);
+      flex-shrink: 0;
+      transition: color .2s, transform .2s
+    }
+
+    .sidebar-btn.active .icon {
+      color: var(--color-primary);
+      transform: scale(1.15)
+    }
+
+    .sidebar-btn span {
+      font-size: .8125rem;
+      color: var(--color-text-secondary);
+      transition: color .2s
+    }
+
+    .sidebar-btn.active span {
+      color: var(--color-primary);
+      font-weight: 600
+    }
+
+    .sidebar-btn:not(.active) span {
+      font-weight: 500
+    }
+
+    .main-content {
+      flex: 1;
+      min-width: 0
+    }
+
+    .doc-section {
+      scroll-margin-top: 1.5rem;
+      margin-bottom: 3.5rem
+    }
+
+    .section-kicker {
+      font-size: .6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--color-primary);
+      margin-bottom: .375rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem
+    }
+
+    .kicker-icon {
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-primary-bg);
+      color: var(--color-primary);
+      transition: transform .3s, box-shadow .3s
+    }
+
+    html.dark .kicker-icon {
+      background: rgba(96, 165, 250, .1);
+      box-shadow: 0 0 12px rgba(96, 165, 250, .08)
+    }
+
+    .kicker-icon:hover {
+      transform: scale(1.15) rotate(-5deg);
+      box-shadow: 0 4px 16px var(--color-glow)
+    }
+
+    .kicker-icon svg {
+      width: 18px;
+      height: 18px
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--color-text);
+      position: relative;
+      display: inline-block
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 40px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--color-primary), transparent);
+      border-radius: 2px
+    }
+
+    html.dark .section-title::after {
+      box-shadow: 0 0 8px rgba(96, 165, 250, .3)
+    }
+
+    @media(min-width:768px) {
+      .section-title {
+        font-size: 1.875rem
+      }
+    }
+
+    .doc-p {
+      font-size: .9375rem;
+      line-height: 1.75;
+      color: var(--color-text);
+      margin-bottom: 1rem
+    }
+
+    .strong {
+      font-weight: 600;
+      color: var(--color-text)
+    }
+
+    .card-grid {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 1.25rem
+    }
+
+    .grid-2 {
+      grid-template-columns: 1fr
+    }
+
+    @media(min-width:768px) {
+      .grid-2 {
+        grid-template-columns: repeat(2, 1fr)
+      }
+    }
+
+    .grid-3 {
+      grid-template-columns: 1fr
+    }
+
+    @media(min-width:768px) {
+      .grid-3 {
+        grid-template-columns: repeat(2, 1fr)
+      }
+    }
+
+    @media(min-width:1024px) {
+      .grid-3-lg {
+        grid-template-columns: repeat(3, 1fr)
+      }
+    }
+
+    .card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: .75rem;
+      padding: 1.25rem;
+      height: 100%;
+      transition: all .3s cubic-bezier(.22, 1, .36, 1);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px)
+    }
+
+    html.dark .card {
+      box-shadow: 0 4px 24px -4px rgba(0, 0, 0, .3), inset 0 1px 0 rgba(255, 255, 255, .04)
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 40%, transparent));
+      opacity: 0;
+      transition: opacity .3s
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px -8px var(--color-glow), 0 0 0 1px rgba(96, 165, 250, .1);
+      border-color: rgba(96, 165, 250, .25)
+    }
+
+    html.dark .card:hover {
+      box-shadow: 0 12px 40px -8px rgba(96, 165, 250, .15), 0 0 20px -4px rgba(96, 165, 250, .08), inset 0 1px 0 rgba(255, 255, 255, .06)
+    }
+
+    .card:hover::before {
+      opacity: 1
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: .625rem;
+      margin-bottom: .625rem
+    }
+
+    .card-icon {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+      color: var(--color-primary);
+      transition: all .3s
+    }
+
+    html.dark .card-icon {
+      background: rgba(96, 165, 250, .12);
+      box-shadow: 0 0 8px rgba(96, 165, 250, .06)
+    }
+
+    .card:hover .card-icon {
+      transform: scale(1.1) rotate(-5deg);
+      box-shadow: 0 4px 12px var(--color-glow)
+    }
+
+    .card-icon svg {
+      width: 16px;
+      height: 16px
+    }
+
+    .card-title {
+      font-size: .9375rem;
+      font-weight: 600;
+      color: var(--color-text)
+    }
+
+    .card-body {
+      font-size: .875rem;
+      line-height: 1.7;
+      color: var(--color-text-secondary)
+    }
+
+    .check-list {
+      list-style: none
+    }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: .625rem;
+      margin-bottom: .625rem;
+      transition: transform .2s
+    }
+
+    .check-item:hover {
+      transform: translateX(4px)
+    }
+
+    .check-item .ci-icon {
+      width: 17px;
+      height: 17px;
+      margin-top: 2px;
+      flex-shrink: 0;
+      transition: transform .2s
+    }
+
+    .check-item:hover .ci-icon {
+      transform: scale(1.2)
+    }
+
+    .check-item .ci-icon.positive {
+      color: var(--color-primary)
+    }
+
+    .check-item .ci-icon.negative {
+      color: #ef4444
+    }
+
+    html.dark .check-item .ci-icon.negative {
+      color: #f87171
+    }
+
+    .check-item span {
+      font-size: .875rem;
+      line-height: 1.6;
+      color: var(--color-text)
+    }
+
+    .callout {
+      border-radius: .75rem;
+      padding: 1rem;
+      margin: 1.25rem 0;
+      border-left: 4px solid var(--color-primary);
+      background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
+      transition: all .3s;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px)
+    }
+
+    html.dark .callout {
+      background: rgba(30, 41, 59, .4);
+      border-left-color: var(--color-primary);
+      box-shadow: 0 2px 12px -2px rgba(96, 165, 250, .08)
+    }
+
+    .callout:hover {
+      box-shadow: 0 4px 16px var(--color-glow);
+      transform: translateX(4px)
+    }
+
+    html.dark .callout:hover {
+      box-shadow: 0 4px 20px rgba(96, 165, 250, .1)
+    }
+
+    .callout.warn {
+      border-left-color: #f59e0b;
+      background: color-mix(in srgb, #f59e0b 8%, var(--color-surface))
+    }
+
+    html.dark .callout.warn {
+      background: rgba(30, 41, 59, .4);
+      border-left-color: #fbbf24
+    }
+
+    .callout-title {
+      font-weight: 600;
+      font-size: .875rem;
+      margin-bottom: .25rem;
+      color: var(--color-text)
+    }
+
+    .callout-body {
+      font-size: .875rem;
+      line-height: 1.6;
+      color: var(--color-text-secondary)
+    }
+
+    .cap-item {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: .75rem;
+      overflow: hidden;
+      margin-bottom: .625rem;
+      transition: all .3s;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px)
+    }
+
+    html.dark .cap-item {
+      box-shadow: 0 2px 12px -2px rgba(0, 0, 0, .2)
+    }
+
+    .cap-item:hover {
+      border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border))
+    }
+
+    html.dark .cap-item:hover {
+      border-color: rgba(96, 165, 250, .2);
+      box-shadow: 0 4px 20px -4px rgba(96, 165, 250, .08)
+    }
+
+    .cap-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .75rem;
+      padding: .875rem 1rem;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      transition: background .2s
+    }
+
+    .cap-btn:hover {
+      background: var(--color-nav-hover)
+    }
+
+    html.dark .cap-btn:hover {
+      background: rgba(96, 165, 250, .06)
+    }
+
+    .cap-btn span {
+      font-size: .9375rem;
+      font-weight: 600;
+      color: var(--color-text)
+    }
+
+    .cap-btn .chevron {
+      width: 18px;
+      height: 18px;
+      color: var(--color-text-secondary);
+      flex-shrink: 0;
+      transition: transform .3s cubic-bezier(.22, 1, .36, 1)
+    }
+
+    .cap-btn.open .chevron {
+      transform: rotate(180deg)
+    }
+
+    .cap-body {
+      max-height: 0;
+      overflow: hidden;
+      padding: 0 1rem;
+      grid-template-columns: 1fr;
+      gap: .75rem;
+      transition: max-height .4s cubic-bezier(.22, 1, .36, 1), padding .3s
+    }
+
+    @media(min-width:768px) {
+      .cap-body.two-col {
+        grid-template-columns: repeat(2, 1fr)
+      }
+    }
+
+    .cap-body.show {
+      max-height: 2000px;
+      padding: 0 1rem 1rem
+    }
+
+    .cap-label {
+      font-size: .6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--color-primary);
+      margin-bottom: .25rem
+    }
+
+    .cap-text {
+      font-size: .875rem;
+      line-height: 1.6;
+      color: var(--color-text-secondary)
+    }
+
+    .flow-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center
+    }
+
+    .flow-box {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: .75rem;
+      padding: 1rem 1.25rem;
+      width: 100%;
+      max-width: 28rem;
+      transition: all .3s;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px)
+    }
+
+    html.dark .flow-box {
+      box-shadow: 0 2px 16px -2px rgba(0, 0, 0, .25)
+    }
+
+    .flow-box:hover {
+      transform: scale(1.02);
+      box-shadow: 0 8px 24px -4px var(--color-glow)
+    }
+
+    html.dark .flow-box:hover {
+      box-shadow: 0 8px 32px -4px rgba(96, 165, 250, .12)
+    }
+
+    .flow-num {
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .75rem;
+      font-weight: 700;
+      background: var(--color-primary);
+      color: #fff;
+      margin-right: .5rem;
+      transition: transform .2s;
+      box-shadow: 0 2px 8px var(--color-glow)
+    }
+
+    html.dark .flow-num {
+      box-shadow: 0 2px 12px rgba(96, 165, 250, .3)
+    }
+
+    .flow-label {
+      font-size: .9375rem;
+      font-weight: 600;
+      color: var(--color-text);
+      display: inline
+    }
+
+    .flow-desc {
+      font-size: .875rem;
+      color: var(--color-text-secondary);
+      margin-top: .25rem
+    }
+
+    .flow-arrow {
+      width: 20px;
+      height: 20px;
+      color: var(--color-primary);
+      margin: .5rem 0;
+      animation: chevronBounce 1.5s ease-in-out infinite
+    }
+
+    .table-wrap {
+      border: 1px solid var(--glass-border);
+      border-radius: .75rem;
+      overflow-x: auto;
+      margin-bottom: 1.25rem;
+      transition: box-shadow .3s;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px)
+    }
+
+    html.dark .table-wrap {
+      box-shadow: 0 2px 16px -2px rgba(0, 0, 0, .2)
+    }
+
+    .table-wrap:hover {
+      box-shadow: 0 4px 16px var(--color-glow)
+    }
+
+    html.dark .table-wrap:hover {
+      box-shadow: 0 4px 20px rgba(96, 165, 250, .1)
+    }
+
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .875rem
+    }
+
+    .doc-table thead {
+      background: var(--color-surface-2)
+    }
+
+    html.dark .doc-table thead {
+      background: rgba(30, 41, 59, .4)
+    }
+
+    .doc-table th {
+      text-align: left;
+      padding: .75rem 1rem;
+      font-weight: 600;
+      color: var(--color-text);
+      border-bottom: 1px solid var(--glass-border)
+    }
+
+    .doc-table td {
+      padding: .75rem 1rem;
+      color: var(--color-text-secondary);
+      border-bottom: 1px solid var(--glass-border);
+      transition: background .2s, color .2s
+    }
+
+    .doc-table tbody tr:last-child td {
+      border-bottom: none
+    }
+
+    .doc-table tbody tr {
+      transition: all .2s
+    }
+
+    .doc-table tbody tr:hover {
+      background: var(--color-nav-hover);
+      transform: scale(1.005)
+    }
+
+    html.dark .doc-table tbody tr:hover {
+      background: rgba(96, 165, 250, .04)
+    }
+
+    .doc-table tbody tr:hover td {
+      color: var(--color-text)
+    }
+
+    .usecase-box {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: .75rem;
+      padding: 1.25rem;
+      transition: all .3s;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px)
+    }
+
+    html.dark .usecase-box {
+      box-shadow: 0 2px 16px -2px rgba(0, 0, 0, .2)
+    }
+
+    .usecase-box:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px -4px var(--color-glow);
+      border-color: color-mix(in srgb, var(--color-primary) 25%, var(--color-border))
+    }
+
+    html.dark .usecase-box:hover {
+      box-shadow: 0 8px 32px -4px rgba(96, 165, 250, .1);
+      border-color: rgba(96, 165, 250, .2)
+    }
+
+    .usecase-title {
+      font-weight: 600;
+      font-size: .9375rem;
+      color: var(--color-text);
+      margin-bottom: .75rem
+    }
+
+    .cta-box {
+      border-radius: .75rem;
+      padding: 1.5rem;
+      text-align: center;
+      background: linear-gradient(135deg, var(--color-primary-bg), var(--glass-bg));
+      border: 1px solid var(--glass-border);
+      margin-top: 1.5rem;
+      transition: all .3s;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px)
+    }
+
+    html.dark .cta-box {
+      background: linear-gradient(135deg, rgba(30, 58, 138, .15), rgba(15, 23, 42, .5));
+      box-shadow: 0 4px 24px -4px rgba(96, 165, 250, .08)
+    }
+
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent, rgba(99, 102, 241, .05), transparent);
+      background-size: 200% 200%;
+      animation: gradientShift 4s ease infinite
+    }
+
+    .cta-box:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px -4px var(--color-glow)
+    }
+
+    html.dark .cta-box:hover {
+      box-shadow: 0 8px 40px -4px rgba(96, 165, 250, .12)
+    }
+
+    .cta-title {
+      font-weight: 600;
+      font-size: 1.125rem;
+      margin-bottom: .25rem;
+      color: var(--color-text)
+    }
+
+    .cta-text {
+      font-size: .875rem;
+      max-width: 36rem;
+      margin: 0 auto;
+      color: var(--color-text-secondary)
+    }
+
+    @media print {
+
+      .sidebar,
+      .theme-toggle,
+      .ai-bg-dots,
+      .ai-neural,
+      .ai-float-side,
+      .ai-robot-float,
+      .ai-header-decor {
+        display: none !important
+      }
+
+      .page-wrap {
+        display: block;
+        padding: 0
+      }
+
+      .doc-header {
+        padding: 1rem
+      }
+
+      body {
+        background: #fff;
+        color: #000
+      }
+    }
+
+    @media(max-width:640px) {
+      .header-inner {
+        flex-direction: column
+      }
+
+      .header-inner .logo-svg {
+        height: 45px
+      }
+    }
+
+    @keyframes floatY {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg)
+      }
+
+      50% {
+        transform: translateY(-18px) rotate(3deg)
+      }
+    }
+
+    @keyframes floatY2 {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg)
+      }
+
+      50% {
+        transform: translateY(-12px) rotate(-2deg)
+      }
+    }
+
+    @keyframes floatX {
+
+      0%,
+      100% {
+        transform: translateX(0) translateY(0)
+      }
+
+      50% {
+        transform: translateX(10px) translateY(-8px)
+      }
+    }
+
+    @keyframes floatX2 {
+
+      0%,
+      100% {
+        transform: translateX(0) translateY(0)
+      }
+
+      50% {
+        transform: translateX(-10px) translateY(-12px)
+      }
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg)
+      }
+
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    @keyframes spinReverse {
+      from {
+        transform: rotate(360deg)
+      }
+
+      to {
+        transform: rotate(0deg)
+      }
+    }
+
+    @keyframes dashMove {
+      from {
+        stroke-dashoffset: 20
+      }
+
+      to {
+        stroke-dashoffset: 0
+      }
+    }
+
+    @keyframes particleDrift {
+      0% {
+        transform: translate(0, 0);
+        opacity: 0
+      }
+
+      10% {
+        opacity: 1
+      }
+
+      90% {
+        opacity: 1
+      }
+
+      100% {
+        transform: translate(var(--dx), var(--dy));
+        opacity: 0
+      }
+    }
+
+    @keyframes nodePulse {
+      0%, 100% { opacity: .3; transform: scale(1) }
+      50% { opacity: .8; transform: scale(1.8) }
+    }
+
+    @keyframes lineFlow {
+      0% {
+        stroke-dashoffset: 16
+      }
+
+      100% {
+        stroke-dashoffset: 0
+      }
+    }
+
+    @keyframes gentlePulse {
+
+      0%,
+      100% {
+        opacity: .15
+      }
+
+      50% {
+        opacity: .35
+      }
+    }
+
+    @keyframes headerBotBob {
+
+      0%,
+      100% {
+        transform: translateY(0)
+      }
+
+      50% {
+        transform: translateY(-6px)
+      }
+    }
+
+    @keyframes headerGearSpin {
+      from {
+        transform: rotate(0deg)
+      }
+
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    @keyframes headerGearSpinR {
+      from {
+        transform: rotate(0deg)
+      }
+
+      to {
+        transform: rotate(-360deg)
+      }
+    }
+
+    @keyframes circuitPulse {
+
+      0%,
+      100% {
+        stroke-opacity: .12
+      }
+
+      50% {
+        stroke-opacity: .35
+      }
+    }
+
+    .ai-bg-dots {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden
+    }
+
+    html.dark .ai-bg-dots {
+      background: radial-gradient(ellipse at 50% 0%, rgba(30, 58, 138, .08) 0%, transparent 60%)
+    }
+
+    .ai-bg-dots::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, var(--color-border) 1px, transparent 1px);
+      background-size: 32px 32px;
+      opacity: .3
+    }
+
+    html.dark .ai-bg-dots::before {
+      opacity: .12;
+      background-image: radial-gradient(circle, rgba(96, 165, 250, .3) 1px, transparent 1px)
+    }
+
+    .ai-float-side {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      width: 80px;
+      pointer-events: none;
+      z-index: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2.5rem
+    }
+
+    .ai-float-side.left {
+      left: 0
+    }
+
+    .ai-float-side.right {
+      right: 0
+    }
+
+    @media(max-width:1100px) {
+      .ai-float-side {
+        display: none
+      }
+    }
+
+    .ai-float-icon {
+      color: var(--color-primary);
+      opacity: .18;
+      transition: opacity .3s
+    }
+
+    .ai-float-icon svg {
+      width: 28px;
+      height: 28px
+    }
+
+    html.dark .ai-float-icon {
+      opacity: .25;
+      color: #60a5fa
+    }
+
+    .ai-float-side.left .ai-float-icon:nth-child(1) {
+      animation: floatY 6s ease-in-out infinite
+    }
+
+    .ai-float-side.left .ai-float-icon:nth-child(2) {
+      animation: floatY2 5s ease-in-out infinite .5s
+    }
+
+    .ai-float-side.left .ai-float-icon:nth-child(3) {
+      animation: floatX 7s ease-in-out infinite 1s
+    }
+
+    .ai-float-side.left .ai-float-icon:nth-child(4) {
+      animation: floatY 5.5s ease-in-out infinite 1.5s
+    }
+
+    .ai-float-side.left .ai-float-icon:nth-child(5) {
+      animation: floatX2 6.5s ease-in-out infinite .8s
+    }
+
+    .ai-float-side.left .ai-float-icon:nth-child(6) {
+      animation: floatY2 7.5s ease-in-out infinite .3s
+    }
+
+    .ai-float-side.right .ai-float-icon:nth-child(1) {
+      animation: floatY2 5.5s ease-in-out infinite .2s
+    }
+
+    .ai-float-side.right .ai-float-icon:nth-child(2) {
+      animation: floatX 6s ease-in-out infinite .7s
+    }
+
+    .ai-float-side.right .ai-float-icon:nth-child(3) {
+      animation: floatY 7s ease-in-out infinite 1.2s
+    }
+
+    .ai-float-side.right .ai-float-icon:nth-child(4) {
+      animation: floatX2 5s ease-in-out infinite .4s
+    }
+
+    .ai-float-side.right .ai-float-icon:nth-child(5) {
+      animation: floatY 6.5s ease-in-out infinite .9s
+    }
+
+    .ai-float-side.right .ai-float-icon:nth-child(6) {
+      animation: floatX 7.5s ease-in-out infinite 1.6s
+    }
+
+    .ai-header-decor {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      pointer-events: none;
+      overflow: hidden
+    }
+
+    .ai-gear {
+      position: absolute;
+      opacity: .12;
+      color: var(--color-primary)
+    }
+
+    html.dark .ai-gear {
+      opacity: .2;
+      color: #60a5fa
+    }
+
+    .ai-gear svg {
+      animation: headerGearSpin 12s linear infinite
+    }
+
+    .ai-gear.reverse svg {
+      animation: headerGearSpinR 9s linear infinite
+    }
+
+    .ai-gear.g1 {
+      top: 15%;
+      right: 8%;
+      width: 90px;
+      height: 90px
+    }
+
+    .ai-gear.g2 {
+      top: 35%;
+      right: 4%;
+      width: 55px;
+      height: 55px
+    }
+
+    .ai-gear.g3 {
+      bottom: 10%;
+      right: 12%;
+      width: 70px;
+      height: 70px
+    }
+
+    .ai-gear.g4 {
+      top: 10%;
+      left: 60%;
+      width: 40px;
+      height: 40px
+    }
+
+    @media(max-width:768px) {
+      .ai-gear {
+        display: none
+      }
+    }
+
+    .ai-circuit {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 280px;
+      height: 100%;
+      pointer-events: none;
+      opacity: .15;
+      color: var(--color-primary)
+    }
+
+    html.dark .ai-circuit {
+      opacity: .25;
+      color: #60a5fa
+    }
+
+    .ai-circuit line,
+    .ai-circuit circle {
+      stroke: var(--color-primary);
+      stroke-width: 1.5
+    }
+
+    .ai-circuit .node-pulse {
+      animation: nodePulse 3s ease-in-out infinite
+    }
+
+    .ai-circuit .line-dash {
+      stroke-dasharray: 8 8;
+      animation: lineFlow 1s linear infinite
+    }
+
+    .ai-circuit .circuit-line {
+      animation: circuitPulse 4s ease-in-out infinite
+    }
+
+    @media(max-width:768px) {
+      .ai-circuit {
+        display: none
+      }
+    }
+
+    .ai-neural {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0
+    }
+
+    .neural-node {
+      fill: var(--color-primary);
+      opacity: .18;
+      transform-origin: center
+    }
+
+    html.dark .neural-node {
+      fill: #60a5fa;
+      opacity: .25
+    }
+
+    .neural-line {
+      stroke: var(--color-primary);
+      opacity: .08
+    }
+
+    html.dark .neural-line {
+      stroke: #60a5fa;
+      opacity: .12
+    }
+
+    @media(max-width:1100px) {
+      .ai-neural {
+        display: none
+      }
+    }
+
+    .ai-section-decor {
+      position: relative
+    }
+
+    .ai-section-decor::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: -20px;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(96, 165, 250, .08) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: gentlePulse 4s ease-in-out infinite
+    }
+
+    .ai-particle {
+      position: fixed;
+      width: 3px;
+      height: 3px;
+      background: var(--color-primary);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0;
+      animation: particleDrift var(--dur) linear infinite var(--delay)
+    }
+
+    @media(max-width:1100px) {
+      .ai-particle {
+        display: none
+      }
+    }
+
+    .ai-robot-float {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 48px;
+      height: 48px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-primary);
+      box-shadow: 0 4px 20px var(--color-glow);
+      z-index: 50;
+      animation: headerBotBob 3s ease-in-out infinite;
+      cursor: pointer;
+      transition: all .3s;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px)
+    }
+
+    html.dark .ai-robot-float {
+      box-shadow: 0 4px 24px rgba(96, 165, 250, .15), 0 0 20px rgba(96, 165, 250, .08)
+    }
+
+    .ai-robot-float:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 32px var(--color-glow)
+    }
+
+    .ai-robot-float svg {
+      width: 24px;
+      height: 24px
+    }
+
+    @media(max-width:768px) {
+      .ai-robot-float {
+        bottom: 1rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
+        border-radius: .75rem
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="ai-bg-dots"></div>
+
+  <svg class="ai-neural" id="ai-neural-canvas"></svg>
+
+  <div class="ai-float-side left">
+    <div class="ai-float-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path
+          d="M12 2a4 4 0 0 0-4 4v2H6a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2v2a4 4 0 0 0 8 0v-2h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-2V6a4 4 0 0 0-4-4Z" />
+        <circle cx="9" cy="10" r="1" fill="currentColor" />
+        <circle cx="15" cy="10" r="1" fill="currentColor" />
+        <path d="M9.5 15a3.5 3.5 0 0 0 5 0" />
+      </svg></div>
+    <div class="ai-float-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path
+          d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+        <circle cx="12" cy="12" r="3" />
+      </svg></div>
+    <div class="ai-float-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="4" y="4" width="16" height="16" rx="2" />
+        <path d="M9 9h.01M15 9h.01M9 15h6" />
+        <circle cx="12" cy="12" r="0" fill="currentColor">
+          <animate attributeName="r" values="0;4;0" dur="3s" repeatCount="indefinite" />
+        </circle>
+      </svg></div>
+    <div class="ai-float-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 2L2 7l10 5 10-5-10-5Z" />
+        <path d="M2 17l10 5 10-5" />
+        <path d="M2 12l10 5 10-5" />
+      </svg></div>
+    <div class="ai-float-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8Z" />
+      </svg></div>
+    <div class="ai-float-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M8 12a4 4 0 1 0 8 0 4 4 0 0 0-8 0" />
+        <path d="M12 2v2M12 20v2M2 12h2M20 12h2" />
+      </svg></div>
+  </div>
+
+  <div class="ai-float-side right">
+    <div class="ai-float-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path
+          d="M12 2a4 4 0 0 0-4 4v2H6a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2v2a4 4 0 0 0 8 0v-2h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-2V6a4 4 0 0 0-4-4Z" />
+        <circle cx="9" cy="10" r="1" fill="currentColor" />
+        <circle cx="15" cy="10" r="1" fill="currentColor" />
+        <path d="M9.5 15a3.5 3.5 0 0 0 5 0" />
+      </svg></div>
+    <div class="ai-float-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M4 4h16v16H4z" rx="2" />
+        <path d="M4 12h16M12 4v16" />
+        <circle cx="8" cy="8" r="1" fill="currentColor" />
+        <circle cx="16" cy="16" r="1" fill="currentColor" />
+      </svg></div>
+    <div class="ai-float-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path
+          d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+        <circle cx="12" cy="12" r="3" />
+      </svg></div>
+    <div class="ai-float-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8Z" />
+      </svg></div>
+    <div class="ai-float-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 2L2 7l10 5 10-5-10-5Z" />
+        <path d="M2 17l10 5 10-5" />
+        <path d="M2 12l10 5 10-5" />
+      </svg></div>
+    <div class="ai-float-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z" />
+        <path d="M12 6v6l4 2" />
+      </svg></div>
+  </div>
+
+  <div class="ai-robot-float" title="AI Assistente" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path
+        d="M12 2a4 4 0 0 0-4 4v2H6a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2v2a4 4 0 0 0 8 0v-2h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-2V6a4 4 0 0 0-4-4Z" />
+      <circle cx="9" cy="10" r="1" fill="currentColor" />
+      <circle cx="15" cy="10" r="1" fill="currentColor" />
+      <path d="M9.5 15a3.5 3.5 0 0 0 5 0" />
+    </svg>
+  </div>
+
+  <header class="doc-header">
+    <div class="ai-header-decor">
+      <svg class="ai-gear g1" viewBox="0 0 100 100" fill="currentColor">
+        <path
+          d="M50 15a35 35 0 0 1 0 70 35 35 0 0 1 0-70zm0 12a23 23 0 1 0 0 46 23 23 0 0 0 0-46zm0 8a15 15 0 1 1 0 30 15 15 0 0 1 0-30z" />
+        <rect x="46" y="2" width="8" height="16" rx="4" />
+        <rect x="46" y="82" width="8" height="16" rx="4" />
+        <rect x="2" y="46" width="16" height="8" rx="4" />
+        <rect x="82" y="46" width="16" height="8" rx="4" />
+        <rect x="13" y="10" width="8" height="16" rx="4" transform="rotate(45 17 18)" />
+        <rect x="79" y="74" width="8" height="16" rx="4" transform="rotate(45 83 82)" />
+        <rect x="74" y="13" width="16" height="8" rx="4" transform="rotate(45 82 17)" />
+        <rect x="10" y="79" width="16" height="8" rx="4" transform="rotate(45 18 83)" />
+      </svg>
+      <svg class="ai-gear g2 reverse" viewBox="0 0 100 100" fill="currentColor">
+        <path
+          d="M50 15a35 35 0 0 1 0 70 35 35 0 0 1 0-70zm0 12a23 23 0 1 0 0 46 23 23 0 0 0 0-46zm0 8a15 15 0 1 1 0 30 15 15 0 0 1 0-30z" />
+        <rect x="46" y="2" width="8" height="16" rx="4" />
+        <rect x="46" y="82" width="8" height="16" rx="4" />
+        <rect x="2" y="46" width="16" height="8" rx="4" />
+        <rect x="82" y="46" width="16" height="8" rx="4" />
+      </svg>
+      <svg class="ai-gear g3" viewBox="0 0 100 100" fill="currentColor">
+        <path
+          d="M50 15a35 35 0 0 1 0 70 35 35 0 0 1 0-70zm0 12a23 23 0 1 0 0 46 23 23 0 0 0 0-46zm0 8a15 15 0 1 1 0 30 15 15 0 0 1 0-30z" />
+        <rect x="46" y="2" width="8" height="16" rx="4" />
+        <rect x="46" y="82" width="8" height="16" rx="4" />
+        <rect x="2" y="46" width="16" height="8" rx="4" />
+        <rect x="82" y="46" width="16" height="8" rx="4" />
+        <rect x="13" y="10" width="8" height="16" rx="4" transform="rotate(45 17 18)" />
+        <rect x="79" y="74" width="8" height="16" rx="4" transform="rotate(45 83 82)" />
+      </svg>
+      <svg class="ai-gear g4 reverse" viewBox="0 0 100 100" fill="currentColor">
+        <path
+          d="M50 15a35 35 0 0 1 0 70 35 35 0 0 1 0-70zm0 12a23 23 0 1 0 0 46 23 23 0 0 0 0-46zm0 8a15 15 0 1 1 0 30 15 15 0 0 1 0-30z" />
+        <rect x="46" y="2" width="8" height="16" rx="4" />
+        <rect x="46" y="82" width="8" height="16" rx="4" />
+      </svg>
+      <svg class="ai-circuit" viewBox="0 0 280 400" fill="none">
+        <line class="circuit-line" x1="40" y1="0" x2="40" y2="400" />
+        <line class="circuit-line" x1="120" y1="0" x2="120" y2="400" />
+        <line class="circuit-line" x1="200" y1="0" x2="200" y2="400" />
+        <line class="line-dash" x1="40" y1="60" x2="120" y2="60" />
+        <line class="line-dash" x1="120" y1="150" x2="200" y2="150" />
+        <line class="line-dash" x1="40" y1="250" x2="120" y2="250" />
+        <line class="line-dash" x1="120" y1="340" x2="200" y2="340" />
+        <circle class="node-pulse" cx="40" cy="60" r="2" fill="currentColor" style="animation-delay:0s" />
+        <circle class="node-pulse" cx="120" cy="60" r="2" fill="currentColor" style="animation-delay:.5s" />
+        <circle class="node-pulse" cx="120" cy="150" r="2" fill="currentColor" style="animation-delay:1s" />
+        <circle class="node-pulse" cx="200" cy="150" r="2" fill="currentColor" style="animation-delay:1.5s" />
+        <circle class="node-pulse" cx="40" cy="250" r="2" fill="currentColor" style="animation-delay:2s" />
+        <circle class="node-pulse" cx="120" cy="250" r="2" fill="currentColor" style="animation-delay:2.5s" />
+        <circle class="node-pulse" cx="120" cy="340" r="2" fill="currentColor" style="animation-delay:3s" />
+        <circle class="node-pulse" cx="200" cy="340" r="2" fill="currentColor" style="animation-delay:3.5s" />
+        <line class="line-dash" x1="40" y1="60" x2="40" y2="250" style="animation-delay:.3s" />
+        <line class="line-dash" x1="200" y1="150" x2="200" y2="340" style="animation-delay:.7s" />
+        <path class="circuit-line" d="M40 60 Q80 60 80 105 Q80 150 120 150" stroke-width="1.5" />
+        <path class="circuit-line" d="M120 250 Q160 250 160 295 Q160 340 200 340" stroke-width="1.5" />
+      </svg>
+    </div>
+    <div class="header-inner">
+      <div style="display:flex;align-items:center;gap:1rem">
+        <svg class="logo-svg" viewBox="0 0 103.67 69.11" style="height:60px;width:auto;flex-shrink:0"
+          xmlns="http://www.w3.org/2000/svg">
+          <g>
+            <path class="logo-fill"
+              d="M65.97,29.32v18.51h-.47l-19.81-31.73c-.84-1.34-1.98-2.43-3.31-3.2-.05-.03-.09-.05-.14-.08-1.39-.77-2.97-1.19-4.61-1.19-1.78,0-3.45.49-4.87,1.34-2.77,1.66-4.62,4.68-4.62,8.15v47.39C11.52,65.39-.92,50.36.05,32.62,1.02,15.03,15.36.83,32.95.04c6.89-.31,13.38,1.4,18.89,4.59.36.21.73.43,1.08.65,8.22,5.16,13.05,14.33,13.05,24.04Z" />
+            <path class="logo-fill"
+              d="M103.65,35.45c-.46,18.49-15.74,33.5-34.24,33.66-6.41.05-12.42-1.63-17.58-4.62-.06-.03-.12-.07-.18-.11-8.67-5.09-13.88-14.51-13.88-24.56v-18.57h.46l19.74,31.71c.87,1.38,2.05,2.51,3.44,3.28,0,0,0,0,.01,0,1.33.74,2.84,1.16,4.41,1.19.07,0,.13,0,.2,0,.08,0,.17,0,.25,0,1.74-.04,3.36-.55,4.74-1.41,2.7-1.67,4.5-4.67,4.5-8.08V.6c16.3,3.06,28.58,17.55,28.14,34.85Z" />
+          </g>
+        </svg>
+        <div>
+          <div class="header-label">
+            <span class="header-icon"><i data-lucide="book-open" style="width:20px;height:20px"></i></span>
+            Guia do Gestor
+          </div>
+          <h1 class="header-title">Playground e Agentes</h1>
+          <p class="header-subtitle">Tudo o que a plataforma é capaz de realizar, explicado em linguagem de negócios: o
+            que é cada recurso, quando usar, quais os limites e como extrair o máximo valor para a sua área — sem
+            necessidade de conhecimento técnico.</p>
+        </div>
+      </div>
+      <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">
+        <i data-lucide="sun" id="icon-sun" style="width:18px;height:18px"></i>
+        <i data-lucide="moon" id="icon-moon" style="width:18px;height:18px;display:none"></i>
+      </button>
+    </div>
+  </header>
+
+  <div class="page-wrap">
+    <aside class="sidebar">
+      <nav>
+        <p class="sidebar-label">Nesta página</p>
+        <div id="sidebar-links"></div>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+
+      <!-- 1. Introdução -->
+      <section id="introducao" class="doc-section">
+        <div style="margin-bottom:1.5rem">
+          <div class="section-kicker"><span class="kicker-icon"><i data-lucide="book-open"></i></span> Visão geral</div>
+          <h2 class="section-title">Uma plataforma que trabalha com você</h2>
+        </div>
+        <p class="doc-p">Esta plataforma coloca à disposição da sua equipe dois recursos complementares: o <strong
+            class="strong">Playground</strong>, um espaço para criar, experimentar e obter respostas na hora, e os
+          <strong class="strong">Agentes</strong>, assistentes que trabalham de forma contínua seguindo instruções
+          definidas por você. Nos dois casos, quem faz o trabalho pesado é uma <strong class="strong">Inteligência
+            Artificial avançada</strong>, capaz de entender pedidos escritos em português comum e transformá-los em
+          resultados concretos: análises, documentos, painéis, acompanhamentos e comunicações.</p>
+        <p class="doc-p">Pense na diferença assim: o Playground é como <strong class="strong">conversar com um analista
+            muito rápido</strong> — você pede, ele entrega, você refina. Os Agentes são como <strong
+            class="strong">contratar um assistente dedicado</strong> que já sabe o que fazer, faz sempre do mesmo jeito
+          e não esquece de nada — inclusive nos horários que você determinar.</p>
+        <div class="callout">
+          <div class="callout-title">Para quem é este guia</div>
+          <div class="callout-body">Gerentes de Projetos, Gerentes Comerciais, Coordenadores e Gestores de Negócios.
+            Nenhum conhecimento técnico é necessário para ler este documento ou para usar a plataforma.</div>
+        </div>
+      </section>
+
+      <!-- 2. Playground -->
+      <section id="playground" class="doc-section">
+        <div style="margin-bottom:1.5rem">
+          <div class="section-kicker"><span class="kicker-icon"><i data-lucide="flask-conical"></i></span> Seção 2</div>
+          <h2 class="section-title">O que é o Playground</h2>
+        </div>
+        <p class="doc-p">O Playground é o <strong class="strong">ambiente de criação e experimentação</strong> da
+          plataforma. É onde você conversa com a Inteligência Artificial para tirar dúvidas, analisar dados, criar
+          documentos e — um diferencial importante — <strong class="strong">gerar telas e painéis visuais</strong> que
+          aparecem ao lado da conversa, prontos para visualização. Cada conversa fica salva como um "estudo", que você
+          pode reabrir, continuar e evoluir a qualquer momento.</p>
+        <div class="card-grid grid-2" style="margin-bottom:1.25rem">
+          <div class="card">
+            <div class="card-header"><span class="card-icon"><i data-lucide="rocket"></i></span><span
+                class="card-title">Qual é a finalidade</span></div>
+            <div class="card-body">Experimentar ideias com custo zero de risco: testar uma análise, montar um painel de
+              indicadores, rascunhar um processo ou validar um conceito antes de transformá-lo em algo permanente para a
+              empresa.</div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-icon"><i data-lucide="users"></i></span><span
+                class="card-title">Quem pode utilizar</span></div>
+            <div class="card-body">Qualquer usuário com acesso à plataforma. Não é preciso saber programar nem conhecer
+              termos técnicos — basta escrever o que deseja, como escreveria uma mensagem para um colega.</div>
+          </div>
+        </div>
+        <div class="card-grid grid-2">
+          <div class="card">
+            <div class="card-title" style="margin-bottom:.75rem">Quando o Playground é recomendado</div>
+            <ul class="check-list">
+              <li class="check-item"><svg class="ci-icon positive" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg><span>Explorar dados e indicadores de forma livre ("como estão as vendas por região?")</span></li>
+              <li class="check-item"><svg class="ci-icon positive" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg><span>Criar rapidamente um painel visual para uma reunião</span></li>
+              <li class="check-item"><svg class="ci-icon positive" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg><span>Testar uma ideia de automação antes de transformá-la em um Agente</span></li>
+              <li class="check-item"><svg class="ci-icon positive" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg><span>Produzir documentos, análises e textos pontuais</span></li>
+              <li class="check-item"><svg class="ci-icon positive" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg><span>Validar um processo novo com resultados reais antes de oficializá-lo</span></li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:.75rem">Quando ele não é o melhor caminho</div>
+            <ul class="check-list">
+              <li class="check-item"><svg class="ci-icon negative" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="15" y1="9" x2="9" y2="15" />
+                  <line x1="9" y1="9" x2="15" y2="15" />
+                </svg><span>Tarefas que precisam acontecer sozinhas, todos os dias, sem alguém pedir — para isso existem
+                  os Agentes</span></li>
+              <li class="check-item"><svg class="ci-icon negative" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="15" y1="9" x2="9" y2="15" />
+                  <line x1="9" y1="9" x2="15" y2="15" />
+                </svg><span>Processos oficiais que exigem sempre o mesmo comportamento — o Playground é um espaço de
+                  criação, não de rotina</span></li>
+              <li class="check-item"><svg class="ci-icon negative" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="15" y1="9" x2="9" y2="15" />
+                  <line x1="9" y1="9" x2="15" y2="15" />
+                </svg><span>Comunicações automáticas com clientes por WhatsApp, Telegram ou e-mail — isso é papel dos
+                  Agentes com canais configurados</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout">
+          <div class="callout-title">Resumindo em uma frase</div>
+          <div class="callout-body">O Playground é o laboratório: experimente, valide e refine. Quando o resultado for
+            bom e precisar se repetir, transforme a receita em um Agente.</div>
+        </div>
+      </section>
+
+      <!-- 3. Agentes -->
+      <section id="agentes" class="doc-section">
+        <div style="margin-bottom:1.5rem">
+          <div class="section-kicker"><span class="kicker-icon"><i data-lucide="bot"></i></span> Seção 3</div>
+          <h2 class="section-title">O que são os Agentes</h2>
+        </div>
+        <p class="doc-p">Um Agente é um <strong class="strong">assistente digital com identidade, missão e rotina
+            próprias</strong>. Diferente de uma conversa comum — em que você pergunta e a resposta vale para aquele
+          momento — o Agente <strong class="strong">guarda suas instruções permanentemente</strong> e as executa de
+          forma consistente, quantas vezes for preciso, inclusive de forma agendada, sem que ninguém precise pedir.</p>
+        <div class="card-grid grid-3" style="margin-bottom:1.25rem">
+          <div class="card">
+            <div class="card-header"><span class="card-icon"><i data-lucide="bot"></i></span><span
+                class="card-title">Identidade</span></div>
+            <div class="card-body">Cada Agente tem nome, descrição e uma "missão" — o conjunto de regras e orientações
+              que definem como ele deve se comportar, o que analisar e como responder.</div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-icon"><i data-lucide="workflow"></i></span><span
+                class="card-title">Rotina</span></div>
+            <div class="card-body">O Agente pode ter uma tarefa agendada: por exemplo, "toda manhã às 8h, verifique os
+              pedidos pendentes e envie um resumo". Ele cumpre o horário sozinho, todos os dias.</div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-icon"><i data-lucide="send"></i></span><span
+                class="card-title">Comunicação</span></div>
+            <div class="card-body">O resultado do trabalho pode ser entregue por Telegram, E-mail e WhatsApp — desde que
+              esses canais tenham sido configurados previamente (veja a seção de comunicação).</div>
+          </div>
+        </div>
+        <p class="doc-p"><strong class="strong">Qual a diferença entre um Agente e uma conversa comum?</strong></p>
+        <div class="table-wrap" style="margin-bottom:1.25rem">
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th>Conversa comum (Chat / Playground)</th>
+                <th>Agente</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Você precisa pedir cada vez</td>
+                <td>Trabalha sozinho no horário agendado</td>
+              </tr>
+              <tr>
+                <td>As instruções valem para aquela conversa</td>
+                <td>As instruções ficam gravadas e valem sempre</td>
+              </tr>
+              <tr>
+                <td>Resultado fica na tela</td>
+                <td>Resultado pode ser enviado por WhatsApp, Telegram e e-mail</td>
+              </tr>
+              <tr>
+                <td>Ideal para explorar e criar</td>
+                <td>Ideal para rotinas e processos que se repetem</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="doc-p"><strong class="strong">Como um Agente automatiza processos:</strong> você descreve a rotina uma
+          única vez — "verifique os pedidos parados há mais de 3 dias, identifique os clientes afetados e envie o resumo
+          para o gerente" — e o Agente repete esse trabalho no ritmo definido (a cada 30 minutos, a cada 2 horas,
+          diariamente às 8h, como preferir). Ele segue as regras da sua empresa porque <strong class="strong">as regras
+            fazem parte da missão dele</strong>: se a política é "nunca prometer desconto acima de 5%", isso entra nas
+          instruções e ele respeita sempre.</p>
+        <div class="card-title" style="margin-bottom:.75rem">Exemplos reais de Agentes por área</div>
+        <div class="card-grid grid-3" id="agentes-exemplos"></div>
+      </section>
+
+      <!-- 4. IA -->
+      <section id="ia" class="doc-section">
+        <div style="margin-bottom:1.5rem">
+          <div class="section-kicker"><span class="kicker-icon"><i data-lucide="brain"></i></span> Seção 4</div>
+          <h2 class="section-title">A Inteligência Artificial por trás de tudo</h2>
+        </div>
+        <p class="doc-p">Toda a inteligência do Playground e dos Agentes é fornecida por <strong class="strong">modelos
+            avançados de Inteligência Artificial</strong> — a mesma categoria de tecnologia que hoje lidera o mercado
+          mundial. É essa IA que entende o que você escreve, raciocina sobre o pedido e produz o resultado.</p>
+        <div class="card-grid grid-3" id="ia-capabilities"></div>
+        <div class="callout">
+          <div class="callout-title">A regra de ouro da qualidade</div>
+          <div class="callout-body">O resultado da IA depende diretamente de três coisas: <strong class="strong">a
+              qualidade das instruções</strong> que você fornece, <strong class="strong">as informações
+              disponíveis</strong> para ela consultar e <strong class="strong">as regras definidas</strong> para o
+            Agente. Quanto mais contexto você der — objetivo, público, exemplos, restrições — melhor será a entrega. Um
+            pedido vago gera uma resposta genérica; um pedido bem explicado gera um resultado profissional.</div>
+        </div>
+      </section>
+
+      <!-- 5. Capacidades -->
+      <section id="capacidades" class="doc-section">
+        <div style="margin-bottom:1.5rem">
+          <div class="section-kicker"><span class="kicker-icon"><i data-lucide="sparkles"></i></span> Seção 5</div>
+          <h2 class="section-title">Capacidades da Plataforma</h2>
+        </div>
+        <p class="doc-p">A lista abaixo detalha as principais capacidades disponíveis hoje. Clique em cada item para ver
+          o que faz, como funciona, os benefícios e um exemplo real de uso.</p>
+        <div id="capacidades-list"></div>
+        <p class="doc-p" style="color:var(--color-text-secondary)">Estas são as capacidades mais utilizadas — a
+          plataforma não se limita a elas. Se a sua necessidade envolve interpretar informações, produzir conteúdo ou
+          acompanhar processos, muito provavelmente ela pode ser atendida. Na dúvida, teste no Playground.</p>
+      </section>
+
+      <!-- 6. Níveis -->
+      <section id="niveis" class="doc-section">
+        <div style="margin-bottom:1.5rem">
+          <div class="section-kicker"><span class="kicker-icon"><i data-lucide="layers"></i></span> Seção 6</div>
+          <h2 class="section-title">Níveis de Utilização</h2>
+        </div>
+        <p class="doc-p">A plataforma pode ser adotada em três níveis, do individual ao corporativo. Cada nível traz
+          mais valor — e também mais responsabilidade sobre a qualidade das instruções e a organização dos Agentes.</p>
+        <div class="card-grid grid-3" id="niveis-cards"></div>
+      </section>
+
+      <!-- 7. Permissões -->
+      <section id="permissoes" class="doc-section">
+        <div style="margin-bottom:1.5rem">
+          <div class="section-kicker"><span class="kicker-icon"><i data-lucide="shield-check"></i></span> Seção 7</div>
+          <h2 class="section-title">Permissões e Poderes de Uso</h2>
+        </div>
+        <p class="doc-p">Nem todo usuário precisa (nem deve) ter os mesmos poderes. A plataforma trabalha com dois
+          grandes perfis de acesso, e as ações disponíveis dependem das <strong class="strong">regras definidas pela sua
+            empresa</strong>:</p>
+        <div class="card-grid grid-2" style="margin-bottom:1.25rem">
+          <div class="card">
+            <div class="card-header"><span class="card-icon"><i data-lucide="shield-check"></i></span><span
+                class="card-title">Gestores e administradores da plataforma</span></div>
+            <div class="card-body">Podem <strong class="strong">criar</strong> novos Agentes, <strong
+                class="strong">editar</strong> nome, missão, agenda e canais, <strong class="strong">publicar</strong>
+              Agentes para uso da equipe, <strong class="strong">compartilhar</strong> estudos do Playground e <strong
+                class="strong">excluir</strong> Agentes que criaram. Os Agentes padrão da plataforma são protegidos e
+              não podem ser excluídos.</div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-icon"><i data-lucide="users"></i></span><span
+                class="card-title">Usuários da operação</span></div>
+            <div class="card-body">Podem <strong class="strong">utilizar</strong> os Agentes disponíveis (conversar,
+              disparar execuções, consultar o histórico) e trabalhar livremente no Playground com seus próprios estudos.
+              Não alteram a configuração dos Agentes compartilhados — isso garante que as rotinas oficiais não sejam
+              modificadas por engano.</div>
+          </div>
+        </div>
+        <div class="callout">
+          <div class="callout-title">Importante</div>
+          <div class="callout-body">A distribuição exata desses poderes é uma decisão da empresa. A recomendação é
+            simples: quem entende o processo define as instruções; quem executa o dia a dia utiliza. Mudanças em Agentes
+            que atendem várias pessoas devem passar por um responsável.</div>
+        </div>
+      </section>
+
+      <!-- 8. Lógica -->
+      <section id="logica" class="doc-section">
+        <div style="margin-bottom:1.5rem">
+          <div class="section-kicker"><span class="kicker-icon"><i data-lucide="workflow"></i></span> Seção 8</div>
+          <h2 class="section-title">Como Tudo Funciona (a lógica, passo a passo)</h2>
+        </div>
+        <p class="doc-p">Por trás de qualquer pedido — no Playground ou em um Agente — o caminho é sempre o mesmo.
+          Entender esse fluxo ajuda a escrever pedidos melhores e a saber o que esperar:</p>
+        <div id="flow-steps" style="margin:1.5rem 0"></div>
+        <div class="callout">
+          <div class="callout-title">Um ciclo que melhora com o uso</div>
+          <div class="callout-body">Cada ajuste que você pede ("seja mais resumido", "inclua a comparação com o mês
+            anterior") refina o resultado seguinte. Nos Agentes, esses aprendizados podem ser incorporados à missão — e
+            valem para sempre.</div>
+        </div>
+      </section>
+
+      <!-- 9. Comunicação -->
+      <section id="comunicacao" class="doc-section">
+        <div style="margin-bottom:1.5rem">
+          <div class="section-kicker"><span class="kicker-icon"><i data-lucide="send"></i></span> Seção 9</div>
+          <h2 class="section-title">Comunicação: WhatsApp, Telegram e E-mail</h2>
+        </div>
+        <p class="doc-p">Os Agentes podem entregar o resultado do trabalho diretamente onde as pessoas estão: no <strong
+            class="strong">WhatsApp</strong>, no <strong class="strong">Telegram</strong> e por <strong
+            class="strong">E-mail</strong> — e é possível combinar mais de um canal no mesmo Agente. Um resumo de vendas
+          pode chegar todo dia às 8h no WhatsApp do gerente e, ao mesmo tempo, por e-mail para a diretoria.</p>
+        <div class="card-grid grid-3" style="margin-bottom:1.25rem">
+          <div class="card">
+            <div class="card-header"><span class="card-icon"
+                style="background:color-mix(in srgb,#0ea5e9 12%,transparent);color:#0ea5e9"><i
+                  data-lucide="mail"></i></span><span class="card-title">E-mail</span></div>
+            <div class="card-body">O canal mais simples de ativar: basta informar os destinatários (e um assunto, se
+              desejar). O envio usa o serviço de e-mail da própria plataforma — não exige nenhum cadastro externo.</div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-icon"
+                style="background:color-mix(in srgb,#8b5cf6 12%,transparent);color:#8b5cf6"><i
+                  data-lucide="send"></i></span><span class="card-title">Telegram</span></div>
+            <div class="card-body">Além de receber os resultados, permite <strong class="strong">conversar com o
+                Agente</strong>: você manda uma pergunta pelo Telegram e ele responde por lá. Requer uma configuração
+              inicial simples (criação de um "bot" e identificação de quem pode conversar com ele).</div>
+        </div>
+      </section>
+
+      <!-- 10. Limitações -->
+      <section id="limitacoes" class="doc-section">
+        <div style="margin-bottom:1.5rem">
+          <div class="section-kicker"><span class="kicker-icon"><i data-lucide="lock"></i></span> Seção 10</div>
+          <h2 class="section-title">Limitações: o que a IA não faz sozinha</h2>
+        </div>
+        <p class="doc-p">Transparência gera confiança. Tão importante quanto saber o que a plataforma faz é saber o que
+          ela <strong class="strong">não faz por conta própria</strong>:</p>
+        <div class="card" style="margin-bottom:1.25rem">
+          <ul class="check-list" id="limitacoes-list"></ul>
+        </div>
+        <div class="callout">
+          <div class="callout-title">Por que isso é bom</div>
+          <div class="callout-body">Essas limitações são propositais: garantem que a IA trabalhe com segurança, dentro
+            das regras da empresa, sem surpresas. O controle permanece sempre com as pessoas.</div>
+        </div>
+      </section>
+
+      <!-- 11. Boas práticas -->
+      <section id="boas-praticas" class="doc-section">
+        <div style="margin-bottom:1.5rem">
+          <div class="section-kicker"><span class="kicker-icon"><i data-lucide="list-checks"></i></span> Seção 11</div>
+          <h2 class="section-title">Boas Práticas</h2>
+        </div>
+        <div class="card-grid grid-2" id="boas-praticas-cards"></div>
+      </section>
+
+      <!-- 12. Casos de uso -->
+      <section id="casos-de-uso" class="doc-section">
+        <div style="margin-bottom:1.5rem">
+          <div class="section-kicker"><span class="kicker-icon"><i data-lucide="compass"></i></span> Seção 12</div>
+          <h2 class="section-title">Casos de Uso por Área</h2>
+        </div>
+        <p class="doc-p">Exemplos práticos de como cada área pode usar o Playground e os Agentes desde a primeira
+          semana:</p>
+        <div class="card-grid grid-2" id="casos-de-uso-cards"></div>
+      </section>
+
+      <!-- 13. Benefícios -->
+      <section id="beneficios" class="doc-section">
+        <div style="margin-bottom:1.5rem">
+          <div class="section-kicker"><span class="kicker-icon"><i data-lucide="trending-up"></i></span> Seção 13</div>
+          <h2 class="section-title">Benefícios para a Empresa</h2>
+        </div>
+        <div class="card-grid grid-3" id="beneficios-cards"></div>
+        <div class="cta-box">
+          <div style="margin-bottom:.75rem"><i data-lucide="message-circle"
+              style="width:28px;height:28px;color:var(--color-primary)"></i></div>
+          <div class="cta-title">Por onde começar?</div>
+          <div class="cta-text">Abra o <strong class="strong">Playground</strong> e faça um pedido real do seu dia a dia
+            — uma análise, um painel, um documento. Quando encontrar algo que valha a pena repetir, transforme em um
+            <strong class="strong">Agente</strong> com agenda e canais de entrega. Em poucos dias, a rotina trabalha
+            para você.</div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer style="max-width:72rem;margin:0 auto;padding:0 1.25rem 2rem">
+    <div style="border-top:1px solid var(--color-border);padding-top:2rem;text-align:center">
+      <svg class="logo-svg" viewBox="0 0 134.75 70.85" style="max-width:320px;width:100%;height:auto"
+        xmlns="http://www.w3.org/2000/svg">
+        <g>
+          <g>
+            <path class="logo-fill"
+              d="M19.26,66.44h-.28l-11.83-15.08c-.76-.97-1.92-1.53-3.15-1.53h0c-2.21,0-4,1.79-4,4v16.69h4.02v-16.62h.25l11.83,15.08c.76.97,1.92,1.53,3.15,1.53h.03c2.21,0,4-1.79,4-4v-16.69h-4.02v16.62Z" />
+            <path class="logo-fill"
+              d="M32.75,70.52h18.36v-3.47h-18.26v-5.34h16.06v-3.07h-16.06v-5.34h18.26v-3.47h-18.36c-2.16,0-3.92,1.75-3.92,3.92v12.85c0,2.16,1.75,3.92,3.92,3.92Z" />
+            <path class="logo-fill"
+              d="M75.16,60.14c0,1.43-.14,3.26-1.25,4.69-1.18,1.53-3.18,2.27-6.12,2.27-6.53,0-7.37-3.72-7.37-6.97v-10.31h-4.04v10.31c0,7.39,3.52,10.68,11.41,10.68,4.03,0,6.89-.87,8.74-2.66,1.79-1.73,2.66-4.35,2.66-8.03v-10.31h-4.04v10.31Z" />
+            <path class="logo-fill"
+              d="M95.01,49.55c-7.64,0-11.35,3.47-11.35,10.62s3.71,10.68,11.35,10.68,11.35-3.5,11.35-10.68-3.71-10.62-11.35-10.62ZM102.33,60.17c0,4.82-2.26,6.97-7.33,6.97s-7.33-2.15-7.33-6.97,2.19-6.9,7.33-6.9c2.59,0,4.42.55,5.59,1.67,1.17,1.12,1.74,2.83,1.74,5.23Z" />
+            <path class="logo-fill"
+              d="M130.73,66.47h-.28l-11.83-15.08c-.76-.97-1.92-1.53-3.15-1.53h0c-2.21,0-4,1.79-4,4v16.69h4.02v-16.62h.25l11.83,15.08c.76.97,1.92,1.53,3.15,1.53h.03c2.21,0,4-1.79,4-4v-16.69h-4.02v16.62Z" />
+          </g>
+          <g>
+            <path class="logo-fill"
+              d="M74.58,14.93v9.43h-.24l-10.09-16.16c-.43-.68-1.01-1.24-1.68-1.63-.02-.01-.05-.03-.07-.04-.71-.39-1.51-.61-2.35-.61-.91,0-1.76.25-2.48.68-1.41.84-2.35,2.39-2.35,4.15v24.14c-8.47-1.59-14.81-9.25-14.31-18.29C41.49,7.66,48.8.42,57.76.02c3.51-.16,6.81.71,9.62,2.34.19.11.37.22.55.33,4.19,2.63,6.65,7.3,6.65,12.24Z" />
+            <path class="logo-fill"
+              d="M93.77,18.06c-.24,9.42-8.02,17.07-17.44,17.15-3.26.03-6.33-.83-8.96-2.35-.03-.02-.06-.04-.09-.06-4.42-2.59-7.07-7.39-7.07-12.51v-9.46h.24l10.06,16.16c.44.71,1.05,1.28,1.75,1.67,0,0,0,0,0,0,.68.38,1.45.59,2.24.61.04,0,.07,0,.1,0,.04,0,.09,0,.13,0,.88-.02,1.71-.28,2.42-.72,1.38-.85,2.29-2.38,2.29-4.11V.31c8.3,1.56,14.56,8.94,14.33,17.75Z" />
+          </g>
+        </g>
+      </svg>
+    </div>
+  </footer>
+
+  <script>
+    function toggleTheme() { document.documentElement.classList.toggle('dark'); var d = document.documentElement.classList.contains('dark'); document.getElementById('icon-sun').style.display = d ? 'none' : 'block'; document.getElementById('icon-moon').style.display = d ? 'block' : 'none'; localStorage.setItem('theme', d ? 'dark' : 'light') }
+    (function () { if (localStorage.getItem('theme') !== 'light') toggleTheme() })();
+
+    var SECTIONS = [
+      { id: 'introducao', label: 'Introdução', icon: 'book-open' },
+      { id: 'playground', label: 'O que é o Playground', icon: 'flask-conical' },
+      { id: 'agentes', label: 'O que são os Agentes', icon: 'bot' },
+      { id: 'ia', label: 'A Inteligência por trás', icon: 'brain' },
+      { id: 'capacidades', label: 'Capacidades da Plataforma', icon: 'sparkles' },
+      { id: 'niveis', label: 'Níveis de Utilização', icon: 'layers' },
+      { id: 'permissoes', label: 'Permissões e Poderes de Uso', icon: 'shield-check' },
+      { id: 'logica', label: 'Como Tudo Funciona', icon: 'workflow' },
+      { id: 'comunicacao', label: 'WhatsApp, Telegram e E-mail', icon: 'send' },
+      { id: 'limitacoes', label: 'Limitações', icon: 'lock' },
+      { id: 'boas-praticas', label: 'Boas Práticas', icon: 'list-checks' },
+      { id: 'casos-de-uso', label: 'Casos de Uso por Área', icon: 'compass' },
+      { id: 'beneficios', label: 'Benefícios para a Empresa', icon: 'trending-up' }
+    ];
+
+    var CAPACIDADES = [
+      { nome: 'Criação de documentos e atas', oQueFaz: 'Produz documentos completos a partir de uma descrição: atas de reunião, comunicados, relatórios, procedimentos internos.', comoFunciona: 'Você descreve o que precisa (assunto, pontos principais, tom desejado) e a plataforma redige o documento pronto para revisão.', beneficio: 'Elimina a "página em branco" — o gestor parte de um rascunho de qualidade em segundos, em vez de começar do zero.', exemplo: 'Após uma reunião de diretoria, você cola suas anotações soltas e pede: "gere a ata formal desta reunião com decisões e responsáveis". Em instantes a ata está pronta.' },
+      { nome: 'Geração de propostas comerciais e contratos', oQueFaz: 'Monta propostas e minutas de contrato seguindo o padrão e as regras da sua empresa.', comoFunciona: 'Você informa cliente, escopo, valores e condições. A plataforma estrutura o documento com introdução, escopo, cronograma e condições comerciais.', beneficio: 'Padroniza as propostas de toda a equipe comercial e reduz o tempo de resposta ao cliente de dias para minutos.', exemplo: 'Um vendedor fecha uma negociação por telefone e pede: "gere a proposta para a Empresa X com estes itens e 10% de desconto". A proposta sai no padrão da empresa.' },
+      { nome: 'Resumos e análise de documentos (PDFs, planilhas, textos)', oQueFaz: 'Lê documentos extensos e devolve o essencial: pontos-chave, riscos, prazos, valores e pendências.', comoFunciona: 'Você envia ou cola o conteúdo do documento e pergunta o que quiser sobre ele — a plataforma lê tudo e responde com base no conteúdo.', beneficio: 'Um contrato de 40 páginas vira um resumo de 10 linhas com os pontos de atenção destacados.', exemplo: 'O jurídico recebe um contrato de fornecedor e pede: "resuma este contrato e liste cláusulas que representam risco para nós".' },
+      { nome: 'Análise de indicadores e dados de negócio', oQueFaz: 'Consulta os dados disponíveis no sistema (vendas, pedidos, metas) e responde perguntas de negócio com números reais.', comoFunciona: 'Você pergunta em linguagem natural ("como estão as vendas deste mês por região?") e a plataforma busca os dados autorizados e monta a resposta, inclusive com painéis visuais no Playground.', beneficio: 'O gestor obtém respostas sem depender de relatórios prontos ou da equipe de dados.', exemplo: 'O gerente comercial pergunta: "quais clientes compraram menos neste trimestre em relação ao anterior?" e recebe a lista com valores.' },
+      { nome: 'Criação de e-mails e respostas padronizadas', oQueFaz: 'Redige e-mails profissionais, respostas a clientes e comunicados com o tom adequado.', comoFunciona: 'Você explica a situação e o objetivo; a plataforma redige a mensagem pronta para envio ou ajuste.', beneficio: 'Comunicação mais rápida, consistente e sem erros de escrita.', exemplo: '"Escreva um e-mail cordial cobrando o retorno da proposta enviada há 10 dias, sem parecer agressivo."' },
+      { nome: 'Correção e melhoria de textos', oQueFaz: 'Revisa ortografia, gramática, clareza e tom de qualquer texto.', comoFunciona: 'Cole o texto e peça a revisão — pode pedir também para deixar mais formal, mais curto ou mais persuasivo.', beneficio: 'Todos os materiais saem com qualidade profissional, independente de quem escreveu.', exemplo: 'Antes de enviar um comunicado para toda a empresa, o RH pede: "revise e deixe este texto mais claro e acolhedor".' },
+      { nome: 'FAQs, documentações e base de conhecimento', oQueFaz: 'Transforma o conhecimento da empresa em materiais organizados: perguntas frequentes, manuais de processo, guias de integração de novos funcionários.', comoFunciona: 'Você fornece as informações brutas (ou conversa sobre o processo) e a plataforma organiza tudo em formato de consulta fácil.', beneficio: 'O conhecimento deixa de estar "na cabeça das pessoas" e passa a estar documentado e acessível.', exemplo: 'O coordenador descreve como funciona o processo de reembolso e pede: "transforme isso em um FAQ para os funcionários".' },
+      { nome: 'Atendimento e suporte automático', oQueFaz: 'Um Agente pode responder dúvidas repetitivas de clientes ou funcionários seguindo as regras que você definir.', comoFunciona: 'Você configura um Agente com as instruções e informações do seu negócio; ele responde às perguntas de forma consistente, a qualquer hora.', beneficio: 'Respostas imediatas 24 horas por dia e equipe liberada para casos que exigem atenção humana.', exemplo: 'Um Agente de suporte interno responde dúvidas sobre políticas de RH, benefícios e procedimentos sem que ninguém precise ser interrompido.' },
+      { nome: 'Classificação e extração de dados', oQueFaz: 'Lê documentos ou mensagens e extrai as informações importantes de forma organizada (nomes, valores, datas, categorias).', comoFunciona: 'Você define o que precisa extrair e a plataforma devolve os dados estruturados, prontos para uso.', beneficio: 'Elimina digitação manual e erros de transcrição.', exemplo: 'O financeiro cola o texto de vários boletos e pede: "extraia fornecedor, valor e vencimento de cada um em formato de tabela".' },
+      { nome: 'Organização de tarefas e acompanhamento de processos', oQueFaz: 'Ajuda a estruturar planos de ação, listas de tarefas, cronogramas e acompanhamentos periódicos.', comoFunciona: 'No Playground você monta o plano interativamente; com um Agente agendado, o acompanhamento acontece sozinho, no ritmo que você definir.', beneficio: 'Nada cai no esquecimento — o acompanhamento vira rotina automática.', exemplo: 'Um Agente verifica toda manhã os pedidos pendentes de aprovação e envia o resumo para o gestor responsável.' },
+      { nome: 'Fluxogramas e desenho de processos', oQueFaz: 'Descreve e organiza visualmente as etapas de um processo da empresa.', comoFunciona: 'Você explica o processo em palavras e a plataforma monta a representação organizada das etapas, decisões e responsáveis.', beneficio: 'Processos claros para toda a equipe, úteis em treinamentos e auditorias.', exemplo: '"Monte o fluxo do nosso processo de aprovação de compras, da requisição ao pagamento."' },
+      { nome: 'Geração de conteúdo e materiais de apoio', oQueFaz: 'Cria textos para apresentações, roteiros de reunião, materiais de treinamento e comunicação interna.', comoFunciona: 'Você informa o público, o objetivo e os pontos principais; a plataforma produz o material estruturado.', beneficio: 'Materiais de qualidade produzidos em uma fração do tempo habitual.', exemplo: '"Crie o roteiro de uma apresentação de 15 minutos sobre os resultados do trimestre para a diretoria."' },
+      { nome: 'Painéis e telas interativas (Playground)', oQueFaz: 'Cria painéis visuais com indicadores, gráficos e tabelas a partir de um pedido em linguagem natural.', comoFunciona: 'No Playground, você descreve o painel que deseja ("um painel de vendas por marca com os 10 maiores clientes") e a tela é gerada ao lado, pronta para visualização.', beneficio: 'Protótipos de painéis gerenciais em minutos, sem projeto técnico.', exemplo: 'O gerente pede: "crie um painel com faturamento por mês, por vendedor e por estado" e visualiza o resultado na hora.' }
+    ];
+
+    var AGENTES_EXEMPLOS = [
+      ['Atendimento ao cliente', 'Responde dúvidas frequentes com base nas políticas da empresa, 24h por dia.'],
+      ['Pré-venda', 'Qualifica interessados: coleta necessidade, porte e urgência antes de passar ao vendedor.'],
+      ['Pós-venda', 'Acompanha a satisfação após a entrega e sinaliza clientes em risco.'],
+      ['Cobrança', 'Monitora títulos vencidos e prepara lembretes de cobrança em tom adequado.'],
+      ['Financeiro', 'Resume diariamente as movimentações e destaca pagamentos fora do padrão.'],
+      ['RH', 'Responde dúvidas sobre benefícios, férias e políticas internas.'],
+      ['Análise de documentos', 'Lê contratos e propostas recebidas e entrega o resumo com pontos de atenção.'],
+      ['Geração de propostas', 'Monta propostas comerciais no padrão da empresa a partir dos dados da negociação.'],
+      ['Suporte interno', 'Orienta a equipe sobre processos e sistemas internos, reduzindo interrupções.']
+    ];
+
+    var IA_CAPS = [
+      ['Interpretar solicitações', 'Entende pedidos escritos em português do dia a dia, mesmo informais.'],
+      ['Compreender contexto', 'Considera o histórico da conversa e as informações do seu negócio.'],
+      ['Gerar respostas', 'Produz textos, análises e conclusões completas e organizadas.'],
+      ['Analisar documentos', 'Lê contratos, propostas, planilhas e relatórios extensos.'],
+      ['Resumir conteúdos', 'Transforma material longo no essencial, sem perder pontos importantes.'],
+      ['Criar textos', 'Redige e-mails, propostas, atas, comunicados e materiais de apoio.'],
+      ['Responder perguntas', 'Consulta os dados autorizados e responde com números reais.'],
+      ['Tomar decisões guiadas', 'Decide o próximo passo com base nas regras e instruções recebidas.'],
+      ['Executar fluxos definidos', 'Segue processos previamente descritos, etapa por etapa.']
+    ];
+
+    var NIVEIS = [
+      { title: 'Uso Individual', accent: '#0ea5e9', icon: 'users', oQue: 'Um usuário utiliza o Playground e seus próprios Agentes para as atividades pessoais de trabalho — análises, textos, organização.', vantagens: 'Ganho imediato de produtividade, liberdade total para experimentar, aprendizado rápido.', responsabilidades: 'Revisar os resultados antes de usá-los em decisões e não compartilhar informações sensíveis sem necessidade.' },
+      { title: 'Uso Departamental', accent: '#8b5cf6', icon: 'users', oQue: 'Um setor (comercial, financeiro, RH) adota Agentes para automatizar atividades da área, como acompanhamento de pedidos ou cobranças.', vantagens: 'Padronização do trabalho da equipe, rotinas que não dependem de pessoas específicas, respostas consistentes.', responsabilidades: 'Definir um responsável pelas instruções dos Agentes do setor e mantê-las atualizadas quando os processos mudarem.' },
+      { title: 'Uso Corporativo', accent: '#f59e0b', icon: 'users', oQue: 'Vários departamentos utilizam Agentes compartilhados, com canais de comunicação integrados e processos interligados.', vantagens: 'Conhecimento centralizado, visão única dos processos, escala — o mesmo Agente serve dezenas de pessoas.', responsabilidades: 'Governança — regras claras de quem cria, edita e publica Agentes, e revisão periódica do que está em operação.' }
+    ];
+
+    var FLOW_STEPS = [
+      { n: 1, title: 'Você escreve a solicitação', desc: 'Em português comum: uma pergunta, um pedido de análise, uma tarefa. No caso do Agente, a solicitação já está gravada na missão dele.' },
+      { n: 2, title: 'A Inteligência Artificial interpreta', desc: 'Ela entende o objetivo, identifica o que precisa ser feito e em que ordem.' },
+      { n: 3, title: 'Consulta as informações disponíveis', desc: 'Busca os dados autorizados no sistema (vendas, pedidos, indicadores) e considera o contexto da conversa.' },
+      { n: 4, title: 'Executa as regras definidas', desc: 'Aplica as instruções e políticas da empresa que fazem parte da missão — tom de voz, limites, critérios de decisão.' },
+      { n: 5, title: 'Gera o resultado', desc: 'Uma resposta, um painel, um documento ou uma mensagem enviada pelos canais configurados.' },
+      { n: 6, title: 'Você valida', desc: 'O gestor confere o resultado, pede ajustes se necessário e decide como usá-lo. A palavra final é sempre humana.', last: true }
+    ];
+
+    var LIMITACOES = [
+      'Não adivinha informações. Se um dado não foi informado nem está disponível no sistema, a IA não o inventa — ela precisa que alguém forneça.',
+      'Não toma decisões sem regras. O Agente decide apenas dentro dos critérios definidos na missão. Sem regra definida, ele pergunta ou apresenta opções — não age por conta própria.',
+      'Não acessa sistemas não autorizados. A IA enxerga apenas as informações que a empresa liberou para ela. Nada além disso.',
+      'Não envia mensagens sem configuração. WhatsApp, Telegram e e-mail só funcionam depois da configuração prévia de cada canal.',
+      'Não tem acesso automático aos dados da empresa. O acesso é concedido de forma controlada, área por área, pelos responsáveis.',
+      'Depende das permissões concedidas. Cada usuário e cada Agente atua dentro do seu nível de acesso.',
+      'Depende das integrações existentes. A IA só consulta as fontes de dados que foram conectadas à plataforma.'
+    ];
+
+    var BOAS_PRATICAS = [
+      ['Sempre forneça contexto', 'Diga o objetivo, o público e a situação. "Escreva um e-mail" gera algo genérico; "escreva um e-mail para um cliente estratégico que atrasou o pagamento pela primeira vez" gera algo certeiro.', 'lightbulb'],
+      ['Descreva claramente o objetivo', 'Comece pelo resultado desejado: "quero uma tabela comparando X e Y" funciona melhor do que uma descrição vaga do problema.', 'compass'],
+      ['Evite solicitações genéricas', 'Pedidos amplos demais ("me ajude com vendas") geram respostas amplas demais. Quanto mais específico o pedido, melhor a entrega.', 'x-circle'],
+      ['Mantenha os Agentes organizados', 'Cada Agente deve ter uma responsabilidade clara. Um Agente que "faz tudo" acaba não fazendo nada bem.', 'layers'],
+      ['Nomeie os Agentes corretamente', 'O nome deve dizer o que o Agente faz: "Resumo Diário de Pedidos" é melhor que "Agente 2". Facilita a vida de toda a equipe.', 'bot'],
+      ['Revise respostas importantes', 'Para decisões relevantes — propostas, comunicações a clientes, análises para diretoria — sempre valide o resultado antes de usar.', 'check-circle-2'],
+      ['Atualize as instruções quando o processo mudar', 'Se a política de desconto ou o fluxo de aprovação mudou, atualize a missão do Agente no mesmo dia. Agente com instrução velha produz resultado velho.', 'workflow'],
+      ['Comece pequeno e evolua', 'Valide a ideia no Playground, crie o Agente com um escopo enxuto e vá ampliando conforme a confiança aumenta.', 'rocket']
+    ];
+
+    var CASOS_DE_USO = [
+      ['Gerente Comercial', ['Acompanhar oportunidades e clientes com queda de compra, com alertas automáticos', 'Gerar propostas comerciais no padrão da empresa em minutos', 'Responder clientes com agilidade usando textos revisados e no tom certo', 'Receber no WhatsApp, toda manhã, o resumo dos pedidos pendentes']],
+      ['Gerente de Projetos', ['Acompanhar cronogramas e receber alertas de atividades em risco', 'Gerar documentação de projeto (atas, status reports, planos de ação)', 'Controlar atividades e pendências com resumos periódicos automáticos', 'Registrar reuniões: anotações soltas viram atas formais na hora']],
+      ['Financeiro', ['Analisar pagamentos e destacar movimentações fora do padrão', 'Gerar lembretes e textos de cobrança em tom profissional', 'Resumir as movimentações do dia em um relatório automático por e-mail', 'Extrair dados de documentos (valores, vencimentos) sem digitação manual']],
+      ['RH', ['Responder dúvidas de funcionários sobre benefícios e políticas, sem interrupções', 'Gerar documentos: comunicados, descrições de vaga, materiais de integração', 'Organizar processos seletivos com resumos padronizados de candidatos', 'Transformar políticas internas em FAQs claros para a equipe']],
+      ['Compras', ['Comparar propostas de fornecedores lado a lado, com prós e contras', 'Analisar condições comerciais e identificar pontos de negociação', 'Gerar pedidos e comunicações padronizadas para fornecedores', 'Acompanhar prazos de entrega com alertas automáticos']],
+      ['Jurídico', ['Revisar documentos e apontar cláusulas de risco', 'Resumir contratos extensos nos pontos que interessam à decisão', 'Padronizar minutas e comunicações formais', 'Manter uma base de consulta das políticas contratuais da empresa']]
+    ];
+
+    var BENEFICIOS = [
+      ['Redução do tempo operacional', 'Tarefas que levavam horas — relatórios, propostas, resumos — passam a levar minutos.'],
+      ['Aumento da produtividade', 'Cada pessoa entrega mais, com o mesmo esforço, apoiada por um assistente incansável.'],
+      ['Padronização dos processos', 'O mesmo pedido gera o mesmo padrão de resultado, independente de quem pediu.'],
+      ['Melhoria da qualidade das entregas', 'Textos revisados, análises completas e documentos profissionais como regra, não exceção.'],
+      ['Redução de erros', 'Menos digitação manual, menos esquecimentos, menos retrabalho.'],
+      ['Maior velocidade nas respostas', 'Clientes e equipes recebem retorno em minutos, não em dias.'],
+      ['Melhor aproveitamento das equipes', 'Pessoas deixam o trabalho repetitivo para a IA e focam no que exige julgamento humano.'],
+      ['Centralização do conhecimento', 'Regras e processos ficam registrados nas missões dos Agentes — não se perdem quando alguém sai.'],
+      ['Automação de tarefas repetitivas', 'Acompanhamentos, resumos e alertas acontecem sozinhos, no horário certo, todos os dias.']
+    ];
+
+    var svgCheck = '<svg class="ci-icon positive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+    var svgX = '<svg class="ci-icon negative" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+    var svgArrow = '<svg class="flow-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>';
+    var svgChevron = '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+
+    var sidebarEl = document.getElementById('sidebar-links');
+    SECTIONS.forEach(function (s) {
+      var btn = document.createElement('button');
+      btn.className = 'sidebar-btn';
+      btn.dataset.id = s.id;
+      btn.innerHTML = '<i data-lucide="' + s.icon + '" class="icon"></i><span>' + s.label + '</span>';
+      btn.onclick = function () { document.getElementById(s.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) };
+      sidebarEl.appendChild(btn);
+    });
+
+    var observer = new IntersectionObserver(function (entries) {
+      var visible = entries.filter(function (e) { return e.isIntersecting });
+      if (visible.length > 0) {
+        var top = visible.reduce(function (a, b) { return a.boundingClientRect.top < b.boundingClientRect.top ? a : b });
+        document.querySelectorAll('.sidebar-btn').forEach(function (b) { b.classList.toggle('active', b.dataset.id === top.target.id) });
+      }
+    }, { rootMargin: '-20% 0px -65% 0px' });
+    SECTIONS.forEach(function (s) { var el = document.getElementById(s.id); if (el) observer.observe(el) });
+
+    var agentesEl = document.getElementById('agentes-exemplos');
+    AGENTES_EXEMPLOS.forEach(function (item) {
+      agentesEl.innerHTML += '<div class="card"><div class="card-title" style="margin-bottom:.5rem">' + item[0] + '</div><div class="card-body">' + item[1] + '</div></div>';
+    });
+
+    var iaEl = document.getElementById('ia-capabilities');
+    IA_CAPS.forEach(function (item) {
+      iaEl.innerHTML += '<div class="card"><div class="card-header"><span class="card-icon"><i data-lucide="sparkles"></i></span><span class="card-title">' + item[0] + '</span></div><div class="card-body">' + item[1] + '</div></div>';
+    });
+
+    var capEl = document.getElementById('capacidades-list');
+    CAPACIDADES.forEach(function (c) {
+      var div = document.createElement('div');
+      div.className = 'cap-item';
+      div.innerHTML = '<button class="cap-btn" onclick="this.classList.toggle(\'open\');this.nextElementSibling.classList.toggle(\'show\')"><span>' + c.nome + '</span>' + svgChevron + '</button><div class="cap-body two-col"><div><div class="cap-label">O que faz</div><div class="cap-text">' + c.oQueFaz + '</div></div><div><div class="cap-label">Como funciona</div><div class="cap-text">' + c.comoFunciona + '</div></div><div><div class="cap-label">Benefícios</div><div class="cap-text">' + c.beneficio + '</div></div><div><div class="cap-label">Exemplo real</div><div class="cap-text">' + c.exemplo + '</div></div></div>';
+      capEl.appendChild(div);
+    });
+
+    var niveisEl = document.getElementById('niveis-cards');
+    NIVEIS.forEach(function (n) {
+      niveisEl.innerHTML += '<div class="card" style="border-top:3px solid ' + n.accent + '"><div class="card-header"><span class="card-icon" style="background:color-mix(in srgb,' + n.accent + ' 12%,transparent);color:' + n.accent + '"><i data-lucide="' + n.icon + '"></i></span><span class="card-title">' + n.title + '</span></div><div class="card-body"><p style="margin-bottom:.5rem"><strong class="strong">O que é:</strong> ' + n.oQue + '</p><p style="margin-bottom:.5rem"><strong class="strong">Vantagens:</strong> ' + n.vantagens + '</p><p><strong class="strong">Responsabilidades:</strong> ' + n.responsabilidades + '</p></div></div>';
+    });
+
+    var flowEl = document.getElementById('flow-steps');
+    FLOW_STEPS.forEach(function (s) {
+      flowEl.innerHTML += '<div class="flow-step"><div class="flow-box"><span class="flow-num">' + s.n + '</span><span class="flow-label">' + s.title + '</span><div class="flow-desc">' + s.desc + '</div></div>' + (s.last ? '' : svgArrow) + '</div>';
+    });
+
+    var limEl = document.getElementById('limitacoes-list');
+    LIMITACOES.forEach(function (t) {
+      var parts = t.split('. ');
+      limEl.innerHTML += '<li class="check-item">' + svgX + '<span><strong class="strong">' + parts[0] + '.</strong> ' + parts.slice(1).join(' ') + '</span></li>';
+    });
+
+    var bpEl = document.getElementById('boas-praticas-cards');
+    BOAS_PRATICAS.forEach(function (item) {
+      bpEl.innerHTML += '<div class="card"><div class="card-header"><span class="card-icon"><i data-lucide="' + item[2] + '"></i></span><span class="card-title">' + item[0] + '</span></div><div class="card-body">' + item[1] + '</div></div>';
+    });
+
+    var cuEl = document.getElementById('casos-de-uso-cards');
+    CASOS_DE_USO.forEach(function (item) {
+      var checks = item[1].map(function (it) { return '<li class="check-item">' + svgCheck + '<span>' + it + '</span></li>' }).join('');
+      cuEl.innerHTML += '<div class="usecase-box"><div class="usecase-title">' + item[0] + '</div><ul class="check-list">' + checks + '</ul></div>';
+    });
+
+    var benEl = document.getElementById('beneficios-cards');
+    BENEFICIOS.forEach(function (item) {
+      benEl.innerHTML += '<div class="card"><div class="card-header"><span class="card-icon"><i data-lucide="trending-up"></i></span><span class="card-title">' + item[0] + '</span></div><div class="card-body">' + item[1] + '</div></div>';
+    });
+
+    lucide.createIcons();
+
+    document.querySelectorAll('.doc-section').forEach(function (s) {
+      s.classList.add('reveal');
+    });
+
+    document.querySelectorAll('.sidebar-btn').forEach(function (b, i) {
+      b.classList.add('reveal-slide');
+      b.style.transitionDelay = (i * 0.04) + 's';
+    });
+
+    document.querySelectorAll('.card-grid').forEach(function (grid) {
+      Array.from(grid.children).forEach(function (card, i) {
+        card.classList.add('reveal');
+        card.style.transitionDelay = (i * 0.08) + 's';
+      });
+    });
+
+    document.querySelectorAll('.usecase-box').forEach(function (box, i) {
+      box.classList.add('reveal');
+      box.style.transitionDelay = (i * 0.08) + 's';
+    });
+
+    document.querySelectorAll('.cap-item').forEach(function (item, i) {
+      item.classList.add('reveal');
+      item.style.transitionDelay = (i * 0.05) + 's';
+    });
+
+    document.querySelectorAll('.flow-step').forEach(function (step, i) {
+      step.classList.add('reveal');
+      step.style.transitionDelay = (i * 0.1) + 's';
+    });
+
+    document.querySelectorAll('.check-item').forEach(function (item, i) {
+      item.classList.add('reveal');
+      item.style.transitionDelay = (i * 0.04) + 's';
+    });
+
+    document.querySelectorAll('.callout').forEach(function (c) {
+      c.classList.add('reveal');
+    });
+
+    document.querySelectorAll('.cta-box').forEach(function (c) {
+      c.classList.add('reveal');
+    });
+
+    var revealObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal, .reveal-slide').forEach(function (el) {
+      revealObserver.observe(el);
+    });
+
+    var neuralSvg = document.getElementById('ai-neural-canvas');
+    var neuralNodes = [];
+    var neuralW = window.innerWidth;
+    var neuralH = window.innerHeight;
+    function initNeural() {
+      neuralSvg.innerHTML = '';
+      neuralNodes = [];
+      neuralW = window.innerWidth;
+      neuralH = window.innerHeight;
+      var count = Math.floor((neuralW * neuralH) / 80000);
+      count = Math.min(count, 20);
+      for (var i = 0; i < count; i++) {
+        var node = { x: Math.random() * neuralW, y: Math.random() * neuralH, vx: (Math.random() - .5) * .3, vy: (Math.random() - .5) * .3, r: 2 + Math.random() * 2 };
+        neuralNodes.push(node);
+        var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', node.x);
+        circle.setAttribute('cy', node.y);
+        circle.setAttribute('r', node.r);
+        circle.setAttribute('class', 'neural-node');
+        neuralSvg.appendChild(circle);
+      }
+      for (var i = 0; i < count; i++) {
+        for (var j = i + 1; j < count; j++) {
+          var dx = neuralNodes[i].x - neuralNodes[j].x;
+          var dy = neuralNodes[i].y - neuralNodes[j].y;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 300) {
+            var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', neuralNodes[i].x);
+            line.setAttribute('y1', neuralNodes[i].y);
+            line.setAttribute('x2', neuralNodes[j].x);
+            line.setAttribute('y2', neuralNodes[j].y);
+            line.setAttribute('stroke-width', '0.5');
+            line.setAttribute('class', 'neural-line');
+            line.dataset.i = i;
+            line.dataset.j = j;
+            neuralSvg.appendChild(line);
+          }
+        }
+      }
+    }
+    function animateNeural() {
+      var circles = neuralSvg.querySelectorAll('circle');
+      var lines = neuralSvg.querySelectorAll('line');
+      neuralNodes.forEach(function (n, i) {
+        n.x += n.vx;
+        n.y += n.vy;
+        if (n.x < 0 || n.x > neuralW) n.vx *= -1;
+        if (n.y < 0 || n.y > neuralH) n.vy *= -1;
+        if (circles[i]) {
+          circles[i].setAttribute('cx', n.x);
+          circles[i].setAttribute('cy', n.y);
+        }
+      });
+      lines.forEach(function (l) {
+        var i = parseInt(l.dataset.i);
+        var j = parseInt(l.dataset.j);
+        if (!isNaN(i) && !isNaN(j)) {
+          l.setAttribute('x1', neuralNodes[i].x);
+          l.setAttribute('y1', neuralNodes[i].y);
+          l.setAttribute('x2', neuralNodes[j].x);
+          l.setAttribute('y2', neuralNodes[j].y);
+          var dx = neuralNodes[i].x - neuralNodes[j].x;
+          var dy = neuralNodes[i].y - neuralNodes[j].y;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          l.setAttribute('opacity', Math.max(0, 0.15 * (1 - dist / 300)));
+        }
+      });
+      requestAnimationFrame(animateNeural);
+    }
+    initNeural();
+    animateNeural();
+    window.addEventListener('resize', function () { initNeural() });
+
+    var particleContainer = document.body;
+    for (var p = 0; p < 15; p++) {
+      var particle = document.createElement('div');
+      particle.className = 'ai-particle';
+      particle.style.setProperty('--dx', (Math.random() * 200 - 100) + 'px');
+      particle.style.setProperty('--dy', (Math.random() * -200 - 50) + 'px');
+      particle.style.setProperty('--dur', (8 + Math.random() * 12) + 's');
+      particle.style.setProperty('--delay', (Math.random() * 10) + 's');
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.top = 40 + Math.random() * 60 + '%';
+      particleContainer.appendChild(particle);
+    }
+  </script>
+</body>
+
+</html>

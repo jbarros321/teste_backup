@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRE Hierárquico Interativo</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 84% 4.9%;
+            --border: 214.3 31.8% 91.4%;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+
+        .chevron {
+            transition: transform 0.2s ease-in-out;
+            display: inline-block;
+        }
+
+        tr.collapsed .chevron {
+            transform: rotate(-90deg);
+        }
+
+        /* Grupo de colunas */
+        .th-group {
+            background: #1e3a5f;
+            color: #fff;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 6px 8px;
+            border-right: 2px solid #fff;
+            white-space: nowrap;
+        }
+
+        .th-group-total {
+            background: #14532d;
+        }
+
+        .th-sub {
+            background: #e2e8f0;
+            color: #1e293b;
+            text-align: right;
+            font-weight: 600;
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-right: 1px solid #cbd5e1;
+            white-space: nowrap;
+        }
+
+        .th-sub-total {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .th-desc {
+            background: #1e3a5f;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 6px 12px;
+            position: sticky;
+            left: 0;
+            z-index: 20;
+            min-width: 260px;
+        }
+
+        .th-desc-sub {
+            background: #e2e8f0;
+            color: transparent;
+            padding: 4px 12px;
+            position: sticky;
+            left: 0;
+            z-index: 20;
+            font-size: 0.7rem;
+        }
+
+        td.td-desc {
+            position: sticky;
+            left: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        tr:hover td.td-desc {
+            background: #f1f5f9;
+        }
+
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        td {
+            padding: 5px 8px;
+            font-size: 0.75rem;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
+            text-align: right;
+        }
+
+        .col-sep {
+            border-right: 2px solid #94a3b8 !important;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+        }
+
+        .badge-cr {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body class="h-full w-full">
+    <div id="dre-container" class="h-full w-full flex flex-col">
+        <div class="flex-shrink-0 p-4 border-b" style="border-color: hsl(var(--border)); background: #1e3a5f;">
+            <h1 class="text-base font-bold text-white">Demonstrativo de Resultados</h1>
+        </div>
+        <div class="flex-grow overflow-auto">
+            <table class="w-full text-sm">
+                <thead id="dre-table-head"></thead>
+                <tbody id="dre-table-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const MITRA_UPDATE_EVENT_NAME = 'mitra-update-dre-interativo';
+
+        function updateMitra() {
+            document.body.dispatchEvent(new CustomEvent(MITRA_UPDATE_EVENT_NAME));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const tableBody = document.getElementById('dre-table-body');
+            const tableHead = document.getElementById('dre-table-head');
+            const container = document.getElementById('dre-container');
+
+            const formatCurrency = (value) => {
+                if (typeof value !== 'number' || isNaN(value)) return 'R$ 0,00';
+                return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            };
+
+            const formatPercentage = (value) => {
+                if (typeof value !== 'number' || isNaN(value)) return '0,0%';
+                return `${value.toFixed(1).replace('.', ',')}%`;
+            };
+
+            const renderError = (message) => {
+                container.innerHTML = `<div class="p-8 text-center text-red-600 h-full flex items-center justify-center">${message}</div>`;
+            };
+
+            const renderLoading = () => {
+                tableBody.innerHTML = `<tr><td colspan="100%" class="text-center p-8 text-gray-400">Carregando dados...</td></tr>`;
+            };
+
+            // ─── Lógica de Clique (Toggle e Modal) ────────────────────────
+            tableBody.addEventListener('click', async (event) => {
+                const target = event.target.closest('tr');
+                if (!target) return;
+
+                const isDetail = target.classList.contains('is-detail');
+                const isChevron = event.target.closest('.chevron');
+
+                // Se for uma linha de detalhe (analítica) e não clicou na setinha, abre o modal
+                if (isDetail && !isChevron) {
+                    const natId = target.dataset.nodeId || target.dataset.parentId;
+                    if (natId) {
+                        try {
+                            await setVariableMitra({ name: ':VAR_DET_CODNAT', content: natId });
+                            const screenRes = await queryMitra("SELECT ID FROM INT_SCREEN WHERE NAME = 'Detalhes dos Titulos'");
+                            if (screenRes && screenRes.data && screenRes.data.length > 0) {
+                                modalMitra({
+                                    id: screenRes.data[0][0],
+                                    width: 90,
+                                    height: 90,
+                                    title: 'Detalhes dos Títulos',
+                                    variables: [
+                                        { name: ':VAR_DRE_DT_INI', content: ':VAR_DRE_DT_INI' },
+                                        { name: ':VAR_DRE_DT_FIM', content: ':VAR_DRE_DT_FIM' }
+                                    ]
+                                });
+                            }
+                        } catch (err) {
+                            console.error("Erro ao abrir modal:", err);
+                        }
+                    }
+                    return; // Interrompe para não fazer o toggle
+                }
+
+                // Lógica original de Toggle para expandir/recolher
+                const toggleTarget = event.target.closest('tr[data-node-id]');
+                if (!toggleTarget) return;
+                const nodeId = toggleTarget.dataset.nodeId;
+
+                toggleTarget.classList.toggle('collapsed');
+                const isCollapsed = toggleTarget.classList.contains('collapsed');
+
+                document.querySelectorAll(`tr[data-parent-id='${nodeId}']`).forEach(child => {
+                    child.classList.toggle('hidden', isCollapsed);
+                    if (isCollapsed) {
+                        const childId = child.dataset.nodeId;
+                        if (childId) {
+                            document.querySelectorAll(`tr[data-parent-id='${childId}']`).forEach(gc => gc.classList.add('hidden'));
+                            child.classList.add('collapsed');
+                        }
+                    }
+                });
+            });
+
+            // ─── Inicialização ────────────────────────────────────────────
+            async function initializeComponent() {
+                try {
+                    if (!window.componentData) throw new Error("Objeto 'componentData' não encontrado.");
+                    const required = ['queryCRs', 'queryData', 'queryNaturezas', 'jdbcId'];
+                    for (const k of required) {
+                        if (!componentData[k]?.trim()) throw new Error(`Variável obrigatória ausente: '${k}'.`);
+                    }
+                    await loadAndRenderData();
+                } catch (e) {
+                    renderError(`Erro de Inicialização: ${e.message}`);
+                }
+            }
+
+            async function loadAndRenderData() {
+                renderLoading();
+                try {
+                    const jdbcId = parseInt(componentData.jdbcId, 10);
+                    const baseQuery = componentData.queryData;
+                    let dataQuery = baseQuery;
+                    const clauses = [];
+
+                    const clienteFilterVar = componentData.varFiltroCliente;
+                    const escolaFilterVar = componentData.varFiltroEscola;
+                    const projetoFilterVar = componentData.varFiltroProjeto;
+
+                    if (clienteFilterVar && clienteFilterVar.trim()) {
+                        clauses.push(`(${clienteFilterVar} IS NULL OR LTRIM(RTRIM(${clienteFilterVar})) = '' OR INSTR(',' || ${clienteFilterVar} || ',', ',' || T.CODPROJ || ',') > 0)`);
+                    }
+                    if (escolaFilterVar && escolaFilterVar.trim()) {
+                        clauses.push(`(${escolaFilterVar} IS NULL OR LTRIM(RTRIM(${escolaFilterVar})) = '' OR INSTR(',' || ${escolaFilterVar} || ',', ',' || T.CODPROJ || ',') > 0)`);
+                    }
+                    if (projetoFilterVar && projetoFilterVar.trim()) {
+                        clauses.push(`(${projetoFilterVar} IS NULL OR LTRIM(RTRIM(${projetoFilterVar})) = '' OR INSTR(',' || ${projetoFilterVar} || ',', ',' || T.CODPROJ || ',') > 0)`);
+                    }
+
+                    if (clauses.length > 0) {
+                        const keyword = baseQuery.toUpperCase().includes(' WHERE ') ? ' AND ' : ' WHERE ';
+                        const filterString = keyword + clauses.join(' AND ');
+
+                        const splitRegex = /\s(GROUP|ORDER)\s+BY\s/i;
+                        const match = baseQuery.match(splitRegex);
+
+                        if (match && typeof match.index === 'number') {
+                            const prePart = baseQuery.substring(0, match.index);
+                            const postPart = baseQuery.substring(match.index);
+                            dataQuery = prePart + filterString + postPart;
+                        } else {
+                            dataQuery = baseQuery + filterString;
+                        }
+                    }
+
+                    const [crsResult, dataResult, natResult] = await Promise.all([
+                        queryMitra({ query: componentData.queryCRs, jdbcId }),
+                        queryMitra({ query: dataQuery, jdbcId }),
+                        queryMitra({ query: componentData.queryNaturezas, jdbcId })
+                    ]);
+
+                    const crHeaders = crsResult.data.map(r => r[0]);
+
+                    // ── Árvore de naturezas ──
+                    const naturezaMap = new Map();
+                    const rootNodes = [];
+
+                    const nc = {
+                        id: natResult.headers.findIndex(h => h.name.toUpperCase() === 'CODNAT'),
+                        name: natResult.headers.findIndex(h => h.name.toUpperCase() === 'DESCRNAT'),
+                        parentId: natResult.headers.findIndex(h => h.name.toUpperCase() === 'CODNATPAI'),
+                        analitica: natResult.headers.findIndex(h => h.name.toUpperCase() === 'ANALITICA'),
+                    };
+
+                    natResult.data.forEach(row => {
+                        const id = row[nc.id];
+                        const allKeys = ['Total', ...crHeaders];
+                        const values = Object.fromEntries(allKeys.map(k => [k, { orcado: 0, competencia: 0 }]));
+                        naturezaMap.set(id, {
+                            id, name: row[nc.name], parentId: row[nc.parentId],
+                            isAnalitica: row[nc.analitica] === 'S',
+                            children: [], projects: [], values
+                        });
+                    });
+
+                    naturezaMap.forEach(node => {
+                        const parent = naturezaMap.get(node.parentId);
+                        parent ? parent.children.push(node) : rootNodes.push(node);
+                    });
+
+                    // ── Dados ──
+                    const dc = {
+                        naturezaId: dataResult.headers.findIndex(h => h.name.toUpperCase() === 'NATUREZA_ID'),
+                        projetoId: dataResult.headers.findIndex(h => h.name.toUpperCase() === 'PROJETO_ID'),
+                        projetoNome: dataResult.headers.findIndex(h => h.name.toUpperCase() === 'PROJETO_NOME'),
+                        crName: dataResult.headers.findIndex(h => h.name.toUpperCase() === 'CR_NOME'),
+                        orcado: dataResult.headers.findIndex(h => h.name.toUpperCase() === 'VL_ORCADO'),
+                        competencia: dataResult.headers.findIndex(h => h.name.toUpperCase() === 'VL_COMPETENCIA'),
+                    };
+
+                    dataResult.data.forEach(row => {
+                        const natNode = naturezaMap.get(row[dc.naturezaId]);
+                        if (!natNode?.isAnalitica || !crHeaders.includes(row[dc.crName])) return;
+
+                        const cr = row[dc.crName];
+                        const orc = parseFloat(row[dc.orcado]) || 0;
+                        const comp = parseFloat(row[dc.competencia]) || 0;
+
+                        natNode.values[cr].orcado += orc;
+                        natNode.values[cr].competencia += comp;
+                        natNode.values['Total'].orcado += orc;
+                        natNode.values['Total'].competencia += comp;
+
+                        const pid = row[dc.projetoId];
+                        let proj = natNode.projects.find(p => p.id === pid);
+                        if (!proj) {
+                            const pv = Object.fromEntries(['Total', ...crHeaders].map(k => [k, { orcado: 0, competencia: 0 }]));
+                            proj = { id: pid, name: row[dc.projetoNome] || `Projeto ${pid}`, values: pv };
+                            natNode.projects.push(proj);
+                        }
+                        proj.values[cr].orcado += orc;
+                        proj.values[cr].competencia += comp;
+                        proj.values['Total'].orcado += orc;
+                        proj.values['Total'].competencia += comp;
+                    });
+
+                    // ── Rollup ──
+                    function rollup(node) {
+                        node.children.forEach(child => {
+                            rollup(child);
+                            Object.keys(node.values).forEach(cr => {
+                                node.values[cr].orcado += child.values[cr].orcado;
+                                node.values[cr].competencia += child.values[cr].competencia;
+                            });
+                        });
+                    }
+                    rootNodes.forEach(rollup);
+
+                    // ── Variações: Orçado vs Competência ──
+                    function calcVar(item) {
+                        Object.values(item.values).forEach(v => {
+                            v.varValor = v.competencia - v.orcado;
+                            v.varPerc = v.orcado !== 0
+                                ? (v.varValor / Math.abs(v.orcado)) * 100
+                                : (v.competencia !== 0 ? 100 : 0);
+                        });
+                        item.children?.forEach(calcVar);
+                        item.projects?.forEach(calcVar);
+                    }
+                    rootNodes.forEach(calcVar);
+
+                    // ─────────────────────────────────────────────────────
+                    // RENDERIZAÇÃO DE CABEÇALHO AGRUPADO
+                    // ─────────────────────────────────────────────────────
+                    const allGroups = ['Total', ...crHeaders];
+
+                    let headRow1 = `<th class="th-desc" rowspan="2">Descrição</th>`;
+                    let headRow2 = '';
+
+                    allGroups.forEach((cr, i) => {
+                        const isTotal = cr === 'Total';
+                        const groupClass = isTotal ? 'th-group th-group-total' : 'th-group';
+                        const subClass = isTotal ? 'th-sub th-sub-total' : 'th-sub';
+                        const sepStyle = i < allGroups.length - 1 ? 'border-right: 2px solid #fff;' : '';
+
+                        headRow1 += `<th colspan="4" class="${groupClass}" style="${sepStyle}">${cr}</th>`;
+                        headRow2 += `
+                            <th class="${subClass}">Orçado</th>
+                            <th class="${subClass}">Realizado</th>
+                            <th class="${subClass}">Var $</th>
+                            <th class="${subClass}" style="${sepStyle}">Var %</th>
+                        `;
+                    });
+
+                    tableHead.innerHTML = `
+                        <tr>${headRow1}</tr>
+                        <tr>${headRow2}</tr>
+                    `;
+
+                    // ─────────────────────────────────────────────────────
+                    // RENDERIZAÇÃO DE LINHAS
+                    // ─────────────────────────────────────────────────────
+                    let html = '';
+
+                    function valueCells(values, muted = false) {
+                        let cells = '';
+                        allGroups.forEach((cr, i) => {
+                            const v = values[cr];
+                            const varColor = v.varValor >= 0 ? '#16a34a' : '#dc2626';
+                            const mutedStyle = muted ? 'color:#64748b;' : '';
+                            const sep = i < allGroups.length - 1 ? 'border-right: 2px solid #94a3b8;' : '';
+                            cells += `
+                                <td style="${mutedStyle}">${formatCurrency(v.orcado)}</td>
+                                <td style="${mutedStyle}">${formatCurrency(v.competencia)}</td>
+                                <td style="color:${varColor};${mutedStyle}">${formatCurrency(v.varValor)}</td>
+                                <td style="color:${varColor};${mutedStyle}${sep}">${formatPercentage(v.varPerc)}</td>
+                            `;
+                        });
+                        return cells;
+                    }
+
+                    function renderNode(node, level, parentId = null) {
+                        const hasChildren = node.children.length > 0 || (node.isAnalitica && node.projects.length > 0);
+                        const indent = level * 16;
+                        const parentAttr = parentId ? `data-parent-id="${parentId}"` : '';
+                        const hiddenClass = parentId ? 'hidden' : '';
+                        const bgStyle = level === 1
+                            ? 'background:#f0f4f8;font-weight:700;'
+                            : level === 2
+                                ? 'background:#f8fafc;font-weight:600;'
+                                : '';
+
+                        // Adiciona a classe is-detail se for uma linha analítica
+                        const detailClass = node.isAnalitica ? 'is-detail hover:bg-blue-50' : '';
+
+                        html += `
+                        <tr class="cursor-pointer collapsed ${hiddenClass} ${detailClass}" data-node-id="${node.id}" ${parentAttr} style="${bgStyle}">
+                            <td class="td-desc" style="padding-left:${indent + 8}px; ${bgStyle}">
+                                <div style="display:flex;align-items:center;gap:6px;">
+                                    ${hasChildren
+                                ? `<span class="chevron" style="font-size:12px;color:#64748b;">▼</span>`
+                                : `<span style="width:14px;display:inline-block;"></span>`}
+                                    <span>${node.name}</span>
+                                </div>
+                            </td>
+                            ${valueCells(node.values)}
+                        </tr>`;
+
+                        if (node.isAnalitica) {
+                            node.projects.forEach(proj => renderProject(proj, level + 1, node.id));
+                        }
+                        node.children.forEach(child => renderNode(child, level + 1, node.id));
+                    }
+
+                    function renderProject(proj, level, parentId) {
+                        const indent = level * 16;
+                        html += `
+                        <tr class="hidden is-detail hover:bg-blue-50" data-parent-id="${parentId}">
+                            <td class="td-desc" style="padding-left:${indent + 8}px; color:#64748b;">
+                                <div style="display:flex;align-items:center;gap:6px;">
+                                    <span style="width:14px;display:inline-block;"></span>
+                                    <span>${proj.name}</span>
+                                </div>
+                            </td>
+                            ${valueCells(proj.values, true)}
+                        </tr>`;
+                    }
+
+                    rootNodes.forEach(node => renderNode(node, 1));
+                    tableBody.innerHTML = html || `<tr><td colspan="100%" class="text-center p-8" style="color:#94a3b8;">Nenhum dado encontrado.</td></tr>`;
+
+                } catch (e) {
+                    console.error(e);
+                    renderError(`Erro ao processar dados do DRE: ${e.message}`);
+                }
+            }
+
+            document.body.addEventListener(MITRA_UPDATE_EVENT_NAME, loadAndRenderData);
+
+            const waitAndInit = () => {
+                const start = Date.now();
+                const iv = setInterval(() => {
+                    if (window.componentData?.queryNaturezas) {
+                        clearInterval(iv);
+                        initializeComponent();
+                    } else if (Date.now() - start > 5000) {
+                        clearInterval(iv);
+                        renderError("Erro Crítico: configurações não carregadas.");
+                    }
+                }, 100);
+            };
+            waitAndInit();
+        });
+    </script>
+</body>
+
+</html>

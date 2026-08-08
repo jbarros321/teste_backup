@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Comissao_vendedores" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["./"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Data Inicial" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Data Final" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Cod. vend. inicial" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Cod. vend. final" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Cod. Empresa" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT "Apelido do Vendedor",
+     "Cód.Vendedor",
+     "Tipo de Venda",
+     "Dt.Negoc.",
+     SUM("Valor Vista") AS "Valor Vista",
+     SUM("Valor Prazo") AS "Valor Prazo",
+     "Material",
+     SUM("Valor Devol") AS "Valor Devol",
+     SUM("Valor Total") AS "Valor Total",
+     SUM("Vlr Comis.Vend.") AS "Vlr Comis.Vend.",
+     "Impresso",
+     "Cod. Usuario",
+     "Data",
+     "Hora"
+FROM(SELECT
+       INITCAP(VENCAB.APELIDO) AS "Apelido do Vendedor",
+       TO_CHAR(CAB.CODVEND) AS "Cód.Vendedor",
+        CAB.DTNEG AS "Dt.Negoc.",
+       'Iluminação' AS "Material" ,
+       INITCAP(TPV.DESCRTIPVENDA) AS "Tipo de Venda",
+       SUM ((ITE.VLRTOT - ITE.VLRDESC) * (CASE WHEN TPV.SUBTIPOVENDA  =  1 THEN 1 ELSE 0 END) * (CASE WHEN CAB.TIPMOV = 'V' THEN 1 ELSE 0 END)) AS "Valor Vista",
+       SUM ((ITE.VLRTOT - ITE.VLRDESC) * (CASE WHEN TPV.SUBTIPOVENDA <> 1 THEN 1 ELSE 0 END) * (CASE WHEN CAB.TIPMOV = 'V' THEN 1 ELSE 0 END)) AS "Valor Prazo",
+       SUM ((ITE.VLRTOT - ITE.VLRDESC) * (CASE WHEN CAB.TIPMOV = 'D' THEN -1 ELSE 0 END)) AS "Valor Devol",
+       SUM ((ITE.VLRTOT - ITE.VLRDESC) * (CASE WHEN CAB.TIPMOV = 'D' THEN -1 ELSE 1 END)) AS "Valor Total",
+       SUM (((ITE.VLRTOT - ITE.VLRDESC) * 0.024) * (CASE WHEN CAB.TIPMOV = 'D' THEN -1 ELSE 1 END)) AS "Vlr Comis.Vend.",
+      (SELECT INITCAP(NOMEUSU) FROM TSIUSU WHERE CODUSU = Stp_Get_Codusulogado) AS "Impresso", Stp_Get_Codusulogado AS "Cod. Usuario", TO_CHAR(SYSDATE,'DD') || ' de '|| TRIM(TO_CHAR(SYSDATE,'Month')) || ' de ' || TO_CHAR(SYSDATE,'YYYY') AS "Data", TO_CHAR(SYSDATE,'HH24:MI:SS') AS "Hora"
+    FROM TGFCAB CAB, TGFVEN VENCAB, TGFVEN VEN, TGFTOP TPO, TGFTPV TPV
+       , TGFITE ITE
+         INNER JOIN TGFPRO PRO ON (PRO.CODPROD = ITE.CODPROD
+                               AND PRO.CODGRUPOPROD > 20000000)
+    WHERE CAB.CODVEND      = VENCAB.CODVEND
+      AND CAB.NUNOTA       = ITE.NUNOTA
+      AND CAB.CODVEND      = VEN.CODVEND
+      AND CAB.CODTIPOPER   = TPO.CODTIPOPER
+      AND CAB.DHTIPOPER    = TPO.DHALTER
+      AND CAB.CODTIPVENDA  = TPV.CODTIPVENDA
+      AND CAB.DHTIPVENDA   = TPV.DHALTER
+      AND (    (TPO.ATUALCOM = 'C')
+           AND (CAB.DTNEG >= $P{Data Inicial})
+           AND (CAB.DTNEG <= $P{Data Final})
+           AND (CAB.CODVEND >= $P{Cod. vend. inicial})
+           AND (CAB.CODVEND <= $P{Cod. vend. final})
+     AND (VENCAB.CODEMP = $P{Cod. Empresa})
+           AND (CAB.CODVEND NOT IN (1, 4, 20, 35, 36, 37, 38))
+           AND (CAB.CODEMP IN (1,31,51,41))
+           AND (CAB.CODTIPOPER NOT IN (7, 15, 57, 133))
+           AND (CAB.STATUSNOTA = 'L')
+          )
+      AND( VEN.CODEMP = (CASE WHEN (SELECT USU.CODEMP FROM TSIUSU USU WHERE USU.CODUSU = Stp_Get_Codusulogado)IS NOT NULL THEN (SELECT USU.CODEMP FROM TSIUSU USU WHERE USU.CODUSU = Stp_Get_Codusulogado)
+                                              ELSE (SELECT EMP.CODEMP FROM TSIEMP EMP WHERE EMP.CODEMP =1) END)
+      OR VEN.CODEMP = (CASE WHEN (SELECT USU.CODEMP FROM TSIUSU USU WHERE USU.CODUSU = Stp_Get_Codusulogado)IS NOT NULL THEN (SELECT USU.CODEMP FROM TSIUSU USU WHERE USU.CODUSU = Stp_Get_Codusulogado)
+                                            ELSE (SELECT EMP.CODEMP FROM TSIEMP EMP WHERE EMP.CODEMP =31) END)
+      OR VEN.CODEMP= (CASE WHEN (SELECT USU.CODEMP FROM TSIUSU USU WHERE USU.CODUSU = Stp_Get_Codusulogado)IS NOT NULL THEN (SELECT USU.CODEMP FROM TSIUSU USU WHERE USU.CODUSU = Stp_Get_Codusulogado)
+                                           ELSE  (SELECT EMP.CODEMP FROM TSIEMP EMP WHERE EMP.CODEMP =51) END)
+      OR VEN.CODEMP = (CASE WHEN (SELECT USU.CODEMP FROM TSIUSU USU WHERE USU.CODUSU = Stp_Get_Codusulogado)IS NOT NULL THEN (SELECT USU.CODEMP FROM TSIUSU USU WHERE USU.CODUSU = Stp_Get_Codusulogado)
+                                            ELSE (SELECT EMP.CODEMP FROM TSIEMP EMP WHERE EMP.CODEMP =41) END)
+         )
+    GROUP BY VENCAB.APELIDO, CAB.CODVEND, TPV.DESCRTIPVENDA, CAB.DTNEG, CAB.TIPMOV
+    UNION
+    SELECT
+       INITCAP(VENCAB.APELIDO) AS "Apelido do Vendedor",
+       TO_CHAR(CAB.CODVEND) AS "Cód.Vendedor",
+       CAB.DTNEG AS "Dt.Negoc.",
+       'Elétrico' AS "Material" ,
+       INITCAP(TPV.DESCRTIPVENDA) AS "Tipo de Venda",
+       SUM ((ITE.VLRTOT - ITE.VLRDESC) * (CASE WHEN TPV.SUBTIPOVENDA  =  1 THEN 1 ELSE 0 END) * (CASE WHEN CAB.TIPMOV = 'V' THEN 1 ELSE 0 END)) AS "Valor Vista",
+       SUM ((ITE.VLRTOT - ITE.VLRDESC) * (CASE WHEN TPV.SUBTIPOVENDA <> 1 THEN 1 ELSE 0 END) * (CASE WHEN CAB.TIPMOV = 'V' THEN 1 ELSE 0 END)) AS "Valor Prazo",
+       SUM ((ITE.VLRTOT - ITE.VLRDESC) * (CASE WHEN CAB.TIPMOV = 'D' THEN -1 ELSE 0 END)) AS "Valor Devol",
+       SUM ((ITE.VLRTOT - ITE.VLRDESC) * (CASE WHEN CAB.TIPMOV = 'D' THEN -1 ELSE 1 END)) AS "Valor Total",
+       SUM ( (ITE.VLRTOT - ITE.VLRDESC) * (CASE WHEN VENCAB.CODEMP <> 31 AND CAB.CODEMP IN (1,31,41,51)  AND TPV.SUBTIPOVENDA  =  1
+                                                THEN (VEN.COMVENDA)
+                                                WHEN CAB.CODEMP IN (21, 33, 62)
+                                                THEN (VEN.COMVENDA + 0.006)
+                                                ELSE VEN.COMVENDA END) * (CASE WHEN CAB.TIPMOV = 'D' THEN -1 ELSE 1 END)) AS "Vlr Comis.Vend.",
+       (SELECT INITCAP(NOMEUSU) FROM TSIUSU WHERE CODUSU = Stp_Get_Codusulogado) AS "Impresso",
+       Stp_Get_Codusulogado AS "Cod. Usuario", TO_CHAR(SYSDATE,'DD') || ' de '|| TRIM(TO_CHAR(SYSDATE,'Month')) || ' de ' || TO_CHAR(SYSDATE,'YYYY') AS "Data",
+       TO_CHAR(SYSDATE,'HH24:MI:SS') AS "Hora"
+    FROM TGFCAB CAB, TGFVEN VENCAB, TGFVEN VEN, TGFTOP TPO , TGFTPV TPV
+       , TGFITE ITE
+         INNER JOIN TGFPRO PRO ON (PRO.CODPROD = ITE.CODPROD
+                               AND PRO.CODGRUPOPROD < 20000000)
+     WHERE CAB.CODVEND       =  VENCAB.CODVEND
+       AND CAB.NUNOTA        =  ITE.NUNOTA
+       AND CAB.CODVEND       =  VEN.CODVEND
+       AND CAB.CODTIPOPER    =  TPO.CODTIPOPER
+       AND CAB.DHTIPOPER     =  TPO.DHALTER
+       AND CAB.CODTIPVENDA   =  TPV.CODTIPVENDA
+       AND CAB.DHTIPVENDA    =  TPV.DHALTER
+       AND (    (TPO.ATUALCOM = 'C')
+           AND (CAB.DTNEG >= $P{Data Inicial})
+           AND (CAB.DTNEG <= $P{Data Final})
+           AND (CAB.CODVEND >= $P{Cod. vend. inicial})
+           AND (CAB.CODVEND <= $P{Cod. vend. final})
+           AND (CAB.CODVEND NOT IN (1, 4, 20, 38))
+           AND (VENCAB.CODEMP = $P{Cod. Empresa})
+           AND (CAB.CODEMP IN (1,31,51,41))
+           AND (CAB.CODTIPOPER NOT IN (7, 15, 57, 133))
+           AND (CAB.STATUSNOTA = 'L')
+          )
+      AND( VEN.CODEMP = (CASE WHEN (SELECT USU.CODEMP FROM TSIUSU USU WHERE USU.CODUSU = Stp_Get_Codusulogado)IS NOT NULL THEN (SELECT USU.CODEMP FROM TSIUSU USU WHERE USU.CODUSU = Stp_Get_Codusulogado)
+                                              ELSE (SELECT EMP.CODEMP FROM TSIEMP EMP WHERE EMP.CODEMP =1) END)
+      OR VEN.CODEMP = (CASE WHEN (SELECT USU.CODEMP FROM TSIUSU USU WHERE USU.CODUSU = Stp_Get_Codusulogado)IS NOT NULL THEN (SELECT USU.CODEMP FROM TSIUSU USU WHERE USU.CODUSU = Stp_Get_Codusulogado)
+                                            ELSE (SELECT EMP.CODEMP FROM TSIEMP EMP WHERE EMP.CODEMP =31) END)
+      OR VEN.CODEMP= (CASE WHEN (SELECT USU.CODEMP FROM TSIUSU USU WHERE USU.CODUSU = Stp_Get_Codusulogado)IS NOT NULL THEN (SELECT USU.CODEMP FROM TSIUSU USU WHERE USU.CODUSU = Stp_Get_Codusulogado)
+                                           ELSE  (SELECT EMP.CODEMP FROM TSIEMP EMP WHERE EMP.CODEMP =51) END)
+      OR VEN.CODEMP = (CASE WHEN (SELECT USU.CODEMP FROM TSIUSU USU WHERE USU.CODUSU = Stp_Get_Codusulogado)IS NOT NULL THEN (SELECT USU.CODEMP FROM TSIUSU USU WHERE USU.CODUSU = Stp_Get_Codusulogado)
+                                            ELSE (SELECT EMP.CODEMP FROM TSIEMP EMP WHERE EMP.CODEMP =41) END)
+         )
+GROUP BY VENCAB.APELIDO, CAB.CODVEND, TPV.DESCRTIPVENDA, CAB.DTNEG, CAB.TIPMOV)
+GROUP BY "Apelido do Vendedor", "Cód.Vendedor", "Tipo de Venda", "Dt.Negoc.", "Material", "Impresso", "Cod. Usuario", "Data", "Hora"
+ORDER BY "Apelido do Vendedor", "Dt.Negoc.", "Tipo de Venda", "Material"]]>
+	</queryString>
+	<field name="Apelido do Vendedor" class="java.lang.String"/>
+	<field name="Cód.Vendedor" class="java.lang.String"/>
+	<field name="Tipo de Venda" class="java.lang.String"/>
+	<field name="Dt.Negoc." class="java.sql.Timestamp"/>
+	<field name="Valor Vista" class="java.math.BigDecimal"/>
+	<field name="Valor Prazo" class="java.math.BigDecimal"/>
+	<field name="Material" class="java.lang.String"/>
+	<field name="Valor Devol" class="java.math.BigDecimal"/>
+	<field name="Valor Total" class="java.math.BigDecimal"/>
+	<field name="Vlr Comis.Vend." class="java.math.BigDecimal"/>
+	<field name="Impresso" class="java.lang.String"/>
+	<field name="Cod. Usuario" class="java.math.BigDecimal"/>
+	<field name="Data" class="java.lang.String"/>
+	<field name="Hora" class="java.lang.String"/>
+	<variable name="Código Vendedor" class="java.lang.String" incrementType="Group" incrementGroup="Cód.Vendedor">
+		<variableExpression><![CDATA[$F{Cód.Vendedor}]]></variableExpression>
+	</variable>
+	<variable name="Valor Vista_1" class="java.math.BigDecimal" resetType="Group" resetGroup="Cód.Vendedor" calculation="Sum">
+		<variableExpression><![CDATA[$F{Valor Vista}]]></variableExpression>
+	</variable>
+	<variable name="Valor Total_1" class="java.math.BigDecimal" resetType="Group" resetGroup="Cód.Vendedor" calculation="Sum">
+		<variableExpression><![CDATA[$F{Valor Total}]]></variableExpression>
+	</variable>
+	<variable name="Vlr Comis.Vend._1" class="java.math.BigDecimal" resetType="Group" resetGroup="Cód.Vendedor" calculation="Sum">
+		<variableExpression><![CDATA[$F{Vlr Comis.Vend.}]]></variableExpression>
+	</variable>
+	<variable name="Material_1" class="java.lang.Integer" resetType="Group" resetGroup="Cód.Vendedor" calculation="Count">
+		<variableExpression><![CDATA[$F{Material}]]></variableExpression>
+	</variable>
+	<variable name="Valor Devol_1" class="java.math.BigDecimal" resetType="Group" resetGroup="Cód.Vendedor" calculation="Sum">
+		<variableExpression><![CDATA[$F{Valor Devol}]]></variableExpression>
+	</variable>
+	<variable name="Valor Prazo_1" class="java.math.BigDecimal" resetType="Group" resetGroup="Cód.Vendedor" calculation="Sum">
+		<variableExpression><![CDATA[$F{Valor Prazo}]]></variableExpression>
+	</variable>
+	<group name="Cód.Vendedor" isStartNewPage="true" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{Cód.Vendedor}]]></groupExpression>
+		<groupHeader>
+			<band height="30">
+				<textField>
+					<reportElement x="0" y="0" width="555" height="20"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Vendas por tipo de venda vendedor: " +$F{Cód.Vendedor} +" - " +$F{Apelido do Vendedor}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="20" width="100" height="10"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Tipo de venda]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="100" y="20" width="65" height="10"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Dt.Negoc.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="165" y="20" width="65" height="10"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Á Vista]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="230" y="20" width="65" height="10"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Á Prazo]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="360" y="20" width="65" height="10"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Devolução]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="425" y="20" width="65" height="10"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Valor Total]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="490" y="20" width="65" height="10"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Comissão]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="295" y="20" width="65" height="10"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Material]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="68">
+				<subreport isUsingCache="false">
+					<reportElement key="subtotal" x="0" y="13" width="555" height="55" isPrintWhenDetailOverflows="true"/>
+					<subreportParameter name="Data Inicial">
+						<subreportParameterExpression><![CDATA[$P{Data Inicial}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="Data Final">
+						<subreportParameterExpression><![CDATA[$P{Data Final}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="CODVEND">
+						<subreportParameterExpression><![CDATA[$V{Código Vendedor}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="Cod. Empresa">
+						<subreportParameterExpression><![CDATA[$P{Cod. Empresa}]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "subtotal.jasper"]]></subreportExpression>
+				</subreport>
+				<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+					<reportElement x="165" y="0" width="65" height="13"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{Valor Vista_1}]]></textFieldExpression>
+				</textField>
+				<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+					<reportElement x="230" y="0" width="65" height="13"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{Valor Prazo_1}]]></textFieldExpression>
+				</textField>
+				<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+					<reportElement x="360" y="0" width="65" height="13"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{Valor Devol_1}]]></textFieldExpression>
+				</textField>
+				<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+					<reportElement x="425" y="0" width="65" height="13"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{Valor Total_1}]]></textFieldExpression>
+				</textField>
+				<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+					<reportElement x="490" y="0" width="65" height="13"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression class="java.math.BigDecimal"><![CDATA[$V{Vlr Comis.Vend._1}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="0" width="165" height="13"/>
+					<textElement>
+						<font fontName="SansSerif" size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Somatória]]></text>
+				</staticText>
+			</band>
+		</groupFooter>
+	</group>
+	<pageHeader>
+		<band height="20">
+			<staticText>
+				<reportElement x="0" y="0" width="100" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Sankhya-W]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="165" y="0" width="390" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Relatório de Comissões Vendas por Vendedor]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="10" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="100" height="10"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{Tipo de Venda}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="100" y="0" width="65" height="10"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.sql.Timestamp"><![CDATA[$F{Dt.Negoc.}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+				<reportElement x="165" y="0" width="65" height="10"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{Valor Vista}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+				<reportElement x="230" y="0" width="65" height="10"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{Valor Prazo}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+				<reportElement x="360" y="0" width="65" height="10"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{Valor Devol}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+				<reportElement x="425" y="0" width="65" height="10"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{Valor Total}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+				<reportElement x="490" y="0" width="65" height="10"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{Vlr Comis.Vend.}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="295" y="0" width="65" height="10"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{Material}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="13">
+			<textField>
+				<reportElement mode="Opaque" x="0" y="0" width="529" height="13" backcolor="#E6E6E6"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Página "+$V{PAGE_NUMBER}+" de"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement mode="Opaque" x="529" y="0" width="26" height="13" backcolor="#E6E6E6"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="0" width="212" height="13"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Impresso por: " +$F{Cod. Usuario} +" - " +$F{Impresso}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="212" y="0" width="213" height="13"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["dia " +$F{Data} +" ás " +$F{Hora}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="91">
+			<subreport>
+				<reportElement key="fechamento_periodo" isPrintRepeatedValues="false" x="0" y="0" width="555" height="91" isPrintWhenDetailOverflows="true"/>
+				<subreportParameter name="Cod. vend. inicial">
+					<subreportParameterExpression><![CDATA[$P{Cod. vend. inicial}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Data Inicial">
+					<subreportParameterExpression><![CDATA[$P{Data Inicial}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Cod. vend. final">
+					<subreportParameterExpression><![CDATA[$P{Cod. vend. final}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Data Final">
+					<subreportParameterExpression><![CDATA[$P{Data Final}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Cod. Empresa">
+					<subreportParameterExpression><![CDATA[$P{Cod. Empresa}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "fechamento_periodo.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="802">
+			<subreport>
+				<reportElement key="totalizadores" x="0" y="0" width="555" height="802" isPrintWhenDetailOverflows="true"/>
+				<subreportParameter name="Cod. vend. inicial">
+					<subreportParameterExpression><![CDATA[$P{Cod. vend. inicial}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Data Inicial">
+					<subreportParameterExpression><![CDATA[$P{Data Inicial}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Cod. vend. final">
+					<subreportParameterExpression><![CDATA[$P{Cod. vend. final}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Data Final">
+					<subreportParameterExpression><![CDATA[$P{Data Final}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Cod. Empresa">
+					<subreportParameterExpression><![CDATA[$P{Cod. Empresa}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression class="java.lang.String"><![CDATA[$P{SUBREPORT_DIR} + "totalizadores.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</summary>
+</jasperReport>

@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>DOCUMENTACAO_FUNCIONAL</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<h1
+id="documentação-funcional---notificação-automática-de-recebimentos">Documentação
+Funcional - Notificação Automática de Recebimentos</h1>
+<h2 id="índice">Índice</h2>
+<ol type="1">
+<li><a href="#visão-geral">Visão Geral</a></li>
+<li><a href="#objetivos-do-sistema">Objetivos do Sistema</a></li>
+<li><a href="#requisitos-funcionais">Requisitos Funcionais</a></li>
+<li><a href="#requisitos-não-funcionais">Requisitos
+Não-Funcionais</a></li>
+<li><a href="#regras-de-negócio">Regras de Negócio</a></li>
+<li><a href="#fluxos-de-processo">Fluxos de Processo</a></li>
+<li><a href="#casos-de-uso">Casos de Uso</a></li>
+<li><a href="#configuração-do-sistema">Configuração do Sistema</a></li>
+<li><a href="#monitoramento-e-relatórios">Monitoramento e
+Relatórios</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ol>
+<h2 id="visão-geral">Visão Geral</h2>
+<h3 id="descrição-do-sistema">Descrição do Sistema</h3>
+<p>O sistema de <strong>Notificação Automática de Recebimentos</strong>
+monitora automaticamente os recebimentos de pagamentos via PIX no
+sistema Sankhya e notifica os motoristas através de mensagens mobile via
+plataforma Performaxxi, proporcionando transparência e agilidade no
+processo de liquidação de títulos.</p>
+<h3 id="problema-a-ser-resolvido">Problema a Ser Resolvido</h3>
+<p>Atualmente, quando um pagamento é confirmado via PIX, os motoristas
+não recebem notificação automática, gerando: - Falta de transparência
+sobre confirmação de pagamentos - Necessidade de consulta manual para
+verificar status - Demora na comunicação de recebimentos - Possível
+insatisfação dos motoristas</p>
+<h3 id="benefícios-esperados">Benefícios Esperados</h3>
+<ul>
+<li><strong>Transparência</strong>: Motoristas recebem confirmação
+imediata de pagamentos</li>
+<li><strong>Automatização</strong>: Notificação automática sem
+intervenção manual</li>
+<li><strong>Agilidade</strong>: Comunicação instantânea de
+recebimentos</li>
+<li><strong>Satisfação</strong>: Melhoria na experiência do
+motorista</li>
+<li><strong>Rastreabilidade</strong>: Logs detalhados de todas as
+notificações</li>
+</ul>
+<h2 id="objetivos-do-sistema">Objetivos do Sistema</h2>
+<h3 id="objetivo-principal">Objetivo Principal</h3>
+<p>Notificar automaticamente os motoristas sobre a confirmação de
+recebimentos via PIX, proporcionando transparência no processo de
+liquidação de títulos.</p>
+<h3 id="objetivos-específicos">Objetivos Específicos</h3>
+<ol type="1">
+<li>Monitorar recebimentos de pagamentos na tabela financeira</li>
+<li>Validar se o recebimento atende aos critérios de notificação</li>
+<li>Enviar mensagem mobile para o motorista via Performaxxi</li>
+<li>Registrar logs de todas as notificações enviadas</li>
+<li>Manter histórico para auditoria e consulta</li>
+</ol>
+<h2 id="requisitos-funcionais">Requisitos Funcionais</h2>
+<h3 id="rf01---monitoramento-de-recebimentos">RF01 - Monitoramento de
+Recebimentos</h3>
+<p><strong>Descrição</strong>: O sistema deve monitorar automaticamente
+a tabela de recebimentos financeiros.</p>
+<p><strong>Critérios de Aceitação</strong>: - Detectar inserção de novos
+recebimentos - Detectar atualização de recebimentos existentes -
+Monitorar campos específicos de baixa financeira - Processar apenas
+recebimentos válidos</p>
+<h3 id="rf02---validação-de-recebimentos">RF02 - Validação de
+Recebimentos</h3>
+<p><strong>Descrição</strong>: O sistema deve validar se o recebimento
+atende aos critérios para notificação.</p>
+<p><strong>Critérios de Aceitação</strong>: - Verificar se é uma receita
+(não despesa) - Verificar se possui baixa financeira válida - Verificar
+se o valor é maior que zero - Verificar se possui ordem de carga
+associada - Verificar se possui dados do cliente</p>
+<h3 id="rf03---busca-de-dados-adicionais">RF03 - Busca de Dados
+Adicionais</h3>
+<p><strong>Descrição</strong>: O sistema deve buscar informações
+complementares necessárias para a notificação.</p>
+<p><strong>Critérios de Aceitação</strong>: - Buscar nome do cliente -
+Buscar ordem de carga da nota - Buscar número da nota fiscal - Validar
+existência de celular do cliente</p>
+<h3 id="rf04---envio-de-notificação-mobile">RF04 - Envio de Notificação
+Mobile</h3>
+<p><strong>Descrição</strong>: O sistema deve enviar mensagem mobile
+para o motorista via Performaxxi.</p>
+<p><strong>Critérios de Aceitação</strong>: - Enviar mensagem formatada
+com dados do recebimento - Incluir nome do cliente - Incluir valor
+recebido - Incluir número da nota - Incluir ordem de carga - Gerar ID
+único de correlação</p>
+<h3 id="rf05---registro-de-logs">RF05 - Registro de Logs</h3>
+<p><strong>Descrição</strong>: O sistema deve registrar logs detalhados
+de todas as notificações.</p>
+<p><strong>Critérios de Aceitação</strong>: - Registrar dados do
+recebimento - Registrar tipo de evento (INSERT/UPDATE) - Registrar
+status da notificação - Registrar mensagem de erro (se houver) -
+Registrar data/hora da execução</p>
+<h3 id="rf06---tratamento-de-erros">RF06 - Tratamento de Erros</h3>
+<p><strong>Descrição</strong>: O sistema deve tratar erros de forma
+adequada sem interromper o fluxo principal.</p>
+<p><strong>Critérios de Aceitação</strong>: - Continuar processamento em
+caso de erro - Registrar erros específicos no log - Não afetar transação
+financeira principal - Permitir reprocessamento posterior</p>
+<h2 id="requisitos-não-funcionais">Requisitos Não-Funcionais</h2>
+<h3 id="rnf01---performance">RNF01 - Performance</h3>
+<ul>
+<li><strong>Tempo de processamento</strong>: Máximo de 2 segundos por
+recebimento</li>
+<li><strong>Timeout de API</strong>: 30 segundos por notificação</li>
+<li><strong>Processamento</strong>: Tempo real (imediato após
+baixa)</li>
+</ul>
+<h3 id="rnf02---disponibilidade">RNF02 - Disponibilidade</h3>
+<ul>
+<li><strong>Disponibilidade</strong>: 99.9% de uptime</li>
+<li><strong>Processamento</strong>: Contínuo e automático</li>
+<li><strong>Retry</strong>: 3 tentativas em caso de erro</li>
+</ul>
+<h3 id="rnf03---confiabilidade">RNF03 - Confiabilidade</h3>
+<ul>
+<li><strong>Precisão</strong>: 100% de recebimentos válidos
+processados</li>
+<li><strong>Integridade</strong>: Não afetar transações financeiras</li>
+<li><strong>Consistência</strong>: Logs sempre registrados</li>
+</ul>
+<h3 id="rnf04---segurança">RNF04 - Segurança</h3>
+<ul>
+<li><strong>Autenticação</strong>: Credenciais seguras para API
+Performaxxi</li>
+<li><strong>Logs</strong>: Registro de auditoria de todas as
+operações</li>
+<li><strong>Permissões</strong>: Acesso restrito a dados
+necessários</li>
+</ul>
+<h2 id="regras-de-negócio">Regras de Negócio</h2>
+<h3 id="rn01---critério-de-notificação">RN01 - Critério de
+Notificação</h3>
+<ul>
+<li>Apenas receitas (RECDESP = 1)</li>
+<li>Apenas com baixa financeira válida</li>
+<li>Apenas com valor maior que zero</li>
+<li>Apenas com ordem de carga associada</li>
+</ul>
+<h3 id="rn02---formato-da-mensagem">RN02 - Formato da Mensagem</h3>
+<ul>
+<li>Mensagem personalizada com nome do cliente</li>
+<li>Incluir valor formatado em reais</li>
+<li>Incluir número da nota fiscal</li>
+<li>Incluir ordem de carga</li>
+<li>Tom cordial e profissional</li>
+</ul>
+<h3 id="rn03---campos-de-trigger">RN03 - Campos de Trigger</h3>
+<ul>
+<li>CODTIPOPERBAIXA: Código do tipo de operação de baixa</li>
+<li>DHTIPOPERBAIXA: Data/hora do tipo de operação</li>
+<li>DHBAIXA: Data/hora da baixa</li>
+<li>VLRBAIXA: Valor da baixa (&gt; 0)</li>
+</ul>
+<h3 id="rn04---tratamento-de-erros">RN04 - Tratamento de Erros</h3>
+<ul>
+<li>Erro na notificação não deve afetar a baixa financeira</li>
+<li>Logs de erro devem ser registrados</li>
+<li>Processamento deve continuar normalmente</li>
+</ul>
+<h2 id="fluxos-de-processo">Fluxos de Processo</h2>
+<h3 id="fluxo-principal---notificação-de-recebimento">Fluxo Principal -
+Notificação de Recebimento</h3>
+<pre class="mermaid"><code>flowchart TD
+    A[Recebimento Confirmado no Sistema] --&gt; B[Detectar Campos de Baixa Preenchidos]
+    B --&gt; C[Validar Critérios de Notificação]
+    C --&gt; D{Recebimento Válido?}
+    D --&gt;|Não| E[Ignorar - Não Atende Critérios]
+    D --&gt;|Sim| F[Buscar Dados Adicionais]
+    F --&gt; G[Buscar Nome do Cliente]
+    G --&gt; H[Buscar Ordem de Carga]
+    H --&gt; I[Buscar Número da Nota]
+    I --&gt; J[Preparar Dados da Notificação]
+    J --&gt; K[Enviar Mensagem Mobile]
+    K --&gt; L{Envio Bem-sucedido?}
+    L --&gt;|Sim| M[Registrar Log de Sucesso]
+    L --&gt;|Não| N[Registrar Log de Erro]
+    M --&gt; O[Finalizar Processamento]
+    N --&gt; O
+    E --&gt; O</code></pre>
+<h3 id="fluxo-de-validação">Fluxo de Validação</h3>
+<pre class="mermaid"><code>flowchart TD
+    A[Recebimento Detectado] --&gt; B[É Receita?]
+    B --&gt;|Não| C[Rejeitar - Não é Receita]
+    B --&gt;|Sim| D[Tem Baixa Financeira?]
+    D --&gt;|Não| E[Rejeitar - Sem Baixa]
+    D --&gt;|Sim| F[Valor &gt; 0?]
+    F --&gt;|Não| G[Rejeitar - Valor Zero]
+    F --&gt;|Sim| H[Tem Ordem de Carga?]
+    H --&gt;|Não| I[Rejeitar - Sem Ordem Carga]
+    H --&gt;|Sim| J[Aprovar para Notificação]
+    C --&gt; K[Fim]
+    E --&gt; K
+    G --&gt; K
+    I --&gt; K
+    J --&gt; L[Continuar Processo]</code></pre>
+<h2 id="casos-de-uso">Casos de Uso</h2>
+<h3 id="cu01---notificação-automática-de-recebimento">CU01 - Notificação
+Automática de Recebimento</h3>
+<p><strong>Ator Principal</strong>: Sistema (Evento Programado)</p>
+<p><strong>Pré-condições</strong>: - Recebimento confirmado no sistema
+financeiro - Campos de baixa preenchidos - Conexão com API Performaxxi
+disponível</p>
+<p><strong>Fluxo Principal</strong>: 1. Sistema detecta baixa de
+recebimento 2. Sistema valida critérios de notificação 3. Sistema busca
+dados adicionais do cliente 4. Sistema prepara mensagem de notificação
+5. Sistema envia mensagem mobile via Performaxxi 6. Sistema registra log
+da notificação 7. Sistema finaliza processamento</p>
+<p><strong>Fluxo Alternativo</strong>: - 2a. Se não atende critérios:
+ignorar processamento - 5a. Se erro no envio: registrar erro e
+continuar</p>
+<p><strong>Pós-condições</strong>: - Mensagem enviada para motorista -
+Log de notificação registrado - Recebimento processado normalmente</p>
+<h3 id="cu02---consulta-de-histórico-de-notificações">CU02 - Consulta de
+Histórico de Notificações</h3>
+<p><strong>Ator Principal</strong>: Usuário do Sistema</p>
+<p><strong>Pré-condições</strong>: - Usuário autenticado no sistema -
+Histórico de notificações disponível</p>
+<p><strong>Fluxo Principal</strong>: 1. Usuário acessa relatório de
+notificações 2. Usuário filtra por período ou cliente 3. Sistema exibe
+histórico de notificações 4. Usuário seleciona notificação específica 5.
+Sistema exibe detalhes da notificação 6. Usuário visualiza status e
+mensagens de erro</p>
+<h3 id="cu03---reprocessamento-de-notificação-com-erro">CU03 -
+Reprocessamento de Notificação com Erro</h3>
+<p><strong>Ator Principal</strong>: Usuário do Sistema</p>
+<p><strong>Pré-condições</strong>: - Notificação com erro identificada -
+Dados do recebimento ainda válidos</p>
+<p><strong>Fluxo Principal</strong>: 1. Usuário consulta notificações
+com erro 2. Usuário identifica problema específico 3. Usuário corrige
+dados necessários 4. Sistema reprocessa notificação automaticamente 5.
+Sistema registra novo resultado</p>
+<h2 id="configuração-do-sistema">Configuração do Sistema</h2>
+<h3 id="configuração-do-evento-programado">Configuração do Evento
+Programado</h3>
+<p><strong>Localização</strong>: Administração ? Módulo Java ? Eventos
+Programados</p>
+<p><strong>Parâmetros de Configuração</strong>: - <strong>Nome</strong>:
+“Recebimento Performaxxi” - <strong>Classe</strong>:
+br.com.performaxxi.action.evento.RecebimentoEvento -
+<strong>Tabela</strong>: TGFFIN - <strong>Operações</strong>:
+afterInsert, afterUpdate - <strong>Campos de Trigger</strong>:
+CODTIPOPERBAIXA, DHTIPOPERBAIXA, DHBAIXA, VLRBAIXA</p>
+<h3 id="configuração-da-api-performaxxi">Configuração da API
+Performaxxi</h3>
+<p><strong>Parâmetros Necessários</strong>: - <strong>URL Base</strong>:
+https://www.performaxxi.com.br - <strong>Endpoint</strong>:
+/API.REST/enviar-mensagem-mobile - <strong>Autenticação</strong>: Basic
+Auth - <strong>Timeout de Conexão</strong>: 30 segundos -
+<strong>Timeout de Leitura</strong>: 60 segundos</p>
+<h3 id="configuração-de-notificações">Configuração de Notificações</h3>
+<p><strong>Formato da Mensagem</strong>:</p>
+<pre><code>&quot;Olá [NOME_CLIENTE]! Seu pagamento no valor de R$ [VALOR] foi confirmado.
+Nota: [NUMERO_NOTA] | Ordem de Carga: [ORDEM_CARGA].
+Obrigado pela preferência!&quot;</code></pre>
+<p><strong>Parâmetros da Mensagem</strong>: - <strong>Tipo</strong>:
+PAGAMENTO_CONFIRMADO - <strong>Título</strong>: Pagamento Confirmado -
+<strong>Formato</strong>: Texto com variáveis dinâmicas</p>
+<h2 id="monitoramento-e-relatórios">Monitoramento e Relatórios</h2>
+<h3 id="dashboard-de-monitoramento">Dashboard de Monitoramento</h3>
+<p><strong>Métricas Disponíveis</strong>: - Total de notificações
+enviadas - Taxa de sucesso das notificações - Tempo médio de
+processamento - Notificações por dia - Erros mais comuns</p>
+<h3 id="relatórios-disponíveis">Relatórios Disponíveis</h3>
+<p><strong>Relatório de Notificações</strong>: - Data e hora da
+notificação - Dados do recebimento - Status da notificação - Mensagens
+de erro</p>
+<p><strong>Relatório de Performance</strong>: - Estatísticas de
+processamento - Tempos de resposta - Análise de erros</p>
+<h3 id="consultas-de-monitoramento">Consultas de Monitoramento</h3>
+<p><strong>Consultar Notificações Recentes</strong>:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> AD_RECEBIMENTOLOG</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> DHEXECUCAO <span class="kw">DESC</span>;</span></code></pre></div>
+<p><strong>Consultar Notificações com Erro</strong>:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> AD_RECEBIMENTOLOG</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> STATUS_PROCESSAMENTO <span class="op">=</span> <span class="st">&#39;ERRO&#39;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> DHEXECUCAO <span class="kw">DESC</span>;</span></code></pre></div>
+<p><strong>Consultar Estatísticas</strong>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> STATUS_PROCESSAMENTO, <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> TOTAL,</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">SUM</span>(VALOR_RECEBIDO) <span class="kw">AS</span> VALOR_TOTAL</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> AD_RECEBIMENTOLOG</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> DHEXECUCAO <span class="op">&gt;=</span> <span class="fu">SYSDATE</span> <span class="op">-</span> <span class="dv">30</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> STATUS_PROCESSAMENTO;</span></code></pre></div>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="problemas-comuns">Problemas Comuns</h3>
+<p><strong>Problema 1: Cliente sem Celular</strong> -
+<strong>Sintoma</strong>: Notificação não é enviada -
+<strong>Causa</strong>: Cliente não possui celular cadastrado -
+<strong>Solução</strong>: Atualizar cadastro do cliente com celular
+válido</p>
+<p><strong>Problema 2: Nota sem Ordem de Carga</strong> -
+<strong>Sintoma</strong>: Notificação não é processada -
+<strong>Causa</strong>: Nota fiscal não possui ordem de carga -
+<strong>Solução</strong>: Verificar e preencher ordem de carga na
+nota</p>
+<p><strong>Problema 3: Erro de Autenticação API</strong> -
+<strong>Sintoma</strong>: HTTP 401/403 na API - <strong>Causa</strong>:
+Credenciais inválidas ou expiradas - <strong>Solução</strong>: Verificar
+credenciais da API Performaxxi</p>
+<p><strong>Problema 4: Celular Inválido</strong> -
+<strong>Sintoma</strong>: API retorna erro de celular inválido -
+<strong>Causa</strong>: Formato incorreto do celular -
+<strong>Solução</strong>: Verificar formato (10 ou 11 dígitos)</p>
+<p><strong>Problema 5: Evento Não Dispara</strong> -
+<strong>Sintoma</strong>: Notificação não é enviada após baixa -
+<strong>Causa</strong>: Campos de trigger não preenchidos -
+<strong>Solução</strong>: Verificar se todos os campos estão
+preenchidos</p>
+<h3 id="logs-de-debug">Logs de Debug</h3>
+<p><strong>Habilitar Logs Detalhados</strong>: - Configurar propriedade
+de debug no sistema - Verificar logs no console do Sankhya - Analisar
+fluxo de processamento</p>
+<p><strong>Informações de Debug</strong>: - ID de correlação da
+notificação - Dados do recebimento processado - Status da validação -
+Resposta da API Performaxxi</p>
+<h3 id="contatos-de-suporte">Contatos de Suporte</h3>
+<p><strong>Suporte Técnico</strong>: - <strong>Email</strong>:
+suporte@guaranamineiro.com.br - <strong>Horário</strong>: 08:00 às 18:00
+(segunda a sexta)</p>
+<p><strong>Suporte Performaxxi</strong>: - <strong>Email</strong>:
+suporte@performaxxi.com.br - <strong>Documentação</strong>:
+https://www.performaxxi.com.br/API.WS.Documentation2/</p>
+<p><strong>Suporte Sankhya</strong>: - <strong>Email</strong>:
+suporte@sankhya.com.br - <strong>Documentação</strong>:
+https://developer.sankhya.com.br/</p>
+<hr />
+<p><strong>Versão</strong>: 1.0.0 <strong>Última atualização</strong>:
+Janeiro 2025 <strong>Autor</strong>: Sistema de Integração
+PERFORMAXXI</p>
+</body>
+</html>

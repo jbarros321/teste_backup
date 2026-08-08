@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" 
+	width="100%" height="100%"
+	label="Rateio"
+	xmlns:db="br.com.sankhya.db.*" 
+	xmlns:ui="br.com.sankhya.db.ui.*" 
+	xmlns:controls="br.com.sankhya.controls.*">
+
+	<mx:Script>
+		<![CDATA[
+			import mx.core.Application;
+			import br.com.sankhya.db.IDBDataSet;
+			import br.com.sankhya.controls.DefaultSankhyaApplication;
+			
+			[Bindable]
+			private var _dsCriterioHolding:IDBDataSet;
+			
+			public function set dataSetCriterioHolding(ds:IDBDataSet):void{
+				_dsCriterioHolding = ds;
+			}
+			
+			private function dfpCreationComplete():void{
+				dfpRateios.buildConfigGrid(gridRateios, (Application.application as DefaultSankhyaApplication).getApplicationResourceID() + ".rateioCritHolding");
+			}
+		]]>
+	</mx:Script>
+	
+	<db:DBDataSet id="dsRateios" entity="ItemCriterioRateioHolding" parentDataSet="{_dsCriterioHolding}" providerName="mge@CRUDServiceProvider" allowPKModification="true">
+		<db:designFields>
+			<db:Field pattern="*"/>
+		</db:designFields>
+	</db:DBDataSet>
+	<ui:DBDoubleFacePanel id="dfpRateios" width="100%" height="100%" dataSet="{dsRateios}" creationComplete="{dfpCreationComplete()}" defaultFaceIndex="1" creationPolicy="all">
+		<ui:topBars>
+			<ui:DBNavigator dataSet="{dsRateios}" showAttachmentBtn="false"/>
+		</ui:topBars>
+		<ui:faceOne>
+			<mx:HBox>
+				<mx:VBox>
+					<controls:TitleLabel text="Despesa" fontWeight="bold" fontSize="14" width="100%" color="red"/>
+					<ui:EntityForm dataSet="{dsRateios}" width="100%" height="100%">
+						<ui:DBFormItem label="Natureza:" fieldName="CODNATDESP"/>
+						<ui:DBFormItem label="Centro Resultado:" fieldName="CODCENCUSDESP"/>
+						<ui:DBFormItem label="Projeto:" fieldName="CODPROJDESP"/>
+						<ui:DBFormItem label="Empresa:" fieldName="CODEMPDESP"/>
+						<ui:DBFormItem label="Parceiro:" fieldName="CODPARCDESP"/>
+					</ui:EntityForm>
+				</mx:VBox>
+				<mx:VBox>
+					<controls:TitleLabel text="Receita" fontWeight="bold" fontSize="14" width="100%" color="blue"/>
+					<ui:EntityForm dataSet="{dsRateios}" width="100%" height="100%">
+						<ui:DBFormItem label="Natureza:" fieldName="CODNATREC"/>
+						<ui:DBFormItem label="Centro Resultado:" fieldName="CODCENCUSREC"/>
+						<ui:DBFormItem label="Projeto:" fieldName="CODPROJREC"/>
+						<ui:DBFormItem label="Empresa:" fieldName="CODEMPREC"/>
+						<ui:DBFormItem label="Parceiro:" fieldName="CODPARCREC"/>
+					</ui:EntityForm>
+				</mx:VBox>
+			</mx:HBox>
+			<mx:HRule width="100%" />
+			<mx:Form>
+				<mx:FormItem label="Percentual de Rateio:" required="true">
+					<mx:HBox horizontalGap="0" verticalGap="0" verticalAlign="middle">
+						<ui:DBNumericInput dataSet="{dsRateios}" fieldName="PERCRATEIO" precision="3" prettyPrecision="2"/>
+						<mx:Label text="%"/>
+					</mx:HBox>
+				</mx:FormItem>
+			</mx:Form>
+		</ui:faceOne>
+		<ui:faceTwo>
+			<ui:DBDataGrid id="gridRateios"  dataSet="{dsRateios}" width="100%" height="100%" doubleClickEnabled="true" doubleClick="dfpRateios.changeFace()"/>
+		</ui:faceTwo>
+	</ui:DBDoubleFacePanel>
+</mx:VBox>

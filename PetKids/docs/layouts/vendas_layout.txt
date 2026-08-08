@@ -1,0 +1,593 @@
+Layout de Extração Relatório
+de Vendas
+DI Neogrid
+
+Versão 5.2
+
+Copyright © NEOGRID S/A. Todos os direitos reservados.
+É proibida a reprodução ou transmissão de qualquer parte deste
+documento sem autorização escrita da Neogrid S/A.
+
+CLASSIFICAÇÃO DA INFORMAÇÃO - INTERNA
+
+Índice
+
+1. APRESENTAÇÃO ........................................................................................................................................... 3
+2. DEFINIÇÕES PARA GERAÇÃO DO ARQUIVO .............................................................................................. 3
+2.1 Dados numéricos ...................................................................................................................... 5
+2.2 Dados Alfanuméricos................................................................................................................ 5
+3. ESTRUTURA ................................................................................................................................................. 5
+4. DESCRIÇÃO DO PADRÃO NEOGRID - VENDAS .......................................................................................... 6
+5. DETALHAMENTO DOS CAMPOS .................................................................................................................. 7
+5.1 Cabeçalho .................................................................................................................................. 7
+5.2 Notas Fiscais .............................................................................................................................. 8
+5.3 Itens............................................................................................................................................ 10
+
+2
+
+www.neogrid.com
+
+CLASSIFICAÇÃO DA INFORMAÇÃO - INTERNA
+
+1. APRESENTAÇÃO
+Neste documento apresentamos o layout do arquivo utilizado na coleta dos
+dados junto aos distribuidores, para implementação do sistema de informações
+gerenciais para distribuidores.
+Ressaltamos que este mesmo formato de layout deverá ser utilizado para integração
+com diversas indústrias/fornecedores diferentes e não apenas para um projeto
+específico. Neste caso, deverão ser gerados cinco arquivos: Vendedores, Clientes,
+Produtos, Vendas e Estoque. Nos arquivos de cadastros (Vendedores, Clientes e
+Produtos), devem ser enviados todos os dados da filial, independente das indústrias
+envolvidas nos projetos. Nos arquivos de movimentos, (Vendas e Estoque) deve ser
+enviado um arquivo para cada indústria.
+Solicitar à empresa terceirizada (ou setor de TI interno) responsável pelo
+desenvolvimento técnico deste layout, que seja previsto a opção da escolha da
+indústria/fornecedor no momento da geração dos arquivos de vendas e estoque, desta
+forma, caso sua distribuidora inicie algum novo projeto com outra indústria, não será
+necessária nenhuma intervenção da equipe de TI.
+Neste documento, estão detalhadas as informações a respeito do layout do arquivo
+de Relatório de Vendas.
+2. DEFINIÇÕES PARA GERAÇÃO DO ARQUIVO
+•
+
+O arquivo deverá ser gerado no formato Flat File com separadores PIPE ( | ),
+
+utilizando o critério Delimitado para identificar as colunas no arquivo.
+•
+
+O distribuidor deverá transmitir diariamente os arquivos com os dados
+
+necessários.
+Observação: Deverá ser prevista a possibilidade da geração das informações de
+movimentos de um intervalo de datas em um mesmo arquivo. Ou seja, a
+indústria poderá solicitar arquivos que contemplem dados de um período maior
+que uma única data.
+
+3
+
+www.neogrid.com
+
+CLASSIFICAÇÃO DA INFORMAÇÃO - INTERNA
+
+Verificar a capacidade do sistema responsável pela extração agendar de forma
+automática a geração das informações, sem a necessidade de intervenção
+manual diária.
+•
+
+Caso seja necessário, poderá ser transmitido mais de um arquivo por dia.
+
+Havendo necessidade de atualizar uma informação de uma nota já enviada, a
+mesma deve ser reencaminhada com a atualização.
+•
+
+O arquivo deverá ser gerado utilizando Enconding padrão ANSI.
+
+•
+
+O padrão de quebra de linha a ser utilizado deverá ser PC/Windows.
+
+•
+
+Cada arquivo deverá conter dados de somente uma filial do distribuidor.
+
+•
+
+Cada arquivo deverá conter dados de somente uma indústria.
+
+•
+
+Caso haja necessidade, segue sugestão de identificadores para a nomenclatura
+
+do arquivo:
+Exemplo:
+MascaraDocumento_88888888888888_99999999999999_AAAAMMDDHHMMSS.txt
+Onde:
+“MascaraDocumento” é a identificação do tipo de documento Ex.: VENDAS
+“88888888888888” é um identificador fixo, podendo ser sempre o mesmo
+CNPJ da Industria;
+“99999999999999” é o código de CNPJ da filial do distribuidor;
+“AAAAMMDDHHMMSS” é a data e hora da criação do arquivo.
+Onde:
+AAAA = ano
+MM = mês
+DD = dia
+HH = hora
+
+4
+
+www.neogrid.com
+
+CLASSIFICAÇÃO DA INFORMAÇÃO - INTERNA
+
+MM = minuto
+SS = sequencial
+2.1 Dados numéricos
+
+No caso de campo não obrigatório, e não havendo a disponibilidade do dado,
+não deve ser preenchido, embora o campo deva existir separado por PIPE.
+O ponto decimal deverá estar representado, os valores, portanto, deverão ser
+informados considerando a quantidade de casas decimais. Se o campo for numérico,
+mas não solicitar informações decimais não é necessário à apresentação do ponto
+decimal.
+Exemplo:
+Valor Unitário Tipo (N), Dec(02)
+Considerando o valor unitário R$125,00
+Preencher o campo com 125.00
+Os valores devem ser representados como positivos (não incluir sinal “-“ ou “+”).
+2.2 Dados Alfanuméricos
+
+Para os dados alfanuméricos não utilizar caracteres acentuados (tipo: Ç, Á, Ê,
+etc.) ou caracteres especiais (tipo: \, @,#, etc.). No caso de campo não obrigatório, e
+não havendo a disponibilidade do dado, não deve ser preenchido, embora o campo
+deva existir separado por PIPE.
+2.3 Critérios de Atualização
+
+O critério utilizado para a atualização das informações do Relatório de Vendas
+será através de três campos informados nos registros 02 e 03: “Número NF”, “Série
+NF” e “Tipo NF”. Devido a isso, é extremamente importante que esses três campos
+sejam informados corretamente para atualização de uma Nota Fiscal já enviada.
+
+5
+
+www.neogrid.com
+
+CLASSIFICAÇÃO DA INFORMAÇÃO - INTERNA
+
+3. ESTRUTURA
+CABEÇALHO
+NOTAS FISCAIS
+ITENS
+
+4. DESCRIÇÃO DO PADRÃO NEOGRID - VENDAS
+A coluna “Tam” das tabelas a seguir evidencia o tamanho máximo do campo e a
+coluna “Dec”, quantos dígitos equivalem às casas decimais deste tamanho total.
+Os campos apontados como “S” na coluna “Obrig” deverão sempre conter
+informação, salvo casos em que ela não exista.
+
+6
+
+Registro 01 - CABEÇALHO (uma única ocorrência)
+Tipo de Registro
+Identificação
+Versão
+Número do Relatório
+Data - Hora de Emissão do Documento
+Data Inicial do Período de Venda
+Data Final do Período de Venda
+CNPJ do Emissor do Relatório
+CNPJ do Destinatário do Relatório
+
+Obrig Tipo Tam Dec
+S
+AN 02
+S
+AN 06
+S
+AN 03
+S
+AN 20
+S
+DT 12
+S
+DT 08
+S
+DT 08
+S
+N
+14
+S
+N
+14
+
+Registro 02 – NOTAS FISCAIS (de uma a N ocorrências)
+Tipo de Registro
+Tipo de Faturamento
+Número NF
+Série NF
+Tipo NF
+Data Emissão NF
+Código do Vendedor
+Código Cliente
+UF Emissor Mercadoria
+CEP Emissor Mercadoria
+UF Destinatário Mercadoria
+CEP Destinatário Mercadoria
+Condição de Entrega (tipo de frete)
+Dias de Pagamento
+Método de Venda
+
+Obrig Tipo Tam Dec
+S
+AN 02
+S
+AN 02
+S
+AN 20
+S
+AN 03
+S
+AN 02
+S
+DT 12
+S
+AN 20
+S
+AN 20
+S
+AN 02
+S
+N
+08
+S
+AN 02
+S
+N
+08
+S
+AN 03
+S
+N
+03
+N
+N
+2
+
+www.neogrid.com
+
+CLASSIFICAÇÃO DA INFORMAÇÃO - INTERNA
+
+Registro 03 – ITENS (de uma a N ocorrências)
+Tipo de Registro
+Número NF
+Série NF
+Tipo NF
+Código do Item
+Quantidade Vendida
+Preço Unitário Bruto Praticado
+Bonificação
+Valor Total Bruto
+Valor Total Líquido
+Valor IPI
+Valor PIS \ CONFINS
+Valor Substituição Tributária
+Valor ICMS
+Valor Descontos
+
+Obrig Tipo Tam Dec
+S
+AN 02
+S
+AN 20
+S
+AN 03
+S
+AN 02
+S
+AN 20
+S
+N
+10 05
+S
+N
+10 02
+S
+AN 01
+S
+N
+10 02
+S
+N
+10 02
+S
+N
+10 02
+S
+N
+10 02
+S
+N
+10 02
+S
+N
+10 02
+S
+N
+10 02
+
+5. DETALHAMENTO DOS CAMPOS
+5.1 Cabeçalho
+
+Registro obrigatório que ocorre apenas uma vez no arquivo.
+
+TIPO REGISTRO
+Informação fixa: 01.
+IDENTIFICAÇÃO
+Informação fixa: VENDAS
+VERSÃO
+Informação fixa: 052
+NÚMERO DO RELATÓRIO
+Número de referência do documento/mensagem, designado pelo emissor.
+DATA - HORA DE EMISSÃO DO DOCUMENTO
+Data e hora de geração do arquivo de Relatório de Vendas. O formato de data utilizado
+é: AAAAMMDDHHMM.
+DATA INICIAL DO PERÍODO DE VENDA
+Data inicial do período de venda. O formato de data utilizado é: AAAAMMDD.
+
+7
+
+www.neogrid.com
+
+CLASSIFICAÇÃO DA INFORMAÇÃO - INTERNA
+
+DATA FINAL DO PERÍODO DE VENDA
+Data final do período de venda. O formato de data utilizado é: AAAAMMDD.
+CNPJ DO EMISSOR DO RELATÓRIO
+Identificação através do número do CNPJ da filial do distribuidor que esta emitindo o
+Relatório de Vendas.
+CNPJ DO DESTINATÁRIO DO RELATÓRIO
+Identificação através do CNPJ da indústria que esta recebendo o Relatório de Vendas.
+
+5.2
+
+Notas Fiscais
+
+Registro obrigatório que poderá ocorrer N vezes.
+TIPO REGISTRO
+Informação fixa: 02.
+TIPO DE FATURAMENTO
+Informar o tipo de faturamento utilizado para a NF, conforme tabela abaixo:
+
+Código
+
+Descrição do Código
+
+01
+
+Direto (venda direta para o cliente final)
+
+02
+
+Indireto (venda via revenda)
+
+NÚMERO NF
+Informar o número da nota fiscal.
+
+SÉRIE NF
+Informar a série da nota fiscal.
+
+TIPO NF
+Informar o tipo da NF, conforme tabela abaixo:
+
+8
+
+Código
+
+Descrição do Código
+
+01
+
+Venda
+
+02
+
+Devolução
+
+www.neogrid.com
+
+CLASSIFICAÇÃO DA INFORMAÇÃO - INTERNA
+
+03
+
+Cancelamento
+
+04
+
+Venda Consignada
+
+05
+
+Transferência
+
+Para notas de CANCELAMENTO (03), é obrigatório referenciar a nota originária
+correspondente, que deve ser de VENDA (01).
+Exemplo:
+Se a NF 1234, do tipo VENDAS (01), for cancelada, a nota de CANCELAMENTO
+(03) também deve ser a 1234, alterando apenas o tipo da nota.
+É obrigatório que a nota original (01) e a de cancelamento (03) estejam
+presentes no arquivo de vendas.
+DATA EMISSÃO NF
+Informa a data em que a NF foi emitida. O formato de data utilizado é:
+AAAAMMDDHHMM.
+CÓDIGO DO VENDEDOR
+Caso a informação for de uma pessoa física (CPF), devido à LGPD, encaminhar o código
+interno cadastrado no sistema do distribuidor.
+
+CÓDIGO CLIENTE
+Informa o CNPJ do cliente.
+Caso a informação for de uma pessoa física (CPF), devido à LGPD, encaminhar o código
+interno cadastrado no sistema do distribuidor.
+
+UF EMISSOR MERCADORIA
+Informa a unidade federativa de localização do distribuidor.
+
+CEP EMISSOR MERCADORIA
+Informa o CEP de localização do distribuidor.
+UF DESTINATÁRIO MERCADORIA
+Informa a unidade federativa de localização do destinatário.
+
+CEP DESTINATÁRIO MERCADORIA
+Informa o CEP de localização do destinatário.
+
+CONDIÇÃO DE ENTREGA (TIPO DE FRETE)
+Identificação das condições de entrega para os itens discriminados na Nota Fiscal.
+
+Código
+9
+
+Descrição do Código
+www.neogrid.com
+
+CLASSIFICAÇÃO DA INFORMAÇÃO - INTERNA
+
+CIF
+FOB
+
+10
+
+Custo, Seguro, Frete por conta do vendedor até o destino
+designado.
+Posto a bordo. Porto de embarque designado
+
+www.neogrid.com
+
+CLASSIFICAÇÃO DA INFORMAÇÃO - INTERNA
+
+DIAS DE PAGAMENTO
+Campo para informação do número de dias acordado para pagamento na Nota Fiscal.
+O valor informado neste campo refere-se aos dias corridos para quitar o total do
+pagamento.
+Ex.: Nota Fiscal foi emitida parcelada em 3 meses, o valor que deverá ser informado
+neste campo é 90.
+
+MÉTODO DE VENDA
+Campo para informar qual o método de vendas utilizado, conforme tabela abaixo:
+
+Código
+
+Descrição do Código
+
+01
+
+Venda Tradicional
+
+02
+
+Venda via Site Próprio
+
+03
+
+Venda via Link
+
+04
+
+Venda via Site Fornecedor
+
+05
+
+Venda Balcão
+
+5.3 Itens
+
+Registro obrigatório que poderá ocorrer N vezes. Para cada registro de NOTAS
+FISCAIS poderá ser gerado N registros de ITENS.
+TIPO REGISTRO
+Informação fixa: 03
+
+NÚMERO NF
+Informa o número da nota fiscal.
+SÉRIE NF
+Informa a série da NF.
+
+TIPO NF
+Informa o tipo da NF, conforme tabela abaixo:
+
+11
+
+www.neogrid.com
+
+CLASSIFICAÇÃO DA INFORMAÇÃO - INTERNA
+
+Código
+
+Descrição do Código
+
+01
+
+Venda
+
+02
+
+Devolução
+
+03
+
+Cancelamento
+
+04
+
+Venda Consignada
+
+CÓDIGO DO ITEM
+Informa o código interno de um produto.
+QUANTIDADE VENDIDA
+Informa a quantidade vendida do item na NF.
+
+PREÇO UNITÁRIO BRUTO PRATICADO
+Informa o preço unitário bruto que foi praticado na operação/NF (preço da unidade de
+venda).
+
+BONIFICAÇÃO
+Identifica se o item em questão foi bonificado ou não, conforme a tabela abaixo:
+
+Código
+
+Descrição do Código
+
+S
+
+Item Bonificado
+
+N
+
+Item não Bonificado
+
+VALOR TOTAL BRUTO
+Informa o valor total bruto da venda do item na NF (preço unitário x quantidade).
+
+VALOR TOTAL LÍQUIDO
+Informa o valor total líquido da venda do item na NF.
+VALOR IPI
+Valor total do IPI do item incidido na NF.
+VALOR PIS/CONFINS
+Valor total de PIS/COFINS do item incidido na NF.
+VALOR SUBSTITUIÇÃO TRIBUTÁRIA
+Valor total de Substituição Tributária do item incidida na NF.
+
+12
+
+www.neogrid.com
+
+CLASSIFICAÇÃO DA INFORMAÇÃO - INTERNA
+
+VALOR ICMS
+Valor total de ICMS do item incidido na NF.
+VALOR DESCONTOS
+Campo para informação do Valor Total dos Descontos do item na NF.
+
+13
+
+www.neogrid.com
+
+CLASSIFICAÇÃO DA INFORMAÇÃO - INTERNA
+
+

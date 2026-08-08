@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dash Orçado vs Realizado</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --border: 214.3 31.8% 91.4%;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+
+        .chevron {
+            transition: transform 0.2s ease-in-out;
+            display: inline-block;
+        }
+
+        tr.collapsed .chevron {
+            transform: rotate(-90deg);
+        }
+
+        /* Cabeçalhos das tabelas */
+        .th-group {
+            background: #1e3a5f;
+            color: #fff;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 6px 8px;
+            border-right: 2px solid #fff;
+            white-space: nowrap;
+        }
+
+        .th-group-total {
+            background: #14532d;
+        }
+
+        .th-sub {
+            background: #e2e8f0;
+            color: #1e293b;
+            text-align: right;
+            font-weight: 600;
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-right: 1px solid #cbd5e1;
+            white-space: nowrap;
+        }
+
+        .th-sub-total {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .th-desc {
+            background: #1e3a5f;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 6px 12px;
+            position: sticky;
+            left: 0;
+            z-index: 25;
+            min-width: 280px;
+        }
+
+        .th-desc-sub {
+            background: #e2e8f0;
+            color: transparent;
+            padding: 4px 12px;
+            position: sticky;
+            left: 0;
+            z-index: 25;
+            font-size: 0.7rem;
+        }
+
+        td.td-desc {
+            position: sticky;
+            left: 0;
+            background: white;
+            z-index: 10;
+            text-align: left !important;
+        }
+
+        tr:hover td.td-desc {
+            background: #f1f5f9;
+        }
+
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        td {
+            padding: 5px 8px;
+            font-size: 0.75rem;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
+            text-align: right;
+        }
+
+        .col-sep {
+            border-right: 2px solid #94a3b8 !important;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+        }
+
+        tr.row-tipo td {
+            background: #dbeafe;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        tr.row-tipo td.td-desc {
+            background: #dbeafe;
+        }
+
+        tr.row-nat td {
+            background: #f1f5f9;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        tr.row-nat td.td-desc {
+            background: #f1f5f9;
+        }
+
+        tr.row-total td {
+            background: #14532d;
+            color: #fff;
+            font-weight: 700;
+            border-color: #166534;
+        }
+
+        tr.row-total td.td-desc {
+            background: #14532d;
+        }
+
+        .val-pos {
+            color: #15803d;
+        }
+
+        .val-neg {
+            color: #b91c1c;
+        }
+
+        tr.row-total .val-pos {
+            color: #86efac;
+        }
+
+        tr.row-total .val-neg {
+            color: #fca5a5;
+        }
+
+        select.filtro,
+        input.filtro {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            color: #1e293b;
+        }
+    </style>
+</head>
+
+<body class="h-full w-full">
+    <div id="dash-container" class="h-full w-full flex flex-col">
+
+        <!-- ─── Cabeçalho + Filtros ─────────────────────────────────── -->
+        <div class="flex-shrink-0 px-4 py-3" style="background: #1e3a5f;">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                <div>
+                    <h1 class="text-base font-bold text-white">Acompanhamento Orçado vs Realizado</h1>
+                    <p class="text-xs text-blue-200">Previsões, realizações, baixas financeiras e competência por
+                        natureza e projeto.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="filtro-ano" class="filtro" title="Ano de referência"></select>
+                    <select id="filtro-emp" class="filtro" title="Empresa"></select>
+                    <select id="filtro-tipo" class="filtro" title="Origem do lançamento"></select>
+                    <select id="filtro-regime" class="filtro" title="Base de cálculo do realizado">
+                        <option value="COMP" selected>Realizado: Competência</option>
+                        <option value="BAIXA">Realizado: Caixa (Baixas)</option>
+                        <option value="TUDO">Realizado: Todos os valores</option>
+                    </select>
+                    <button id="export-btn"
+                        class="bg-white text-slate-800 rounded-md px-3 py-1.5 text-xs font-semibold shadow-sm hover:bg-slate-100 inline-flex items-center gap-1.5 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" x2="12" y1="15" y2="3" />
+                        </svg>
+                        Exportar Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── Cards de Indicadores ────────────────────────────────── -->
+        <div id="kpi-row"
+            class="flex-shrink-0 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 px-4 py-3 bg-slate-50 border-b border-slate-200">
+            <!-- preenchido via JS -->
+        </div>
+
+        <!-- ─── Corpo (tabelas) ─────────────────────────────────────── -->
+        <div class="flex-grow overflow-auto px-4 py-3 space-y-5" id="main-scroll">
+
+            <!-- Resumo Mensal -->
+            <section>
+                <h2 class="text-xs font-bold text-slate-600 uppercase tracking-wide mb-1.5">Resumo Mensal</h2>
+                <div class="overflow-auto border border-slate-200 rounded-lg shadow-sm" style="max-height: 45vh;">
+                    <table class="w-full" id="tabela-resumo">
+                        <thead id="resumo-head"></thead>
+                        <tbody id="resumo-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Detalhamento por Origem / Natureza / Projeto -->
+            <section class="flex flex-col" style="min-height: 50vh;">
+                <h2 class="text-xs font-bold text-slate-600 uppercase tracking-wide mb-1.5">
+                    Detalhamento por Origem &rsaquo; Natureza &rsaquo; Empresa / Projeto / Centro de Custo
+                </h2>
+                <div class="overflow-auto border border-slate-200 rounded-lg shadow-sm flex-grow"
+                    style="max-height: 70vh;">
+                    <table class="w-full" id="tabela-detalhe">
+                        <thead id="detalhe-head"></thead>
+                        <tbody id="detalhe-body"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        const MITRA_UPDATE_EVENT_NAME = 'mitra-update-dash-orcado-realizado';
+
+        function updateMitra() {
+            console.log("Sinal de update para [Dash Orçado vs Realizado] recebido.");
+            document.body.dispatchEvent(new CustomEvent(MITRA_UPDATE_EVENT_NAME));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('dash-container');
+            const kpiRow = document.getElementById('kpi-row');
+            const resumoHead = document.getElementById('resumo-head');
+            const resumoBody = document.getElementById('resumo-body');
+            const detalheHead = document.getElementById('detalhe-head');
+            const detalheBody = document.getElementById('detalhe-body');
+            const filtroAno = document.getElementById('filtro-ano');
+            const filtroEmp = document.getElementById('filtro-emp');
+            const filtroTipo = document.getElementById('filtro-tipo');
+            const filtroRegime = document.getElementById('filtro-regime');
+            const exportBtn = document.getElementById('export-btn');
+
+            const MESES_LABEL = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+            let rawRows = [];       // linhas normalizadas do dados.sql
+            let expandidos = {};    // estado de expansão da tabela de detalhe
+
+            // ─── Formatação ───────────────────────────────────────────
+            const formatCurrency = (v) => {
+                if (typeof v !== 'number' || isNaN(v)) return 'R$ 0,00';
+                return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            };
+
+            const formatPercentage = (v) => {
+                if (typeof v !== 'number' || isNaN(v) || !isFinite(v)) return '-';
+                return `${v.toFixed(1).replace('.', ',')}%`;
+            };
+
+            const varClass = (v) => v > 0 ? 'val-pos' : (v < 0 ? 'val-neg' : '');
+
+            const renderError = (message) => {
+                container.innerHTML = `<div class="p-8 text-center text-red-600 h-full flex items-center justify-center">${message}</div>`;
+            };
+
+            const renderLoading = () => {
+                const loading = `<tr><td colspan="100%" class="text-center p-8 text-gray-400">Carregando dados...</td></tr>`;
+                resumoBody.innerHTML = loading;
+                detalheBody.innerHTML = loading;
+            };
+
+            // ─── Datas ────────────────────────────────────────────────
+            // Aceita ISO (2026-01-01...), dd/mm/yyyy e timestamp numérico
+            function parseDtRef(value) {
+                if (value === null || value === undefined || value === '') return null;
+                if (typeof value === 'number') {
+                    const d = new Date(value);
+                    return isNaN(d) ? null : d;
+                }
+                const s = String(value).trim();
+                let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                if (m) return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, 1);
+                m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+                if (m) return new Date(parseInt(m[3], 10), parseInt(m[2], 10) - 1, 1);
+                const d = new Date(s);
+                return isNaN(d) ? null : d;
+            }
+
+            // ─── Extração dos valores por regime ──────────────────────
+            function getValores(row) {
+                const regime = filtroRegime.value;
+                let realRec = 0, realDesp = 0;
+                if (regime === 'COMP') {
+                    realRec = row.REALREC + row.COMP_REC;
+                    realDesp = row.REALDESP + row.COMP_DESP;
+                } else if (regime === 'BAIXA') {
+                    realRec = row.BAIXA_REC;
+                    realDesp = row.BAIXA_DESP;
+                } else {
+                    realRec = row.REALREC + row.COMP_REC + row.BAIXA_REC;
+                    realDesp = row.REALDESP + row.COMP_DESP + row.BAIXA_DESP;
+                }
+                return {
+                    orcRec: row.PREVREC,
+                    orcDesp: row.PREVDESP,
+                    realRec: realRec,
+                    realDesp: realDesp,
+                    anoAntRec: row.BAIXA_REC_ANO_ANT,
+                    anoAntDesp: row.BAIXA_DESP_ANO_ANT
+                };
+            }
+
+            function novoAcumulador() {
+                return { orcRec: 0, orcDesp: 0, realRec: 0, realDesp: 0, anoAntRec: 0, anoAntDesp: 0 };
+            }
+
+            function soma(acc, v) {
+                acc.orcRec += v.orcRec;
+                acc.orcDesp += v.orcDesp;
+                acc.realRec += v.realRec;
+                acc.realDesp += v.realDesp;
+                acc.anoAntRec += v.anoAntRec;
+                acc.anoAntDesp += v.anoAntDesp;
+            }
+
+            // ─── Filtros ──────────────────────────────────────────────
+            function getLinhasFiltradas() {
+                const ano = filtroAno.value;
+                const emp = filtroEmp.value;
+                const tipo = filtroTipo.value;
+                return rawRows.filter(r => {
+                    if (ano !== 'TODOS' && String(r.ANO) !== ano) return false;
+                    if (emp !== 'TODAS' && String(r.CODEMP) !== emp) return false;
+                    if (tipo !== 'TODOS' && r.TIPO !== tipo) return false;
+                    return true;
+                });
+            }
+
+            function popularFiltros() {
+                const anos = [...new Set(rawRows.map(r => r.ANO).filter(a => a !== null))].sort((a, b) => b - a);
+                const emps = [...new Set(rawRows.map(r => r.CODEMP).filter(e => e !== null && e !== ''))].sort((a, b) => a - b);
+                const tipos = [...new Set(rawRows.map(r => r.TIPO).filter(t => t))].sort();
+
+                filtroAno.innerHTML = `<option value="TODOS">Todos os anos</option>` +
+                    anos.map(a => `<option value="${a}">${a}</option>`).join('');
+                const anoAtual = new Date().getFullYear();
+                if (anos.includes(anoAtual)) filtroAno.value = String(anoAtual);
+                else if (anos.length) filtroAno.value = String(anos[0]);
+
+                filtroEmp.innerHTML = `<option value="TODAS">Todas as empresas</option>` +
+                    emps.map(e => `<option value="${e}">Empresa ${e}</option>`).join('');
+
+                filtroTipo.innerHTML = `<option value="TODOS">Todas as origens</option>` +
+                    tipos.map(t => `<option value="${t}">${t}</option>`).join('');
+            }
+
+            // ─── KPIs ─────────────────────────────────────────────────
+            function renderKpis(total) {
+                const atingRec = total.orcRec !== 0 ? (total.realRec / total.orcRec) * 100 : NaN;
+                const atingDesp = total.orcDesp !== 0 ? (total.realDesp / total.orcDesp) * 100 : NaN;
+                const resultOrc = total.orcRec - total.orcDesp;
+                const resultReal = total.realRec - total.realDesp;
+                const varResult = resultReal - resultOrc;
+
+                const card = (titulo, valor, sub, corValor) => `
+                    <div class="bg-white border border-slate-200 rounded-lg px-3 py-2 shadow-sm">
+                        <div class="text-[0.65rem] font-semibold text-slate-500 uppercase tracking-wide">${titulo}</div>
+                        <div class="text-sm font-bold ${corValor || 'text-slate-800'} mt-0.5">${valor}</div>
+                        <div class="text-[0.65rem] text-slate-500 mt-0.5">${sub || '&nbsp;'}</div>
+                    </div>`;
+
+                kpiRow.innerHTML =
+                    card('Receita Orçada', formatCurrency(total.orcRec), '') +
+                    card('Receita Realizada', formatCurrency(total.realRec),
+                        `Atingimento: <b>${formatPercentage(atingRec)}</b>`,
+                        total.realRec >= total.orcRec ? 'text-green-700' : 'text-slate-800') +
+                    card('Despesa Orçada', formatCurrency(total.orcDesp), '') +
+                    card('Despesa Realizada', formatCurrency(total.realDesp),
+                        `Consumo do orçado: <b>${formatPercentage(atingDesp)}</b>`,
+                        total.realDesp > total.orcDesp ? 'text-red-700' : 'text-slate-800') +
+                    card('Resultado (Real - Desp)', formatCurrency(resultReal),
+                        `Orçado: ${formatCurrency(resultOrc)}`,
+                        resultReal >= 0 ? 'text-green-700' : 'text-red-700') +
+                    card('Variação do Resultado', formatCurrency(varResult),
+                        `Baixas ano ant.: ${formatCurrency(total.anoAntRec - total.anoAntDesp)}`,
+                        varResult >= 0 ? 'text-green-700' : 'text-red-700');
+            }
+
+            // ─── Tabela: Resumo Mensal ────────────────────────────────
+            function renderResumo(linhas) {
+                const porMes = {}; // chave YYYY-MM
+                linhas.forEach(r => {
+                    if (!r.MES_KEY) return;
+                    if (!porMes[r.MES_KEY]) porMes[r.MES_KEY] = novoAcumulador();
+                    soma(porMes[r.MES_KEY], getValores(r));
+                });
+
+                const meses = Object.keys(porMes).sort();
+
+                resumoHead.innerHTML = `
+                    <tr>
+                        <th class="th-desc" style="min-width:120px;">Mês</th>
+                        <th class="th-group" colspan="3">Receitas</th>
+                        <th class="th-group" colspan="3">Despesas</th>
+                        <th class="th-group th-group-total" colspan="3">Resultado</th>
+                    </tr>
+                    <tr>
+                        <th class="th-desc-sub">.</th>
+                        <th class="th-sub">Orçado</th>
+                        <th class="th-sub">Realizado</th>
+                        <th class="th-sub col-sep">Ating. %</th>
+                        <th class="th-sub">Orçado</th>
+                        <th class="th-sub">Realizado</th>
+                        <th class="th-sub col-sep">Consumo %</th>
+                        <th class="th-sub th-sub-total">Orçado</th>
+                        <th class="th-sub th-sub-total">Realizado</th>
+                        <th class="th-sub th-sub-total">Var (R$)</th>
+                    </tr>`;
+
+                const total = novoAcumulador();
+                let html = '';
+
+                meses.forEach(key => {
+                    const d = porMes[key];
+                    soma(total, d);
+                    const [ano, mes] = key.split('-');
+                    const label = `${MESES_LABEL[parseInt(mes, 10) - 1]}/${ano.slice(2)}`;
+                    const resOrc = d.orcRec - d.orcDesp;
+                    const resReal = d.realRec - d.realDesp;
+                    html += `
+                        <tr>
+                            <td class="td-desc font-semibold">${label}</td>
+                            <td>${formatCurrency(d.orcRec)}</td>
+                            <td>${formatCurrency(d.realRec)}</td>
+                            <td class="col-sep">${formatPercentage(d.orcRec !== 0 ? d.realRec / d.orcRec * 100 : NaN)}</td>
+                            <td>${formatCurrency(d.orcDesp)}</td>
+                            <td>${formatCurrency(d.realDesp)}</td>
+                            <td class="col-sep">${formatPercentage(d.orcDesp !== 0 ? d.realDesp / d.orcDesp * 100 : NaN)}</td>
+                            <td>${formatCurrency(resOrc)}</td>
+                            <td class="${varClass(resReal)}">${formatCurrency(resReal)}</td>
+                            <td class="${varClass(resReal - resOrc)}">${formatCurrency(resReal - resOrc)}</td>
+                        </tr>`;
+                });
+
+                if (!meses.length) {
+                    resumoBody.innerHTML = `<tr><td colspan="10" class="text-center p-6 text-gray-400">Nenhum dado para os filtros selecionados.</td></tr>`;
+                    renderKpis(novoAcumulador());
+                    return;
+                }
+
+                const resOrcT = total.orcRec - total.orcDesp;
+                const resRealT = total.realRec - total.realDesp;
+                html += `
+                    <tr class="row-total">
+                        <td class="td-desc">TOTAL</td>
+                        <td>${formatCurrency(total.orcRec)}</td>
+                        <td>${formatCurrency(total.realRec)}</td>
+                        <td class="col-sep">${formatPercentage(total.orcRec !== 0 ? total.realRec / total.orcRec * 100 : NaN)}</td>
+                        <td>${formatCurrency(total.orcDesp)}</td>
+                        <td>${formatCurrency(total.realDesp)}</td>
+                        <td class="col-sep">${formatPercentage(total.orcDesp !== 0 ? total.realDesp / total.orcDesp * 100 : NaN)}</td>
+                        <td>${formatCurrency(resOrcT)}</td>
+                        <td class="${varClass(resRealT)}">${formatCurrency(resRealT)}</td>
+                        <td class="${varClass(resRealT - resOrcT)}">${formatCurrency(resRealT - resOrcT)}</td>
+                    </tr>`;
+
+                resumoBody.innerHTML = html;
+                renderKpis(total);
+            }
+
+            // ─── Tabela: Detalhamento hierárquico ─────────────────────
+            // Nível 1: TIPO | Nível 2: CODNAT | Nível 3: Emp/Proj/CC
+            function renderDetalhe(linhas) {
+                const meses = [...new Set(linhas.map(r => r.MES_KEY).filter(Boolean))].sort();
+
+                // cabeçalho
+                let h1 = `<tr><th class="th-desc" rowspan="1">Origem / Natureza / Detalhe</th>`;
+                let h2 = `<tr><th class="th-desc-sub">.</th>`;
+                meses.forEach(key => {
+                    const [ano, mes] = key.split('-');
+                    h1 += `<th class="th-group" colspan="5">${MESES_LABEL[parseInt(mes, 10) - 1]}/${ano.slice(2)}</th>`;
+                    h2 += `
+                        <th class="th-sub">Orç. Rec</th>
+                        <th class="th-sub">Real. Rec</th>
+                        <th class="th-sub">Orç. Desp</th>
+                        <th class="th-sub">Real. Desp</th>
+                        <th class="th-sub col-sep">Var (R$)</th>`;
+                });
+                h1 += `<th class="th-group th-group-total" colspan="5">Acumulado</th></tr>`;
+                h2 += `
+                    <th class="th-sub th-sub-total">Orç. Rec</th>
+                    <th class="th-sub th-sub-total">Real. Rec</th>
+                    <th class="th-sub th-sub-total">Orç. Desp</th>
+                    <th class="th-sub th-sub-total">Real. Desp</th>
+                    <th class="th-sub th-sub-total">Var (R$)</th></tr>`;
+                detalheHead.innerHTML = h1 + h2;
+
+                if (!linhas.length) {
+                    detalheBody.innerHTML = `<tr><td colspan="100%" class="text-center p-6 text-gray-400">Nenhum dado para os filtros selecionados.</td></tr>`;
+                    return;
+                }
+
+                // montagem da árvore TIPO -> NAT -> detalhe
+                const arvore = {};
+                linhas.forEach(r => {
+                    const v = getValores(r);
+                    const tipo = r.TIPO || '(sem origem)';
+                    const nat = r.CODNAT !== null && r.CODNAT !== '' ? String(r.CODNAT) : '(sem natureza)';
+                    const det = `Emp ${r.CODEMP ?? '-'} • Proj ${r.CODPROJ ?? '-'} • CC ${r.CODCENCUS ?? '-'}`;
+
+                    if (!arvore[tipo]) arvore[tipo] = { total: novoAcumulador(), meses: {}, nats: {} };
+                    const nTipo = arvore[tipo];
+                    if (!nTipo.nats[nat]) nTipo.nats[nat] = { total: novoAcumulador(), meses: {}, dets: {} };
+                    const nNat = nTipo.nats[nat];
+                    if (!nNat.dets[det]) nNat.dets[det] = { total: novoAcumulador(), meses: {} };
+                    const nDet = nNat.dets[det];
+
+                    [nTipo, nNat, nDet].forEach(node => {
+                        soma(node.total, v);
+                        if (r.MES_KEY) {
+                            if (!node.meses[r.MES_KEY]) node.meses[r.MES_KEY] = novoAcumulador();
+                            soma(node.meses[r.MES_KEY], v);
+                        }
+                    });
+                });
+
+                const celulas = (node) => {
+                    let html = '';
+                    meses.forEach(key => {
+                        const d = node.meses[key] || novoAcumulador();
+                        const variacao = (d.realRec - d.realDesp) - (d.orcRec - d.orcDesp);
+                        html += `
+                            <td>${formatCurrency(d.orcRec)}</td>
+                            <td>${formatCurrency(d.realRec)}</td>
+                            <td>${formatCurrency(d.orcDesp)}</td>
+                            <td>${formatCurrency(d.realDesp)}</td>
+                            <td class="col-sep ${varClass(variacao)}">${formatCurrency(variacao)}</td>`;
+                    });
+                    const t = node.total;
+                    const varT = (t.realRec - t.realDesp) - (t.orcRec - t.orcDesp);
+                    html += `
+                        <td>${formatCurrency(t.orcRec)}</td>
+                        <td>${formatCurrency(t.realRec)}</td>
+                        <td>${formatCurrency(t.orcDesp)}</td>
+                        <td>${formatCurrency(t.realDesp)}</td>
+                        <td class="${varClass(varT)}">${formatCurrency(varT)}</td>`;
+                    return html;
+                };
+
+                let body = '';
+                const totalGeral = novoAcumulador();
+                const totalGeralMeses = {};
+
+                Object.keys(arvore).sort().forEach(tipo => {
+                    const nTipo = arvore[tipo];
+                    const idTipo = `T|${tipo}`;
+                    const abertoTipo = expandidos[idTipo] === true; // inicia recolhido
+
+                    soma(totalGeral, nTipo.total);
+                    meses.forEach(key => {
+                        const md = nTipo.meses[key];
+                        if (md) {
+                            if (!totalGeralMeses[key]) totalGeralMeses[key] = novoAcumulador();
+                            soma(totalGeralMeses[key], md);
+                        }
+                    });
+
+                    body += `
+                        <tr class="row-tipo ${abertoTipo ? '' : 'collapsed'}" data-node-id="${idTipo}">
+                            <td class="td-desc">
+                                <span class="chevron mr-1">&#9662;</span>${tipo}
+                            </td>
+                            ${celulas(nTipo)}
+                        </tr>`;
+
+                    Object.keys(nTipo.nats).sort().forEach(nat => {
+                        const nNat = nTipo.nats[nat];
+                        const idNat = `N|${tipo}|${nat}`;
+                        const abertoNat = expandidos[idNat] === true;
+
+                        body += `
+                            <tr class="row-nat ${abertoNat ? '' : 'collapsed'} ${abertoTipo ? '' : 'hidden'}"
+                                data-node-id="${idNat}" data-parent-id="${idTipo}">
+                                <td class="td-desc" style="padding-left: 28px;">
+                                    <span class="chevron mr-1">&#9662;</span>Natureza ${nat}
+                                </td>
+                                ${celulas(nNat)}
+                            </tr>`;
+
+                        Object.keys(nNat.dets).sort().forEach(det => {
+                            body += `
+                                <tr class="${(abertoTipo && abertoNat) ? '' : 'hidden'}" data-parent-id="${idNat}">
+                                    <td class="td-desc text-slate-500" style="padding-left: 52px;">${det}</td>
+                                    ${celulas(nNat.dets[det])}
+                                </tr>`;
+                        });
+                    });
+                });
+
+                body += `
+                    <tr class="row-total">
+                        <td class="td-desc">TOTAL GERAL</td>
+                        ${celulas({ total: totalGeral, meses: totalGeralMeses })}
+                    </tr>`;
+
+                detalheBody.innerHTML = body;
+            }
+
+            // ─── Expandir / recolher no detalhe ───────────────────────
+            detalheBody.addEventListener('click', (event) => {
+                const target = event.target.closest('tr[data-node-id]');
+                if (!target) return;
+                const nodeId = target.dataset.nodeId;
+
+                target.classList.toggle('collapsed');
+                const isCollapsed = target.classList.contains('collapsed');
+                expandidos[nodeId] = !isCollapsed;
+
+                document.querySelectorAll(`tr[data-parent-id='${CSS.escape(nodeId)}']`).forEach(child => {
+                    child.classList.toggle('hidden', isCollapsed);
+                    if (isCollapsed) {
+                        const childId = child.dataset.nodeId;
+                        if (childId) {
+                            expandidos[childId] = false;
+                            child.classList.add('collapsed');
+                            document.querySelectorAll(`tr[data-parent-id='${CSS.escape(childId)}']`).forEach(gc => gc.classList.add('hidden'));
+                        }
+                    }
+                });
+            });
+
+            // ─── Exportação ───────────────────────────────────────────
+            exportBtn.addEventListener('click', () => {
+                try {
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tabela-resumo')), 'Resumo Mensal');
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tabela-detalhe')), 'Detalhamento');
+                    XLSX.writeFile(wb, 'Dash_Orcado_vs_Realizado.xlsx');
+                } catch (err) {
+                    console.error('Falha na exportação:', err);
+                }
+            });
+
+            // ─── Render completo (após filtros) ───────────────────────
+            function renderTudo() {
+                const linhas = getLinhasFiltradas();
+                renderResumo(linhas);
+                renderDetalhe(linhas);
+            }
+
+            [filtroAno, filtroEmp, filtroTipo, filtroRegime].forEach(f =>
+                f.addEventListener('change', renderTudo)
+            );
+
+            // ─── Carregamento de dados ────────────────────────────────
+            async function loadAndRenderData() {
+                renderLoading();
+                try {
+                    if (!componentData?.queryDados || !componentData?.jdbcId) {
+                        throw new Error("Faltam parâmetros obrigatórios: 'queryDados' e/ou 'jdbcId'.");
+                    }
+
+                    const result = await queryMitra({
+                        query: componentData.queryDados,
+                        jdbcId: parseInt(componentData.jdbcId, 10)
+                    });
+
+                    if (!result?.data?.length) {
+                        resumoBody.innerHTML = `<tr><td colspan="100%" class="text-center p-6 text-gray-400">Nenhum registro retornado pela consulta.</td></tr>`;
+                        detalheBody.innerHTML = '';
+                        return;
+                    }
+
+                    const headers = result.headers.map(h => (h.name || '').toUpperCase());
+                    const col = {};
+                    ['CODMETA', 'DTREF', 'CODEMP', 'CODPROJ', 'CODCENCUS', 'CODNAT', 'NROUNICO', 'TIPO',
+                        'PREVDESP', 'REALDESP', 'PREVREC', 'REALREC', 'BAIXA_REC', 'BAIXA_DESP',
+                        'COMP_REC', 'COMP_DESP', 'BAIXA_REC_ANO_ANT', 'BAIXA_DESP_ANO_ANT'
+                    ].forEach(c => col[c] = headers.indexOf(c));
+
+                    const num = (row, c) => col[c] >= 0 ? (parseFloat(row[col[c]]) || 0) : 0;
+                    const val = (row, c) => col[c] >= 0 ? row[col[c]] : null;
+
+                    rawRows = result.data.map(row => {
+                        const dt = parseDtRef(val(row, 'DTREF'));
+                        return {
+                            DTREF: dt,
+                            ANO: dt ? dt.getFullYear() : null,
+                            MES_KEY: dt ? `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}` : null,
+                            CODEMP: val(row, 'CODEMP'),
+                            CODPROJ: val(row, 'CODPROJ'),
+                            CODCENCUS: val(row, 'CODCENCUS'),
+                            CODNAT: val(row, 'CODNAT'),
+                            NROUNICO: val(row, 'NROUNICO'),
+                            TIPO: (val(row, 'TIPO') || '').toString().trim(),
+                            PREVDESP: num(row, 'PREVDESP'),
+                            REALDESP: num(row, 'REALDESP'),
+                            PREVREC: num(row, 'PREVREC'),
+                            REALREC: num(row, 'REALREC'),
+                            BAIXA_REC: num(row, 'BAIXA_REC'),
+                            BAIXA_DESP: num(row, 'BAIXA_DESP'),
+                            COMP_REC: num(row, 'COMP_REC'),
+                            COMP_DESP: num(row, 'COMP_DESP'),
+                            BAIXA_REC_ANO_ANT: num(row, 'BAIXA_REC_ANO_ANT'),
+                            BAIXA_DESP_ANO_ANT: num(row, 'BAIXA_DESP_ANO_ANT')
+                        };
+                    });
+
+                    expandidos = {};
+                    popularFiltros();
+                    renderTudo();
+
+                } catch (err) {
+                    console.error('Erro ao carregar dashboard:', err);
+                    resumoBody.innerHTML = `<tr><td colspan="100%" class="text-center p-6 text-red-600">Erro: ${err.message}</td></tr>`;
+                    detalheBody.innerHTML = '';
+                }
+            }
+
+            document.body.addEventListener(MITRA_UPDATE_EVENT_NAME, loadAndRenderData);
+
+            // ─── Inicialização ────────────────────────────────────────
+            const waitForComponentData = setInterval(() => {
+                if (window.componentData?.queryDados && window.componentData?.jdbcId && window.queryMitra) {
+                    clearInterval(waitForComponentData);
+                    loadAndRenderData();
+                }
+            }, 200);
+
+            setTimeout(() => {
+                if (!window.componentData?.queryDados) {
+                    clearInterval(waitForComponentData);
+                    renderError(`Erro crítico: Não foi possível carregar as configurações do componente (componentData).<br>
+                        Configure as variáveis <b>queryDados</b> (consulta do dados.sql) e <b>jdbcId</b>.`);
+                }
+            }, 15000);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,254 @@
+Layout de Extração DI
+Relatório de Estoque DI Neogrid
+
+Versão 5.0
+
+Copyright © NEOGRID S/A. Todos os direitos reservados.
+É proibida a reprodução ou transmissão de qualquer parte deste
+documento sem autorização escrita da Neogrid S/A.
+
+Índice
+1.
+2.
+2.1
+2.2
+3.
+4.
+5.
+5.1
+5.2
+
+APRESENTAÇÃO ......................................................................................................................................... 3
+DEFINIÇÕES PARA GERAÇÃO DO ARQUIVO ........................................................................................ 3
+DADOS NUMÉRICOS ................................................................................................................................................................... 4
+DADOS ALFANUMÉRICOS......................................................................................................................................................... 5
+ESTRUTURA ................................................................................................................................................. 5
+DESCRIÇÃO DO PADRÃO NEOGRID – ESTOQUE .................................................................................. 5
+DETALHAMENTO DOS CAMPOS .............................................................................................................. 6
+CABEÇALHO ................................................................................................................................................................................. 6
+ESTOQUE ....................................................................................................................................................................................... 7
+
+www.neogrid.com
+
+1. APRESENTAÇÃO
+Neste documento apresentamos o layout do arquivo utilizado na coleta dos dados
+junto aos distribuidores, para implementação do sistema de informações gerenciais para
+distribuidores.
+Ressaltamos que este mesmo formato de layout deverá ser utilizado para integração com
+diversas indústrias/fornecedores diferentes e não apenas para um projeto específico.
+Neste caso, deverão ser gerados cinco arquivos: Vendedores, Clientes, Produtos, Vendas
+e Estoque. Nos arquivos de cadastros (Vendedores, Clientes e Produtos), devem ser
+enviados todos os dados da filial, independente das indústrias envolvidas nos projetos.
+Nos arquivos de movimentos, (Vendas e Estoque) deve ser enviado um arquivo para cada
+indústria.
+Solicitar à empresa terceirizada (ou setor de TI interno) responsável pelo
+desenvolvimento técnico deste layout, que seja previsto a opção da escolha da
+indústria/fornecedor no momento da geração dos arquivos de vendas e estoque, desta
+forma, caso sua distribuidora inicie algum novo projeto com outra indústria, não será
+necessária nenhuma intervenção da equipe de TI.
+Neste documento, estão detalhadas as informações a respeito do layout do arquivo
+de Relatório de Estoque.
+
+2. DEFINIÇÕES PARA GERAÇÃO DO ARQUIVO
+•
+
+O arquivo deverá ser gerado no formato Flat File com separadores PIPE ( | ),
+
+utilizando o critério Delimitado para identificar as colunas no arquivo.
+•
+
+O distribuidor deverá transmitir diariamente os arquivos com os dados necessários.
+Observação: Deverá ser prevista a possibilidade da geração das informações de
+movimentos de um intervalo de datas em um mesmo arquivo. Ou seja, a indústria
+poderá solicitar arquivos que contemplem dados de um período maior que uma
+única data.
+Verificar a capacidade do sistema responsável pela extração agendar de forma
+
+www.neogrid.com
+
+automática a geração das informações, sem a necessidade de intervenção manual
+diária.
+•
+
+Caso seja necessário, poderá ser transmitido mais de um arquivo por dia.
+
+•
+
+O arquivo deverá ser gerado utilizando Enconding padrão ANSI.
+
+•
+
+O padrão de quebra de linha a ser utilizado deverá ser PC/Windows.
+
+•
+
+Cada arquivo deverá conter dados de somente uma filial do distribuidor.
+
+•
+
+Cada arquivo deverá conter dados de somente uma indústria.
+
+•
+
+Caso haja necessidade, segue sugestão de identificadores para a nomenclatura
+
+do arquivo: Exemplo:
+MascaraDocumento_88888888888888_99999999999999_AAAAMMDDHHMMSS.txt
+Onde:
+“MascaraDocumento” é a identificação do tipo de documento Ex.: RELEST
+“88888888888888” é um identificador fixo, podendo ser sempre o mesmo CNPJ
+da Industria;
+“99999999999999” é o CNPJ da filial do distribuidor;
+“AAAAMMDDHHMMSS” é a data e hora da criação do
+arquivo.
+Onde:
+AAAA = ano
+MM = mês
+DD = dia
+HH = hora
+MM = minuto
+SS=sequencial
+2.1 Dados numéricos
+No caso de campo não obrigatório, e não havendo a disponibilidade do dado, não
+deve ser preenchido, embora o campo deva existir separado por PIPE.
+www.neogrid.com
+
+O ponto decimal deverá estar representado, os valores, portanto, deverão ser
+informados considerando a quantidade de casas decimais. Se o campo for numérico, mas
+não solicitar informações decimais não é necessário à apresentação do ponto decimal.
+Exemplo:
+Valor Unitário Tipo (N), Dec(02)
+Considerando o valor unitário
+R$125,00 Preencher o campo com
+125.00
+Os valores devem ser representados como positivos (não incluir sinal “-“ ou “+”). No
+caso do sistema apresentar a informação negativa, informar o valor zerado.
+2.2 Dados Alfanuméricos
+Para os dados alfanuméricos não utilizar caracteres acentuados (tipo: Ç, Á, Ê, etc.)
+ou caracteres especiais (tipo: \, @,#, etc.). No caso de campo não obrigatório, e não
+havendo a disponibilidade do dado, não deve ser preenchido, embora o campo deva
+existir separado por PIPE.
+
+3.
+
+ESTRUTURA
+CABEÇALHO
+ESTOQUE
+
+4. DESCRIÇÃO DO PADRÃO NEOGRID – ESTOQUE
+
+A coluna “Tam” das tabelas a seguir evidencia o tamanho máximo do campo e a
+coluna “Dec”, quantos dígitos equivalem às casas decimais deste tamanho total.
+Os campos apontados como “S” na coluna “Obrig” deverão sempre conter
+informação, salvo casos em que ela não exista.
+
+www.neogrid.com
+
+Registro 01 - CABEÇALHO (uma única ocorrência)
+Tipo de Registro
+Identificação
+Versão
+Número do Relatório
+Data - Hora de Emissão do Documento
+Data Inicial do Período de Estoque
+Data Final do Período de Estoque
+CNPJ do Emissor do Relatório
+CNPJ do Destinatário do Relatório
+
+Obri Tipo Tam Dec
+S
+AN 02
+S
+AN 06
+S
+AN 03
+S
+AN 20
+S
+DT
+12
+S
+DT 08
+S
+DT 08
+S
+N
+14
+S
+N
+14
+
+Registro 02 – ESTOQUE (de uma a N ocorrências)
+Tipo de Registro
+Data – Hora do Estoque
+Código Item
+Quantidade em Estoque
+Quantidade Estoque Trânsito
+
+Obrig Tipo Tam Dec
+S
+AN 02
+S
+DT
+12
+S
+AN 20
+S
+N
+10
+02
+S
+N
+10
+02
+
+5. DETALHAMENTO DOS CAMPOS
+5.1 Cabeçalho
+Registro obrigatório que ocorre apenas uma vez no arquivo.
+TIPO DE REGISTRO
+Informação fixa: 01
+IDENTIFICAÇÃO
+Informação fixa: RELEST
+VERSÃO
+Informação fixa: 050
+NÚMERO DO RELATÓRIO
+Número de referência do documento/mensagem, designado pelo emissor.
+DATA - HORA DE EMISSÃO DO DOCUMENTO
+Data e hora de geração do arquivo de Relatório de Estoque.
+utilizado é: AAAAMMDDHHMM.
+
+O formato de data
+
+DATA INICIAL DO PERÍODO DE ESTOQUE
+Data inicial do período de Relatório de Estoque. O formato de data utilizado é:
+AAAAMMDD.
+DATA FINAL DO PERÍODO DE ESTOQUE
+Data final do período de Relatório de Estoque. O formato de data utilizado é: AAAAMMDD.
+CNPJ DO EMISSOR DO RELATÓRIO
+Identificação através do número do CNPJ da filial do distribuidor que esta emitindo o
+Relatório de Estoque.
+www.neogrid.com
+
+CNPJ DO DESTINATÁRIO DO RELATÓRIO
+Identificação através do CNPJ da indústria que esta recebendo o Relatório de Estoque.
+5.2 Estoque
+Registro obrigatório que pode ocorrer N vezes.
+TIPO DE REGISTRO
+Informação fixa: 02.
+DATA – HORA DO ESTOQUE
+Informa a data e hora da posição de estoque do item. O formato de data
+utilizado é: AAAAMMDDHHMM.
+CÓDIGO ITEM
+Informa o código interno de identificação do item, segundo o sistema do distribuidor.
+QUANTIDADE EM ESTOQUE
+Informa a quantidade em estoque do item, ou seja, considera-se o estoque disponível
+para vendas. Este estoque não deve conter produtos avariados ou que representem
+quaisquer perdas.
+Produtos com estoque zero e que não tiveram movimento no dia, também devem ser
+informados.
+QUANTIDADE ESTOQUE TRÂNSITO
+Informa a quantidade de estoque em trânsito do item.
+
+www.neogrid.com
+
+
