@@ -26,7 +26,7 @@ if errorlevel 1 (
 
 REM 1) Puxa as mudancas mais recentes do GitHub
 echo ==^> Puxando alteracoes do GitHub (pull)...
-git pull --no-edit
+git pull origin main --allow-unrelated-histories --no-rebase --no-edit
 if errorlevel 1 echo !! Aviso: nao foi possivel fazer pull (possivel conflito).
 
 REM 2) Envia as mudancas locais para o GitHub

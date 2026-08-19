@@ -38,7 +38,7 @@ cd "$PASTA_DESTINO"
 
 # 2) Puxa as mudancas mais recentes do GitHub
 echo "==> puxando alteracoes do GitHub (pull)..."
-git pull --no-edit || echo "!! Aviso: nao foi possivel fazer pull (talvez haja conflito)."
+git pull origin main --allow-unrelated-histories --no-rebase --no-edit || echo "!! Aviso: nao foi possivel fazer pull (talvez haja conflito)."
 
 # 3) Envia as mudancas locais para o GitHub
 echo "==> Enviando alteracoes locais (add/commit/push)..."
