@@ -42,3 +42,5 @@ if errorlevel 1 (
 )
 
 echo ==^> Sincronizacao concluida.
+echo.
+pause

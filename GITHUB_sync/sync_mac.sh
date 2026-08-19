@@ -52,3 +52,5 @@ else
 fi
 
 echo "==> Sincronizacao concluida. Pasta: $PASTA_DESTINO"
+echo ""
+read -p "Pressione [ENTER] para fechar..."
