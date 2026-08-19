@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula de Contrabaixo — 4 cordas</title>
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+
+<header class="topo">
+  <div class="marca">
+    <span class="logo">🎸</span>
+    <div>
+      <h1>Aula de Contrabaixo</h1>
+      <p class="sub">4 cordas · afinação padrão Mi–Lá–Ré–Sol</p>
+    </div>
+  </div>
+
+  <div class="controles-topo">
+    <label class="campo">
+      <span>Música</span>
+      <select id="sel-musica"></select>
+    </label>
+
+    <div class="modos" id="modos">
+      <button class="modo ativo" data-modo="aprender">1 · Aprender</button>
+      <button class="modo" data-modo="tocar">2 · Tocar no tempo</button>
+      <button class="modo" data-modo="afinador">3 · Afinador</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= MICROFONE ================= -->
+  <section id="barra-mic" class="cartao mic-off">
+    <div class="mic-esq">
+      <button id="btn-mic" class="botao primario">🎤 Ligar microfone</button>
+      <label class="campo campo-mic">
+        <span>Entrada de áudio</span>
+        <span class="linha-mic">
+          <select id="sel-mic"><option value="">Microfone padrão do sistema</option></select>
+          <button id="btn-atualizar-mics" class="botao pequeno" title="Atualizar a lista de microfones">⟳</button>
+        </span>
+      </label>
+      <span id="mic-status">O microfone está desligado — eu não consigo te ouvir ainda.</span>
+    </div>
+    <div class="mic-dir">
+      <div class="nivel"><div id="nivel-barra"></div></div>
+      <div id="mic-nota" class="mic-nota">—</div>
+    </div>
+  </section>
+
+  <!-- ================= PAINEL MÚSICA ================= -->
+  <section id="painel-musica">
+
+    <div class="cartao cabecalho-musica">
+      <div>
+        <h2 id="musica-nome">—</h2>
+        <p id="musica-artista" class="sub"></p>
+        <p id="musica-dica" class="dica"></p>
+      </div>
+      <div class="bpm-box">
+        <label class="campo">
+          <span>Velocidade: <b id="bpm-valor">80</b> BPM</span>
+          <input type="range" id="bpm" min="30" max="200" step="1" value="80">
+        </label>
+        <div class="bpm-atalhos">
+          <button class="botao pequeno" data-bpm-pct="50">50%</button>
+          <button class="botao pequeno" data-bpm-pct="75">75%</button>
+          <button class="botao pequeno" data-bpm-pct="100">100%</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cartão da nota atual -->
+    <div class="cartao nota-atual" id="nota-atual">
+      <div class="na-passo">
+        Nota <b id="na-indice">1</b> de <b id="na-total">1</b>
+      </div>
+      <div class="na-grade">
+        <div class="na-item">
+          <span class="na-rot">Corda</span>
+          <b id="na-corda" class="na-grande">—</b>
+          <span id="na-corda-sub" class="na-sub"></span>
+        </div>
+        <div class="na-item">
+          <span class="na-rot">Casa (traste)</span>
+          <b id="na-casa" class="na-grande">—</b>
+          <span class="na-sub" id="na-casa-sub"></span>
+        </div>
+        <div class="na-item">
+          <span class="na-rot">Dedo — mão esquerda</span>
+          <b id="na-dedo" class="na-grande">—</b>
+          <span id="na-dedo-sub" class="na-sub"></span>
+        </div>
+        <div class="na-item">
+          <span class="na-rot">Mão direita</span>
+          <b id="na-mao" class="na-grande">—</b>
+          <span class="na-sub">alterne sempre os dedos</span>
+        </div>
+        <div class="na-item">
+          <span class="na-rot">Som que deve sair</span>
+          <b id="na-nota" class="na-grande">—</b>
+          <span id="na-nota-sub" class="na-sub"></span>
+        </div>
+      </div>
+      <div id="feedback" class="feedback">Escolha uma música e clique em <b>Começar</b>.</div>
+    </div>
+
+    <!-- Braço do baixo -->
+    <div class="cartao">
+      <div class="rot-secao">Braço do baixo <span class="sub">— a bolinha mostra onde apertar</span></div>
+      <div id="braco" class="braco"></div>
+      <div class="legenda">
+        <span><i class="pt alvo"></i> nota de agora</span>
+        <span><i class="pt prox"></i> próxima nota</span>
+        <span><i class="pt certo"></i> acertou</span>
+        <span><i class="pt errado"></i> errou</span>
+      </div>
+    </div>
+
+    <!-- Tablatura -->
+    <div class="cartao">
+      <div class="rot-secao">Tablatura <span class="sub">— o número é a casa; 0 = corda solta</span></div>
+      <div id="tab" class="tab"></div>
+    </div>
+
+    <!-- Barra de ações -->
+    <div class="cartao acoes">
+      <button id="btn-comecar" class="botao primario grande">▶ Começar</button>
+      <button id="btn-parar" class="botao grande" disabled>■ Parar</button>
+      <button id="btn-exemplo" class="botao grande">🔊 Ouvir exemplo</button>
+      <button id="btn-anterior" class="botao">◀ Nota anterior</button>
+      <button id="btn-pular" class="botao">Pular nota ▶</button>
+      <label class="check"><input type="checkbox" id="chk-metronomo" checked> Metrônomo</label>
+    </div>
+
+    <!-- Resultado -->
+    <div class="cartao oculto" id="resultado">
+      <div class="rot-secao">Resultado</div>
+      <div id="resultado-corpo"></div>
+    </div>
+
+  </section>
+
+  <!-- ================= AFINADOR ================= -->
+  <section id="painel-afinador" class="oculto">
+    <div class="cartao">
+      <div class="rot-secao">Afinador — toque uma corda solta de cada vez</div>
+      <div class="afinador">
+        <div id="af-nota" class="af-nota">—</div>
+        <div class="af-regua">
+          <div class="af-centro"></div>
+          <div id="af-agulha" class="af-agulha"></div>
+        </div>
+        <div id="af-texto" class="af-texto">Ligue o microfone e toque uma corda.</div>
+      </div>
+      <div class="af-cordas" id="af-cordas"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="rodape">
+  Quer aprender outra música? Peça pro Claude: <b>"adiciona a música X no baixo-aula"</b> — ele escreve a tablatura no arquivo <code>musicas.js</code>.
+</footer>
+
+<script src="musicas.js"></script>
+<script src="audio.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
