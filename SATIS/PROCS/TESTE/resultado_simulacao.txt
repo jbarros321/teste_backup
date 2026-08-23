@@ -1,0 +1,89 @@
+
+==============================================================================
+CENARIO 1 - Rateio com dizima: R$ 100,00 em 3x, sem juros
+==============================================================================
+  ORIGINAL     ORA-20009 'Somente Titulos de Receitas nao baixados podem ser parcelados!' (linha 108, RAISE de depuracao) - aborta antes de gravar
+  ORIGINAL*    1:33,33 | 2:33,33 | 3:33,33
+               soma = 99,99  <-- ERRO (esperado 100,00)
+  CORRIGIDA    1:33,33 | 2:33,33 | 3:33,34
+               soma = 100,00  <-- OK
+  * ignorando o RAISE da linha 108, so para medir o rateio
+
+==============================================================================
+CENARIO 2 - Juros percentual: R$ 1.000,00 em 2x, P 10%
+==============================================================================
+  ORIGINAL     1:500,00 | 2:500,00
+               soma = 1.000,00  <-- OK
+    ^ parametro lido como 'PARAM_P_JUROS' (linha 48) -> chega NULL -> sem juros
+  CORRIGIDA    1:550,00 | 2:550,00
+               soma = 1.100,00  <-- OK
+
+==============================================================================
+CENARIO 3 - Juros valor fixo: R$ 1.000,00 em 4x, V R$ 100,00 (modo manual)
+==============================================================================
+  (aqui o parametro de juros foi passado corrigido nas DUAS versoes, para
+   isolar o defeito de calculo do defeito de leitura do parametro)
+  ORIGINAL     1:350,00 | 2:350,00 | 3:350,00 | 4:350,00
+               soma = 1.400,00  <-- ERRO (esperado 1.100,00)
+  CORRIGIDA    1:275,00 | 2:275,00 | 3:275,00 | 4:275,00
+               soma = 1.100,00  <-- OK
+
+==============================================================================
+CENARIO 4 - Manual fora de ordem: R$ 1.000,00 -> 3=300;1=500;2=200
+==============================================================================
+  ORIGINAL     ORA-20009 parcelas devem ser sequenciais - erro na parcela 3
+  CORRIGIDA    1:500,00 | 2:200,00 | 3:300,00
+               soma = 1.000,00  <-- OK
+
+==============================================================================
+CENARIO 5 - Estado final do titulo original (modo manual, em ordem)
+==============================================================================
+  ORIGINAL - o UPDATE roda em TODA iteracao (linha 315 fora do IF):
+    titulo NUFIN original -> HISTORICO='PARCELA 1/3'  DESDOBRAMENTO=3  VLRDESDOB=200,00  DTVENC=09/12/2026
+    novo NUFIN            -> parcela 2  VLRDESDOB=300,00  DTVENC=09/11/2026
+    novo NUFIN            -> parcela 3  VLRDESDOB=200,00  DTVENC=09/12/2026
+    soma gravada = 700,00   (titulo era R$ 1.000,00)
+
+  CORRIGIDA:
+    parcela 1  VLRDESDOB=500,00  DTVENC=10/09/2026
+    parcela 2  VLRDESDOB=300,00  DTVENC=10/10/2026
+    parcela 3  VLRDESDOB=200,00  DTVENC=09/11/2026
+
+==============================================================================
+CENARIO 6 - Vencimentos: base 10/09/2026, intervalo 30 dias, 3 parcelas
+==============================================================================
+  ORIGINAL automatico: 1=10/09/2026  2=10/10/2026  3=09/11/2026
+  ORIGINAL manual    : 1=10/10/2026  2=09/11/2026  3=09/12/2026   <-- 1a parcela em base+30
+  CORRIGIDA          : 1=10/09/2026  2=10/10/2026  3=09/11/2026
+
+==============================================================================
+CENARIO 7 - Parsing de valor
+==============================================================================
+  entrada 1500,00        ORIGINAL -> 1.500,00                     CORRIGIDA -> 1.500,00
+  entrada 1.500,00       ORIGINAL -> 1.500,00                     CORRIGIDA -> 1.500,00
+  entrada 1500.00        ORIGINAL -> 150.000,00                   CORRIGIDA -> 1.500,00
+  entrada R$ 1.234,56    ORIGINAL -> ORA-06502 (nao numerico)     CORRIGIDA -> 1.234,56
+  entrada abc            ORIGINAL -> ORA-06502 (nao numerico)     CORRIGIDA -> ORA-20115 VALOR DE PARCELA INVALIDO: "abc"
+
+==============================================================================
+CENARIO 8 - Validacoes que a versao original nao faz
+==============================================================================
+  Parcela faltando (1 e 3, N=3)   
+      ORIGINAL  -> ORA-20001 qtd informada (2) <> esperada (3)
+      CORRIGIDA -> ORA-20112 qtd informada (2) <> esperada (3)
+  Parcela duplicada               
+      ORIGINAL  -> ORA-20009 parcelas devem ser sequenciais - erro na parcela 1
+      CORRIGIDA -> ORA-20114 parcela 1 informada mais de uma vez
+  Soma divergente                 
+      ORIGINAL  -> ORA-20007 soma 800,00 <> titulo 1.000,00
+      CORRIGIDA -> ORA-20113 soma 800,00 <> titulo 1.000,00
+  Valor negativo                  
+      ORIGINAL  -> ACEITOU e gravou
+      CORRIGIDA -> ORA-20115 VALOR DE PARCELA INVALIDO: "-500,00"
+
+==============================================================================
+CENARIO 9 - Divisao por zero (N nao informado)
+==============================================================================
+  ORIGINAL  -> ORA-01476 divisor is equal to zero
+  CORRIGIDA -> ORA-20101 O NUMERO DE PARCELAS DEVE SER MAIOR OU IGUAL A 2. (antes de gravar)
+
