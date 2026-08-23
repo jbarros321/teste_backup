@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>DOCUMENTACAO_FUNCIONAL_BRASSOL</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.min.css" />
+</head>
+<body>
+<h1 id="documentacao-funcional---personalizacao-brassol">DOCUMENTACAO
+FUNCIONAL - PERSONALIZACAO BRASSOL</h1>
+<h2 id="cliente-brassol"><strong>Cliente:</strong> Brassol</h2>
+<h2 id="data-03102025"><strong>Data:</strong> 03/10/2025</h2>
+<h2
+id="objetivo-alteracao-automatica-de-cfop"><strong>Objetivo:</strong>
+Alteracao Automatica de CFOP</h2>
+<hr />
+<h2 id="visao-geral-da-solucao"><strong>VISAO GERAL DA
+SOLUCAO</strong></h2>
+<h3 id="objetivo-da-personalizacao"><strong>Objetivo da
+Personalizacao</strong></h3>
+<p>Implementar um botao de acao no sistema Sankhya que permita alterar o
+CFOP (Codigo Fiscal de Operacoes e Prestacoes) de registros selecionados
+de forma automatica, contornando as validacoes da trigger do banco de
+dados.</p>
+<h3 id="problema-resolvido"><strong>Problema Resolvido</strong></h3>
+<ul>
+<li><strong>Situacao Anterior:</strong> Alteracoes de CFOP eram
+bloqueadas pela trigger <code>TRG_UPT_TGFITE</code></li>
+<li><strong>Solucao Implementada:</strong> Botao de acao que desativa
+temporariamente a trigger, realiza as alteracoes e reativa a trigger
+automaticamente</li>
+</ul>
+<hr />
+<h2 id="funcionalidades-implementadas"><strong>FUNCIONALIDADES
+IMPLEMENTADAS</strong></h2>
+<h3 id="botao-de-acao-alteracfop"><strong>1. Botao de Acao
+“AlteraCFOP”</strong></h3>
+<ul>
+<li><strong>Localizacao:</strong> Tela de itens de nota fiscal</li>
+<li><strong>Acesso:</strong> Atraves do menu de acoes do Sankhya</li>
+<li><strong>Parametro:</strong> CODCFO (CFOP de destino)</li>
+</ul>
+<h3 id="processo-de-alteracao"><strong>2. Processo de
+Alteracao</strong></h3>
+<ol type="1">
+<li><strong>Selecao de Registros:</strong> Usuario seleciona os itens
+desejados</li>
+<li><strong>Configuracao:</strong> Informa o CFOP de destino atraves do
+parametro</li>
+<li><strong>Execucao:</strong> Sistema processa automaticamente:
+<ul>
+<li>Desativa trigger do banco</li>
+<li>Altera CFOP de todos os registros selecionados</li>
+<li>Reativa trigger do banco</li>
+<li>Exibe resultado da operacao</li>
+</ul></li>
+</ol>
+<h3 id="controle-de-trigger"><strong>3. Controle de
+Trigger</strong></h3>
+<ul>
+<li><strong>Desativacao Automatica:</strong>
+<code>TRG_UPT_TGFITE DISABLE</code></li>
+<li><strong>Processamento:</strong> Alteracoes realizadas sem
+bloqueios</li>
+<li><strong>Reativacao Automatica:</strong>
+<code>TRG_UPT_TGFITE ENABLE</code></li>
+<li><strong>Seguranca:</strong> Garantia de reativacao mesmo em caso de
+erro</li>
+</ul>
+<hr />
+<h2 id="fluxo-de-uso"><strong>FLUXO DE USO</strong></h2>
+<h3 id="passo-1-selecao"><strong>Passo 1: Selecao</strong></h3>
+<ul>
+<li>Usuario acessa a tela de itens de nota fiscal</li>
+<li>Seleciona os registros que deseja alterar</li>
+<li>Clica no botao de acao “AlteraCFOP”</li>
+</ul>
+<h3 id="passo-2-configuracao"><strong>Passo 2:
+Configuracao</strong></h3>
+<ul>
+<li>Sistema solicita o parametro CODCFO</li>
+<li>Usuario informa o CFOP de destino (ex: 1411, 1910, etc.)</li>
+<li>Confirma a operacao</li>
+</ul>
+<h3 id="passo-3-processamento"><strong>Passo 3:
+Processamento</strong></h3>
+<ul>
+<li>Sistema valida os dados informados</li>
+<li>Desativa automaticamente a trigger do banco</li>
+<li>Processa todas as alteracoes de CFOP</li>
+<li>Reativa automaticamente a trigger</li>
+<li>Exibe mensagem de sucesso com quantidade de registros alterados</li>
+</ul>
+<h3 id="passo-4-resultado"><strong>Passo 4: Resultado</strong></h3>
+<ul>
+<li>Usuario recebe confirmacao da operacao</li>
+<li>Registros sao atualizados no banco de dados</li>
+<li>Sistema retorna ao estado normal</li>
+</ul>
+<hr />
+<h2 id="configuracoes-necessarias"><strong>CONFIGURACOES
+NECESSARIAS</strong></h2>
+<h3 id="parametro-do-botao"><strong>1. Parametro do Botao</strong></h3>
+<ul>
+<li><strong>Nome:</strong> CODCFO</li>
+<li><strong>Tipo:</strong> Numero inteiro</li>
+<li><strong>Descricao:</strong> CFOP de destino para alteracao</li>
+<li><strong>Obrigatorio:</strong> Sim</li>
+</ul>
+<h3 id="permissoes"><strong>2. Permissoes</strong></h3>
+<ul>
+<li>Usuario deve ter permissao para executar botoes de acao</li>
+<li>Usuario deve ter permissao para alterar registros de itens</li>
+<li>Usuario deve ter acesso a tela de itens de nota fiscal</li>
+</ul>
+<h3 id="dependencias"><strong>3. Dependencias</strong></h3>
+<ul>
+<li>Sistema Sankhya funcionando</li>
+<li>Banco de dados acessivel</li>
+<li>Trigger TRG_UPT_TGFITE ativa no banco</li>
+</ul>
+<hr />
+<h2 id="validacoes-implementadas"><strong>VALIDACOES
+IMPLEMENTADAS</strong></h2>
+<h3 id="validacao-de-entrada"><strong>1. Validacao de
+Entrada</strong></h3>
+<ul>
+<li>Verifica se ha registros selecionados</li>
+<li>Valida se o parametro CODCFO foi informado</li>
+<li>Confirma se o CFOP de destino e valido</li>
+</ul>
+<h3 id="validacao-de-processo"><strong>2. Validacao de
+Processo</strong></h3>
+<ul>
+<li>Controle de transacao automatico</li>
+<li>Tratamento de erros por linha</li>
+<li>Logs detalhados para auditoria</li>
+</ul>
+<h3 id="validacao-de-saida"><strong>3. Validacao de Saida</strong></h3>
+<ul>
+<li>Confirmacao de alteracoes realizadas</li>
+<li>Contagem de registros processados</li>
+<li>Verificacao de integridade dos dados</li>
+</ul>
+<hr />
+<h2 id="resultados-esperados"><strong>RESULTADOS ESPERADOS</strong></h2>
+<h3 id="beneficios-para-o-usuario"><strong>Beneficios para o
+Usuario</strong></h3>
+<ul>
+<li><strong>Agilidade:</strong> Alteracao em lote de CFOPs</li>
+<li><strong>Seguranca:</strong> Controle automatico de trigger</li>
+<li><strong>Simplicidade:</strong> Interface intuitiva</li>
+<li><strong>Confiabilidade:</strong> Processamento sem erros</li>
+</ul>
+<h3 id="beneficios-para-o-sistema"><strong>Beneficios para o
+Sistema</strong></h3>
+<ul>
+<li><strong>Integridade:</strong> Dados sempre consistentes</li>
+<li><strong>Performance:</strong> Operacoes otimizadas</li>
+<li><strong>Auditoria:</strong> Logs completos de operacoes</li>
+<li><strong>Manutenibilidade:</strong> Codigo limpo e documentado</li>
+</ul>
+<hr />
+<h2 id="consideracoes-importantes"><strong>CONSIDERACOES
+IMPORTANTES</strong></h2>
+<h3 id="limitacoes"><strong>Limitacoes</strong></h3>
+<ul>
+<li>Funciona apenas com registros de itens de nota fiscal</li>
+<li>Requer permissoes adequadas do usuario</li>
+<li>Dependente da trigger TRG_UPT_TGFITE estar ativa</li>
+</ul>
+<h3 id="seguranca"><strong>Seguranca</strong></h3>
+<ul>
+<li>Controle automatico de trigger garante integridade</li>
+<li>Validacoes impedem operacoes invalidas</li>
+<li>Logs permitem auditoria completa</li>
+</ul>
+<h3 id="performance"><strong>Performance</strong></h3>
+<ul>
+<li>Processamento otimizado para grandes volumes</li>
+<li>Controle de transacao eficiente</li>
+<li>Tempo de execucao minimo</li>
+</ul>
+<hr />
+<h2 id="suporte-e-manutencao"><strong>SUPORTE E MANUTENCAO</strong></h2>
+<h3 id="manutencao-preventiva"><strong>Manutencao
+Preventiva</strong></h3>
+<ul>
+<li>Verificacao periodica da trigger do banco</li>
+<li>Monitoramento de logs de execucao</li>
+<li>Atualizacoes conforme evolucao do sistema</li>
+</ul>
+<h3 id="suporte-tecnico"><strong>Suporte Tecnico</strong></h3>
+<ul>
+<li>Documentacao completa disponivel</li>
+<li>Codigo fonte versionado</li>
+<li>Logs detalhados para diagnostico</li>
+</ul>
+<hr />
+<h2 id="status-da-implementacao"><strong>STATUS DA
+IMPLEMENTACAO</strong></h2>
+<p><strong>PERSONALIZACAO CONCLUIDA COM SUCESSO</strong></p>
+<ul>
+<li>Funcionalidade implementada e testada</li>
+<li>Documentacao entregue</li>
+<li>Treinamento realizado</li>
+<li>Sistema em producao</li>
+<li>Cliente satisfeito</li>
+</ul>
+<hr />
+<p><strong>Documento elaborado em:</strong> 03/10/2025
+<strong>Desenvolvedor:</strong> Leandro Marcos Moreira
+<strong>Cliente:</strong> Brassol <strong>Contato:</strong> Emerson da
+Brassol <strong>Versao:</strong> 1.0</p>
+</body>
+</html>

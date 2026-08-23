@@ -114,8 +114,9 @@ yarn-error.log*
 *.old
 *.orig
 
-# Artefato estranho do Windows
-nul
-
-# Vídeos que são apenas ponteiros sem conteúdo real
+# Videos - nao versionados
 *.mp4
+*.MP4
+*.mov
+*.avi
+*.mkv

@@ -1,3 +1,4 @@
+
 # Arquivos de texto devem usar LF (Unix) line endings
 *.java text eol=lf
 *.md text eol=lf

@@ -1,0 +1,85 @@
+========================================
+COMO USAR A API PARA INSERIR NA TGFMET
+========================================
+
+1. COPIAR OS ARQUIVOS
+=====================
+- Copie o arquivo "TGFMetService.java" para a pasta "src/br/com/cliente/service/"
+- Copie o arquivo "InserirTGFMetAction.java" para a pasta "src/br/com/cliente/action/"
+
+2. CONFIGURAR NO SANKHYA
+========================
+No arquivo "config.xml" do seu projeto, adicione:
+
+<action>
+    <name>InserirTGFMetAction</name>
+    <class>br.com.cliente.action.InserirTGFMetAction</class>
+    <description>Inserir registro na TGFMET</description>
+</action>
+
+3. CRIAR BOTÃO NA TELA
+======================
+Na tela da TGFMET, adicione um botão que chama a ação "InserirTGFMetAction"
+
+4. CAMPOS NECESSÁRIOS NO FORMULÁRIO
+==================================
+O botão precisa de 3 campos:
+- CODMET (número): Código do método
+- DESCRICAO (texto): Descrição do método
+- VALOR (número): Valor do método
+
+5. TESTAR
+=========
+1. Abra a tela da TGFMET
+2. Clique no botão que você criou
+3. Preencha os campos
+4. Clique em executar
+5. Deve aparecer: "Registro inserido com sucesso na TGFMET!"
+
+========================================
+EXPLICAÇÃO SIMPLES DO QUE ACONTECE
+========================================
+
+QUANDO VOCÊ CLICA NO BOTÃO:
+1. O Sankhya chama o método "doAction"
+2. O método pega os valores que você digitou
+3. Chama o serviço "TGFMetService"
+4. O serviço conecta na tabela TGFMET
+5. Cria uma linha nova com seus dados
+6. Salva no banco de dados
+7. Mostra mensagem de sucesso
+
+========================================
+CAMPOS DA TABELA TGFMET MAIS COMUNS
+========================================
+
+OBRIGATÓRIOS:
+- CODMET: Código do método (número único)
+- DESCRICAO: Descrição do que o método faz
+
+OPCIONAIS:
+- VALOR: Valor numérico associado
+- ATIVO: Se está ativo ('S' ou 'N')
+- DTCADASTRO: Data de cadastro (preenche automático)
+
+========================================
+DICAS IMPORTANTES
+========================================
+
+1. SEMPRE teste primeiro em desenvolvimento
+2. CODMET deve ser único (não pode repetir)
+3. Se der erro, verifique se os campos obrigatórios estão preenchidos
+4. O valor pode ser decimal (ex: 10.50)
+5. A descrição pode ter até 100 caracteres normalmente
+
+========================================
+EXEMPLO DE VALORES PARA TESTAR
+========================================
+
+CODMET: 999
+DESCRICAO: Teste de inserção via API
+VALOR: 100.50
+
+
+
+

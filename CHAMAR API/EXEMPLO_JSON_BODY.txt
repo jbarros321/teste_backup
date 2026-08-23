@@ -1,0 +1,116 @@
+========================================
+EXEMPLOS DE JSON PARA COPIAR E COLAR
+========================================
+
+========================================
+OPÇÃO 1: JSON SIMPLES (Recomendado)
+========================================
+
+{
+  "serviceName": "CRUDServiceProvider.saveRecord",
+  "requestBody": {
+    "dataSet": {
+      "rootEntity": "TGFMET",
+      "includePresentationFields": "S",
+      "dataRow": {
+        "CODMET": ":CODMET",
+        "DESCRICAO": ":DESCRICAO",
+        "VALOR": ":VALOR",
+        "ATIVO": "S"
+      }
+    }
+  }
+}
+
+========================================
+OPÇÃO 2: JSON COM MAIS CAMPOS
+========================================
+
+{
+  "serviceName": "CRUDServiceProvider.saveRecord",
+  "requestBody": {
+    "dataSet": {
+      "rootEntity": "TGFMET",
+      "includePresentationFields": "S",
+      "dataRow": {
+        "CODMET": ":CODMET",
+        "DESCRICAO": ":DESCRICAO",
+        "VALOR": ":VALOR",
+        "ATIVO": ":ATIVO",
+        "OBSERVACAO": ":OBSERVACAO"
+      }
+    }
+  }
+}
+
+========================================
+OPÇÃO 3: JSON PARA TESTE MANUAL
+========================================
+(Use este para testar sem variáveis da View)
+
+{
+  "serviceName": "CRUDServiceProvider.saveRecord",
+  "requestBody": {
+    "dataSet": {
+      "rootEntity": "TGFMET",
+      "includePresentationFields": "S",
+      "dataRow": {
+        "CODMET": 999,
+        "DESCRICAO": "Teste de inserção via API",
+        "VALOR": 100.50,
+        "ATIVO": "S"
+      }
+    }
+  }
+}
+
+========================================
+COMO USAR AS VARIÁVEIS
+========================================
+
+No JSON, quando você coloca :NOME_DA_VARIAVEL,
+o Analytics substitui automaticamente pelo valor da View.
+
+EXEMPLO:
+Se sua View tem uma coluna chamada "CODIGO_METODO",
+no JSON você usa: ":CODIGO_METODO"
+
+O Analytics vai pegar o valor da coluna CODIGO_METODO
+e colocar no lugar de :CODIGO_METODO
+
+========================================
+MAPEAMENTO DE VARIÁVEIS COMUNS
+========================================
+
+Se sua View tem colunas assim:
+| CODIGO | DESCR | VALOR_NUM |
+
+No JSON use:
+{
+  "CODMET": ":CODIGO",
+  "DESCRICAO": ":DESCR",
+  "VALOR": ":VALOR_NUM"
+}
+
+========================================
+IMPORTANTE: NOMES DOS CAMPOS
+========================================
+
+Os nomes dentro de "dataRow" DEVEM ser exatamente
+os nomes das colunas da tabela TGFMET no banco:
+
+✅ CORRETO:
+"CODMET" (nome exato da coluna)
+"DESCRICAO" (nome exato da coluna)
+"VALOR" (nome exato da coluna)
+
+❌ ERRADO:
+"codmet" (minúscula - não funciona)
+"cod_met" (com underscore - não funciona)
+"CodMet" (misturado - não funciona)
+
+========================================
+
+
+
+

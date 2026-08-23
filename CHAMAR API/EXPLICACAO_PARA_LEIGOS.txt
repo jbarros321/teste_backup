@@ -1,0 +1,93 @@
+========================================
+EXPLICAÇÃO PARA QUEM NÃO ENTENDE DE PROGRAMAÇÃO
+========================================
+
+OLÁ! VOU EXPLICAR DE FORMA SIMPLES O QUE VOCÊ PRECISA FAZER
+PARA CONSEGUIR INSERIR DADOS NA TABELA TGFMET DO SANKHYA.
+
+========================================
+OS ARQUIVOS QUE CRIEI PARA VOCÊ:
+========================================
+
+1. TGFMetService.java
+===================
+ESSE É O "CÉREBRO" DA OPERAÇÃO.
+Ele sabe COMO conversar com o banco de dados do Sankhya.
+É como um funcionário que sabe exatamente onde guardar as coisas.
+
+2. InserirTGFMetAction.java
+=========================
+ESSE É O "BOTÃO" QUE VOCÊ VAI CLICAR.
+Quando você clica no botão na tela do Sankhya, ele chama o serviço acima.
+É como apertar o botão de uma máquina de café - ela faz tudo automaticamente.
+
+3. TGFMetServiceComValidacao.java
+===============================
+VERSÃO MAIS INTELIGENTE do serviço.
+Antes de guardar, ele VERIFICA se os dados estão corretos.
+Por exemplo: não deixa guardar código repetido, ou descrição vazia.
+É como um segurança que verifica se tudo está em ordem antes de deixar entrar.
+
+4. COMO_USAR.txt
+===============
+GUIA PASSO A PASSO do que você precisa fazer.
+É como uma receita de bolo - explica cada passo detalhadamente.
+
+========================================
+O QUE ACONTECE QUANDO VOCÊ USA ISSO:
+========================================
+
+IMAGINE QUE VOCÊ TEM UMA PLANILHA NO EXCEL:
+
+| CODMET | DESCRICAO              | VALOR  |
+|--------|------------------------|--------|
+| 001    | Método de teste        | 50.00  |
+
+QUANDO VOCÊ CLICA NO BOTÃO:
+1. O botão pega os valores que você digitou (001, "Método de teste", 50.00)
+2. Manda para o serviço
+3. O serviço "conversa" com o banco de dados do Sankhya
+4. O banco cria uma linha nova na tabela TGFMET
+5. Aparece mensagem: "Pronto! Dados salvos!"
+
+========================================
+ANALOGIA DO MUNDO REAL:
+========================================
+
+É como ir ao BANCO:
+
+1. Você vai ao guichê (clica no botão)
+2. O atendente pega seus dados (serviço recebe os parâmetros)
+3. O atendente verifica se está tudo certo (validações)
+4. O atendente guarda no cofre (insert no banco)
+5. Dá o recibo (mensagem de sucesso)
+
+========================================
+O QUE VOCÊ PRECISA FAZER AGORA:
+========================================
+
+1. COPIAR os arquivos para as pastas certas do seu projeto
+2. CONFIGURAR no arquivo config.xml
+3. CRIAR UM BOTÃO na tela da TGFMET
+4. TESTAR clicando no botão
+
+========================================
+SE DER ERRADO:
+========================================
+
+1. Verifique se copiou os arquivos nas pastas certas
+2. Verifique se o config.xml está correto
+3. Teste primeiro com a versão simples (TGFMetService.java)
+4. Só depois use a versão com validações
+
+========================================
+RESUMO FINAL:
+========================================
+
+VOCÊ TEM TUDO QUE PRECISA AQUI!
+É como um kit de montar pronto.
+Basta seguir o guia do "COMO_USAR.txt" e vai funcionar! 🚀
+
+
+
+

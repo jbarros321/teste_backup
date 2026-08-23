@@ -1,0 +1,242 @@
+========================================
+CONFIGURAÇÃO DA API NO ANALYTICS
+Para inserir dados na tabela TGFMET
+========================================
+
+PASSO A PASSO PARA PREENCHER OS CAMPOS:
+
+========================================
+1. TIPO DE CHAMADA
+========================================
+✅ MUDAR DE: GET
+✅ PARA: POST
+
+POR QUÊ?
+- GET = apenas ler dados (não insere)
+- POST = criar/inserir novos dados
+- Para INSERT, SEMPRE use POST
+
+========================================
+2. URL
+========================================
+✅ URL COMPLETA:
+https://api.sankhya.co/mge/service.sbr?serviceName=CRUDServiceProvider.saveRecord&outputType=json
+
+OU (se usar endpoint específico):
+https://seu-servidor-sankhya:porta/mge/service.sbr?serviceName=CRUDServiceProvider.saveRecord&outputType=json
+
+OBSERVAÇÕES:
+- Substitua "seu-servidor-sankhya" pelo endereço do seu servidor Sankhya
+- Substitua ":porta" pela porta (geralmente 8080 ou 8180)
+- O serviceName "CRUDServiceProvider.saveRecord" é o serviço padrão do Sankhya para salvar registros
+
+========================================
+3. HEADERS (Cabeçalhos)
+========================================
+✅ JÁ ESTÁ CONFIGURADO:
+Nome: Content-Type
+Valor: application/json
+
+✅ ADICIONAR NOVO HEADER (se necessário autenticação):
+Nome: Authorization
+Valor: Basic [seu-token-base64]
+
+OU (se usar token):
+Nome: Authorization
+Valor: Bearer [seu-token]
+
+COMO OBTER O TOKEN:
+- No Sankhya, vá em Configurações > API > Tokens
+- Gere um token de acesso
+- Use no formato: "Bearer SEU_TOKEN_AQUI"
+
+========================================
+4. BODY (Corpo da Requisição)
+========================================
+✅ HABILITAR: "Habilitar body personalizado" (ligar o toggle)
+
+✅ JSON PARA INSERIR NA TGFMET:
+{
+  "serviceName": "CRUDServiceProvider.saveRecord",
+  "requestBody": {
+    "dataSet": {
+      "rootEntity": "TGFMET",
+      "includePresentationFields": "S",
+      "dataRow": {
+        "CODMET": ":CODMET",
+        "DESCRICAO": ":DESCRICAO",
+        "VALOR": ":VALOR",
+        "ATIVO": "S"
+      }
+    }
+  }
+}
+
+EXPLICAÇÃO DOS CAMPOS:
+- CODMET: Código do método (número)
+- DESCRICAO: Descrição do método (texto)
+- VALOR: Valor numérico (pode ser decimal)
+- ATIVO: 'S' para ativo, 'N' para inativo
+
+========================================
+5. VARIÁVEIS (Mapeamento)
+========================================
+✅ CONFIGURAR AS VARIÁVEIS DA VIEW:
+
+No campo "Variáveis", você precisa mapear os campos da sua View para o JSON do Body.
+
+EXEMPLO DE MAPEAMENTO:
+Se sua View tem colunas chamadas:
+- CODIGO_METODO → mapeia para :CODMET
+- DESCR_METODO → mapeia para :DESCRICAO  
+- VALOR_METODO → mapeia para :VALOR
+
+COMO FAZER:
+1. Ative o "Link Dinâmico" na View
+2. As variáveis disponíveis aparecerão automaticamente
+3. Use o formato :NOME_DA_COLUNA no JSON do Body
+4. O Analytics substitui automaticamente pelos valores da View
+
+EXEMPLO PRÁTICO:
+Se sua View retorna:
+| CODIGO | DESCRICAO | VALOR |
+|--------|-----------|-------|
+| 001    | Método A  | 100.50|
+
+No Body, use:
+{
+  "CODMET": ":CODIGO",
+  "DESCRICAO": ":DESCRICAO",
+  "VALOR": ":VALOR"
+}
+
+O Analytics vai substituir:
+- :CODIGO por 001
+- :DESCRICAO por "Método A"
+- :VALOR por 100.50
+
+========================================
+6. VARIÁVEL DE RETORNO
+========================================
+✅ DEIXAR COMO ESTÁ:
+:VAR_SANKHYA_SESSION
+
+OU criar uma nova variável:
+:VAR_RESPOSTA_TGFMET
+
+O QUE ACONTECE:
+- A resposta da API será armazenada nesta variável
+- Você pode usar depois para verificar se deu certo
+- Geralmente retorna: {"status": "success"} ou {"error": "mensagem"}
+
+========================================
+7. OBSERVAÇÃO IMPORTANTE
+========================================
+⚠️ "Será realizada uma chamada na API para cada linha retornada na View"
+
+ISSO SIGNIFICA:
+- Se sua View retornar 10 linhas
+- Serão feitas 10 chamadas de API
+- Cada linha será inserida separadamente na TGFMET
+
+CUIDADO:
+- Se tiver muitas linhas, pode demorar
+- Se uma linha der erro, as outras continuam sendo processadas
+- Verifique os logs se algo der errado
+
+========================================
+EXEMPLO COMPLETO DE CONFIGURAÇÃO
+========================================
+
+TIPO DE CHAMADA: POST
+
+URL: 
+https://api.sankhya.co/mge/service.sbr?serviceName=CRUDServiceProvider.saveRecord&outputType=json
+
+HEADERS:
+Content-Type: application/json
+Authorization: Bearer SEU_TOKEN_AQUI
+
+BODY (habilitado):
+{
+  "serviceName": "CRUDServiceProvider.saveRecord",
+  "requestBody": {
+    "dataSet": {
+      "rootEntity": "TGFMET",
+      "includePresentationFields": "S",
+      "dataRow": {
+        "CODMET": ":CODMET",
+        "DESCRICAO": ":DESCRICAO",
+        "VALOR": ":VALOR",
+        "ATIVO": "S"
+      }
+    }
+  }
+}
+
+VARIÁVEIS:
+(As variáveis serão preenchidas automaticamente quando você ativar o Link Dinâmico)
+
+VARIÁVEL DE RETORNO:
+:VAR_SANKHYA_SESSION
+
+========================================
+COMO TESTAR
+========================================
+
+1. Clique no botão "Testar API" (roxo)
+2. Verifique se aparece mensagem de sucesso
+3. Se der erro, verifique:
+   - URL está correta?
+   - Token de autenticação está válido?
+   - Campos obrigatórios estão preenchidos?
+   - Formato JSON está correto?
+
+========================================
+TROUBLESHOOTING (Solução de Problemas)
+========================================
+
+ERRO: "401 Unauthorized"
+→ Token de autenticação inválido ou ausente
+→ Verifique o header Authorization
+
+ERRO: "404 Not Found"
+→ URL incorreta
+→ Verifique se o servidor e porta estão corretos
+
+ERRO: "400 Bad Request"
+→ JSON do body está incorreto
+→ Verifique se os nomes dos campos estão corretos (CODMET, DESCRICAO, VALOR)
+
+ERRO: "500 Internal Server Error"
+→ Erro no servidor Sankhya
+→ Verifique os logs do servidor
+→ Pode ser que algum campo obrigatório esteja faltando
+
+========================================
+CAMPOS OBRIGATÓRIOS DA TGFMET
+========================================
+
+Normalmente são obrigatórios:
+- CODMET (Código do método - deve ser único)
+- DESCRICAO (Descrição - não pode ser vazio)
+
+Opcionais (mas recomendados):
+- VALOR (Valor numérico)
+- ATIVO ('S' ou 'N' - padrão: 'S')
+
+========================================
+DICAS FINAIS
+========================================
+
+1. SEMPRE teste primeiro com 1 linha da View
+2. Verifique se o registro foi inserido na TGFMET
+3. Depois teste com múltiplas linhas
+4. Monitore os logs se algo der errado
+5. Use a variável de retorno para verificar sucesso/erro
+
+========================================
+
+
+
+

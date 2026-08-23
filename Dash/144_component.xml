@@ -1,0 +1,29 @@
+<gadget ><prompt-parameters><parameter  id="P_PERIODO" description="Período" metadata="datePeriod" required="true" keep-last="true" keep-date="false" show-inactives="false" label="P_PERIODO : Período" order="0"/><parameter  id="P_CODPROD" description="Produto" metadata="multiList:Text" listType="sql" required="true" keep-last="true" keep-date="false" show-inactives="false" label="P_CODPROD : multiList:Text" order="1"><expression type="SQL"><![CDATA[SELECT CODPROD AS VALUE,
+CODPROD||'- '||DESCRPROD AS LABEL
+FROM TGFPRO 
+
+ORDER BY DESCRPROD]]></expression></parameter><parameter  id="P_CODVEND" description="Vendedor" metadata="multiList:Text" listType="sql" required="true" keep-last="true" keep-date="false" show-inactives="false" label="P_CODVEND : multiList:Text" order="2"><expression type="SQL"><![CDATA[SELECT CODVEND AS VALUE,
+CODVEND||'- '||APELIDO AS LABEL 
+FROM TGFVEN 
+
+WHERE ATIVO = 'S' 
+
+ORDER BY APELIDO]]></expression></parameter><parameter  id="P_CODEMP" description="Empresa" metadata="multiList:Text" listType="sql" required="true" keep-last="true" keep-date="false" show-inactives="false" label="P_CODEMP : multiList:Text" order="4"><expression type="SQL"><![CDATA[SELECT CODEMP AS VALUE,
+
+CODEMP||'- '||NOMEFANTASIA AS LABEL 
+
+FROM TSIEMP
+
+ORDER BY NOMEFANTASIA]]></expression></parameter><parameter  id="P_CODPARC" description="Parceiro/Cliente" metadata="multiList:Text" listType="sql" required="true" keep-last="true" keep-date="false" show-inactives="false" label="P_CODPARC : multiList:Text" order="5"><expression type="SQL"><![CDATA[SELECT DISTINCT 
+       CAB.CODPARC AS VALUE,
+       PAR.RAZAOSOCIAL AS LABEL
+FROM TGFCAB CAB 
+LEFT JOIN TGFPAR PAR 
+       ON CAB.CODPARC = PAR.CODPARC
+WHERE CAB.STATUSNOTA = 'L' 
+  AND CAB.TIPMOV = 'P'
+ORDER BY PAR.RAZAOSOCIAL]]></expression></parameter><parameter  id="P_TOP" description="Tipo de Operação" metadata="multiList:Text" listType="sql" required="true" keep-last="true" keep-date="false" show-inactives="false" label="P_TOP : multiList:Text" order="6"><expression type="SQL"><![CDATA[SELECT DISTINCT
+  CODTIPOPER AS VALUE,
+  CODTIPOPER || '- ' || DESCROPER AS LABEL
+FROM TGFTOP
+ORDER BY LABEL]]></expression></parameter></prompt-parameters><level id="01O" description="Principal"><container orientacao="V" tamanhoRelativo="100"><html5component id="html5_01Q" entryPoint="Rel_vendas.jsp"></html5component></container></level><level id="04Z" description="Agrupado Vendedor"><container orientacao="V" tamanhoRelativo="100"><html5component id="html5_051" entryPoint="Arupado_vendedor.jsp"></html5component></container></level><level id="074" description="Agrupado Empresa"><container orientacao="V" tamanhoRelativo="100"><html5component id="html5_076" entryPoint="Agrupado_Empresa.jsp"></html5component></container></level></gadget>

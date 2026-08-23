@@ -1,0 +1,120 @@
+ASSUNTO: Escopo fechado - Orcamentario Voke (Folha/RH + Compras) - 134h
+ANEXO: Escopo-Orcamentario-Voke-134h.docx
+
+------------------------------------------------------------
+(copie a partir da linha abaixo)
+------------------------------------------------------------
+
+Oi Camila, Thais e Dieiny,
+
+Segue em anexo o escopo consolidado do Orcamentario da Voke, ja com a
+ponta de Compras incluida. O documento fecha em 134 horas, distribuidas
+em 8 fases, com 10 semanas de cronograma.
+
+
+O QUE O PROJETO ENTREGA
+
+Sao duas frentes de orcamento sobre uma base comum:
+
+- Folha / RH: substitui as planilhas Planejamento_Banco_de_Horas e
+  Consideracoes_Folha por um sistema com Orcado x Realizado x Desvio x
+  Forecast, planejamento de vagas, movimentacoes/turnover e jornada.
+
+- Compras: orcamento por Centro de Resultado e Natureza, com cenarios
+  versionados (orcado original, revisoes e forecast).
+
+- Motor de Orcamento: camada transversal que permite subir o orcamento
+  por planilha ou gera-lo por drivers (regra por natureza, empresa, CR,
+  projeto, global ou % sobre meta de receita).
+
+
+DISTRIBUICAO DAS HORAS
+
+  Fase 0 - Carga inicial, modelagem e infraestrutura ......... 12h
+  Fase 1 - Orcamento core: Dashboard + DRE de Folha .......... 16h
+  Fase 2 - Planejamento: Vagas, Movimentacoes, Colaboradores.. 12h
+  Fase 3 - Jornada: Banco de horas, HE, faltas ............... 10h
+  Fase 4 - Integracoes (minimo contratual) ................... 35h
+  Fase 5 - Agente IA + Testes + Deploy ........................ 9h
+  Fase 6 - Compras: CR, de-para Gerencia, cenarios ........... 28h
+  Fase 7 - Motor de Orcamento: upload de planilha + drivers .. 12h
+  ------------------------------------------------------------
+  TOTAL ..................................................... 134h
+
+
+DOIS PONTOS QUE VALE DESTACAR
+
+1) O Sankhya e a fonte unica de dados.
+
+Folha e Compras leem da mesma base - empresa, centro de resultado,
+natureza, projeto e parceiro vem do cadastro do Sankhya, e o sistema
+espelha esses cadastros em vez de criar cadastro paralelo. Isso
+simplificou a arquitetura e e o que torna o consolidado das duas pontas
+nativo, sem de-para de cadastro.
+
+A unica excecao e o de-para Centro de Resultado x Gerencia, que fica
+dentro do sistema. Ele existe porque a estrutura organizacional da Voke
+se movimenta com frequencia, mas o numero do CR nao pode mudar - ha
+pedidos e contratos amarrados a ele. A camada de Gerencia permite
+redirecionar um CR para outra diretoria sem tocar em nenhum parametro
+transacional. O documento detalha o funcionamento no item 6.
+
+2) As integracoes estao no piso do contrato.
+
+As 35h da Fase 4 sao o minimo contratual e representam 26% do projeto.
+Elas dependem de credenciais e confirmacoes do cliente. O caso mais
+sensivel e o Ponto Tel (8h), que ja constava no escopo original como
+pendente de "confirmacao de API no contrato". Se a API nao estiver
+contratada, essas horas nao viram entrega e a tela de Jornada segue
+operando por carga manual de planilha.
+
+Vale a mesma observacao para Mindsight e Power BI, em grau menor. O
+sistema opera desde a Fase 1 com os dados das planilhas, entao nenhuma
+pendencia de credencial trava o projeto - mas trava a substituicao da
+carga manual.
+
+
+DEPENDENCIAS DO CLIENTE
+
+Os itens abaixo sao bloqueantes e valem entrar no acompanhamento de
+voces desde ja:
+
+  - Acesso Sankhya (URL, usuario de servico, liberacao das consultas)
+    -> bloqueia todo o Realizado
+
+  - Planilha do de-para CR x Gerencia, com vigencias
+    -> bloqueia a Fase 6 (Compras)
+
+  - Responsavel de cada CR
+    -> bloqueia a Fase 6
+
+  - Metas de receita por empresa/mes
+    -> bloqueia o driver de % sobre receita
+
+  - Regras de driver (quais naturezas e qual formula)
+    -> bloqueia a Fase 7
+
+  - Confirmacao de API do Ponto Tel
+    -> bloqueia 8h da Fase 4
+
+
+BACKLOG
+
+Para fechar nas 134h, cerca de 18h ficaram de fora e estao listadas no
+item 12 do documento - entre elas o empenho/comprometido de pedidos,
+drivers avancados (indice, per capita, escalonado) e workflow de coleta
+orcamentaria. Registrei tudo com o motivo de cada exclusao, para servir
+de base caso vire aditivo ou segunda fase.
+
+Dieiny, no aspecto comercial: as 134h sao fechadas para o escopo
+descrito. As 18h do backlog e qualquer aprofundamento de integracao alem
+do previsto entram como aditivo.
+
+Fico a disposicao para revisar o documento com voces antes de enviar ao
+cliente. Se identificarem algo fora do combinado com a Voke, me avisem
+que eu ajusto.
+
+Abraco,
+
+[nome] - Tech Lead
+Neuon Solucoes

@@ -1,0 +1,58 @@
+========================================
+CORREÇÕES APLICADAS - TABELA TPRLPA
+========================================
+
+❌ CAMPOS INCORRETOS REMOVIDOS:
+========================================
+
+- NUOP (não existe)
+- DTINICIO (não existe)
+- DTFIM (não existe)
+- STATUS (não existe)
+- CONTROLE (não existe)
+- CODPROD (não existe)
+- CODEMP (não existe)
+
+✅ CAMPOS CORRETOS ADICIONADOS:
+========================================
+
+- IDPROC (ID do processo)
+- CODPRODPA (Produto para produção)
+- CONTROLEPA (Lote da OP) ⭐ USADO NO VÍNCULO
+- TAMLOTEPAD (Tamanho lote padrão)
+- MULTIDEAL (Multiplicador deal)
+- QTDPRODMIN (Qtd produto mínimo)
+- DHALTER (Data/hora alteração)
+- DHCAD (Data/hora cadastro)
+
+========================================
+VÍNCULOS CORRIGIDOS:
+========================================
+
+1. ORDEM DE PRODUÇÃO:
+   OP.CONTROLEPA = S.CONTROLE
+   OP.CODPRODPA = S.PRODUTO
+
+2. MATÉRIA PRIMA:
+   MP.CONTROLE = NVL(OP.CONTROLEPA, S.CONTROLE)
+   MP.CODPROD = S.CODPROD
+   MP.CODEMP = S.CODEMP
+
+EXPLICAÇÃO:
+- A OP vincula pelo lote (CONTROLEPA) com o lote da venda (CONTROLE)
+- A MP vincula pelo lote (CONTROLE) com o lote da OP (CONTROLEPA)
+- Se não houver OP, a MP vincula diretamente com o lote da venda
+
+========================================
+RESULTADO:
+========================================
+
+✅ Consulta usa campos corretos da TPRLPA
+✅ Vínculo via lote funcionando
+✅ Rastreamento: Venda → OP → MP → Nota Compra
+✅ Validações adicionadas (lote não vazio)
+
+========================================
+
+
+

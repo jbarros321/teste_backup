@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Balanço Patrimonial</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 84% 4.9%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: hsl(210 40% 98%);
+            font-family: Calibri, sans-serif;
+            font-size: 7pt;
+        }
+
+        #report-table {
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        #report-table th,
+        #report-table td {
+            padding: 4px 6px;
+        }
+
+        .desc-col {
+            width: 180px;
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 1cm;
+            }
+
+            html,
+            body {
+                height: auto !important;
+                min-height: auto !important;
+            }
+
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                background-color: white !important;
+            }
+
+            #app-container,
+            #printable-area,
+            #report-content {
+                height: auto !important;
+                min-height: auto !important;
+                overflow: visible !important;
+            }
+
+            #controls,
+            #app-container {
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            #printable-area {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+            }
+
+            #report-content .overflow-x-auto {
+                overflow: visible !important;
+            }
+
+            #report-table {
+                min-width: 0 !important;
+                width: 100% !important;
+                table-layout: fixed;
+                page-break-inside: auto;
+            }
+
+            #report-table thead {
+                display: table-header-group;
+            }
+
+            #report-table tfoot {
+                display: table-footer-group;
+            }
+
+            #report-table tr {
+                page-break-inside: avoid;
+            }
+
+            #report-table th,
+            #report-table td {
+                padding: 2px 4px;
+            }
+
+            .desc-col {
+                width: 150px;
+                max-width: 150px;
+            }
+        }
+    </style>
+</head>
+
+<body class="text-[color:var(--foreground)]">
+    <div id="app-container" class="w-full h-full flex flex-col p-4">
+        <div id="controls" class="mb-4 print:hidden flex justify-end">
+            <button id="print-btn"
+                class="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 inline-flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+                Imprimir PDF
+            </button>
+        </div>
+
+        <main id="printable-area"
+            class="bg-background p-6 shadow-md rounded-lg border border-border flex-grow overflow-auto">
+            <header class="mb-6">
+                <div class="text-center">
+                    <h1 class="text-lg font-bold">
+                        TECWAY SERVIÇOS E LOCAÇÃO DE EQUIPAMENTOS LTDA
+                    </h1>
+                    <p class="text-sm text-muted-foreground">
+                        CNPJ: 13.392.705/0001-43 | NIRE: 13200556445
+                    </p>
+                    <p class="text-sm text-muted-foreground">
+                        Rua Helena Cardoso, nº 420, Santa Etelvina, CEP: 69.059-290,
+                        Manaus/AM.
+                    </p>
+                </div>
+                <div class="mt-4 text-center">
+                    <h2 class="text-xl font-semibold">Balancete de verificação</h2>
+                    <p id="report-period" class="text-base text-muted-foreground">
+                        Período: Janeiro a Dezembro de ----
+                    </p>
+                </div>
+            </header>
+
+            <div id="report-content">
+                <div id="report-placeholder" class="text-center py-16 text-muted-foreground">
+                    Carregando dados do relatório...
+                </div>
+                <div class="overflow-x-auto">
+                    <table id="report-table" class="w-full text-xs border-collapse hidden">
+                        <thead id="report-thead"></thead>
+                        <tbody id="report-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Report Footer -->
+            <footer class="mt-16 pt-8">
+                <div class="flex justify-between items-end">
+                    <!-- Data à esquerda -->
+                    <div class="text-left text-xs text-muted-foreground">
+                        <p>Manaus/AM</p>
+                        <p id="emission-date"></p>
+                    </div>
+
+                    <!-- Assinaturas à direita -->
+                    <div class="flex space-x-12 text-center text-[9px] leading-tight">
+                        <div class="w-64">
+                            <p class="border-t border-foreground pt-1 mt-6 font-bold">
+                                FÁBIO GUERRA GARCIA
+                            </p>
+                            <p>CPF 813.742.591-87</p>
+                            <p>Sócio Administrador</p>
+                        </div>
+                        <div class="w-64">
+                            <p class="border-t border-foreground pt-1 mt-6 font-bold">
+                                JEISE HELLEN PIRES FERREIRA
+                            </p>
+                            <p>CPF 003.483.222-08</p>
+                            <p>Contadora CRC/AM: 017791/O</p>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        const MITRA_UPDATE_EVENT_NAME = "mitra-update-balancete";
+
+        function updateMitra() {
+            console.log(
+                "Sinal de update para [Balancete] recebido. Disparando evento."
+            );
+            document.body.dispatchEvent(new CustomEvent(MITRA_UPDATE_EVENT_NAME));
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const printBtn = document.getElementById("print-btn");
+            const placeholder = document.getElementById("report-placeholder");
+            const table = document.getElementById("report-table");
+            const thead = document.getElementById("report-thead");
+            const tbody = document.getElementById("report-tbody");
+            const periodEl = document.getElementById("report-period");
+            const emissionDateEl = document.getElementById("emission-date");
+
+            printBtn.addEventListener("click", () => window.print());
+
+            const setEmissionDate = () => {
+                if (!emissionDateEl) return;
+
+                const formattedDate = new Intl.DateTimeFormat("pt-BR", {
+                    timeZone: "America/Manaus",
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                }).format(new Date());
+
+                emissionDateEl.textContent = formattedDate;
+            };
+
+            setEmissionDate();
+
+            function formatCurrency(value) {
+                const num = parseFloat(value);
+                if (isNaN(num)) {
+                    return "";
+                }
+                const formatted = new Intl.NumberFormat("pt-BR", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                }).format(Math.abs(num));
+
+                return num < 0 ? `(${formatted})` : formatted;
+            }
+
+            function getMonthHeaders(baseMonthStr) {
+                if (!baseMonthStr || !/^\d{2}\/\d{4}$/.test(baseMonthStr)) {
+                    console.error("Formato de mês inválido:", baseMonthStr);
+                    const now = new Date();
+                    baseMonthStr = `${String(now.getMonth() + 1).padStart(
+                        2,
+                        "0"
+                    )}/${now.getFullYear()}`;
+                }
+
+                const [month, year] = baseMonthStr.split("/").map(Number);
+                const date = new Date(year, month - 1, 1);
+                const headers = [];
+                const monthNames = [
+                    "jan",
+                    "fev",
+                    "mar",
+                    "abr",
+                    "mai",
+                    "jun",
+                    "jul",
+                    "ago",
+                    "set",
+                    "out",
+                    "nov",
+                    "dez",
+                ];
+
+                for (let i = 0; i < 12; i++) {
+                    const monthName = monthNames[date.getMonth()];
+                    const shortYear = date.getFullYear().toString().slice(-2);
+                    headers.push(`${monthName}-${shortYear}`);
+                    date.setMonth(date.getMonth() - 1);
+                }
+
+                return headers;
+            }
+
+            function renderTable(headersData, data, monthHeaders) {
+                const normalizeDesc = (desc) =>
+                    (desc || "").toString().trim().toUpperCase();
+
+                const colMap = {};
+                const headerNames = headersData.map((h) =>
+                    h && typeof h.name === "string" ? h.name.toUpperCase() : ""
+                );
+
+                colMap.descricao = headerNames.indexOf("DESCRICAO");
+                colMap.hierarquia = headerNames.indexOf("HIERARQUIA");
+                colMap.formatacao = headerNames.indexOf("FORMATACAO");
+
+                for (let i = 1; i <= 12; i++) {
+                    const mesKey = `MES_${String(i).padStart(2, "0")}`;
+                    colMap[mesKey] = headerNames.indexOf(mesKey);
+                }
+
+                if (
+                    colMap.descricao === -1 ||
+                    colMap.hierarquia === -1 ||
+                    colMap.formatacao === -1
+                ) {
+                    console.error(
+                        "Erro de mapeamento de colunas. A query deve retornar: DESCRICAO, HIERARQUIA, FORMATACAO.",
+                        headerNames
+                    );
+                    placeholder.innerHTML = `<div class="text-center py-10 text-destructive">Erro: A query configurada não retorna as colunas esperadas.</div>`;
+                    placeholder.style.display = "block";
+                    table.style.display = "none";
+                    return;
+                }
+
+                const addMergedRow = (label, extraClasses = "") =>
+                    `<tr class="bg-primary text-primary-foreground uppercase font-bold ${extraClasses}"><td class="py-1 px-2 text-left font-bold" colspan="${monthHeaders.length + 1
+                    }">${label}</td></tr>`;
+
+                // Render Thead
+                let theadHTML =
+                    '<tr><th class="px-2 py-1 text-left font-semibold border-b-2 border-primary desc-col">Descrição</th>';
+                monthHeaders.forEach((month) => {
+                    theadHTML += `<th class="px-2 py-1 text-right font-semibold border-b-2 border-primary">${month}</th>`;
+                });
+                theadHTML += "</tr>";
+                thead.innerHTML = theadHTML;
+
+                // Render Tbody
+                let tbodyHTML = "";
+                let insertedAtivo = false;
+                let insertedPassivo = false;
+                let insertedPl = false;
+                let insertedIndicadores = false;
+
+                data.forEach((row) => {
+                    const descricaoRaw = row[colMap.descricao] || "";
+                    const descricaoNormalized = normalizeDesc(descricaoRaw);
+                    const hierarquia = parseInt(row[colMap.hierarquia], 10) || 0;
+                    const formatacao = (row[colMap.formatacao] || "").toUpperCase();
+
+                    if (!insertedAtivo && descricaoNormalized.includes("CIRCULANTE")) {
+                        tbodyHTML += addMergedRow("ATIVO");
+                        insertedAtivo = true;
+                    }
+
+                    let rowClasses = "border-b border-border";
+                    let cellClasses = "py-1 px-1";
+                    let descClasses = "desc-col";
+
+                    if (formatacao.includes("TOTAL")) {
+                        rowClasses += " bg-secondary font-bold";
+                    } else if (formatacao.includes("NEGRITO")) {
+                        rowClasses += " font-bold";
+                    }
+
+                    const paddingLeft = 0;
+                    descClasses += "";
+
+                    tbodyHTML += `<tr class="${rowClasses}">`;
+                    tbodyHTML += `<td class="${cellClasses} ${descClasses}">${descricaoRaw}</td>`;
+
+                    for (let i = 1; i <= 12; i++) {
+                        const mesKey = `MES_${String(i).padStart(2, "0")}`;
+                        const value = row[colMap[mesKey]];
+                        tbodyHTML += `<td class="${cellClasses} text-right font-mono">${formatCurrency(
+                            value
+                        )}</td>`;
+                    }
+                    tbodyHTML += `</tr>`;
+
+                    if (
+                        !insertedPassivo &&
+                        descricaoNormalized.includes("TOTAL DO ATIVO")
+                    ) {
+                        tbodyHTML += addMergedRow("PASSIVO");
+                        insertedPassivo = true;
+                    }
+
+                    if (
+                        !insertedPl &&
+                        descricaoNormalized.includes("TOTAL DO PASSIVO")
+                    ) {
+                        tbodyHTML += addMergedRow("PATRIMÔNIO LÍQUIDO");
+                        insertedPl = true;
+                    }
+
+                    const isTotalPassivoPl =
+                        descricaoNormalized.includes(
+                            "TOTAL DO PASSIVO E PATRIMÔNIO LÍQUIDO"
+                        ) ||
+                        descricaoNormalized.includes(
+                            "TOTAL DO PASSIVO E PATRIMONIO LIQUIDO"
+                        );
+
+                    if (!insertedIndicadores && isTotalPassivoPl) {
+                        tbodyHTML += addMergedRow(
+                            "INDICADORES FINANCEIROS",
+                            "bg-amber-500 text-white tracking-wide"
+                        );
+                        insertedIndicadores = true;
+                    }
+                });
+
+                tbody.innerHTML = tbodyHTML;
+                placeholder.style.display = "none";
+                table.style.display = "table";
+            }
+
+            async function loadReportData() {
+                placeholder.textContent = "Carregando dados do relatório...";
+                placeholder.style.display = "block";
+                table.style.display = "none";
+
+                try {
+                    const jdbcId = parseInt(componentData.jdbcId, 10);
+                    const varMesName = componentData.varMes || ":VAR_MES";
+
+                    const [reportResult, mesResult] = await Promise.all([
+                        queryMitra({ query: componentData.queryDados, jdbcId: jdbcId }),
+                        queryMitra({
+                            query: `SELECT ${varMesName} FROM DUAL`,
+                            jdbcId: jdbcId,
+                        }),
+                    ]);
+
+                    const mesReferencia = mesResult.data[0][0];
+                    if (!mesReferencia) {
+                        throw new Error(
+                            `A variável ${varMesName} não retornou um valor.`
+                        );
+                    }
+
+                    const year = mesReferencia.split("/")[1];
+                    periodEl.textContent = `Período: Janeiro a Dezembro de ${year}`;
+
+                    const monthHeaders = getMonthHeaders(mesReferencia);
+
+                    renderTable(reportResult.headers, reportResult.data, monthHeaders);
+                } catch (error) {
+                    console.error("Falha ao carregar os dados do balancete:", error);
+                    placeholder.innerHTML = `<div class="p-8 text-center text-destructive bg-red-50">Ocorreu um erro ao carregar o relatório. Verifique a configuração e os filtros.</div>`;
+                    placeholder.style.display = "block";
+                    table.style.display = "none";
+                }
+            }
+
+            document.body.addEventListener(MITRA_UPDATE_EVENT_NAME, loadReportData);
+
+            const waitForMitraAndInit = () => {
+                const maxWaitTime = 5000;
+                const intervalTime = 100;
+                const startTime = Date.now();
+
+                const checkInterval = setInterval(() => {
+                    if (
+                        window.componentData &&
+                        window.componentData.queryDados &&
+                        window.componentData.varMes
+                    ) {
+                        clearInterval(checkInterval);
+                        loadReportData();
+                    } else if (Date.now() - startTime > maxWaitTime) {
+                        clearInterval(checkInterval);
+                        console.error(
+                            "Erro: As configurações do componente (componentData) não foram carregadas a tempo."
+                        );
+                        document.getElementById(
+                            "printable-area"
+                        ).innerHTML = `<div class="p-8 text-center text-red-700 bg-red-50 h-full flex items-center justify-center">Erro Crítico: As configurações do componente (queryDados, varMes) não foram carregadas da plataforma.</div>`;
+                    }
+                }, intervalTime);
+            };
+
+            waitForMitraAndInit();
+        });
+    </script>
+</body>
+
+</html>

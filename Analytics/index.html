@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BTA World - Cockpit de Vendas</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --background: 240 5.9% 90%; /* Cor de fundo base pedida pelo usuário: #F3F4F6 */
+        --foreground: 222.2 84% 4.9%;
+        --primary: 222.2 47.4% 11.2%;
+        --primary-foreground: 210 40% 98%;
+        --secondary: 210 40% 96.1%;
+        --secondary-foreground: 222.2 84% 4.9%;
+        --muted: 210 40% 96.1%;
+        --muted-foreground: 215.4 16.3% 46.9%;
+        --accent: 210 40% 96.1%;
+        --accent-foreground: 222.2 84% 4.9%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 210 40% 98%;
+        --border: 214.3 31.8% 91.4%;
+        --input: 214.3 31.8% 91.4%;
+        --ring: 222.2 84% 4.9%;
+        --radius: 0.5rem;
+        font-family: "Inter", sans-serif;
+      }
+
+      .dark {
+        --background: 222.2 84% 4.9%;
+        --foreground: 210 40% 98%;
+        --primary: 210 40% 98%;
+        --primary-foreground: 222.2 47.4% 11.2%;
+        --secondary: 217.2 32.6% 17.5%;
+        --secondary-foreground: 210 40% 98%;
+        --muted: 217.2 32.6% 17.5%;
+        --muted-foreground: 215 20.2% 65.1%;
+        --accent: 217.2 32.6% 17.5%;
+        --accent-foreground: 210 40% 98%;
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 210 40% 98%;
+        --border: 217.2 32.6% 17.5%;
+        --input: 217.2 32.6% 17.5%;
+        --ring: 212.7 26.8% 83.9%;
+      }
+
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden; /* Evita scroll em telas de apresentação */
+      }
+
+      .radial-item {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 0.8rem;
+        line-height: 1.1;
+        text-align: center;
+        width: 110px;
+        height: 110px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      @media print {
+        #floating-buttons,
+        #filters-drawer,
+        #filters-overlay,
+        nav.col-span-4 {
+          display: none !important;
+        }
+        body,
+        #main-container,
+        .radial-item,
+        .bg-white,
+        .shadow-2xl,
+        .shadow-md {
+          background-color: white !important;
+          box-shadow: none !important;
+          border: 1px solid #eee !important;
+          color: black !important;
+        }
+        .text-gray-500,
+        .text-gray-600,
+        .text-gray-700,
+        .text-gray-800 {
+          color: black !important;
+        }
+        #main-container > div {
+          display: flex !important;
+        }
+        aside.col-span-3 {
+          flex: 0 0 33.333333%;
+          max-width: 33.333333%;
+        }
+        main.col-span-5 {
+          flex: 0 0 66.666667%;
+          max-width: 66.666667%;
+        }
+        html,
+        body {
+          height: auto;
+          width: auto;
+          overflow: visible;
+          background: white;
+        }
+        .radial-item,
+        .bg-teal-600,
+        .bg-gray-600,
+        .border-teal-500 {
+          background-color: #f0f0f0 !important;
+          border: 1px solid #ddd !important;
+          color: black !important;
+        }
+        .text-white {
+          color: black !important;
+        }
+        .tracking-widest {
+          color: #008080 !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 h-full w-full">
+    <div
+      id="floating-buttons"
+      class="fixed top-6 right-6 z-30 flex items-center space-x-2"
+    >
+      <div class="relative">
+        <select
+          id="language-selector"
+          class="appearance-none bg-gray-600 text-white pl-4 pr-10 py-3 rounded-full shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white/50 transition-colors duration-200 cursor-pointer"
+        >
+          <option value="PT">🇧🇷 PT</option>
+          <option value="EN">🇺🇸 EN</option>
+          <option value="ES">🇪🇸 ES</option>
+        </select>
+        <div
+          class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-white"
+        >
+          <svg
+            class="fill-current h-4 w-4"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+          >
+            <path
+              d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+            />
+          </svg>
+        </div>
+      </div>
+      <button
+        id="print-btn"
+        class="bg-gray-600 text-white p-3 rounded-full shadow-lg hover:bg-gray-700 transition-colors duration-200"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm2-9V5a2 2 0 00-2-2H9a2 2 0 00-2 2v3m10 0v-3a2 2 0 00-2-2H9a2 2 0 00-2 2v3"
+          />
+        </svg>
+      </button>
+      <button
+        id="open-filters-btn"
+        class="bg-teal-600 text-white p-3 rounded-full shadow-lg hover:bg-teal-700 transition-colors duration-200"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L16 11.414V16a1 1 0 01-.293.707l-2 2A1 1 0 0113 18v-2.586l-4-4V7.414L4.707 7.707A1 1 0 014 7V4z"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <div
+      id="filters-overlay"
+      class="fixed inset-0 bg-black/50 z-40 hidden"
+    ></div>
+
+    <aside
+      id="filters-drawer"
+      class="fixed top-0 right-0 h-full w-full max-w-sm bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col"
+    >
+      <header class="flex items-center justify-between p-4 border-b">
+        <h2 class="text-xl font-semibold text-gray-800">Filtros Avançados</h2>
+        <button
+          id="close-filters-btn"
+          class="p-2 text-gray-500 hover:text-gray-800 rounded-full hover:bg-gray-100"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </header>
+      <div
+        id="filters-container"
+        class="flex-grow p-4 overflow-y-auto space-y-4"
+      >
+        <p class="text-center text-gray-500 pt-8">Carregando filtros...</p>
+      </div>
+      <footer class="p-4 border-t">
+        <button
+          id="clear-filters-btn"
+          class="w-full bg-gray-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200"
+        >
+          Limpar Filtros
+        </button>
+      </footer>
+    </aside>
+
+    <div
+      id="main-container"
+      class="w-full h-full flex items-center justify-center p-6 lg:p-10"
+    >
+      <div class="w-full h-full grid grid-cols-12 gap-6">
+        <aside class="col-span-3 flex items-center justify-center">
+          <div class="relative w-[400px] h-[400px]">
+            <div
+              class="radial-item bg-red-500"
+              style="top: 0; left: 100px; transform: rotate(-15deg)"
+            >
+              <svg
+                class="w-8 h-8 mb-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                ></path></svg
+              ><span>FATURAMENTO</span>
+            </div>
+            <div
+              class="radial-item bg-purple-600"
+              style="top: 70px; right: 0; transform: rotate(25deg)"
+            >
+              <svg
+                class="w-8 h-8 mb-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7l8 4"
+                ></path></svg
+              ><span>VOLUME</span><span>VENDIDO</span>
+            </div>
+            <div
+              class="radial-item bg-blue-500"
+              style="bottom: 70px; right: 0; transform: rotate(-25deg)"
+            >
+              <svg
+                class="w-8 h-8 mb-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                ></path></svg
+              ><span>NOVOS</span><span>CLIENTES</span>
+            </div>
+            <div
+              class="radial-item bg-green-500"
+              style="bottom: 0; left: 100px; transform: rotate(15deg)"
+            >
+              <svg
+                class="w-8 h-8 mb-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                ></path>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                ></path></svg
+              ><span>CIDADES</span><span>ATENDIDAS</span>
+            </div>
+            <div
+              class="radial-item bg-orange-500"
+              style="bottom: 70px; left: 0; transform: rotate(25deg)"
+            >
+              <svg
+                class="w-8 h-8 mb-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                ></path></svg
+              ><span>ANÁLISE DE</span><span>MERCADO</span>
+            </div>
+            <div
+              class="absolute inset-0 m-auto w-48 h-48 bg-white rounded-full shadow-2xl flex items-center justify-center"
+            >
+              <div
+                class="w-40 h-40 border-2 border-gray-200 rounded-full flex items-center justify-center"
+              >
+                <span
+                  class="text-5xl font-extrabold tracking-widest"
+                  style="color: #008080"
+                  >BTA</span
+                >
+              </div>
+            </div>
+          </div>
+        </aside>
+        <main class="col-span-5 flex flex-col items-center pt-8 pb-4">
+          <h1 class="text-5xl font-extrabold text-gray-700 tracking-tight">
+            ANÁLISE DE VENDAS
+          </h1>
+          <div class="w-full flex justify-between px-16 mt-10 mb-2">
+            <span class="text-sm font-semibold text-gray-500"
+              >Média 06 meses</span
+            ><span class="text-sm font-semibold text-gray-500">Mês Atual</span>
+          </div>
+          <div id="kpi-container" class="w-full flex-grow space-y-2.5">
+            <div class="text-center p-10 text-gray-500">
+              Carregando dados...
+            </div>
+          </div>
+          <div id="open-orders-container" class="w-full mt-4"></div>
+        </main>
+        <nav class="col-span-4 flex items-center justify-center">
+          <div id="nav-container" class="w-full max-w-sm space-y-2"></div>
+        </nav>
+      </div>
+    </div>
+
+    <script>
+      const MITRA_UPDATE_EVENT_NAME = "mitra-update-salescockpit";
+
+      function updateMitra() {
+        console.log(
+          "Sinal de update para [Sales Cockpit] recebido. Disparando evento."
+        );
+        document.body.dispatchEvent(new CustomEvent(MITRA_UPDATE_EVENT_NAME));
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const kpiContainer = document.getElementById("kpi-container");
+        const openOrdersContainer = document.getElementById(
+          "open-orders-container"
+        );
+        const navContainer = document.getElementById("nav-container");
+        const filtersDrawer = document.getElementById("filters-drawer");
+        const filtersOverlay = document.getElementById("filters-overlay");
+        const openFiltersBtn = document.getElementById("open-filters-btn");
+        const closeFiltersBtn = document.getElementById("close-filters-btn");
+        const filtersContainer = document.getElementById("filters-container");
+        const clearFiltersBtn = document.getElementById("clear-filters-btn");
+        const printBtn = document.getElementById("print-btn");
+        const languageSelector = document.getElementById("language-selector");
+
+        const FILTERS_CONFIG = [
+          {
+            label: "UF",
+            queryVar: "qUF",
+            mitraVar: ":VAR_F_UF",
+            id: "filter-uf",
+          },
+          {
+            label: "Cidade",
+            queryVar: "qCidade",
+            mitraVar: ":VAR_F_CIDADE",
+            id: "filter-cidade",
+          },
+          {
+            label: "Regional",
+            queryVar: "qRegional",
+            mitraVar: ":VAR_F_REGIONAL",
+            id: "filter-regional",
+          },
+          {
+            label: "Representante",
+            queryVar: "qRepre",
+            mitraVar: ":VAR_F_REPRE",
+            id: "filter-repre",
+          },
+          {
+            label: "Cliente",
+            queryVar: "qCliente",
+            mitraVar: ":VAR_F_CLIENTE",
+            id: "filter-cliente",
+          },
+          {
+            label: "Rede",
+            queryVar: "qRede",
+            mitraVar: ":VAR_F_REDE",
+            id: "filter-rede",
+          },
+          {
+            label: "Volume",
+            queryVar: "qVolume",
+            mitraVar: ":VAR_F_VOLUME",
+            id: "filter-volume",
+          },
+          {
+            label: "Divisão",
+            queryVar: "qDivisao",
+            mitraVar: ":VAR_F_DIVISAO",
+            id: "filter-divisao",
+          },
+          {
+            label: "Categoria",
+            queryVar: "qCategoria",
+            mitraVar: ":VAR_F_CATEGORIA",
+            id: "filter-categoria",
+          },
+          {
+            label: "Linha",
+            queryVar: "qLinha",
+            mitraVar: ":VAR_F_LINHA",
+            id: "filter-linha",
+          },
+          {
+            label: "Produto",
+            queryVar: "qProduto",
+            mitraVar: ":VAR_F_PRODUTO",
+            id: "filter-produto",
+          },
+          {
+            label: "SKU",
+            queryVar: "qSKU",
+            mitraVar: ":VAR_F_SKU",
+            id: "filter-sku",
+          },
+        ];
+
+        const ICONS = {
+          DollarSign: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8a2 2 0 110-4 2 2 0 010 4z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18V6M4 6h16"></path></svg>`,
+          Package: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7l8 4"></path></svg>`,
+          Users: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.284-1.255-.778-1.667M11 6a3 3 0 11-6 0 3 3 0 016 0zM14 17a6 6 0 00-12 0h12z"></path></svg>`,
+          MapPin: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`,
+          FileText: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>`,
+          RefreshCw: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 9a9 9 0 0114.13-5.224M20 15a9 9 0 01-14.13 5.224"></path></svg>`,
+          Default: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+        };
+
+        const getIconSVG = (iconName) => ICONS[iconName] || ICONS["Default"];
+
+        const formatNumber = (value, label) => {
+          const num = Number(value);
+          if (isNaN(num)) return "-";
+          if (label && (label.includes("R$") || label.includes("$"))) {
+            return num.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            });
+          }
+          return num.toLocaleString("pt-BR");
+        };
+
+        async function fetchData(sqlQuery) {
+          const jdbcId = componentData.jdbcId
+            ? parseInt(componentData.jdbcId, 10)
+            : 1;
+          if (!sqlQuery) return [];
+
+          try {
+            let result = await queryMitra({ query: sqlQuery, jdbcId: jdbcId });
+            console.log("DEBUG Query:", sqlQuery, "Result:", result); // Log obrigatório para debug
+
+            // 1. Tratamento de String JSON (caso raro, mas possível)
+            if (typeof result === "string") {
+              try {
+                result = JSON.parse(result);
+              } catch (e) {
+                console.error("Erro parse JSON", e);
+              }
+            }
+
+            if (!result) return [];
+
+            // 2. Caso: Retorno direto de Array de objetos
+            if (
+              Array.isArray(result) &&
+              result.length > 0 &&
+              typeof result[0] === "object"
+            ) {
+              return result;
+            }
+
+            // 3. Caso: Padrão Mitra (headers + data array-of-arrays)
+            if (result.headers && Array.isArray(result.data)) {
+              // Ensure headers is an array of objects with a 'name' property
+              if (
+                result.headers.every(
+                  (h) => typeof h === "object" && h !== null && "name" in h
+                )
+              ) {
+                const headers = result.headers.map((h) => h.name.toUpperCase()); // Força UpperCase
+                return result.data.map((row) => {
+                  const obj = {};
+                  headers.forEach((h, i) => {
+                    obj[h] = row[i];
+                  });
+                  return obj;
+                });
+              }
+            }
+
+            // 4. Caso: Padrão Mitra Simplificado (data é array de objetos)
+            if (result.data && Array.isArray(result.data)) return result.data;
+
+            // 5. Caso: Padrão Postgres/Outros (rows)
+            if (result.rows && Array.isArray(result.rows)) return result.rows;
+
+            // Fallback para retorno direto se for um array
+            if (Array.isArray(result)) return result;
+
+            return [];
+          } catch (error) {
+            console.error("Erro fatal em fetchData:", error);
+            return [];
+          }
+        }
+
+        const navigateToDetail = (keyId) => {
+          if (!keyId) return;
+          let modalId = null;
+          const cleanKey = keyId.trim().toUpperCase();
+
+          switch (cleanKey) {
+            case "FATURAMENTO":
+            case "VOLUME":
+            case "MIX":
+              modalId = 7; // P2 Visão Geral
+              break;
+            case "CLIENTES":
+            case "POSITIVACAO":
+            case "CHURN":
+              modalId = 8; // P3 Análise Repre
+              break;
+            case "CIDADES":
+              modalId = 5;
+              break;
+            case "NF_VENDA":
+            case "NF_DEVOLUCAO":
+              modalId = 3;
+              break;
+            default:
+              console.log(
+                `Nenhuma ação de drill-down definida para o KPI Key: "${keyId}"`
+              );
+              return;
+          }
+
+          if (typeof modalMitra === "function") {
+            modalMitra({ id: modalId });
+          } else {
+            console.error("Função modalMitra não encontrada.");
+          }
+        };
+
+        const renderKpis = (data) => {
+          if (!data || data.length === 0) {
+            kpiContainer.innerHTML = `<div class="text-center p-10 text-gray-500">Nenhum KPI para exibir.</div>`;
+            return;
+          }
+          kpiContainer.innerHTML = data
+            .map(
+              (kpi) => `
+                    <div class="grid grid-cols-12 items-center gap-2 cursor-pointer hover:bg-gray-50 rounded-lg p-1 kpi-row" data-key-id="${
+                      kpi.KEY_ID || ""
+                    }">
+                        <div class="col-span-3 text-right text-sm font-semibold text-gray-600 pr-2 flex items-center justify-end gap-1.5">
+                            <span>${kpi.LABEL || ""}</span>
+                            <button class="info-btn p-1 rounded-full hover:bg-gray-200 text-gray-400 hover:text-teal-600 transition-colors" data-key-id="${
+                              kpi.KEY_ID || ""
+                            }" title="Maximizar KPI">
+                               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="col-span-3">
+                            <div class="bg-gray-200/70 rounded-full py-2.5 px-4 text-center text-gray-800 font-bold text-lg">
+                                ${formatNumber(kpi.MEDIA, kpi.LABEL)}
+                            </div>
+                        </div>
+                        <div class="col-span-2 flex justify-center">
+                            <div class="bg-teal-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-md">
+                                ${getIconSVG(kpi.ICON)}
+                            </div>
+                        </div>
+                        <div class="col-span-4">
+                             <div class="bg-white border-2 border-teal-500 rounded-full py-2 px-4 text-center text-gray-800 font-bold text-lg">
+                                ${formatNumber(kpi.ATUAL, kpi.LABEL)}
+                            </div>
+                        </div>
+                    </div>
+                `
+            )
+            .join("");
+        };
+
+        const renderOpenOrders = (data) => {
+          const order = data && data[0] ? data[0] : { QTD: 0 };
+          openOrdersContainer.innerHTML = `
+                    <div class="grid grid-cols-12 items-center gap-2">
+                        <div class="col-span-3 text-right text-sm font-semibold text-gray-600 pr-2">PEDIDOS EM ABERTO</div>
+                        <div class="col-span-9">
+                            <div class="bg-teal-50 border-2 border-teal-500 rounded-lg py-2.5 px-4 text-center text-gray-800 font-bold text-lg w-1/3 ml-auto">
+                                ${formatNumber(order.QTD, "")}
+                            </div>
+                        </div>
+                    </div>
+                `;
+        };
+
+        const renderNavButtons = (data) => {
+          if (!data || data.length === 0) {
+            navContainer.innerHTML = `<div class="text-center p-10 text-gray-500">Nenhum botão de navegação configurado.</div>`;
+            return;
+          }
+          navContainer.innerHTML = data
+            .map(
+              (btn) => `
+                    <button data-action="${btn.ACTION}" class="w-full flex items-center bg-gray-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200 shadow-md">
+                        <span class="bg-gray-800 text-xs rounded-md px-2 py-1 mr-4">${btn.COD}</span>
+                        <span>${btn.LABEL}</span>
+                    </button>
+                `
+            )
+            .join("");
+        };
+
+        const renderFilters = async () => {
+          let filtersHTML = "";
+          for (const filter of FILTERS_CONFIG) {
+            const optionsData = await fetchData(componentData[filter.queryVar]);
+
+            const optionsHTML = optionsData
+              .map((opt) => {
+                // Normaliza chaves para UpperCase para busca
+                const keys = Object.keys(opt);
+                const upperOpt = {};
+                keys.forEach((k) => (upperOpt[k.toUpperCase()] = opt[k]));
+
+                // Tenta encontrar pelas chaves padrão
+                let val = upperOpt.VALUE ?? upperOpt.ID ?? upperOpt.CODIGO;
+                let lab =
+                  upperOpt.LABEL ??
+                  upperOpt.NOME ??
+                  upperOpt.DESCR ??
+                  upperOpt.DESCRICAO;
+
+                // Fallback por Posição (Se não achou por nome, pega o 1º e 2º valor)
+                if (val === undefined || lab === undefined) {
+                  const values = Object.values(opt);
+                  if (values.length > 0) {
+                    val = val ?? values[0];
+                    lab = lab ?? values[1] ?? values[0];
+                  }
+                }
+
+                // Proteção final contra null/undefined
+                val = val ?? "";
+                lab = lab ?? "";
+
+                return `<option value="${val}">${lab}</option>`;
+              })
+              .join("");
+
+            filtersHTML += `<div><label for="${filter.id}" class="block text-sm font-medium text-gray-700 mb-1">${filter.label}</label><select id="${filter.id}" name="${filter.id}" data-mitra-var="${filter.mitraVar}" class="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"><option value="">Todos</option>${optionsHTML}</select></div>`;
+          }
+          filtersContainer.innerHTML = filtersHTML;
+        };
+
+        const toggleDrawer = (show) => {
+          if (show) {
+            filtersOverlay.classList.remove("hidden");
+            filtersDrawer.classList.remove("translate-x-full");
+          } else {
+            filtersOverlay.classList.add("hidden");
+            filtersDrawer.classList.add("translate-x-full");
+          }
+        };
+
+        async function initializeComponent() {
+          try {
+            const [kpiData, pedidosAberto, navButtons] = await Promise.all([
+              fetchData(componentData.kpiData),
+              fetchData(componentData.pedidosAberto),
+              fetchData(componentData.navButtons),
+            ]);
+            renderKpis(kpiData);
+            renderOpenOrders(pedidosAberto);
+            renderNavButtons(navButtons);
+            await renderFilters();
+          } catch (error) {
+            console.error("Erro ao renderizar o cockpit:", error);
+            document.getElementById(
+              "main-container"
+            ).innerHTML = `<div class="p-8 text-center text-red-700 bg-red-50 h-full w-full flex items-center justify-center">Erro ao processar os dados de configuração. Verifique o console.</div>`;
+          }
+        }
+
+        // --- Event Listeners ---
+        document.body.addEventListener(
+          MITRA_UPDATE_EVENT_NAME,
+          initializeComponent
+        );
+
+        navContainer.addEventListener("click", (e) => {
+          const button = e.target.closest("button[data-action]");
+          if (button && typeof modalMitra === "function") {
+            const action = button.dataset.action;
+            const [type, idStr] = action.split(":");
+            const id = parseInt(idStr, 10);
+            if (type === "modal" && !isNaN(id)) {
+              modalMitra({ id: id });
+            } else {
+              console.error(`Ação inválida ou não suportada: ${action}`);
+            }
+          }
+        });
+
+        openFiltersBtn.addEventListener("click", () => toggleDrawer(true));
+        closeFiltersBtn.addEventListener("click", () => toggleDrawer(false));
+        filtersOverlay.addEventListener("click", () => toggleDrawer(false));
+        printBtn.addEventListener("click", () => window.print());
+
+        kpiContainer.addEventListener("click", async (e) => {
+          const infoButton = e.target.closest(".info-btn");
+          if (infoButton) {
+            e.stopPropagation(); // Previne o clique na linha de ser disparado
+            const keyId = infoButton.dataset.keyId;
+            if (keyId) {
+              try {
+                await setVariableMitra({
+                  name: ":VAR_KPI_SELECIONADO",
+                  content: keyId,
+                });
+                modalMitra({ id: 9 }); // ID da tela de detalhe/info do KPI
+              } catch (err) {
+                console.error("Falha ao maximizar KPI:", err);
+              }
+            }
+            return;
+          }
+
+          const kpiRow = e.target.closest(".kpi-row");
+          if (kpiRow) {
+            const keyId = kpiRow.dataset.keyId;
+            navigateToDetail(keyId);
+          }
+        });
+
+        filtersContainer.addEventListener("change", async (e) => {
+          if (e.target.tagName === "SELECT") {
+            const mitraVar = e.target.dataset.mitraVar;
+            const value = e.target.value;
+            if (mitraVar) {
+              try {
+                await setVariableMitra({ name: mitraVar, content: value });
+                updateMitra();
+              } catch (err) {
+                console.error("Falha ao setar variável Mitra", err);
+              }
+            }
+          }
+        });
+
+        clearFiltersBtn.addEventListener("click", async () => {
+          try {
+            const setVarPromises = FILTERS_CONFIG.map((filter) =>
+              setVariableMitra({ name: filter.mitraVar, content: "" })
+            );
+            await Promise.all(setVarPromises);
+            filtersContainer.querySelectorAll("select").forEach((select) => {
+              select.value = "";
+            });
+            updateMitra();
+            toggleDrawer(false);
+          } catch (err) {
+            console.error("Falha ao limpar filtros", err);
+          }
+        });
+
+        languageSelector.addEventListener("change", async (e) => {
+          const newLang = e.target.value;
+          try {
+            await setVariableMitra({ name: ":VAR_IDIOMA", content: newLang });
+            updateMitra();
+          } catch (err) {
+            console.error("Falha ao alterar idioma", err);
+          }
+        });
+
+        const waitForMitraAndInit = () => {
+          const maxWaitTime = 5000;
+          const intervalTime = 100;
+          const startTime = Date.now();
+
+          const checkInterval = setInterval(() => {
+            if (
+              window.componentData &&
+              window.componentData.kpiData &&
+              window.componentData.pedidosAberto &&
+              window.componentData.navButtons &&
+              window.componentData.qUF
+            ) {
+              clearInterval(checkInterval);
+              initializeComponent();
+            } else if (Date.now() - startTime > maxWaitTime) {
+              clearInterval(checkInterval);
+              console.error(
+                "Erro: As configurações do componente (componentData) não foram carregadas a tempo."
+              );
+              document.body.innerHTML = `<div class="p-8 text-center text-red-700 bg-red-50 h-full flex items-center justify-center">Erro Crítico: As configurações do componente não foram carregadas da plataforma.</div>`;
+            }
+          }, intervalTime);
+        };
+
+        waitForMitraAndInit();
+      });
+    </script>
+  </body>
+</html>

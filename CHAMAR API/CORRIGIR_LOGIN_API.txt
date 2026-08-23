@@ -1,0 +1,98 @@
+========================================
+CORREÇÃO RÁPIDA - LOGIN API SANKHYA
+========================================
+
+❌ O QUE ESTÁ ERRADO AGORA:
+========================================
+
+1. BODY DESABILITADO ❌
+   → Credenciais não são enviadas
+   → Login não funciona
+
+2. HEADER AUTHORIZATION INCORRETO ❌
+   → Token no header de login
+   → Você não tem token ainda (é o que quer OBTER)
+
+========================================
+✅ COMO CORRIGIR (3 PASSOS)
+========================================
+
+PASSO 1: HABILITAR BODY
+-------------------------------
+1. Encontre o toggle "Habilitar body personalizado"
+2. LIGUE O TOGGLE (ficar azul/verde)
+3. Um campo aparecerá abaixo
+
+PASSO 2: REMOVER HEADER AUTHORIZATION
+-------------------------------
+1. Na seção Headers
+2. Encontre: Authorization: bearer 459fa5bf-6c1a-4f69-a6a9-2ae688b2f3fd
+3. Clique no ícone de LIXEIRA (🗑️) para remover
+4. Mantenha apenas:
+   - appkey: e140cf74-9173-4979-ab47-b6b94d451903
+   - accept: application/json
+
+PASSO 3: PREENCHER BODY
+-------------------------------
+No campo BODY que apareceu, cole:
+
+{
+  "username": "SEU_USUARIO_AQUI",
+  "password": "SUA_SENHA_AQUI"
+}
+
+⚠️ IMPORTANTE: Substitua SEU_USUARIO_AQUI e SUA_SENHA_AQUI pelos valores reais!
+
+========================================
+CONFIGURAÇÃO CORRETA FINAL
+========================================
+
+Tipo de chamada: POST ✅
+
+URL: https://api.sankhya.com.br/login ✅
+
+Headers:
+  ✅ appkey: e140cf74-9173-4979-ab47-b6b94d451903
+  ✅ accept: application/json
+  ❌ Authorization: ~~REMOVER ESTE~~
+
+Body (HABILITADO):
+  ✅ {
+  ✅   "username": "seu_usuario",
+  ✅   "password": "sua_senha"
+  ✅ }
+
+Variável de retorno: :VAR_USER ✅
+
+========================================
+TESTAR
+========================================
+
+1. Clique em "Testar API"
+2. Se funcionar:
+   → Resposta 200 OK
+   → Token será salvo em :VAR_USER
+3. Se não funcionar:
+   → Verifique usuário e senha
+   → Verifique se a URL está correta
+
+========================================
+SE AINDA NÃO FUNCIONAR
+========================================
+
+Tente esta URL alternativa:
+https://seu-servidor:porta/mge/service.sbr?serviceName=MobileLoginSP.login&outputType=json
+
+OU este formato de Body:
+{
+  "serviceName": "MobileLoginSP.login",
+  "requestBody": {
+    "login": "seu_usuario",
+    "password": "sua_senha"
+  }
+}
+
+========================================
+
+
+

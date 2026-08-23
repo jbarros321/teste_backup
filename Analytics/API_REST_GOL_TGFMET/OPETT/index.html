@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 84% 4.9%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .floating-icon {
+            position: absolute;
+            bottom: -150px;
+            /* Start below the screen */
+            animation-name: float-up;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            opacity: 0;
+            color: hsl(var(--primary) / 0.5);
+        }
+
+        @keyframes float-up {
+            0% {
+                transform: translateY(0);
+                opacity: 0;
+            }
+
+            10%,
+            90% {
+                opacity: 0.3;
+            }
+
+            100% {
+                transform: translateY(-120vh);
+                /* Move well above the screen */
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-background">
+
+    <div id="login-container" class="relative w-full h-full">
+        <!-- Floating Icons Animation Wrapper -->
+        <div id="animation-wrapper" class="absolute inset-0 w-full h-full overflow-hidden pointer-events-none"></div>
+
+        <!-- Right-aligned Login Card -->
+        <div class="relative w-full h-full flex items-start justify-end p-4 pt-12 pr-12 md:pr-24">
+            <div class="w-full max-w-sm bg-[color:var(--background)] rounded-xl shadow-2xl p-8 space-y-6 transform transition-all opacity-0 -translate-y-4"
+                id="login-card">
+
+                <div class="text-center">
+                    <h1 class="text-2xl font-bold text-[color:var(--foreground)]">Bem-vindo(a)</h1>
+                    <p class="text-[color:var(--muted-foreground)] mt-2">Acesse sua conta para continuar</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label for="email-input" class="sr-only">E-mail</label>
+                        <input id="email-input" type="email" required
+                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            placeholder="Digite seu e-mail">
+                    </div>
+                    <div id="password-container" class="hidden">
+                        <label for="password-input" class="sr-only">Senha</label>
+                        <input id="password-input" type="password"
+                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            placeholder="Digite sua senha">
+                    </div>
+                    <button id="login-btn"
+                        class="w-full bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 flex items-center justify-center disabled:opacity-50 group">
+                        <span id="btn-text">Entrar</span>
+                        <svg class="ml-2 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                        </svg>
+                        <svg id="btn-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
+                        </svg>
+                    </button>
+                    <button id="register-password-btn"
+                        class="hidden w-full bg-secondary text-secondary-foreground rounded-md px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                        Cadastrar Senha
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            function createFloatingIcons() {
+                const animationWrapper = document.getElementById('animation-wrapper');
+                if (!animationWrapper) return;
+
+                const icons = [
+                    `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>`,
+                    `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>`,
+                    `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>`
+                ];
+
+                const iconCount = 20;
+
+                for (let i = 0; i < iconCount; i++) {
+                    const iconEl = document.createElement('span');
+                    iconEl.className = 'floating-icon';
+                    iconEl.innerHTML = icons[Math.floor(Math.random() * icons.length)];
+
+                    const size = Math.random() * 40 + 20;
+                    iconEl.style.width = `${size}px`;
+                    iconEl.style.height = `${size}px`;
+                    iconEl.style.left = `${Math.random() * 100}%`;
+
+                    const duration = Math.random() * 15 + 10;
+                    iconEl.style.animationDuration = `${duration}s`;
+
+                    const delay = Math.random() * 15;
+                    iconEl.style.animationDelay = `${delay}s`;
+
+                    animationWrapper.appendChild(iconEl);
+                }
+            }
+
+            async function checkPasswordStatus() {
+                const emailInput = document.getElementById('email-input');
+                const passwordContainer = document.getElementById('password-container');
+                const registerPasswordBtn = document.getElementById('register-password-btn');
+
+                const email = emailInput.value.trim();
+                if (!email) {
+                    passwordContainer.classList.add('hidden');
+                    registerPasswordBtn.classList.add('hidden');
+                    return;
+                }
+
+                try {
+                    await setVariableMitra({
+                        name: componentData.varEmail,
+                        content: email
+                    });
+
+                    const result = await queryMitra({
+                        query: componentData.checkSenhaQuery,
+                        jdbcId: parseInt(componentData.jdbcId, 10)
+                    });
+
+                    const hasPassword = result.data && result.data.length > 0 && result.data[0][0] && String(result.data[0][0]).trim() !== '';
+
+                    if (hasPassword) {
+                        passwordContainer.classList.remove('hidden');
+                        registerPasswordBtn.classList.add('hidden');
+                        document.getElementById('password-input').focus();
+                    } else {
+                        passwordContainer.classList.add('hidden');
+                        document.getElementById('password-input').value = '';
+                        registerPasswordBtn.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error("Falha ao verificar o status da senha:", error);
+                    passwordContainer.classList.add('hidden');
+                    registerPasswordBtn.classList.add('hidden');
+                }
+            }
+
+            async function handleLogin() {
+                const emailInput = document.getElementById('email-input');
+                const passwordContainer = document.getElementById('password-container');
+                const passwordInput = document.getElementById('password-input');
+                const loginBtn = document.getElementById('login-btn');
+                const btnText = document.getElementById('btn-text');
+                const btnSpinner = document.getElementById('btn-spinner');
+
+                const email = emailInput.value.trim();
+
+                if (!email) {
+                    emailInput.focus();
+                    emailInput.classList.add('border-destructive');
+                    setTimeout(() => emailInput.classList.remove('border-destructive'), 2000);
+                    return;
+                }
+
+                const isPasswordVisible = !passwordContainer.classList.contains('hidden');
+                const password = passwordInput.value;
+
+                if (isPasswordVisible && !password) {
+                    passwordInput.focus();
+                    passwordInput.classList.add('border-destructive');
+                    setTimeout(() => passwordInput.classList.remove('border-destructive'), 2000);
+                    return;
+                }
+
+                loginBtn.disabled = true;
+                btnText.classList.add('hidden');
+                btnSpinner.classList.remove('hidden');
+
+                try {
+                    const actionId = parseInt(componentData.actionIdLogin, 10);
+                    if (isNaN(actionId)) {
+                        throw new Error("actionIdLogin não é um número válido.");
+                    }
+
+                    await setVariableMitra({
+                        name: componentData.varEmail,
+                        content: email
+                    });
+
+                    if (isPasswordVisible) {
+                        await setVariableMitra({
+                            name: componentData.varSenha,
+                            content: password
+                        });
+                    }
+
+                    await actionMitra({ id: actionId });
+
+                } catch (error) {
+                    console.error("Falha ao executar o login:", error);
+                    loginBtn.disabled = false;
+                    btnText.classList.remove('hidden');
+                    btnSpinner.classList.add('hidden');
+                }
+            }
+
+            async function handleRegisterPassword() {
+                try {
+                    const emailInput = document.getElementById('email-input');
+                    const modalId = parseInt(componentData.modalCadastroSenhaId, 10);
+                    if (isNaN(modalId)) {
+                        throw new Error("modalCadastroSenhaId não é um número válido.");
+                    }
+                    await setVariableMitra({
+                        name: componentData.varEmail,
+                        content: emailInput.value.trim()
+                    });
+                    await modalMitra({ id: modalId });
+                } catch (error) {
+                    console.error("Falha ao abrir o modal de cadastro de senha:", error);
+                }
+            }
+
+            function initializeComponent() {
+                const emailInput = document.getElementById('email-input');
+                const passwordInput = document.getElementById('password-input');
+                const loginBtn = document.getElementById('login-btn');
+                const registerPasswordBtn = document.getElementById('register-password-btn');
+                const loginCard = document.getElementById('login-card');
+
+                loginCard.classList.remove('opacity-0', '-translate-y-4');
+                loginCard.classList.add('opacity-100', 'translate-y-0', 'duration-700');
+
+                emailInput.addEventListener('blur', checkPasswordStatus);
+                loginBtn.addEventListener('click', handleLogin);
+                registerPasswordBtn.addEventListener('click', handleRegisterPassword);
+
+                checkPasswordStatus();
+
+                emailInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const isPasswordVisible = !document.getElementById('password-container').classList.contains('hidden');
+                        if (isPasswordVisible) {
+                            passwordInput.focus();
+                        } else {
+                            checkPasswordStatus().then(() => {
+                                // If password is not needed after check, proceed to login
+                                if (document.getElementById('password-container').classList.contains('hidden')) {
+                                    handleLogin();
+                                }
+                            });
+                        }
+                    }
+                });
+                passwordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleLogin();
+                    }
+                });
+
+                createFloatingIcons();
+            }
+
+            const requiredKeys = [
+                'actionIdLogin',
+                'varEmail',
+                'checkSenhaQuery',
+                'modalCadastroSenhaId',
+                'varSenha',
+                'jdbcId'
+            ];
+
+            function getMissingKeys() {
+                if (!window.componentData) return requiredKeys.slice();
+                return requiredKeys.filter(key => {
+                    const value = window.componentData[key];
+                    return value === undefined || value === null || value === '';
+                });
+            }
+
+            const waitForMitraAndInit = () => {
+                const maxWaitTime = 10000;
+                const intervalTime = 100;
+                const startTime = Date.now();
+
+                const checkInterval = setInterval(() => {
+                    const missing = getMissingKeys();
+
+                    if (missing.length === 0) {
+                        clearInterval(checkInterval);
+                        initializeComponent();
+                    } else if (Date.now() - startTime > maxWaitTime) {
+                        clearInterval(checkInterval);
+                        const errorMessage = "Erro Crítico: Falha ao carregar as configurações do painel de login. " +
+                            "Propriedades ausentes ou vazias: " + missing.join(', ');
+                        console.error(errorMessage);
+                        document.body.innerHTML = `<div class="p-8 text-center text-red-700 bg-red-50 h-full flex items-center justify-center">
+                            ${errorMessage.replace(missing.join(', '), `<b>${missing.join(', ')}</b>`)}
+                        </div>`;
+                    }
+                }, intervalTime);
+            };
+
+            waitForMitraAndInit();
+        });
+    </script>
+</body>
+
+</html>

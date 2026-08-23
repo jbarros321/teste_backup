@@ -1,0 +1,134 @@
+========================================
+GUIA VISUAL - O QUE COLOCAR EM CADA CAMPO
+========================================
+
+IMAGINE A TELA DO ANALYTICS COM OS CAMPOS:
+
+┌─────────────────────────────────────────────────┐
+│ Passos                                           │
+│ 0 API Chamar API                    [↑] [🗑️]   │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│ Tipo de chamada: [GET ▼]                        │
+│         ⬇️ MUDE PARA:                           │
+│ Tipo de chamada: [POST ▼]  ✅                   │
+│                                                 │
+│ URL: [https://api.sankhya.co________]           │
+│         ⬇️ COLOQUE:                             │
+│ URL: [https://api.sankhya.co/mge/service.sbr?   │
+│      serviceName=CRUDServiceProvider.saveRecord  │
+│      &outputType=json________________]  ✅       │
+│                                                 │
+│ [⚙️ Configurar SQL]                             │
+│                                                 │
+├─────────────────────────────────────────────────┤
+│ Headers                                         │
+│ ┌──────────────┬────────────────────────────┐  │
+│ │ Nome         │ Valor                      │  │
+│ ├──────────────┼────────────────────────────┤  │
+│ │ Content-Type │ application/json           │  │
+│ └──────────────┴────────────────────────────┘  │
+│                                                 │
+│ ✅ JÁ ESTÁ CORRETO! Não precisa mudar nada.    │
+│                                                 │
+│ [+ Criar novo Header]                          │
+│ (Só adicione se precisar de autenticação)      │
+│                                                 │
+├─────────────────────────────────────────────────┤
+│ Body                                            │
+│                                                 │
+│ [ ] Habilitar body personalizado               │
+│         ⬇️ LIGUE O TOGGLE (marque)             │
+│ [✓] Habilitar body personalizado  ✅           │
+│                                                 │
+│ ┌─────────────────────────────────────────────┐│
+│ │ {                                            ││
+│ │   "serviceName": "CRUDServiceProvider...",   ││
+│ │   "requestBody": {                           ││
+│ │     "dataSet": {                            ││
+│ │       "rootEntity": "TGFMET",               ││
+│ │       "dataRow": {                          ││
+│ │         "CODMET": ":CODMET",                ││
+│ │         "DESCRICAO": ":DESCRICAO",           ││
+│ │         "VALOR": ":VALOR"                    ││
+│ │       }                                      ││
+│ │     }                                        ││
+│ │   }                                          ││
+│ │ }                                            ││
+│ └─────────────────────────────────────────────┘│
+│                                                 │
+│ ✅ COLE O JSON DO ARQUIVO "EXEMPLO_JSON_BODY"  │
+│                                                 │
+├─────────────────────────────────────────────────┤
+│ Obs: Será realizada uma chamada na API para    │
+│ cada linha retornada na View                   │
+│                                                 │
+│ ✅ Isso significa que cada linha da sua View   │
+│ será inserida separadamente na TGFMET          │
+│                                                 │
+├─────────────────────────────────────────────────┤
+│ Variáveis                                       │
+│                                                 │
+│ ┌─────────────────────────────────────────────┐│
+│ │ Configure os dados e/ou ative o Link         ││
+│ │ Dinâmico para visualizar as variáveis       ││
+│ │ disponíveis.                                 ││
+│ └─────────────────────────────────────────────┘│
+│                                                 │
+│ ✅ PASSO A PASSO:                               │
+│ 1. Configure sua View primeiro                  │
+│ 2. Ative o "Link Dinâmico" na View              │
+│ 3. As variáveis aparecerão automaticamente     │
+│ 4. Use :NOME_DA_COLUNA no JSON do Body         │
+│                                                 │
+│ EXEMPLO:                                        │
+│ Se sua View tem coluna "CODIGO", use ":CODIGO" │
+│                                                 │
+├─────────────────────────────────────────────────┤
+│ Variável de retorno                            │
+│                                                 │
+│ [:VAR_SANKHYA_SESSION...] [✕]                   │
+│         ⬇️ DEIXE COMO ESTÁ                      │
+│ [:VAR_SANKHYA_SESSION]  ✅                       │
+│                                                 │
+│ Variável que vai receber o retorno da API      │
+│                                                 │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│ [▶️ Testar API]  ✅ CLIQUE AQUI PARA TESTAR   │
+│                                                 │
+└─────────────────────────────────────────────────┘
+
+========================================
+RESUMO RÁPIDO - O QUE MUDAR
+========================================
+
+✅ MUDAR:
+1. Tipo de chamada: GET → POST
+2. URL: Adicionar endpoint completo
+3. Body: Habilitar toggle e colar JSON
+
+✅ DEIXAR COMO ESTÁ:
+1. Headers (Content-Type já está correto)
+2. Variável de retorno (pode deixar padrão)
+
+✅ CONFIGURAR DEPOIS:
+1. Variáveis (depois de configurar a View)
+2. Headers adicionais (só se precisar autenticação)
+
+========================================
+ORDEM DE PREENCHIMENTO RECOMENDADA
+========================================
+
+1. ✅ Primeiro: Mude GET para POST
+2. ✅ Segundo: Cole a URL completa
+3. ✅ Terceiro: Habilite o Body e cole o JSON
+4. ✅ Quarto: Configure a View e ative Link Dinâmico
+5. ✅ Quinto: Teste com o botão "Testar API"
+6. ✅ Sexto: Verifique se inseriu na TGFMET
+
+========================================
+
+
+
+

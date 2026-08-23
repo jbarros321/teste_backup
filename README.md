@@ -2355,3 +2355,4 @@ Este projeto é proprietário e confidencial. Uso restrito às empresas contrata
 - **v3.0.0** (10/01/2025): Adicionados projetos Iwannasleep e Credpar
 - **v2.0.0** (10/01/2025): Adicionados projetos Eletromac e Sankhya
 - **v1.0.0** (20/12/2024): Versão inicial com projeto GuaranaMineiro
+# DadosEstudoIA
