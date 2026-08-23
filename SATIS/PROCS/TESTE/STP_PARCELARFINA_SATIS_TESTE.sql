@@ -19,7 +19,7 @@ CREATE OR REPLACE PROCEDURE STP_PARCELARFINA_SATIS_TESTE (
        V_VALOR     T_VALORES;
        V_BASE      T_VALORES;
 
-       V_USUARIO       VARCHAR2(100);
+       V_USUARIO       NUMBER;
        V_NUFIN         NUMBER;
        V_ORIG          TGFFIN%ROWTYPE;
        V_NOVO          TGFFIN%ROWTYPE;
@@ -178,11 +178,7 @@ BEGIN
            END LOOP;
        END IF;
 
-       BEGIN
-          SELECT NOMEUSU INTO V_USUARIO FROM TSIUSU WHERE CODUSU = P_CODUSU;
-       EXCEPTION
-          WHEN NO_DATA_FOUND THEN V_USUARIO := 'CODUSU ' || P_CODUSU;
-       END;
+       V_USUARIO := P_CODUSU;
 
        SELECT NVL(MAX(NUFIN), 0) + 1    INTO V_PROXNUFIN FROM TGFFIN;
        SELECT NVL(MAX(NUACERTO), 0) + 1 INTO V_NUACERTO  FROM TGFFRE;
@@ -221,7 +217,7 @@ BEGIN
            END IF;
 
            IF NVL(V_ORIG.AD_PARCELADO, 'N') = 'S' THEN
-              RAISE_APPLICATION_ERROR(-20108, 'O TITULO NUFIN ' || V_NUFIN || ' JA FOI PARCELADO EM ' || TO_CHAR(V_ORIG.AD_DTOPERPARC, 'DD/MM/YYYY') || '.');
+              RAISE_APPLICATION_ERROR(-20108, 'O TITULO NUFIN ' || V_NUFIN || ' JA FOI PARCELADO EM ' || TO_CHAR(V_ORIG.AD_DTOPERPARC, 'DD/MM/YYYY HH24:MI') || '.');
            END IF;
 
            IF NVL(V_ORIG.RATEADO, 'N') = 'S' THEN
@@ -362,9 +358,11 @@ BEGIN
                   V_NOVO.VLRJURO              := 0;
                   V_NOVO.VLRMULTA             := 0;
                   V_NOVO.VLRBAIXA             := 0;
-                  V_NOVO.DHBAIXA              := NULL;
-                  V_NOVO.CODTIPOPERBAIXA      := NULL;
-                  V_NOVO.DHTIPOPERBAIXA       := NULL;
+
+                  -- DHBAIXA / CODTIPOPERBAIXA / DHTIPOPERBAIXA sao herdados do titulo original.
+                  -- O original e obrigatoriamente NAO baixado (validacoes -20104 e -20106), entao
+                  -- ja estao no estado "sem baixa". Nao force NULL: CODTIPOPERBAIXA e NOT NULL
+                  -- em TGFFIN e o INSERT estoura com ORA-01400.
                   V_NOVO.VLRMOEDABAIXA        := 0;
                   V_NOVO.VLRDESCEMBUT         := 0;
                   V_NOVO.VLRJUROEMBUT         := 0;
@@ -401,6 +399,7 @@ EXCEPTION
             IF SQLCODE BETWEEN -20999 AND -20000 THEN
                RAISE;
             END IF;
-            RAISE_APPLICATION_ERROR(-20199, 'FALHA AO PARCELAR O TITULO ' || NVL(TO_CHAR(V_NUFIN), '?') || ': ' || SQLERRM);
+            RAISE_APPLICATION_ERROR(-20199, 'FALHA AO PARCELAR O TITULO ' || NVL(TO_CHAR(V_NUFIN), '?') || ': ' || SQLERRM ||
+                                       ' [' || SUBSTR(REPLACE(DBMS_UTILITY.FORMAT_ERROR_BACKTRACE, CHR(10), ' '), 1, 400) || ']');
 END;
 /

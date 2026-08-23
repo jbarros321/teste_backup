@@ -7,7 +7,9 @@ percentual ou valor fixo.
 - **Arquivo original (com defeitos):** `PARCELA.SQL`
 - **Arquivo corrigido:** `STP_PARCELARFINA_SATIS.sql`
 - **Tabelas afetadas:** `TGFFIN` (UPDATE + INSERT), `TGFFRE` (INSERT — rastreabilidade do acerto)
-- **Campos AD_ exigidos em `TGFFIN`:** `AD_PARCELADO`, `AD_FINANORIGINAL`, `AD_USUDEPARCELAMENTO`, `AD_DTOPERPARC`
+- **Campos AD_ exigidos em `TGFFIN`** (os tipos precisam bater, sob pena de `ORA-01722` na execucao):
+  `AD_PARCELADO` VARCHAR2(1) S/N · `AD_FINANORIGINAL` NUMBER ·
+  `AD_USUDEPARCELAMENTO` NUMBER (CODUSU) · `AD_DTOPERPARC` DATE (data+hora)
 
 ---
 
@@ -59,7 +61,7 @@ Tudo em **uma única procedure**, sem subprogramas aninhados — mesmo formato d
 1.  Lê os 9 parâmetros e normaliza (UPPER/TRIM/aspas, defaults de RANGE e JUROS)
 2.  Valida os parâmetros           -> aborta antes de tocar em qualquer título
 3.  Se modo = N: faz o parse e valida a lista de parcelas (uma vez só)
-4.  Resolve NOMEUSU, próximo NUFIN e próximo NUACERTO (uma única vez)
+4.  Resolve o CODUSU gravado, próximo NUFIN e próximo NUACERTO (uma única vez)
 5.  Para cada linha selecionada:
     5.1  ACT_INT_FIELD -> NUFIN
     5.2  SELECT * ... FOR UPDATE NOWAIT + 7 validações de elegibilidade
@@ -145,9 +147,12 @@ Nos dois casos a soma fecha **exatamente** no centavo.
 - **Vencimento:** `TRUNC(P_BASEVENCIMEN) + (i-1) * P_RANGE` — parcela 1 vence **na** data base.
 - **Retenções** (`VLRIRF`, `VLRISS`, `VLRINSS`, `VLRDESC`, `VLRVENDOR`, `VLRPROV`, `VLRHONOR`)
   rateadas proporcionalmente por `V_BASE(i) / VLRDESDOB` original.
-- **Zerados** nas novas parcelas: juros, multa, e todos os campos de baixa
-  (`VLRBAIXA`, `DHBAIXA`, `CODTIPOPERBAIXA`, `DHTIPOPERBAIXA`, `VLRMOEDABAIXA`, embutidos,
-  negociados e liberados).
+- **Zerados** nas novas parcelas: juros, multa e os campos de baixa **numéricos**
+  (`VLRBAIXA`, `VLRMOEDABAIXA`, embutidos, negociados e liberados).
+- **`DHBAIXA`, `CODTIPOPERBAIXA` e `DHTIPOPERBAIXA` são herdados do título original**, não
+  forçados a `NULL`. O original é obrigatoriamente não baixado (validações `-20104` e `-20106`),
+  logo já estão no estado "sem baixa"; e `CODTIPOPERBAIXA` é `NOT NULL` em `TGFFIN` — atribuir
+  `NULL` faz o `INSERT` estourar `ORA-01400`.
 - **`TGFFRE`**: um `NUACERTO` por execução, `SEQUENCIA` incremental, `NUFIN` da parcela gerada
   e `NUFINORIG` do título de origem, em **ambos** os modos.
 
@@ -211,7 +216,7 @@ identificando o `NUFIN` em que parou.
 | 8 | **`CASE` sem `ELSE`** nos cálculos de juros (linhas 86-92, 298-303) e de `DTNEG` (linha 310). Se `P_FORMAJUROS` vier diferente de `P`/`V`, o resultado é `NULL` e `VLRDESDOB` fica `NULL`. |
 | 9 | **Vencimento inconsistente.** Automático usa `base + (PARC-1)*range` (1ª parcela na data base); manual usa `base + PARCELA*range` (1ª parcela em base+30). |
 | 10 | **Encargos duplicados.** A cópia leva `VLRDESC`, `VLRIRF`, `VLRISS`, `VLRINSS`, `VLRMULTA`, `VLRJURO` **integrais** para cada parcela — retenções e descontos multiplicados por N. |
-| 11 | **Campos de baixa copiados** (`VLRBAIXA`, `CODTIPOPERBAIXA`, `DHTIPOPERBAIXA`) em vez de zerados. |
+| 11 | **`VLRBAIXA` copiado** em vez de zerado nas novas parcelas. |
 | 12 | **`DESDOBRAMENTO` reiniciado em 1..N** sem considerar os desdobramentos já existentes da mesma `NUNOTA` — colide com parcelas da nota. |
 | 13 | **`RATEADO='S'` é copiado** para as novas parcelas, mas nenhum rateio é gerado em `TGFRAT`. |
 
@@ -254,7 +259,7 @@ identificando o `NUFIN` em que parou.
 - **Juros calculados uma única vez sobre o total**, nos dois modos, com `ELSE 0` em todos os `CASE`.
 - **Vencimento unificado**: parcela 1 vence na data base, nos dois modos.
 - **Todas as validações antes da primeira escrita**, com mensagens de negócio e códigos `-201xx` estáveis.
-- **Retenções rateadas proporcionalmente**; juros, multa e campos de baixa zerados nas novas parcelas.
+- **Retenções rateadas proporcionalmente**; juros, multa e valores de baixa zerados nas novas parcelas.
 - **`DESDOBRAMENTO` calculado** a partir do maior desdobramento existente na nota.
 - **`TGFFRE` gravado nos dois modos**, com `NUFIN`/`NUFINORIG` corretos.
 - **Parcelas fora de ordem aceitas** no modo manual; buracos e duplicidades detectados.
@@ -280,8 +285,12 @@ de Botão existente continua valendo sem alteração.
    Testar em homologação; se ocorrer, a alternativa é voltar à lista explícita de colunas.
 4. **Títulos com rateio** (`RATEADO='S'`) estão **bloqueados**. Para liberá-los é preciso replicar
    as linhas de rateio proporcionalmente — não implementado.
-5. **Nome do parâmetro de juros** — confirmar na Ação se é `PARAM_P_JUROS` ou `P_JUROS` e alinhar
-   o literal na procedure. Enquanto não bater, o parâmetro chega `NULL` e os juros não são aplicados.
+5. ~~**Nome do parâmetro de juros**~~ — **RESOLVIDO.** O parâmetro foi cadastrado na Ação como
+   `PARAM_P_JUROS`, confirmado pelo esqueleto gerado pelo Sankhya
+   (`PARAM_PARAM_P_JUROS := ACT_TXT_PARAM(P_IDSESSAO, 'PARAM_P_JUROS')` — a convenção do gerador é
+   variável = `PARAM_` + nome do parâmetro). O literal da linha 59 está correto.
+   Pendência menor: a variável local da procedure chama-se `PARAM_P_JUROS`, não `PARAM_PARAM_P_JUROS`
+   como o gerador produz. Só importa se alguém regerar o esqueleto e colar por cima.
 6. **Dias úteis e feriados** — o vencimento é sempre data base + N dias, sem desviar de fim de
    semana ou feriado. Se a regra exigir, é preciso um parâmetro novo na Ação.
 7. **Boletos emitidos** — não há checagem de título com boleto/cobrança registrada. Avaliar se deve
