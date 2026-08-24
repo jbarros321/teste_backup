@@ -127,3 +127,6 @@ Suncc/launchd_erro.txt
 
 # Logs de sincronizacao
 GITHUB_sync/*_log.txt
+
+# Lixo do Windows
+nul
