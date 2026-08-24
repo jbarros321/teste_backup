@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inserir Referência em Massa</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <style>
+        /* Cores em valores REAIS (as antigas eram triplas HSL cruas -> invalidas
+           em bg-[color:var(--x)], por isso tudo ficava transparente/ilegivel) */
+        :root {
+            color-scheme: light;
+            --background: #ffffff;
+            --foreground: #0f172a;
+            --primary: #1d4ed8;
+            --primary-hover: #1e40af;
+            --primary-foreground: #ffffff;
+            --secondary: #f1f5f9;
+            --secondary-foreground: #0f172a;
+            --muted: #e2e8f0;
+            --muted-foreground: #475569;
+            --border: #cbd5e1;
+            --input-bg: #ffffff;
+            --input-border: #94a3b8;
+            --ring: #2563eb;
+            --radius: 0.5rem;
+            --date-icon-filter: none;
+        }
+
+        /* Segue o tema do usuario/plataforma */
+        @media (prefers-color-scheme: dark) {
+            :root:not(.light) {
+                color-scheme: dark;
+                --background: #1e293b;
+                --foreground: #f8fafc;
+                --primary: #3b82f6;
+                --primary-hover: #2563eb;
+                --primary-foreground: #ffffff;
+                --secondary: #273549;
+                --secondary-foreground: #f8fafc;
+                --muted: #334155;
+                --muted-foreground: #cbd5e1;
+                --border: #475569;
+                --input-bg: #0f172a;
+                --input-border: #64748b;
+                --ring: #60a5fa;
+                --date-icon-filter: invert(1);
+            }
+        }
+
+        .dark {
+            color-scheme: dark;
+            --background: #1e293b;
+            --foreground: #f8fafc;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --primary-foreground: #ffffff;
+            --secondary: #273549;
+            --secondary-foreground: #f8fafc;
+            --muted: #334155;
+            --muted-foreground: #cbd5e1;
+            --border: #475569;
+            --input-bg: #0f172a;
+            --input-border: #64748b;
+            --ring: #60a5fa;
+            --date-icon-filter: invert(1);
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            /* Prevent background scroll */
+        }
+
+        body {
+            background-color: transparent;
+            /* The platform handles the main background */
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        /* Garante que nada dentro do modal herde cor escura da plataforma */
+        #modal-card,
+        #modal-card * {
+            color: inherit;
+        }
+
+        .modal-input {
+            background-color: var(--input-bg);
+            color: var(--foreground);
+            border: 1px solid var(--input-border);
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: var(--ring);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 35%, transparent);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-primary:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 45%, transparent);
+        }
+
+        .btn-primary:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        .btn-icon {
+            color: var(--muted-foreground);
+        }
+
+        .btn-icon:hover {
+            background-color: var(--muted);
+            color: var(--foreground);
+        }
+
+        /* Icone do calendario sempre visivel */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            filter: var(--date-icon-filter);
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Modal Overlay -->
+    <div id="modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+
+        <!-- Modal Card -->
+        <div id="modal-card"
+            style="background-color: var(--background); color: var(--foreground); border: 1px solid var(--border);"
+            class="rounded-lg shadow-2xl w-full max-w-md flex flex-col overflow-hidden">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4"
+                style="border-bottom: 1px solid var(--border);">
+                <h2 class="text-lg font-semibold" style="color: var(--foreground);">Inserir Referência em Massa</h2>
+                <button id="close-btn" class="btn-icon p-1.5 rounded-full transition-colors" aria-label="Fechar modal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="w-5 h-5">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="px-6 py-5 space-y-4">
+                <div>
+                    <label for="reference-date" class="block text-sm font-semibold mb-2"
+                        style="color: var(--muted-foreground);">Selecione a Referência</label>
+                    <input id="reference-date" type="date"
+                        class="modal-input flex h-11 w-full rounded-md px-3 py-2 text-sm transition-colors">
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-end items-center px-6 py-4"
+                style="border-top: 1px solid var(--border); background-color: var(--secondary);">
+                <button id="confirm-btn"
+                    class="btn-primary rounded-md px-4 py-2.5 text-sm font-semibold shadow-sm transition-colors">
+                    Confirmar Inserção
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const initializeComponent = () => {
+                const dateInput = document.getElementById('reference-date');
+                const confirmBtn = document.getElementById('confirm-btn');
+                const closeBtn = document.getElementById('close-btn');
+                const modalOverlay = document.getElementById('modal-overlay');
+
+                // Set today's date as default
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.value = today;
+
+                const handleConfirm = async () => {
+                    const dateValue = dateInput.value;
+                    if (!dateValue) {
+                        console.error("Nenhuma data selecionada.");
+                        // You could add a visual feedback here if needed
+                        return;
+                    }
+
+                    confirmBtn.disabled = true;
+                    confirmBtn.textContent = 'Processando...';
+
+                    try {
+                        const actionId = parseInt(componentData.actionIdSalvar, 10);
+                        if (isNaN(actionId)) {
+                            throw new Error("actionIdSalvar não é um número válido ou não está configurado.");
+                        }
+
+                        await setVariableMitra({ name: ':VAR_REFERENCIA_MASSA', content: dateValue });
+                        await actionMitra({ id: actionId });
+                        // No need to call updateComponentsMitra as the closing action will handle the screen state.
+
+                    } catch (error) {
+                        console.error("Falha ao executar a ação de salvar:", error);
+                        // Optionally re-enable the button on failure
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = 'Confirmar Inserção';
+                    }
+                };
+
+                const handleClose = async () => {
+                    try {
+                        const actionId = parseInt(componentData.actionIdFechar, 10);
+                        if (isNaN(actionId)) {
+                            throw new Error("actionIdFechar não é um número válido ou não está configurado.");
+                        }
+                        await actionMitra({ id: actionId });
+                    } catch (error) {
+                        console.error("Falha ao executar a ação de fechar:", error);
+                    }
+                };
+
+                confirmBtn.addEventListener('click', handleConfirm);
+                closeBtn.addEventListener('click', handleClose);
+
+                // Also close if clicking on the overlay background
+                modalOverlay.addEventListener('click', (e) => {
+                    if (e.target === modalOverlay) {
+                        handleClose();
+                    }
+                });
+            };
+
+            const waitForMitraAndInit = () => {
+                const maxWaitTime = 5000; // 5 seconds
+                const intervalTime = 100; // Check every 100ms
+                const startTime = Date.now();
+
+                const checkInterval = setInterval(() => {
+                    // Check for mandatory variables for this component
+                    if (window.componentData && window.componentData.actionIdSalvar && window.componentData.actionIdFechar) {
+                        clearInterval(checkInterval);
+                        initializeComponent();
+                    } else if (Date.now() - startTime > maxWaitTime) {
+                        clearInterval(checkInterval);
+                        console.error("Erro: As configurações do componente (componentData) não foram carregadas a tempo.");
+                        document.body.innerHTML = `<div style="background-color:#fef2f2;color:#991b1b;border:1px solid #fca5a5;" class="p-8 m-4 rounded-lg text-center font-medium h-auto flex items-center justify-center">Erro Crítico: As configurações do componente não foram carregadas da plataforma.</div>`;
+                    }
+                }, intervalTime);
+            };
+
+            waitForMitraAndInit();
+        });
+    </script>
+</body>
+
+</html>
