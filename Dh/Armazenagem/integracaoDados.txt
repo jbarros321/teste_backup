@@ -1,4 +1,8 @@
 API DADOS
 
-URL: https://crew.mitralab.io/?bot=96&conversa=163
-Chave privada: https://crew.mitralab.io/?bot=96&conversa=163
+URL: https://analytics2.mitrasheet.com:4436/rest/v0
+Chave privada: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJEYWRvc19hcm0iLCJYLVRlbmFudElEIjoidGVuYW50XzQ3MzE5In0.xvkz2tk7OYo4MBQZEijlOMGPhymKEtaPpgnw1-uAqQfuAApB_R5hybUbgz0IhYZ8wqA7ovPeb8uJ0arRzUNz1g
+
+
+
+
