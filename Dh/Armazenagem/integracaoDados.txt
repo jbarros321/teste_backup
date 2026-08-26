@@ -1,0 +1,4 @@
+API DADOS
+
+URL: https://crew.mitralab.io/?bot=96&conversa=163
+Chave privada: https://crew.mitralab.io/?bot=96&conversa=163
