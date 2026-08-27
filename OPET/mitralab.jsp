@@ -15,6 +15,17 @@
     boolean BARRA    = true;   /* barra superior com recarregar / abrir em nova aba */
     boolean PASSA_QS = true;   /* repassa a query string desta tela para o iframe   */
 
+    /* Usuario logado do Sankhya (STP_GET_CODUSULOGADO).
+       PASSA_USUARIO = true  -> a tela consulta quem esta logado e acrescenta os
+       parametros abaixo na URL do iframe, alem de enviar um postMessage ao app.
+       EXIGE_USUARIO = true  -> se nao conseguir identificar o usuario, o app NAO
+       e carregado (evita abrir a tela sem saber quem e).                       */
+    boolean PASSA_USUARIO = true;
+    boolean EXIGE_USUARIO = false;
+    String P_CODUSU  = "codusu";    /* nome do parametro do codigo do usuario   */
+    String P_NOMEUSU = "nomeusu";   /* nome do parametro do nome do usuario     */
+    String P_EMAIL   = "emailusu";  /* nome do parametro do e-mail do usuario   */
+
     /* Repassa parametros recebidos pela tela do Sankhya (ex.: ?id=123) */
     String qs = request.getQueryString();
     String urlFinal = URL_APP;
@@ -23,6 +34,7 @@
         urlFinal = URL_APP + sep + qs;
     }
     String urlJs = urlFinal.replace("\\", "\\\\").replace("\"", "\\\"");
+    String sepJs = (urlFinal.indexOf(63) >= 0) ? "&" : "?";   /* separador p/ o usuario */
 %>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -71,6 +83,13 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        #barra .usuario {
+            color: #5c6b7a;
+            font-size: 12px;
+            white-space: nowrap;
+            margin-right: 4px;
         }
 
         #barra button,
@@ -189,13 +208,14 @@
         <% if (BARRA) { %>
         <div id="barra">
             <span class="titulo"><%= TITULO %></span>
+            <span class="usuario" id="usuario" title="Usuario logado no Sankhya"></span>
             <button type="button" onclick="recarregar()">Recarregar</button>
             <a href="<%= urlFinal %>" target="_blank" rel="noopener">Abrir em nova aba</a>
         </div>
         <% } %>
 
         <div id="palco">
-            <iframe id="app" src="<%= urlFinal %>" title="<%= TITULO %>"
+            <iframe id="app" src="<% if (!PASSA_USUARIO) { %><%= urlFinal %><% } else { %>about:blank<% } %>" title="<%= TITULO %>"
                 allow="clipboard-read; clipboard-write; fullscreen; camera; microphone; geolocation"
                 allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
 
@@ -219,8 +239,121 @@
 
     <script type="text/javascript">
         var URL_APP = "<%= urlJs %>";
+        var SEP_QS  = "<%= sepJs %>";
         var TIMEOUT_MS = 15000;
         var timer = null;
+
+        /* ---------- usuario logado do Sankhya ---------- */
+        var PASSA_USUARIO = <%= PASSA_USUARIO %>;
+        var EXIGE_USUARIO = <%= EXIGE_USUARIO %>;
+        var P_CODUSU  = "<%= P_CODUSU %>";
+        var P_NOMEUSU = "<%= P_NOMEUSU %>";
+        var P_EMAIL   = "<%= P_EMAIL %>";
+        var USUARIO = null;   /* { codusu, nome, email } depois de identificado */
+
+        /* Endpoints possiveis do servico, conforme onde a tela esta publicada. */
+        var ENDPOINTS = ["/mge/service.sbr", "../service.sbr", "service.sbr"];
+
+        /* Variacoes de SQL: Oracle usa FROM DUAL, MySQL/SQLServer usam funcao.
+           A primeira que responder com um codigo valido e usada.             */
+        var SQLS = [
+            "SELECT STP_GET_CODUSULOGADO() AS CODUSU, " +
+            "       (SELECT NOMEUSU FROM TSIUSU WHERE CODUSU = STP_GET_CODUSULOGADO()) AS NOMEUSU, " +
+            "       (SELECT EMAIL   FROM TSIUSU WHERE CODUSU = STP_GET_CODUSULOGADO()) AS EMAIL",
+            "SELECT STP_GET_CODUSULOGADO AS CODUSU, U.NOMEUSU, U.EMAIL " +
+            "  FROM TSIUSU U WHERE U.CODUSU = STP_GET_CODUSULOGADO",
+            "SELECT STP_GET_CODUSULOGADO AS CODUSU, U.NOMEUSU, U.EMAIL " +
+            "  FROM TSIUSU U, DUAL D WHERE U.CODUSU = STP_GET_CODUSULOGADO"
+        ];
+
+        function post(url, corpo, ok, falha) {
+            var x = new XMLHttpRequest();
+            try { x.open("POST", url, true); } catch (e) { falha(); return; }
+            x.withCredentials = true;   /* leva o JSESSIONID da sessao do Sankhya */
+            x.setRequestHeader("Content-Type", "application/json");
+            x.onreadystatechange = function () {
+                if (x.readyState !== 4) { return; }
+                if (x.status < 200 || x.status >= 300) { falha(); return; }
+                var r = null;
+                try { r = JSON.parse(x.responseText); } catch (e) { falha(); return; }
+                ok(r);
+            };
+            x.onerror = function () { falha(); };
+            try { x.send(JSON.stringify(corpo)); } catch (e) { falha(); }
+        }
+
+        /* Le a primeira linha do retorno do DbExplorerSP.executeQuery. */
+        function primeiraLinha(r) {
+            if (!r || String(r.status) !== "1") { return null; }
+            var b = r.responseBody;
+            if (!b || !b.rows || !b.rows.length) { return null; }
+            return b.rows[0];
+        }
+
+        function consultarUsuario(iEnd, iSql, pronto) {
+            if (iEnd >= ENDPOINTS.length) { pronto(null); return; }
+            if (iSql >= SQLS.length) { consultarUsuario(iEnd + 1, 0, pronto); return; }
+
+            var url = ENDPOINTS[iEnd] +
+                "?serviceName=DbExplorerSP.executeQuery&outputType=json";
+            var corpo = {
+                serviceName: "DbExplorerSP.executeQuery",
+                requestBody: { sql: SQLS[iSql] }
+            };
+            var proximo = function () { consultarUsuario(iEnd, iSql + 1, pronto); };
+
+            post(url, corpo, function (r) {
+                var linha = primeiraLinha(r);
+                var cod = linha ? linha[0] : null;
+                if (cod === null || cod === "" || typeof cod === "undefined") { proximo(); return; }
+                pronto({
+                    codusu: String(cod),
+                    nome:  (linha.length > 1 && linha[1] !== null) ? String(linha[1]) : "",
+                    email: (linha.length > 2 && linha[2] !== null) ? String(linha[2]) : ""
+                });
+            }, proximo);
+        }
+
+        function montarUrlComUsuario(u) {
+            if (!u) { return URL_APP; }
+            var q = P_CODUSU + "=" + encodeURIComponent(u.codusu);
+            if (u.nome)  { q += "&" + P_NOMEUSU + "=" + encodeURIComponent(u.nome); }
+            if (u.email) { q += "&" + P_EMAIL   + "=" + encodeURIComponent(u.email); }
+            return URL_APP + SEP_QS + q;
+        }
+
+        function mostrarUsuario(u) {
+            var alvo = el("usuario");
+            if (!alvo) { return; }
+            alvo.innerHTML = "";
+            var txt = u ? ("Usuario: " + (u.nome ? u.nome + " (" + u.codusu + ")" : u.codusu))
+                        : "Usuario nao identificado";
+            alvo.appendChild(document.createTextNode(txt));
+        }
+
+        /* O app dentro do iframe tambem pode ouvir o usuario por postMessage:
+           window.addEventListener("message", function (e) {
+               if (e.data && e.data.tipo === "SANKHYA_USUARIO") { ... e.data.usuario ... }
+           });                                                                */
+        function avisarApp() {
+            if (!USUARIO) { return; }
+            var f = el("app");
+            if (!f || !f.contentWindow || !f.contentWindow.postMessage) { return; }
+            try {
+                f.contentWindow.postMessage(
+                    { tipo: "SANKHYA_USUARIO", usuario: USUARIO }, "*");
+            } catch (e) { /* origem diferente sem permissao: ignora */ }
+        }
+
+        function erroUsuario() {
+            if (timer) { clearTimeout(timer); timer = null; }
+            el("carregando").className = "camada oculto";
+            el("urlErro").innerHTML = "";
+            el("urlErro").appendChild(document.createTextNode(
+                "STP_GET_CODUSULOGADO nao retornou um usuario para esta sessao."));
+            el("linkNova").href = URL_APP;
+            el("erro").className = "camada";
+        }
 
         function el(id) { return document.getElementById(id); }
 
@@ -234,18 +367,24 @@
         }
 
         function aoCarregar() {
+            /* o about:blank inicial tambem dispara load: nao conta como pronto */
+            var atual = "";
+            try { atual = el("app").getAttribute("src") || ""; } catch (e) { atual = ""; }
+            if (atual === "" || atual === "about:blank") { return; }
             if (timer) { clearTimeout(timer); timer = null; }
             el("carregando").className = "camada oculto";
             el("erro").className = "camada oculto";
+            avisarApp();
         }
 
         function recarregar() {
             el("erro").className = "camada oculto";
             el("carregando").className = "camada";
             armarTimeout();
+            var destino = montarUrlComUsuario(USUARIO);
             var f = el("app");
             f.src = "about:blank";
-            setTimeout(function () { f.src = URL_APP; }, 60);
+            setTimeout(function () { f.src = destino; }, 60);
         }
 
         function armarTimeout() {
@@ -262,6 +401,15 @@
                 f.onload = aoCarregar;
             }
             armarTimeout();
+
+            if (!PASSA_USUARIO) { return; }   /* iframe ja carregou pelo src do JSP */
+
+            consultarUsuario(0, 0, function (u) {
+                USUARIO = u;
+                mostrarUsuario(u);
+                if (!u && EXIGE_USUARIO) { erroUsuario(); return; }
+                el("app").src = montarUrlComUsuario(u);
+            });
         })();
     </script>
 </body>
