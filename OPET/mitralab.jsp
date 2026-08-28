@@ -12,7 +12,7 @@
        o conteudo misto e o iframe fica em branco).                            */
     String URL_APP   = "https://19825-57477.prod.mitralab.io";
     String TITULO    = "MitraLab";
-    boolean BARRA    = true;   /* barra superior com recarregar / abrir em nova aba */
+    boolean BARRA    = true;   /* barra superior com titulo, usuario e recarregar    */
     boolean PASSA_QS = true;   /* repassa a query string desta tela para o iframe   */
 
     /* Usuario logado do Sankhya (STP_GET_CODUSULOGADO).
@@ -210,7 +210,6 @@
             <span class="titulo"><%= TITULO %></span>
             <span class="usuario" id="usuario" title="Usuario logado no Sankhya"></span>
             <button type="button" onclick="recarregar()">Recarregar</button>
-            <a href="<%= urlFinal %>" target="_blank" rel="noopener">Abrir em nova aba</a>
         </div>
         <% } %>
 
