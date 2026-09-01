@@ -1457,7 +1457,7 @@
                                                                             }
 
                                                                             add('PV', 'P', [1010101, 1010201, 1020101, 1020201, 2010406]);
-                                                                            
+
                                                                             // Tributos sobre receita da Editora: buscados na nota via TGFDIN
                                                                             add('DIN', 'P', [1020301, 1020302, 1020303]);
 
@@ -2911,60 +2911,60 @@
                                                                                     blocosPortal('Portal Compras', g.PC, "('C','O','E','J','N')");
                                                                                     blocosPortal('Portal Vendas', g.PV, "('V','D','P')");
 
-                                                                                // ── TRIBUTOS SOBRE RECEITA (somente nota de venda) ──
-                                                                                // ISS: campo nativo da propria nota (TGFCAB).
-                                                                                // PIS (CODIMP=6) e COFINS (CODIMP=7): TGFDIN cruzada com TGFCAB.
-                                                                                var natDIN = _todosIds(g.DIN || {});
-                                                                                if (natDIN.length) {
-                                                                                    var mapa = C.TRIBUTOS_NOTA || {};
-                                                                                    var colISS = _colDe('TGFCAB', 'TGFCAB.ISS');
-                                                                                    natDIN.forEach(function (nat) {
-                                                                                        var t = mapa[String(nat)];
-                                                                                        if (!t) return;
+                                                                                    // ── TRIBUTOS SOBRE RECEITA (somente nota de venda) ──
+                                                                                    // ISS: campo nativo da propria nota (TGFCAB).
+                                                                                    // PIS (CODIMP=6) e COFINS (CODIMP=7): TGFDIN cruzada com TGFCAB.
+                                                                                    var natDIN = _todosIds(g.DIN || {});
+                                                                                    if (natDIN.length) {
+                                                                                        var mapa = C.TRIBUTOS_NOTA || {};
+                                                                                        var colISS = _colDe('TGFCAB', 'TGFCAB.ISS');
+                                                                                        natDIN.forEach(function (nat) {
+                                                                                            var t = mapa[String(nat)];
+                                                                                            if (!t) return;
 
-                                                                                        if (t.fonte === 'CAB') {
-                                                                                            if (!colISS) return;   // sem campo de ISS na nota: aviso em _avisosCapacidades
+                                                                                            if (t.fonte === 'CAB') {
+                                                                                                if (!colISS) return;   // sem campo de ISS na nota: aviso em _avisosCapacidades
+                                                                                                blocos.push(
+                                                                                                    "SELECT 'Tributo s/ Receita' AS ORIGEM," +
+                                                                                                    " NVL(TO_CHAR(T.NUMNOTA), TO_CHAR(T.NUNOTA)) AS NR_DOC," +
+                                                                                                    " T.DTNEG AS DT," +
+                                                                                                    " NVL(T." + colISS + ",0) AS VALOR," +
+                                                                                                    " T.CODEMP, T.CODPROJ, T.CODCENCUS, " + nat + " AS CODNAT," +
+                                                                                                    " '" + t.desc + " da nota (TGFCAB." + colISS + ")' AS HISTORICO," +
+                                                                                                    " 'Cabecalho' AS CLASSIF," +
+                                                                                                    " " + considerado('T.CODCENCUS', null) + " AS CONSIDERADO," +
+                                                                                                    " " + motivo('T.CODCENCUS', null, t.desc + ' - campo nativo da nota de venda') + " AS MOTIVO" +
+                                                                                                    " FROM TGFCAB T" +
+                                                                                                    " WHERE T.TIPMOV = 'V' AND T.STATUSNOTA = 'L'" +
+                                                                                                    " AND NVL(T." + colISS + ",0) <> 0" +
+                                                                                                    " AND " + periodoDia('T.DTNEG') +
+                                                                                                    filtros('T.CODEMP', 'T.CODPROJ', 'T.CODCENCUS')
+                                                                                                );
+                                                                                                return;
+                                                                                            }
+
+                                                                                            // PIS / COFINS pela TGFDIN
+                                                                                            if (!temDin || !t.cods || !t.cods.length) return;
                                                                                             blocos.push(
                                                                                                 "SELECT 'Tributo s/ Receita' AS ORIGEM," +
                                                                                                 " NVL(TO_CHAR(T.NUMNOTA), TO_CHAR(T.NUNOTA)) AS NR_DOC," +
                                                                                                 " T.DTNEG AS DT," +
-                                                                                                " NVL(T." + colISS + ",0) AS VALOR," +
+                                                                                                " SUM(NVL(D." + colDinVlr + ",0)) AS VALOR," +
                                                                                                 " T.CODEMP, T.CODPROJ, T.CODCENCUS, " + nat + " AS CODNAT," +
-                                                                                                " '" + t.desc + " da nota (TGFCAB." + colISS + ")' AS HISTORICO," +
+                                                                                                " MAX('" + t.desc + " s/ nota de venda (TGFDIN." + colDinCod + "=" + t.cods.join('/') + ")') AS HISTORICO," +
                                                                                                 " 'Cabecalho' AS CLASSIF," +
-                                                                                                " " + considerado('T.CODCENCUS', null) + " AS CONSIDERADO," +
-                                                                                                " " + motivo('T.CODCENCUS', null, t.desc + ' - campo nativo da nota de venda') + " AS MOTIVO" +
-                                                                                                " FROM TGFCAB T" +
+                                                                                                " MAX(" + considerado('T.CODCENCUS', null) + ") AS CONSIDERADO," +
+                                                                                                " MAX(" + motivo('T.CODCENCUS', null, t.desc + ' - tributo da nota (TGFDIN)') + ") AS MOTIVO" +
+                                                                                                " FROM TGFDIN D" +
+                                                                                                " INNER JOIN TGFCAB T ON T.NUNOTA = D.NUNOTA" +
                                                                                                 " WHERE T.TIPMOV = 'V' AND T.STATUSNOTA = 'L'" +
-                                                                                                " AND NVL(T." + colISS + ",0) <> 0" +
+                                                                                                " AND D." + colDinCod + " IN " + _lista(t.cods) +
                                                                                                 " AND " + periodoDia('T.DTNEG') +
-                                                                                                filtros('T.CODEMP', 'T.CODPROJ', 'T.CODCENCUS')
+                                                                                                filtros('T.CODEMP', 'T.CODPROJ', 'T.CODCENCUS') +
+                                                                                                " GROUP BY T.NUNOTA, T.NUMNOTA, T.DTNEG, T.CODEMP, T.CODPROJ, T.CODCENCUS"
                                                                                             );
-                                                                                            return;
-                                                                                        }
-
-                                                                                        // PIS / COFINS pela TGFDIN
-                                                                                        if (!temDin || !t.cods || !t.cods.length) return;
-                                                                                        blocos.push(
-                                                                                            "SELECT 'Tributo s/ Receita' AS ORIGEM," +
-                                                                                            " NVL(TO_CHAR(T.NUMNOTA), TO_CHAR(T.NUNOTA)) AS NR_DOC," +
-                                                                                            " T.DTNEG AS DT," +
-                                                                                            " SUM(NVL(D." + colDinVlr + ",0)) AS VALOR," +
-                                                                                            " T.CODEMP, T.CODPROJ, T.CODCENCUS, " + nat + " AS CODNAT," +
-                                                                                            " MAX('" + t.desc + " s/ nota de venda (TGFDIN." + colDinCod + "=" + t.cods.join('/') + ")') AS HISTORICO," +
-                                                                                            " 'Cabecalho' AS CLASSIF," +
-                                                                                            " MAX(" + considerado('T.CODCENCUS', null) + ") AS CONSIDERADO," +
-                                                                                            " MAX(" + motivo('T.CODCENCUS', null, t.desc + ' - tributo da nota (TGFDIN)') + ") AS MOTIVO" +
-                                                                                            " FROM TGFDIN D" +
-                                                                                            " INNER JOIN TGFCAB T ON T.NUNOTA = D.NUNOTA" +
-                                                                                            " WHERE T.TIPMOV = 'V' AND T.STATUSNOTA = 'L'" +
-                                                                                            " AND D." + colDinCod + " IN " + _lista(t.cods) +
-                                                                                            " AND " + periodoDia('T.DTNEG') +
-                                                                                            filtros('T.CODEMP', 'T.CODPROJ', 'T.CODCENCUS') +
-                                                                                            " GROUP BY T.NUNOTA, T.NUMNOTA, T.DTNEG, T.CODEMP, T.CODPROJ, T.CODCENCUS"
-                                                                                        );
-                                                                                    });
-                                                                                }
+                                                                                        });
+                                                                                    }
 
                                                                                     // ── 10.2 CUSTOMIZACAO: COMISSOES ──
                                                                                     var natCUS = _todosIds(g.CUS || {});
@@ -3398,7 +3398,7 @@
                                                                                         alert('A Data inicial não pode ser maior que a Data final.');
                                                                                         return;
                                                                                     }
-                                                                                
+
                                                                                     // O REALIZADO vem dos lancamentos (TCBLAN / TGFFIN / TGFCAB / TGFDIN /
                                                                                     // customizacoes). A TGFMET so alimenta Orcado e Forecast.
                                                                                     var btn = this;
@@ -3414,7 +3414,7 @@
                                                                                     } finally {
                                                                                         btn.disabled = false; btn.textContent = txt;
                                                                                     }
-                                                                                
+
                                                                                     carregado = true;
                                                                                     render();
                                                                                     _mostrarAvisoRealizado();
