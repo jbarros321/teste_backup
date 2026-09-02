@@ -78,6 +78,37 @@
                                     color: var(--ink-2);
                                 }
 
+                                .carga {
+                                    display: inline-flex;
+                                    align-items: center;
+                                    gap: 5px;
+                                    margin-top: 5px;
+                                    padding: 3px 9px;
+                                    border-radius: 999px;
+                                    border: 1px solid transparent;
+                                    font-size: 0.72rem;
+                                    font-weight: 600;
+                                    white-space: nowrap;
+                                }
+
+                                .carga.ok {
+                                    background: #f0fdf4;
+                                    border-color: #bbf7d0;
+                                    color: #15803d;
+                                }
+
+                                .carga.warn {
+                                    background: #fff7ed;
+                                    border-color: #fed7aa;
+                                    color: #9a3412;
+                                }
+
+                                .carga.danger {
+                                    background: #fef2f2;
+                                    border-color: #fecaca;
+                                    color: #b91c1c;
+                                }
+
                                 .filtros {
                                     display: flex;
                                     flex-wrap: wrap;
@@ -830,75 +861,83 @@
                             </style>
                         </head>
 
-                        <%--============================================================ ORCADO vs REALIZADO - fonte:
-                            tabelas consolidadas da Mitra AD_AGREGORC (agregado) e AD_ANALIORC (analitico). AD_AGREGORC:
-                            1 linha por mes/empresa/CR/projeto/natureza com VLR_ORCADO, VLR_REALIZADO e VLR_FORECAST ja
-                            pivotados. Sinal na origem: receita positiva, despesa negativa. A tela trabalha com
-                            magnitude, entao o sinal e normalizado pelo TIPNAT (receita=+VLR, despesa=-VLR). Nao usar
-                            ABS() por linha: isso perderia os estornos (R$ 4,9 mi a mais em 2026). TIPO: ORCAMENTO |
-                            FORECAST | REALIZADO. O realizado e trocado pelas origens reais da AD_ANALIORC ao clicar em
-                            Carregar. Escopo: 2026 em diante (as tabelas tambem tem
-                            2025).============================================================--%>
+                        <%--============================================================
+                            ORCADO vs REALIZADO - consolidado do DRE gerencial, copiado da
+                            Mitra para AD_AGREGORC (agregado) e AD_ANALIORC (analitico).
+
+                            As 4 regras que fazem o numero bater com o DRE:
+                            1. Tudo e SOMA. O sinal ja vem aplicado na carga (receita +,
+                               custo e despesa -). Nao usar ABS nem inverter sinal: quem
+                               inverte dobra o erro.
+                            2. Periodo e ANO/MES (gerencial, ja com as remessas de
+                               competencia), nunca DTLANC - essa e so para auditoria.
+                            3. Grupo do DRE e NAT_N1, nao o TIPNAT da natureza:
+                               1 receita liquida | 2 custo editoras | 3 custos ensinos |
+                               4 despesas | 5 depreciacao e financeiro | 6 tributos |
+                               7 investimentos (fora do resultado).
+                            4. Orcado x realizado so fecha ate empresa x natureza. O orcado
+                               sempre tem CR e projeto; o realizado tem R$ 32 mi sem projeto
+                               e R$ 14 mi sem CR (receita e CMV). Filtrar por projeto ou CR
+                               cria variacao com "orcado zero" que nao existe - a tela avisa.
+                            ============================================================--%>
                             <snk:query var="dados">
-                                SELECT
-                                TO_CHAR(Q.DTREF, 'YYYY-MM') AS MES_ANO,
-                                Q.CODEMP,
-                                Q.EMPRESA_NOME,
-                                Q.CODPROJ,
-                                Q.PROJETO_NOME,
-                                Q.CODCENCUS,
-                                Q.CC_NOME,
-                                Q.CODRESP,
-                                Q.RESP_NOME,
-                                Q.CODNAT,
-                                Q.NATUREZA_NOME,
-                                Q.TIPNAT,
-                                T.TIPO,
-                                SUM(CASE WHEN Q.TIPNAT = 'R' THEN CASE T.TIPO WHEN 'ORCAMENTO' THEN Q.SINAL *
-                                Q.VLR_ORCADO WHEN 'FORECAST' THEN Q.SINAL * Q.VLR_FORECAST ELSE 0 END ELSE 0 END) AS
-                                ORCADO_REC,
-                                SUM(CASE WHEN Q.TIPNAT <> 'R' THEN CASE T.TIPO WHEN 'ORCAMENTO' THEN Q.SINAL *
-                                    Q.VLR_ORCADO WHEN 'FORECAST' THEN Q.SINAL * Q.VLR_FORECAST ELSE 0 END ELSE 0 END) AS
-                                    ORCADO_DESP,
-                                    SUM(CASE WHEN Q.TIPNAT = 'R' AND T.TIPO = 'REALIZADO' THEN Q.SINAL * Q.VLR_REALIZADO
-                                    ELSE 0 END) AS REALIZADO_REC,
-                                    SUM(CASE WHEN Q.TIPNAT <> 'R' AND T.TIPO = 'REALIZADO' THEN Q.SINAL *
-                                        Q.VLR_REALIZADO ELSE 0 END) AS REALIZADO_DESP
-                                        FROM (
-                                        SELECT
-                                        A.DTREF, A.CODEMP, A.CODPROJ, A.CODCENCUS, A.CODNAT,
-                                        NVL(A.VLR_ORCADO, 0) AS VLR_ORCADO,
-                                        NVL(A.VLR_REALIZADO, 0) AS VLR_REALIZADO,
-                                        NVL(A.VLR_FORECAST, 0) AS VLR_FORECAST,
-                                        E.NOMEFANTASIA AS EMPRESA_NOME,
-                                        P.IDENTIFICACAO AS PROJETO_NOME,
-                                        C.DESCRCENCUS AS CC_NOME,
-                                        C.CODUSURESP AS CODRESP,
-                                        U.NOMEUSU AS RESP_NOME,
-                                        N.DESCRNAT AS NATUREZA_NOME,
-                                        NVL(N.TIPNAT, CASE WHEN A.NAT_N1 = '1000000' THEN 'R' ELSE 'D' END) AS TIPNAT,
-                                        CASE WHEN NVL(N.TIPNAT, CASE WHEN A.NAT_N1 = '1000000' THEN 'R' ELSE 'D' END) =
-                                        'R' THEN 1 ELSE -1 END AS SINAL
-                                        FROM AD_AGREGORC A
-                                        LEFT JOIN TGFNAT N ON N.CODNAT = A.CODNAT
-                                        LEFT JOIN TSIEMP E ON E.CODEMP = A.CODEMP
-                                        LEFT JOIN TCSPRJ P ON P.CODPROJ = A.CODPROJ
-                                        LEFT JOIN TSICUS C ON C.CODCENCUS = A.CODCENCUS
-                                        LEFT JOIN TSIUSU U ON U.CODUSU = C.CODUSURESP
-                                        WHERE A.ANO >= 2026
-                                        ) Q
-                                        CROSS JOIN (SELECT 'ORCAMENTO' AS TIPO FROM DUAL UNION ALL SELECT 'FORECAST'
-                                        FROM DUAL UNION ALL SELECT 'REALIZADO' FROM DUAL) T
-                                        WHERE (CASE T.TIPO WHEN 'ORCAMENTO' THEN Q.VLR_ORCADO WHEN 'FORECAST' THEN
-                                        Q.VLR_FORECAST ELSE Q.VLR_REALIZADO END) <> 0
-                                            GROUP BY TO_CHAR(Q.DTREF, 'YYYY-MM'), Q.CODEMP, Q.EMPRESA_NOME, Q.CODPROJ,
-                                            Q.PROJETO_NOME,
-                                            Q.CODCENCUS, Q.CC_NOME, Q.CODRESP, Q.RESP_NOME, Q.CODNAT, Q.NATUREZA_NOME,
-                                            Q.TIPNAT, T.TIPO
-                                            ORDER BY 1, 11
-                            </snk:query>
+SELECT
+Q.MES_ANO,
+Q.CODEMP,
+Q.EMPRESA_NOME,
+Q.CODPROJ,
+Q.PROJETO_NOME,
+Q.CODCENCUS,
+Q.CC_NOME,
+Q.CODRESP,
+Q.RESP_NOME,
+Q.CODNAT,
+Q.NATUREZA_NOME,
+Q.NAT_N1,
+Q.TIPNAT,
+T.TIPO,
+SUM(CASE WHEN Q.TIPNAT = 'R' AND T.TIPO = 'ORCAMENTO' THEN Q.VLR_ORCADO WHEN Q.TIPNAT = 'R' AND T.TIPO = 'FORECAST' THEN Q.VLR_FORECAST ELSE 0 END) AS ORCADO_REC,
+SUM(CASE WHEN Q.TIPNAT <> 'R' AND T.TIPO = 'ORCAMENTO' THEN Q.VLR_ORCADO WHEN Q.TIPNAT <> 'R' AND T.TIPO = 'FORECAST' THEN Q.VLR_FORECAST ELSE 0 END) AS ORCADO_DESP,
+SUM(CASE WHEN Q.TIPNAT = 'R' AND T.TIPO = 'REALIZADO' THEN Q.VLR_REALIZADO ELSE 0 END) AS REALIZADO_REC,
+SUM(CASE WHEN Q.TIPNAT <> 'R' AND T.TIPO = 'REALIZADO' THEN Q.VLR_REALIZADO ELSE 0 END) AS REALIZADO_DESP
+FROM (
+SELECT
+TO_CHAR(A.ANO) || '-' || LPAD(TO_CHAR(A.MES), 2, '0') AS MES_ANO,
+A.CODEMP, A.CODPROJ, A.CODCENCUS, A.CODNAT, A.NAT_N1,
+NVL(A.VLR_ORCADO, 0) AS VLR_ORCADO,
+NVL(A.VLR_REALIZADO, 0) AS VLR_REALIZADO,
+NVL(A.VLR_FORECAST, 0) AS VLR_FORECAST,
+E.NOMEFANTASIA AS EMPRESA_NOME,
+P.IDENTIFICACAO AS PROJETO_NOME,
+C.DESCRCENCUS AS CC_NOME,
+C.CODUSURESP AS CODRESP,
+U.NOMEUSU AS RESP_NOME,
+N.DESCRNAT AS NATUREZA_NOME,
+CASE WHEN A.NAT_N1 = '1000000' THEN 'R' ELSE 'D' END AS TIPNAT
+FROM AD_AGREGORC A
+LEFT JOIN TGFNAT N ON N.CODNAT = A.CODNAT
+LEFT JOIN TSIEMP E ON E.CODEMP = A.CODEMP
+LEFT JOIN TCSPRJ P ON P.CODPROJ = A.CODPROJ
+LEFT JOIN TSICUS C ON C.CODCENCUS = A.CODCENCUS
+LEFT JOIN TSIUSU U ON U.CODUSU = C.CODUSURESP
+WHERE A.ANO >= 2026
+) Q
+CROSS JOIN (SELECT 'ORCAMENTO' AS TIPO FROM DUAL UNION ALL SELECT 'FORECAST' FROM DUAL UNION ALL SELECT 'REALIZADO' FROM DUAL) T
+WHERE (CASE T.TIPO WHEN 'ORCAMENTO' THEN Q.VLR_ORCADO WHEN 'FORECAST' THEN Q.VLR_FORECAST ELSE Q.VLR_REALIZADO END) <> 0
+GROUP BY Q.MES_ANO, Q.CODEMP, Q.EMPRESA_NOME, Q.CODPROJ, Q.PROJETO_NOME,
+Q.CODCENCUS, Q.CC_NOME, Q.CODRESP, Q.RESP_NOME, Q.CODNAT, Q.NATUREZA_NOME,
+Q.NAT_N1, Q.TIPNAT, T.TIPO
+ORDER BY Q.MES_ANO, Q.NATUREZA_NOME
+</snk:query>
 
                             <%-- Hierarquia completa de naturezas para montar a árvore DRE --%>
+                                <snk:query var="carga">
+                                    SELECT TO_CHAR(MIN(DT), 'DD/MM/YYYY HH24:MI') AS QUANDO,
+                                    FLOOR((SYSDATE - MIN(DT)) * 24) AS HORAS
+                                    FROM (SELECT MAX(DTCARGA) AS DT FROM AD_AGREGORC
+                                    UNION ALL SELECT MAX(DTCARGA) FROM AD_ANALIORC)
+                                </snk:query>
+
                                 <snk:query var="arvoreNat">
                                     SELECT N.CODNAT, N.DESCRNAT, N.CODNATPAI, N.TIPNAT, N.ANALITICA,
                                     LEVEL AS NIVEL
@@ -932,6 +971,11 @@
                                                     com
                                                     forecast
                                                     de fechamento.</p>
+                                                <c:forEach items="${carga.rows}" var="cg">
+                                                    <span class="carga" id="badge-carga"
+                                                        data-horas="${cg.HORAS}">&#128260;
+                                                        Dados da Mitra carregados em ${cg.QUANDO}</span>
+                                                </c:forEach>
                                             </div>
                                             <div class="filtros">
                                                 <div class="filtro-item"><label>Data
@@ -1187,7 +1231,8 @@
                                                     "RESP_NOME": "${fn:replace(fn:replace(r.RESP_NOME, '\\', '\\\\'), '"', '\\"')}",
                                                     "CODNAT": "${r.CODNAT}",
                                                     "NATUREZA_NOME": "${fn:replace(fn:replace(r.NATUREZA_NOME, '\\', '\\\\'), '"', '\\"')}",
-                                                    "TIPNAT": "${r.TIPNAT}",
+                                                    "NAT_N1": "${r.NAT_N1}",
+                                    "TIPNAT": "${r.TIPNAT}",
                                                     "TIPO": "${r.TIPO}",
                                                     "ORCADO_REC": "${empty r.ORCADO_REC ? 0 : r.ORCADO_REC}",
                                                     "ORCADO_DESP": "${empty r.ORCADO_DESP ? 0 : r.ORCADO_DESP}",
@@ -1281,7 +1326,8 @@
                                                                 RESP_NOME: (r.RESP_NOME && r.RESP_NOME.trim()) ? r.RESP_NOME.trim() : ((r.CODRESP !== '' && r.CODRESP != null) ? ('Usuário ' + r.CODRESP) : 'Sem responsável'),
                                                                 CODNAT: r.CODNAT,
                                                                 NATUREZA_NOME: (r.NATUREZA_NOME && r.NATUREZA_NOME.trim()) ? r.NATUREZA_NOME.trim() : ('Natureza ' + r.CODNAT),
-                                                                TIPNAT: (r.TIPNAT || '').trim(),
+                                                                NAT_N1: (r.NAT_N1 || '').trim(),
+                                                            TIPNAT: (r.TIPNAT || '').trim(),
                                                                 TIPO: (r.TIPO || '').trim(),
                                                                 orcRec: num(r.ORCADO_REC), orcDesp: num(r.ORCADO_DESP),
                                                                 realRec: num(r.REALIZADO_REC), realDesp: num(r.REALIZADO_DESP)
@@ -1545,6 +1591,20 @@
                                                             }
                                                         }
 
+                                                        // A tela le uma copia das tabelas da Mitra, nao a Mitra ao vivo: sinaliza
+                                                        // a idade da carga para que um dado atrasado nao passe por erro de calculo.
+                                                        function marcarIdadeDaCarga() {
+                                                            var b = el('badge-carga');
+                                                            if (!b) return;
+                                                            var h = parseInt(b.getAttribute('data-horas'), 10);
+                                                            if (isNaN(h)) return;
+                                                            b.classList.add(h < 12 ? 'ok' : (h < 24 ? 'warn' : 'danger'));
+                                                            if (h >= 12) {
+                                                                b.title = 'A carga tem ' + h + 'h. Os meses ainda em movimento podem estar'
+                                                                    + ' atras do que a Mitra ja processou.';
+                                                            }
+                                                        }
+
                                                         function popularFiltros() {
                                                             var onChangeMs = function () { if (carregado) render(); };
 
@@ -1618,11 +1678,11 @@
                                                             });
                                                         }
 
-                                                        // Receita ou despesa é definido pelo TIPO DA NATUREZA (TGFNAT.TIPNAT),
-                                                        // não pela coluna que a origem preencheu. Isso alinha o orçado (TGFMET, que
-                                                        // separa PREVREC/PREVDESP) com o realizado (Portal joga tudo em COMP_REC,
-                                                        // Contabilidade em COMP_DESP): somamos as duas colunas e classificamos por TIPNAT.
-                                                        function isReceita(r) { return r.TIPNAT === 'R'; }
+                                                        // Grupo do DRE e o NAT_N1 (regra 3), nao o TIPNAT da TGFNAT: dentro de
+                                                        // RECEITA LIQUIDA as deducoes (ISS, PIS, COFINS, descontos) tem
+                                                        // TIPNAT='D' mas pertencem a receita - ja entram somadas, com sinal.
+                                                        // Os valores vem com o sinal da carga e sao sempre SOMADOS (regra 1).
+                                                        function isReceita(r) { return r.NAT_N1 === '1000000'; }
                                                         function valores(r) {
                                                             var orcTot = r.orcRec + r.orcDesp;
                                                             var realTot = r.realRec + r.realDesp;
@@ -1681,6 +1741,7 @@
                                                         // ─── Render principal ─────────────────────────────────────
                                                         function render() {
                                                             if (!carregado) { mostrarPrompt(); return; }
+                                                            _mostrarAvisoGranularidade();
                                                             var linhas = filtrar();
                                                             var visReceita = fTipo.value === 'R';
 
@@ -2301,15 +2362,18 @@
                                                         // REALIZADO da tela: AD_ANALIORC (consolidado da Mitra), agregado por
                                                         // mes / origem / empresa / projeto / CR / natureza. As metas (MEDIDA
                                                         // ORCADO e FORECAST) ficam de fora: elas ja vieram no 
+                                                        // REALIZADO da tela: AD_ANALIORC, o analitico do consolidado, agregado
+                                                        // por mes / origem / empresa / projeto / CR / natureza.
+                                                        // Regra 1: SUM(VLR) puro - o sinal ja vem aplicado na carga.
+                                                        // Regra 3: o grupo do DRE e o NAT_N1.
                                                         function _buildSqlRealizado(dtIni, dtFim) {
-                                                            return "SELECT TO_CHAR(L.DTREF,'YYYY-MM') AS MES_ANO, L.ORIGEM," +
+                                                            return "SELECT TO_CHAR(L.ANO) || '-' || LPAD(TO_CHAR(L.MES),2,'0') AS MES_ANO, L.ORIGEM," +
                                                                 " L.CODEMP, NVL(E.NOMEFANTASIA, TO_CHAR(L.CODEMP)) AS EMPRESA_NOME," +
                                                                 " L.CODPROJ, P.IDENTIFICACAO AS PROJETO_NOME," +
                                                                 " L.CODCENCUS, C.DESCRCENCUS AS CC_NOME, C.CODUSURESP AS CODRESP, U.NOMEUSU AS RESP_NOME," +
                                                                 " L.CODNAT, N.DESCRNAT AS NATUREZA_NOME," +
-                                                                " NVL(N.TIPNAT, CASE WHEN L.NAT_N1 = '1000000' THEN 'R' ELSE 'D' END) AS TIPNAT," +
-                                                                " SUM(CASE WHEN NVL(N.TIPNAT, CASE WHEN L.NAT_N1 = '1000000' THEN 'R' ELSE 'D' END) = 'R'" +
-                                                                "          THEN L.VLR ELSE -L.VLR END) AS VALOR" +
+                                                                " CASE WHEN L.NAT_N1 = '1000000' THEN 'R' ELSE 'D' END AS TIPNAT," +
+                                                                " L.NAT_N1, SUM(L.VLR) AS VALOR" +
                                                                 " FROM AD_ANALIORC L" +
                                                                 " LEFT JOIN TGFNAT N ON N.CODNAT = L.CODNAT" +
                                                                 " LEFT JOIN TSIEMP E ON E.CODEMP = L.CODEMP" +
@@ -2317,19 +2381,23 @@
                                                                 " LEFT JOIN TSICUS C ON C.CODCENCUS = L.CODCENCUS" +
                                                                 " LEFT JOIN TSIUSU U ON U.CODUSU = C.CODUSURESP" +
                                                                 " WHERE L.MEDIDA = 'REALIZADO'" +
-                                                                " AND " + _periodoMesAD('L.DTREF', dtIni, dtFim) +
-                                                                " GROUP BY TO_CHAR(L.DTREF,'YYYY-MM'), L.ORIGEM, L.CODEMP, E.NOMEFANTASIA," +
+                                                                " AND " + _periodoAnoMes('L.ANO', 'L.MES', dtIni, dtFim) +
+                                                                " GROUP BY L.ANO, L.MES, L.ORIGEM, L.CODEMP, E.NOMEFANTASIA," +
                                                                 " L.CODPROJ, P.IDENTIFICACAO, L.CODCENCUS, C.DESCRCENCUS, C.CODUSURESP," +
-                                                                " U.NOMEUSU, L.CODNAT, N.DESCRNAT, L.NAT_N1, N.TIPNAT" +
-                                                                " HAVING SUM(CASE WHEN NVL(N.TIPNAT, CASE WHEN L.NAT_N1 = '1000000' THEN 'R' ELSE 'D' END) = 'R'" +
-                                                                "               THEN L.VLR ELSE -L.VLR END) <> 0";
+                                                                " U.NOMEUSU, L.CODNAT, N.DESCRNAT, L.NAT_N1" +
+                                                                " HAVING SUM(L.VLR) <> 0";
                                                         }
 
                                                         // A AD_ANALIORC guarda a competencia em DTREF (sempre dia 1 do mes), entao
                                                         // o periodo da tela e comparado por mes, nao por dia.
-                                                        function _periodoMesAD(col, dtIni, dtFim) {
-                                                            return "(" + col + " >= TRUNC(TO_DATE('" + dtIni + "','YYYY-MM-DD'),'MM')" +
-                                                                " AND " + col + " <= TRUNC(TO_DATE('" + dtFim + "','YYYY-MM-DD'),'MM'))";
+                                                        // Regra 2: o periodo gerencial e ANO/MES, ja com as remessas de
+                                                        // competencia. DTLANC e a data real do documento e serve so para
+                                                        // auditoria - agregar por ela reintroduz o que o ajuste resolve.
+                                                        function _periodoAnoMes(col_ano, col_mes, dtIni, dtFim) {
+                                                            var a = dtIni.split('-'), b = dtFim.split('-');
+                                                            var de = parseInt(a[0], 10) * 100 + parseInt(a[1], 10);
+                                                            var ate = parseInt(b[0], 10) * 100 + parseInt(b[1], 10);
+                                                            return '(' + col_ano + ' * 100 + ' + col_mes + ' BETWEEN ' + de + ' AND ' + ate + ')';
                                                         }
 
 
@@ -2342,7 +2410,7 @@
                                                             var novas = (res.data || []).map(function (r) {
                                                                 var mesAno = r[0] || '';
                                                                 var partes = mesAno.split('-');
-                                                                var valor = num(r[13]);
+                                                                var valor = num(r[14]);
                                                                 var tipnat = (r[12] || '').trim();
                                                                 return {
                                                                     MES_ANO: mesAno, ANO: partes[0] || null, MES: partes[1] ? parseInt(partes[1], 10) : null,
@@ -2352,6 +2420,7 @@
                                                                     CODRESP: r[8], RESP_NOME: (r[9] && String(r[9]).trim()) || ((r[8] != null && r[8] !== '') ? ('Usuario ' + r[8]) : 'Sem responsavel'),
                                                                     CODNAT: r[10], NATUREZA_NOME: (r[11] && String(r[11]).trim()) || ('Natureza ' + r[10]),
                                                                     TIPNAT: tipnat,
+                                                            NAT_N1: (r[13] || '').trim(),
                                                                     TIPO: (r[1] || 'REALIZADO').trim(),
                                                                     orcRec: 0, orcDesp: 0,
                                                                     realRec: tipnat === 'R' ? valor : 0,
@@ -2368,6 +2437,8 @@
 
                                                         // Detalhamento: um lancamento da AD_ANALIORC por linha. As colunas seguem
                                                         // a mesma ordem que _renderTitulosReais espera.
+                                                        // Detalhamento: um lancamento da AD_ANALIORC por linha, na ordem de
+                                                        // colunas que _renderTitulosReais espera. VLR sai como esta na carga.
                                                         function _buildSqlTitulos(natId, dtIni, dtFim, codemp, codproj, codcencus) {
                                                             var ids = _natsDoNo(natId).ids;
                                                             if (!ids.length) return null;
@@ -2377,17 +2448,19 @@
                                                             if (codcencus != null && String(codcencus) !== '' && String(codcencus) !== 'null') extra += ' AND L.CODCENCUS = ' + codcencus;
                                                             return "SELECT L.ORIGEM, NVL(L.DOCUMENTO,'-') AS NR_DOC," +
                                                                 " TO_CHAR(NVL(L.DTLANC, L.DTREF),'DD/MM/YYYY') AS DATA_MOV," +
-                                                                " CASE WHEN NVL(N.TIPNAT, CASE WHEN L.NAT_N1 = '1000000' THEN 'R' ELSE 'D' END) = 'R' THEN L.VLR ELSE -L.VLR END AS VALOR," +
-                                                                " CASE WHEN L.VLR >= 0 THEN CASE WHEN NVL(N.TIPNAT, CASE WHEN L.NAT_N1 = '1000000' THEN 'R' ELSE 'D' END) = 'R' THEN L.VLR ELSE -L.VLR END ELSE 0 END AS VLR_REC," +
-                                                                " CASE WHEN L.VLR < 0 THEN CASE WHEN NVL(N.TIPNAT, CASE WHEN L.NAT_N1 = '1000000' THEN 'R' ELSE 'D' END) = 'R' THEN L.VLR ELSE -L.VLR END ELSE 0 END AS VLR_DESP," +
+                                                                " L.VLR AS VALOR," +
+                                                                " CASE WHEN L.VLR >= 0 THEN L.VLR ELSE 0 END AS VLR_REC," +
+                                                                " CASE WHEN L.VLR < 0 THEN L.VLR ELSE 0 END AS VLR_DESP," +
                                                                 " NVL(E.NOMEFANTASIA, TO_CHAR(L.CODEMP)) AS EMPRESA," +
                                                                 " NVL(P.IDENTIFICACAO,'-') AS PROJETO," +
                                                                 " NVL(C.DESCRCENCUS,'-') AS CR," +
                                                                 " NVL(N.DESCRNAT, TO_CHAR(L.CODNAT)) AS NATUREZA," +
-                                                                " NVL(TO_CHAR(SUBSTR(L.HISTORICO,1,400)),'-') AS HISTORICO," +
+                                                                " NVL(DBMS_LOB.SUBSTR(L.HISTORICO, 200, 1),'-') AS HISTORICO," +
                                                                 " L.ORIGEM AS CLASSIF," +
                                                                 " 'S' AS CONSIDERADO," +
-                                                                " 'Consolidado Mitra - chave ' || NVL(L.CHAVE,'-') AS MOTIVO," +
+                                                                " CASE WHEN L.AJUSTADO = 'S'" +
+                                                                "      THEN 'Remetido de ' || L.MES_ORIGEM || '/' || L.ANO_ORIGEM || ' - chave ' || NVL(L.CHAVE,'-')" +
+                                                                "      ELSE 'Consolidado Mitra - chave ' || NVL(L.CHAVE,'-') END AS MOTIVO," +
                                                                 " NVL(L.DTLANC, L.DTREF) AS DT_ORD" +
                                                                 " FROM AD_ANALIORC L" +
                                                                 " LEFT JOIN TGFNAT N ON N.CODNAT = L.CODNAT" +
@@ -2396,7 +2469,7 @@
                                                                 " LEFT JOIN TSICUS C ON C.CODCENCUS = L.CODCENCUS" +
                                                                 " WHERE L.MEDIDA = 'REALIZADO'" +
                                                                 " AND L.CODNAT IN " + _lista(ids) +
-                                                                " AND " + _periodoMesAD('L.DTREF', dtIni, dtFim) + extra +
+                                                                " AND " + _periodoAnoMes('L.ANO', 'L.MES', dtIni, dtFim) + extra +
                                                                 " ORDER BY 15 DESC, 2 DESC";
                                                         }
 
@@ -2674,6 +2747,33 @@
                                                                 + ' - a tela esta exibindo apenas Orcado/Forecast. Os valores de realizado NAO foram substituidos pela TGFMET.';
                                                         }
 
+                                                        // Regra 4: orcado x realizado so fecha ate empresa x natureza.
+                                                        // O orcado sempre tem CR e projeto; o realizado tem R$ 34,7 mi sem
+                                                        // projeto e R$ 14,7 mi sem CR (receita e CMV nao tem essa dimensao).
+                                                        // Abrir o realizado por projeto/CR e legitimo; comparar com o orcado
+                                                        // nesse grao gera variacao com 'orcado zero' que nao existe.
+                                                        function _mostrarAvisoGranularidade() {
+                                                            var id = 'aviso-granularidade';
+                                                            var div = document.getElementById(id);
+                                                            var porProj = msProj && msProj.getSelected().length;
+                                                            var porCr = msCc && msCc.getSelected().length;
+                                                            if (!porProj && !porCr) { if (div) div.remove(); return; }
+                                                            if (!div) {
+                                                                div = document.createElement('div');
+                                                                div.id = id;
+                                                                div.style.cssText = 'margin:10px 0; padding:10px 14px; background:#fff7ed;'
+                                                                    + ' border:1px solid #fed7aa; color:#9a3412; border-radius:8px; font-size:0.78rem;';
+                                                                var wrap = document.querySelector('.wrap');
+                                                                if (wrap) wrap.insertBefore(div, wrap.children[1] || null);
+                                                            }
+                                                            var dim = (porProj && porCr) ? 'projeto e centro de resultado'
+                                                                : (porProj ? 'projeto' : 'centro de resultado');
+                                                            div.innerHTML = '\u26A0 Filtro por <b>' + dim + '</b>: o realizado abre nesse nivel,'
+                                                                + ' mas o orcamento nao foi lancado em todas essas celulas. A coluna de'
+                                                                + ' variacao pode mostrar \'orcado zero\' que nao existe na pratica -'
+                                                                + ' para comparar orcado x realizado, use empresa e natureza.';
+                                                        }
+
                                                         // ─── Eventos ──────────────────────────────────────────────
                                                         // Botão Carregar: valida o período e habilita a renderização
                                                         el('btn-carregar').addEventListener('click', async function () {
@@ -2731,6 +2831,7 @@
                                                             if (msNat) msNat.clearAll();
                                                             fResp.value = ''; fOrig.value = ''; fCenario.value = 'ORCAMENTO'; fTipo.value = 'D';
                                                             carregado = false;
+                                                            _mostrarAvisoGranularidade();
                                                             mostrarPrompt();
                                                         });
 
@@ -2751,6 +2852,7 @@
                                                             var fimStr = ult[0] + '-' + ult[1] + '-' + String(fim.getDate());
                                                             [fDtDe, fDtAte].forEach(function (c) { c.min = ini; c.max = fimStr; });
                                                         }
+                                                        marcarIdadeDaCarga();
                                                         popularFiltros();
                                                         mostrarPrompt();   // aguarda o preenchimento do período + Carregar
                                                     });

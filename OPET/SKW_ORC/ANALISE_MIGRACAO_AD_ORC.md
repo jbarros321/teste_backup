@@ -94,34 +94,62 @@ Um lançamento por linha. É a base que, somada, gera o agregado.
    | 6000000 | PROVISÃO TRIBUTOS S/ LUCRO | 0,00 | −34.250,55 | 0,00 |
    | 7000000 | INVESTIMENTOS | −1.038.203,00 | −335.976,21 | −340.076,50 |
 
-4. **`ABS()` por lançamento estava errado.** A tela trabalha com magnitude
-   positiva, mas aplicar `ABS()` linha a linha **descarta os estornos**:
+4. **As 4 regras do consolidado.** São elas que fazem o número bater com o DRE
+   gerencial, e a tela agora segue todas:
 
-   | 2026, realizado | valor |
-   |---|---:|
-   | `SUM(ABS(VLR))` | 224.587.173,24 |
-   | soma com sinal normalizado | 219.629.358,40 |
-   | **diferença** | **4.957.814,84** (2,3%) |
+   **1 — Tudo é SOMA, nunca subtração.** O sinal já vem aplicado na carga:
+   receita positiva, custo e despesa negativos. Lucro bruto é `receita + custo`.
+   Não usar `ABS()` nem inverter sinal — quem inverte dobra o erro.
 
-   São 2.215 lançamentos positivos em naturezas de despesa (estornos/créditos) e
-   3 negativos em receita. A regra correta — a mesma que o `_sinalCase` do modelo
-   antigo aplicava — é **normalizar o sinal pelo `TIPNAT` e somar algebricamente**:
-   `receita = +VLR`, `despesa = −VLR`. É o que os três SQLs fazem agora.
+   **2 — Período é `ANO`/`MES`, nunca `DTLANC`.** `ANO`/`MES` são o período
+   *gerencial*, já com as remessas de competência (`AJUSTADO='S'`,
+   `ANO_ORIGEM`/`MES_ORIGEM`). `DTLANC` é a data real do documento e existe só
+   para auditoria; agregar por ela reintroduz o que o ajuste resolve.
 
-5. **Fechamento ponta a ponta** (2026, após a migração):
+   **3 — Grupo do DRE é `NAT_N1`, não o `TIPNAT` da natureza.** Dentro de
+   `NAT_N1 = '1000000'` (RECEITA LIQUIDA) as deduções — ISS, PIS, COFINS,
+   descontos, cancelamentos — têm `TIPNAT='D'`, mas pertencem à receita e já
+   entram somadas com sinal negativo. Classificar por `TIPNAT` tirava essas
+   linhas da receita e jogava em despesa.
 
-   | Medida | Valor |
-   |---|---:|
-   | Orçamento | 114.134.130,00 |
-   | Forecast | 68.235.585,47 |
-   | Realizado (via `snk:query` / AD_AGREGORC) | 212.539.601,34 |
-   | Realizado (via `_buildSqlRealizado` / AD_ANALIORC) | **212.539.601,34** |
+   | `NAT_N1` | Grupo |
+   |---|---|
+   | 1000000 | RECEITA LIQUIDA |
+   | 2000000 | CUSTO EDITORAS |
+   | 3000000 | CUSTOS ENSINOS |
+   | 4000000 | DESPESAS |
+   | 5000000 | DEPRECIAÇÃO E RESULTADO FINANCEIRO |
+   | 6000000 | PROVISÃO DE TRIBUTOS S/ LUCRO |
+   | 7000000 | INVESTIMENTOS (fora do resultado) |
 
-   Os dois caminhos batem centavo a centavo — trocar o realizado ao clicar em
-   *Carregar* não altera nenhum total, só o quebra por origem.
+   **4 — Orçado × realizado só se compara até empresa × natureza.** O orçado vem
+   sempre com CR e projeto preenchidos (`R$ 0` sem projeto e `R$ 0` sem CR); o
+   realizado tem **R$ 34,7 mi sem projeto** e **R$ 14,7 mi sem CR** (receita e
+   CMV, que não têm essa dimensão). Em 2026, **72 das 130** células
+   empresa × `NAT_N3` têm realizado sem nenhum orçado. A tela avisa quando os
+   filtros de projeto ou CR estão ativos, mas não bloqueia: abrir só o realizado
+   nesse nível é legítimo.
 
-   Detalhamento do nó `1010200` (2026-01, empresa 1): 2.886 lançamentos somando
-   **4.132.541,63**, idêntico ao valor da célula no agregado.
+5. **Fechamento ponta a ponta.** O DRE montado a partir do que a tela recebe é
+   idêntico ao que sai direto da `AD_AGREGORC` (2026):
+
+   | Linha | Orçado | Realizado | Forecast |
+   |---|---:|---:|---:|
+   | RECEITA LIQUIDA | 34.303.349,00 | 76.505.346,81 | 30.695.793,30 |
+   | CUSTO EDITORAS | −3.907.410,00 | −31.814.541,04 | 0,00 |
+   | CUSTOS ENSINOS | −12.446.896,00 | −8.330.211,27 | −11.508.238,00 |
+   | **= LUCRO BRUTO** | **17.949.043,00** | **36.360.594,50** | **19.187.555,30** |
+   | DESPESAS | −52.025.069,00 | −30.890.603,26 | −22.049.087,94 |
+   | **= EBITDA** | **−34.076.026,00** | **5.469.991,24** | **−2.861.532,64** |
+   | DEPRECIAÇÃO E RESULT. FINANCEIRO | −2.471.025,00 | −1.934.020,64 | −1.146.581,03 |
+   | **= LAIR** | **−36.547.051,00** | **3.535.970,60** | **−4.008.113,67** |
+   | PROVISÃO DE TRIBUTOS S/ LUCRO | 0,00 | −961.577,99 | 0,00 |
+   | **= RESULTADO LIQUIDO** | **−36.547.051,00** | **2.574.392,61** | **−4.008.113,67** |
+   | INVESTIMENTOS (fora do resultado) | −9.056.429,00 | −3.319.042,45 | −1.092.499,50 |
+
+   O realizado do `_buildSqlRealizado` (analítico, usado no *Carregar*) bate com
+   o agregado nos **7 grupos, com diferença zero**. O detalhamento do nó 1010200
+   (2026-01, empresa 1) soma 4.132.541,63 em 2.886 lançamentos — igual à célula.
 
 ---
 
@@ -139,6 +167,7 @@ Backup do arquivo original em `Final2 (6).jsp.bak`.
 | F | `popularFiltros()` | preenchia os filtros uma vez, na carga | extraído para `atualizarItensFiltros()` + `popularOrigens()`, refeitos após o *Carregar* |
 | G | `window.DRE_REGRAS` / `DRE_CFG` e 18 funções | matriz origem×sinal por natureza e o sondador de dicionário | **removidos** (ver seção 4) |
 | H | `min`/`max` dos inputs de data | fixos em `2026-01-01` / `2026-12-31` | derivados do período que a consulta trouxe |
+| I | cabeçalho | não indicava a idade dos dados | badge `<snk:query var="carga">` com a data da carga da Mitra |
 
 Contrato preservado: `window.DADOS_FORECAST` continua com as mesmas 17 colunas
 (`MES_ANO … REALIZADO_DESP`), `_carregarRealizado` continua lendo 14 colunas
@@ -209,16 +238,92 @@ trouxe, então acompanha sozinho a mudança do filtro de ano.
 
 ---
 
-## 6. Outras oportunidades
+---
 
-- `DTCARGA` permite mostrar na tela quando foi a última carga da Mitra.
+## 6. Conferência com a Mitra — a carga do Sankhya está atrasada
+
+Comparando `AD_AGREGORC` (Sankhya) com `CONS_AGREGADO` (API Mitra) para 2026,
+mês a mês:
+
+| Mês | linhas API | linhas Sankhya | realizado API | realizado Sankhya | diferença |
+|---|---:|---:|---:|---:|---:|
+| jan–jul | 14.086 | 14.086 | — | — | **0,00** |
+| **ago** | 1.477 | 1.288 | −4.024.467,81 | −1.339.382,86 | **2.685.084,95** |
+| **set** | 538 | 498 | −295.012,16 | −281.339,59 | **13.672,57** |
+| out–dez | 1.157 | 1.157 | — | — | 0,00 |
+| **total** | **17.258** | **17.029** | **−744.649,84** | **1.954.107,68** | **2.698.757,52** |
+
+O mesmo aparece no analítico: em agosto faltam **1.119 lançamentos** e em
+setembro **7** — 1.126 no total, exatamente os R$ 2.698.757,52.
+
+**Causa:** a carga é que está defasada, não a consulta.
+
+| | timestamp |
+|---|---|
+| `AD_AGREGORC.DTCARGA` / `AD_ANALIORC.DTCARGA` (máx.) | 02/09/2026 **00:00** |
+| `CARGA_EM` na API Mitra (máx.) | 02/09/2026 **15:33** |
+
+De janeiro a julho os dois lados batem centavo a centavo, o que confirma que o
+mapeamento das consultas está correto. A divergência está só nos meses ainda em
+movimento (agosto/setembro), que a Mitra reprocessou depois que as tabelas do
+Sankhya foram carregadas.
+
+### O que exatamente falta em agosto
+
+Comparando lançamento a lançamento pela coluna `CHAVE` (identificador de origem
+da Mitra): **1.122 lançamentos na API que não existem no Sankhya**, somando
+−2.683.121,96. Deles, **1.119 são de `ORIGEM = 'CONTABILIDADE'` com
+`DATA_LANC = 01/08/2026`** — é a **contabilização da folha de agosto**, um lote
+único que a Mitra processou depois da carga:
+
+| CODNAT | Natureza | lanç. | valor |
+|---|---|---:|---:|
+| 3010101 | SALARIOS E ORDENADOS DOCENTE | 21 | −1.167.366,52 |
+| 4010101 | SALARIOS E ORDENADOS ADMINISTRATIVO | 70 | −492.235,87 |
+| 3010207 | INSS DOCENTE | 84 | −324.080,10 |
+| 4010207 | INSS ADMINISTRATIVO | 291 | −136.888,19 |
+| 3010206 | FGTS DOCENTE | 56 | −133.560,42 |
+| 3010202 | 13º SALARIO DOCENTE | 18 | −116.753,18 |
+| 4010206 | FGTS ADMINISTRATIVO | 196 | −80.019,90 |
+| 4010201 | FERIAS ADMINISTRATIVO | 153 | −61.522,28 |
+| … | (mais 19 naturezas de folha) | 233 | −170.695,50 |
+| | **total (27 naturezas)** | **1.122** | **−2.683.121,96** |
+
+Há também **3 lançamentos que existem no Sankhya e a Mitra já removeu** no
+reprocessamento (`FIN:179381:0`, `NF:198628:1`, `NF:198628:2`) — por isso a
+diferença do agregado (2.685.084,95) é ligeiramente maior que a soma acima.
+
+**Ação:** reprocessar a carga Mitra → Sankhya das duas tabelas. Não há nada a
+corrigir no JSP.
+
+### Badge da data de carga (implementado)
+
+Para que uma defasagem de carga não volte a passar por erro de cálculo, o
+cabeçalho agora mostra quando os dados foram carregados. A consulta pega a carga
+**mais antiga** das duas tabelas, que é a que limita o dado:
+
+```sql
+SELECT TO_CHAR(MIN(DT), 'DD/MM/YYYY HH24:MI') AS QUANDO,
+       FLOOR((SYSDATE - MIN(DT)) * 24) AS HORAS
+FROM (SELECT MAX(DTCARGA) AS DT FROM AD_AGREGORC
+      UNION ALL SELECT MAX(DTCARGA) FROM AD_ANALIORC)
+```
+
+`marcarIdadeDaCarga()` colore o badge pela idade: **verde** abaixo de 12 h,
+**âmbar** até 24 h, **vermelho** acima — e a partir de 12 h acrescenta um
+`title` avisando que os meses ainda em movimento podem estar atrás da Mitra.
+No estado atual a consulta devolve `02/09/2026 00:00` e `13` horas, ou seja, o
+badge já sobe em âmbar.
+
+## 7. Outras oportunidades
+
 - `NAT_N1/N2/N3` dão a hierarquia DRE pronta em 3 níveis; a `<snk:query
   var="arvoreNat">` sobre a `TGFNAT` (313 linhas) pode ser trocada por elas se
   quiser eliminar da árvore as naturezas sem movimento.
 
 ---
 
-## 7. Riscos e cuidados
+## 8. Riscos e cuidados
 
 - **Não formatar o arquivo.** O *format on save* do VS Code quebra literais de
   texto dentro do `<snk:query>` em várias linhas e zera o realizado. Os SQLs
@@ -232,7 +337,7 @@ trouxe, então acompanha sozinho a mudança do filtro de ano.
 
 ---
 
-## 8. Como reproduzir as validações
+## 9. Como reproduzir as validações
 
 O acesso ao banco foi feito pelo API Gateway
 ([doc](https://developer.sankhya.com.br/reference/post_authenticate)):
