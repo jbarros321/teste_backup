@@ -535,14 +535,38 @@ Audio2.aoOuvir(det => {
 /* ============================================================
    EVENTOS
    ============================================================ */
+/* Cada modo mostra um painel. Os modos 'aprender' e 'tocar' compartilham o painel da música.
+   'usaMic' diz se a barra do microfone faz sentido naquele modo. */
+const PAINEIS = {
+  aprender:   { painel: 'painel-musica',     usaMic: true },
+  tocar:      { painel: 'painel-musica',     usaMic: true },
+  afinador:   { painel: 'painel-afinador',   usaMic: true },
+  metronomo:  { painel: 'painel-metronomo',  usaMic: false },
+  escalas:    { painel: 'painel-escalas',    usaMic: false },
+  playalong:  { painel: 'painel-playalong',  usaMic: false },
+  partituras: { painel: 'painel-partituras', usaMic: false },
+};
+
 function trocarModo(modo) {
   parar();
+  if (window.Metronomo && est.modo === 'metronomo' && modo !== 'metronomo') Metronomo.parar();
+  if (window.PlayAlong && est.modo === 'playalong' && modo !== 'playalong') PlayAlong.parar();
   est.modo = modo;
+  const cfg = PAINEIS[modo] || PAINEIS.aprender;
+
   document.querySelectorAll('.modo').forEach(b => b.classList.toggle('ativo', b.dataset.modo === modo));
-  $('painel-musica').classList.toggle('oculto', modo === 'afinador');
-  $('painel-afinador').classList.toggle('oculto', modo !== 'afinador');
+  Object.values(PAINEIS).forEach(p => {
+    const el = $(p.painel);
+    if (el) el.classList.add('oculto');
+  });
+  $(cfg.painel).classList.remove('oculto');
+
+  $('barra-mic').classList.toggle('oculto', !cfg.usaMic);
+  $('campo-musica').classList.toggle('oculto', cfg.painel !== 'painel-musica');
+
   if (modo === 'aprender') feedback('Modo <b>Aprender</b>: sem pressa. Eu só passo pra próxima nota quando você acertar.', 'espera');
   if (modo === 'tocar') feedback('Modo <b>Tocar no tempo</b>: metrônomo rodando, você acompanha. No fim eu te dou a nota.', 'espera');
+  if (modo === 'playalong' && window.PlayAlong) PlayAlong.aoEntrar();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -594,9 +618,39 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   document.addEventListener('keydown', e => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+
+    if (est.modo === 'metronomo') {
+      if (e.code === 'Space' && window.Metronomo) { e.preventDefault(); Metronomo.alternar(); }
+      return;
+    }
+    if (est.modo === 'playalong') {
+      if (e.code === 'Space' && window.PlayAlong) { e.preventDefault(); PlayAlong.alternar(); }
+      return;
+    }
+    if (est.modo === 'escalas' || est.modo === 'partituras') return;
+
     if (e.code === 'Space') { e.preventDefault(); est.rodando ? parar() : $('btn-comecar').click(); }
     if (e.code === 'ArrowRight') $('btn-pular').click();
     if (e.code === 'ArrowLeft') $('btn-anterior').click();
   });
 });
+
+/* Ponte para os outros arquivos (escalas.js precisa carregar uma música gerada) */
+window.Aula = {
+  est,
+  selecionarMusica,
+  montarListaMusicas,
+  trocarModo,
+  ouvirExemplo,
+  midiDaNota,
+  nomePt,
+  nomeEn,
+  CORDA,
+  CORDAS_ORDEM,
+  DEDOS,
+  MAX_CASA,
+  MARCADORES,
+  NOME_PT,
+  NOME_EN,
+};

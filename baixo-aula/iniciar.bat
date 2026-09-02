@@ -11,6 +11,10 @@ if %errorlevel%==0 (
 
 where python >nul 2>nul
 if %errorlevel%==0 (
+  echo.
+  echo  Aviso: sem o Node, a busca de partituras ^(modo 7^) nao funciona.
+  echo  O resto da aula funciona normalmente.
+  echo.
   start "" http://localhost:8765
   python -m http.server 8765
   goto :eof

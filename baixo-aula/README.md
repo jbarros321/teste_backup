@@ -39,15 +39,96 @@ Para fechar: `Ctrl+C` na janela preta.
 
 ---
 
-## Os 3 modos
+## Os 7 modos
 
 | Modo | O que faz |
 |---|---|
 | **1 · Aprender** | Sem tempo, sem pressa. Mostra uma nota por vez e **só avança quando você acerta**. Se errar, ele diz o que você tocou e se está grave ou agudo demais. É por aqui que se começa. |
 | **2 · Tocar no tempo** | Metrônomo rodando, 4 batidas de contagem e a música inteira. Ele marca em verde cada nota que você pegou no tempo certo e no fim dá uma nota de 0 a 100%. |
 | **3 · Afinador** | Afinador cromático. Toque cada corda solta e ele diz se está alta ou baixa, e para que lado girar a tarraxa. **Afine sempre antes de estudar.** |
+| **4 · Metrônomo** | Só o tempo, sem música nenhuma. |
+| **5 · Escalas e tons** | Você escolhe o tom; ele escreve a partitura e toca com metrônomo. |
+| **6 · Tocar junto** | Toca uma música do seu computador com velocidade, tom e loop A–B. |
+| **7 · Buscar partitura** | Digite o nome da música e escolha o instrumento — ele acha a tablatura. |
 
-Atalhos: `Espaço` começa/para · `→` pula a nota · `←` volta uma nota.
+Atalhos: `Espaço` começa/para (nos modos 1, 2, 4 e 6) · `→` pula a nota · `←` volta uma nota.
+
+---
+
+## 4 · Metrônomo
+
+Um metrônomo de verdade, separado da aula:
+
+- **BPM de 20 a 280** — slider, botões de ±1 e ±5, atalhos rápidos e **tap** (bata o
+  tempo com o dedo no botão e ele descobre a velocidade).
+- **Batidas por compasso** de 1 a 12. Cada batida é um círculo na tela; **clique nele**
+  para trocar entre **forte** (laranja), normal e **mudo** (riscado). Deixar batidas
+  mudas é o melhor exercício de tempo que existe.
+- **Subdivisão**: semínimas, colcheias, tercinas ou semicolcheias.
+- **Som**: clique seco, madeira ou bip.
+- **Treino progressivo**: ele sobe o BPM sozinho (ex.: +5 a cada 4 compassos, até 140).
+  Ligue, deixe rodando e repita o trecho — é assim que se ganha velocidade sem vício.
+
+O tempo é agendado no relógio do áudio, não no relógio da tela: não desanda mesmo se
+o navegador engasgar.
+
+---
+
+## 5 · Escalas e tons
+
+Escolha a **tônica** (as 12 notas), **o que estudar** (18 opções: maior, menor natural,
+harmônica, melódica, os 7 modos gregos, pentatônicas, blues, cromática e os arpejos
+maior, menor, 7, m7 e maj7), a **extensão** (1 ou 2 oitavas, só subindo ou subindo e
+descendo), o **ritmo** e a **posição no braço**.
+
+Clicando em **Gerar partitura** ele:
+
+1. escreve a **tablatura** (dá para copiar e imprimir) com o **dedilhado** já resolvido —
+   um dedo por casa, e a mão desliza quando precisa;
+2. desenha o **braço inteiro** com todas as notas daquele tom (a tônica em laranja);
+3. **carrega a escala dentro da aula**, então os botões *Tocar com metrônomo* e
+   *Estudar nota por nota* funcionam igual a uma música: braço, tablatura, contagem
+   e correção pelo microfone.
+
+> Se a escala escolhida não couber até a casa 12, o campo *Posição* avisa — troque
+> para 1 oitava ou escolha outra corda para a tônica.
+
+---
+
+## 6 · Tocar junto (a ideia do Moises, aqui dentro)
+
+No alto do painel ficam os **links do Moises** — eles são lidos do arquivo `tex.md`
+(um link por linha). Colando um link novo no campo, ele abre e fica salvo no navegador.
+
+Embaixo, um player para um arquivo **do seu computador** (arraste o MP3/WAV ou clique
+em *Escolher arquivo*). Nada é enviado para lugar nenhum. Dá para:
+
+- **mudar a velocidade** de 25% a 150% **sem mudar o tom**;
+- **transpor** de −6 a +6 semitons **sem mudar a velocidade**;
+- **abafar o baixo da gravação**, para você ser o baixo;
+- **tirar o que está no centro** da imagem estéreo (normalmente a voz);
+- marcar **A** e **B** e repetir aquele trecho sem parar;
+- pôr um **metrônomo por cima** da música.
+
+> Sobre a separação de faixas: tirar o baixo e tirar o centro aqui são equalização,
+> não separação de verdade. Para a separação real (baixo, voz, bateria em faixas
+> separadas), use o Moises pelos links do topo, **baixe a faixa sem o baixo** e abra
+> esse arquivo aqui — aí você tem o melhor dos dois: separação boa + velocidade, tom
+> e loop A–B.
+
+---
+
+## 7 · Buscar partitura
+
+Digite o nome da música (o nome do artista junto ajuda), escolha o **instrumento** e
+clique em buscar. Ele procura no catálogo do **Songsterr** e lista só as músicas que
+têm faixa daquele instrumento, mostrando também a **afinação** de cada faixa. Clicando
+na faixa, a partitura interativa abre numa aba nova.
+
+Precisa de **internet** e de a página estar rodando pelo `iniciar.bat` com o **Node**
+instalado (quem conversa com o Songsterr é o `servidor.js`; o navegador sozinho é
+barrado por CORS). Se der errado, ele mostra links de busca no Cifra Club, no
+Ultimate Guitar e no próprio Songsterr.
 
 ---
 
@@ -135,6 +216,8 @@ E `repetir(notas, vezes, batidasPorCiclo)` repete um trecho.
 | Bloqueei o microfone sem querer | Clique no cadeado 🔒 ao lado do endereço, libere o microfone e recarregue. |
 | Ele erra a nota / fica pulando | Use fone de ouvido (o som do metrônomo e do exemplo pelo alto-falante confunde o microfone). Abafe as cordas que não estão sendo tocadas. |
 | Diz que está sempre desafinado | Rode o afinador primeiro. Baixo desafinado = tudo errado. |
+| A busca de partitura não acha nada | Ela precisa de internet **e** do Node (o `iniciar.bat` usa Python como plano B, e nesse caso a busca não funciona). Instale o Node e rode de novo. |
+| O botão de transpor não faz nada | O pitch shifter usa AudioWorklet — precisa de um navegador atual (Chrome, Edge ou Firefox recentes) e da página em `http://localhost`. |
 | Corda Mi grave não é detectada | Note grave é difícil pro microfone de notebook. Toque mais perto do braço (som mais redondo) e um pouco mais forte. |
 
 ---
@@ -147,9 +230,14 @@ baixo-aula/
 ├── index.html      estrutura da página
 ├── estilo.css      visual
 ├── musicas.js      as músicas e exercícios  ← mexa aqui pra adicionar música
-├── audio.js        microfone, detecção de nota, metrônomo
-├── app.js          a lógica da aula
-└── servidor.js     servidor local (Node, sem dependências)
+├── audio.js        microfone, detecção de nota, sons do metrônomo
+├── app.js          a lógica da aula (modos 1, 2 e 3)
+├── metronomo.js    o metrônomo sozinho (modo 4)
+├── escalas.js      gerador de escalas, arpejos e dedilhado (modo 5)
+├── playalong.js    player com velocidade, tom e loop A–B (modo 6)
+├── partituras.js   busca de partituras por instrumento (modo 7)
+├── tex.md          seus links do Moises, um por linha
+└── servidor.js     servidor local + ponte para a busca (Node, sem dependências)
 ```
 
 As músicas conhecidas estão em **versões curtas e simplificadas, para estudo**.

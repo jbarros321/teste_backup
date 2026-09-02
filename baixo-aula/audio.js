@@ -180,18 +180,50 @@ const Audio2 = (() => {
     };
   }
 
-  /* ---------- metrônomo ---------- */
-  function clique(quando, forte) {
+  /* ---------- metrônomo ----------
+     clique(quando, forte)                  -> uso antigo (2 níveis)
+     clique(quando, false, {nivel:'sub'})   -> subdivisão (mais fraca e mais aguda)
+     opções: { nivel: 'forte'|'normal'|'sub', tipo: 'click'|'madeira'|'bip', volume: 0..1.5 }
+  */
+  const TIMBRES = {
+    click:   { onda: 'square',   forte: 1600, normal: 1000, sub: 2200, dur: 0.05 },
+    madeira: { onda: 'triangle', forte: 1200, normal:  820, sub: 1600, dur: 0.04, ruido: true },
+    bip:     { onda: 'sine',     forte: 1760, normal: 1174, sub: 2349, dur: 0.07 },
+  };
+  const GANHO = { forte: 0.24, normal: 0.13, sub: 0.06 };
+
+  function clique(quando, forte, opts) {
     const c = contexto();
+    opts = opts || {};
+    const nivel = opts.nivel || (forte ? 'forte' : 'normal');
+    const timbre = TIMBRES[opts.tipo] || TIMBRES.click;
+    const vol = Math.max(0.0002, GANHO[nivel] * (opts.volume === undefined ? 1 : opts.volume));
+
     const o = c.createOscillator();
     const g = c.createGain();
-    o.type = 'square';
-    o.frequency.value = forte ? 1600 : 1000;   // agudo: não confunde a detecção do baixo
+    o.type = timbre.onda;
+    o.frequency.value = timbre[nivel];         // agudo: não confunde a detecção do baixo
     g.gain.setValueAtTime(0.0001, quando);
-    g.gain.exponentialRampToValueAtTime(forte ? 0.22 : 0.12, quando + 0.002);
-    g.gain.exponentialRampToValueAtTime(0.0001, quando + 0.05);
+    g.gain.exponentialRampToValueAtTime(vol, quando + 0.002);
+    g.gain.exponentialRampToValueAtTime(0.0001, quando + timbre.dur);
     o.connect(g); g.connect(c.destination);
-    o.start(quando); o.stop(quando + 0.07);
+    o.start(quando); o.stop(quando + timbre.dur + 0.02);
+
+    if (timbre.ruido) {          // estalo curto de madeira por cima do tom
+      const n = c.createBufferSource();
+      const buf = c.createBuffer(1, Math.ceil(c.sampleRate * 0.02), c.sampleRate);
+      const dados = buf.getChannelData(0);
+      for (let i = 0; i < dados.length; i++) {
+        dados[i] = (Math.random() * 2 - 1) * (1 - i / dados.length);
+      }
+      n.buffer = buf;
+      const pb = c.createBiquadFilter();
+      pb.type = 'bandpass'; pb.frequency.value = timbre[nivel]; pb.Q.value = 1.2;
+      const gn = c.createGain();
+      gn.gain.value = vol * 0.9;
+      n.connect(pb); pb.connect(gn); gn.connect(c.destination);
+      n.start(quando);
+    }
   }
 
   /* ---------- som de baixo sintetizado (para "ouvir exemplo") ---------- */

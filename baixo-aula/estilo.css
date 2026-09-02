@@ -182,3 +182,114 @@ input[type=range]{width:100%;accent-color:var(--laranja)}
   border-top:1px solid var(--borda);padding:16px 20px;color:var(--suave);font-size:13px;text-align:center;
 }
 code{background:var(--cartao2);padding:2px 6px;border-radius:5px;font-size:12px}
+
+/* ============================================================
+   MODOS NOVOS — metrônomo, escalas, tocar junto e buscar partitura
+   ============================================================ */
+
+.modos{flex-wrap:wrap}
+.botao.redondo{width:44px;height:44px;border-radius:50%;padding:0;font-size:14px;font-weight:700}
+input[type=text],input[type=number]{
+  background:var(--cartao2);color:var(--texto);border:1px solid var(--borda);
+  border-radius:8px;padding:9px 11px;font-size:14px;font-family:inherit;
+}
+input[type=text]:focus,input[type=number]:focus{outline:none;border-color:var(--laranja)}
+input.mini{width:64px;padding:5px 7px}
+
+/* ---------- 4 · metrônomo ---------- */
+.metro-topo{display:flex;flex-direction:column;align-items:center;gap:14px;padding:6px 0 2px}
+.metro-bpm{display:flex;align-items:center;gap:12px}
+.metro-numero{display:flex;flex-direction:column;align-items:center;min-width:150px}
+.metro-numero b{font-size:62px;font-weight:800;line-height:1}
+.metro-numero span{font-size:12px;letter-spacing:2px;color:var(--suave)}
+.metro-numero small{font-size:12px;color:var(--laranja);margin-top:2px}
+.metro-slider{width:min(620px,94%)}
+.metro-atalhos{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.metro-pontos{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:18px 0 4px}
+.metro-ponto{
+  width:52px;height:52px;border-radius:50%;border:2px solid var(--borda);background:var(--cartao2);
+  color:var(--suave);font-size:15px;font-weight:800;cursor:pointer;transition:transform .06s,background .06s;
+}
+.metro-ponto.acento-2{border-color:var(--laranja);color:var(--laranja)}
+.metro-ponto.acento-0{opacity:.35;text-decoration:line-through}
+.metro-ponto.batendo{background:var(--laranja);color:#1a1206;border-color:var(--laranja);transform:scale(1.16)}
+.metro-ponto.acento-2.batendo{background:var(--verde);border-color:var(--verde);color:#08210f}
+.metro-ajuda{text-align:center;margin:0 0 14px}
+.metro-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-bottom:14px}
+.metro-grade .campo select,.metro-grade .campo input[type=range]{min-width:0;width:100%}
+.metro-treino{
+  display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--cartao2);
+  border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:13px;
+}
+.metro-treino-cfg{color:var(--suave)}
+.metro-contador{color:var(--suave);font-size:13px;margin-left:auto}
+
+/* ---------- 5 · escalas e tons ---------- */
+.esc-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:16px}
+.esc-grade .campo select,.esc-grade .campo input[type=range]{min-width:0;width:100%}
+.esc-tab{
+  background:#0d0e14;border:1px solid var(--borda);border-radius:10px;padding:14px;
+  overflow-x:auto;font-family:"Cascadia Mono",Consolas,monospace;font-size:13px;line-height:1.7;
+  color:var(--verde);margin:0 0 18px;
+}
+.braco-mapa .bolinha{width:26px;height:26px;font-size:11px;background:#6b7290;color:#eef0f7}
+.braco-mapa .bolinha.dotom{display:flex;background:#5b6488;color:#eef0f7}
+.braco-mapa .bolinha.tonica{display:flex;background:var(--laranja);color:#1a1206}
+
+/* ---------- 6 · tocar junto ---------- */
+.pa-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.pa-link{
+  display:flex;flex-direction:column;gap:3px;background:var(--cartao2);border:1px solid var(--borda);
+  border-radius:10px;padding:12px;text-decoration:none;color:var(--texto);
+}
+.pa-link:hover{border-color:var(--laranja)}
+.pa-link span{font-size:11px;color:var(--suave);word-break:break-all}
+.pa-add{display:flex;gap:8px;margin-top:12px}
+.pa-add input{flex:1}
+.pa-drop{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  border:2px dashed var(--borda);border-radius:12px;padding:26px;text-align:center;
+}
+.pa-drop.sobre{border-color:var(--laranja);background:rgba(255,138,61,.07)}
+.pa-drop .botao{cursor:pointer}
+.pa-nome{font-size:16px;font-weight:700;margin:14px 0 10px}
+.pa-linha-tempo{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--suave)}
+.pa-linha-tempo input[type=range]{flex:1;min-width:0}
+.pa-loop-barra{position:relative;height:6px;background:var(--cartao2);border-radius:3px;margin:4px 0 14px}
+#pa-loop-faixa{position:absolute;top:0;bottom:0;background:var(--laranja);border-radius:3px;opacity:.75}
+.pa-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:16px 0}
+.pa-grade .campo input[type=range]{min-width:0;width:100%}
+.pa-aviso{border-left:3px solid var(--laranja);padding-left:10px;margin-top:16px}
+
+/* ---------- 7 · buscar partitura ---------- */
+.pt-busca{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.pt-busca input{flex:1;min-width:240px}
+.pt-resultados{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.pt-cartao{background:var(--cartao2);border:1px solid var(--borda);border-radius:12px;padding:14px}
+.pt-cabeca{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.pt-cabeca b{font-size:16px;display:block}
+.pt-cabeca .sub{display:block}
+.pt-cabeca .botao{text-decoration:none;white-space:nowrap}
+.pt-faixas{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pt-faixa{
+  display:flex;flex-direction:column;gap:2px;min-width:190px;text-decoration:none;color:var(--texto);
+  background:var(--cartao);border:1px solid var(--borda);border-left:4px solid var(--suave);
+  border-radius:9px;padding:9px 12px;
+}
+.pt-faixa:hover{border-color:var(--laranja);border-left-color:var(--laranja)}
+.pt-faixa b{font-size:13px}
+.pt-faixa span{font-size:12px;color:var(--suave)}
+.pt-faixa small{font-size:11px;color:var(--suave);opacity:.8}
+.pt-faixa.fam-baixo{border-left-color:var(--laranja)}
+.pt-faixa.fam-guitarra{border-left-color:var(--azul)}
+.pt-faixa.fam-bateria{border-left-color:var(--vermelho)}
+.pt-faixa.fam-vocal{border-left-color:var(--verde)}
+.pt-faixa.fam-teclado{border-left-color:#b78cff}
+.pt-reserva{font-size:13px;color:var(--suave);margin-top:6px}
+.pt-reserva a{color:var(--azul)}
+
+@media (max-width:720px){
+  .metro-numero b{font-size:46px}
+  .metro-ponto{width:42px;height:42px}
+  .campo select,.campo input[type=range]{min-width:0;width:100%}
+}
