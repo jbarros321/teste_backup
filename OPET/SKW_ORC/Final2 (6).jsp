@@ -1457,7 +1457,7 @@
                                                                             }
 
                                                                             add('PV', 'P', [1010101, 1010201, 1020101, 1020201, 2010406]);
-
+                                                                            
                                                                             // Tributos sobre receita da Editora: buscados na nota via TGFDIN
                                                                             add('DIN', 'P', [1020301, 1020302, 1020303]);
 
@@ -2911,60 +2911,60 @@
                                                                                     blocosPortal('Portal Compras', g.PC, "('C','O','E','J','N')");
                                                                                     blocosPortal('Portal Vendas', g.PV, "('V','D','P')");
 
-                                                                                    // ── TRIBUTOS SOBRE RECEITA (somente nota de venda) ──
-                                                                                    // ISS: campo nativo da propria nota (TGFCAB).
-                                                                                    // PIS (CODIMP=6) e COFINS (CODIMP=7): TGFDIN cruzada com TGFCAB.
-                                                                                    var natDIN = _todosIds(g.DIN || {});
-                                                                                    if (natDIN.length) {
-                                                                                        var mapa = C.TRIBUTOS_NOTA || {};
-                                                                                        var colISS = _colDe('TGFCAB', 'TGFCAB.ISS');
-                                                                                        natDIN.forEach(function (nat) {
-                                                                                            var t = mapa[String(nat)];
-                                                                                            if (!t) return;
+                                                                                // ── TRIBUTOS SOBRE RECEITA (somente nota de venda) ──
+                                                                                // ISS: campo nativo da propria nota (TGFCAB).
+                                                                                // PIS (CODIMP=6) e COFINS (CODIMP=7): TGFDIN cruzada com TGFCAB.
+                                                                                var natDIN = _todosIds(g.DIN || {});
+                                                                                if (natDIN.length) {
+                                                                                    var mapa = C.TRIBUTOS_NOTA || {};
+                                                                                    var colISS = _colDe('TGFCAB', 'TGFCAB.ISS');
+                                                                                    natDIN.forEach(function (nat) {
+                                                                                        var t = mapa[String(nat)];
+                                                                                        if (!t) return;
 
-                                                                                            if (t.fonte === 'CAB') {
-                                                                                                if (!colISS) return;   // sem campo de ISS na nota: aviso em _avisosCapacidades
-                                                                                                blocos.push(
-                                                                                                    "SELECT 'Tributo s/ Receita' AS ORIGEM," +
-                                                                                                    " NVL(TO_CHAR(T.NUMNOTA), TO_CHAR(T.NUNOTA)) AS NR_DOC," +
-                                                                                                    " T.DTNEG AS DT," +
-                                                                                                    " NVL(T." + colISS + ",0) AS VALOR," +
-                                                                                                    " T.CODEMP, T.CODPROJ, T.CODCENCUS, " + nat + " AS CODNAT," +
-                                                                                                    " '" + t.desc + " da nota (TGFCAB." + colISS + ")' AS HISTORICO," +
-                                                                                                    " 'Cabecalho' AS CLASSIF," +
-                                                                                                    " " + considerado('T.CODCENCUS', null) + " AS CONSIDERADO," +
-                                                                                                    " " + motivo('T.CODCENCUS', null, t.desc + ' - campo nativo da nota de venda') + " AS MOTIVO" +
-                                                                                                    " FROM TGFCAB T" +
-                                                                                                    " WHERE T.TIPMOV = 'V' AND T.STATUSNOTA = 'L'" +
-                                                                                                    " AND NVL(T." + colISS + ",0) <> 0" +
-                                                                                                    " AND " + periodoDia('T.DTNEG') +
-                                                                                                    filtros('T.CODEMP', 'T.CODPROJ', 'T.CODCENCUS')
-                                                                                                );
-                                                                                                return;
-                                                                                            }
-
-                                                                                            // PIS / COFINS pela TGFDIN
-                                                                                            if (!temDin || !t.cods || !t.cods.length) return;
+                                                                                        if (t.fonte === 'CAB') {
+                                                                                            if (!colISS) return;   // sem campo de ISS na nota: aviso em _avisosCapacidades
                                                                                             blocos.push(
                                                                                                 "SELECT 'Tributo s/ Receita' AS ORIGEM," +
                                                                                                 " NVL(TO_CHAR(T.NUMNOTA), TO_CHAR(T.NUNOTA)) AS NR_DOC," +
                                                                                                 " T.DTNEG AS DT," +
-                                                                                                " SUM(NVL(D." + colDinVlr + ",0)) AS VALOR," +
+                                                                                                " NVL(T." + colISS + ",0) AS VALOR," +
                                                                                                 " T.CODEMP, T.CODPROJ, T.CODCENCUS, " + nat + " AS CODNAT," +
-                                                                                                " MAX('" + t.desc + " s/ nota de venda (TGFDIN." + colDinCod + "=" + t.cods.join('/') + ")') AS HISTORICO," +
+                                                                                                " '" + t.desc + " da nota (TGFCAB." + colISS + ")' AS HISTORICO," +
                                                                                                 " 'Cabecalho' AS CLASSIF," +
-                                                                                                " MAX(" + considerado('T.CODCENCUS', null) + ") AS CONSIDERADO," +
-                                                                                                " MAX(" + motivo('T.CODCENCUS', null, t.desc + ' - tributo da nota (TGFDIN)') + ") AS MOTIVO" +
-                                                                                                " FROM TGFDIN D" +
-                                                                                                " INNER JOIN TGFCAB T ON T.NUNOTA = D.NUNOTA" +
+                                                                                                " " + considerado('T.CODCENCUS', null) + " AS CONSIDERADO," +
+                                                                                                " " + motivo('T.CODCENCUS', null, t.desc + ' - campo nativo da nota de venda') + " AS MOTIVO" +
+                                                                                                " FROM TGFCAB T" +
                                                                                                 " WHERE T.TIPMOV = 'V' AND T.STATUSNOTA = 'L'" +
-                                                                                                " AND D." + colDinCod + " IN " + _lista(t.cods) +
+                                                                                                " AND NVL(T." + colISS + ",0) <> 0" +
                                                                                                 " AND " + periodoDia('T.DTNEG') +
-                                                                                                filtros('T.CODEMP', 'T.CODPROJ', 'T.CODCENCUS') +
-                                                                                                " GROUP BY T.NUNOTA, T.NUMNOTA, T.DTNEG, T.CODEMP, T.CODPROJ, T.CODCENCUS"
+                                                                                                filtros('T.CODEMP', 'T.CODPROJ', 'T.CODCENCUS')
                                                                                             );
-                                                                                        });
-                                                                                    }
+                                                                                            return;
+                                                                                        }
+
+                                                                                        // PIS / COFINS pela TGFDIN
+                                                                                        if (!temDin || !t.cods || !t.cods.length) return;
+                                                                                        blocos.push(
+                                                                                            "SELECT 'Tributo s/ Receita' AS ORIGEM," +
+                                                                                            " NVL(TO_CHAR(T.NUMNOTA), TO_CHAR(T.NUNOTA)) AS NR_DOC," +
+                                                                                            " T.DTNEG AS DT," +
+                                                                                            " SUM(NVL(D." + colDinVlr + ",0)) AS VALOR," +
+                                                                                            " T.CODEMP, T.CODPROJ, T.CODCENCUS, " + nat + " AS CODNAT," +
+                                                                                            " MAX('" + t.desc + " s/ nota de venda (TGFDIN." + colDinCod + "=" + t.cods.join('/') + ")') AS HISTORICO," +
+                                                                                            " 'Cabecalho' AS CLASSIF," +
+                                                                                            " MAX(" + considerado('T.CODCENCUS', null) + ") AS CONSIDERADO," +
+                                                                                            " MAX(" + motivo('T.CODCENCUS', null, t.desc + ' - tributo da nota (TGFDIN)') + ") AS MOTIVO" +
+                                                                                            " FROM TGFDIN D" +
+                                                                                            " INNER JOIN TGFCAB T ON T.NUNOTA = D.NUNOTA" +
+                                                                                            " WHERE T.TIPMOV = 'V' AND T.STATUSNOTA = 'L'" +
+                                                                                            " AND D." + colDinCod + " IN " + _lista(t.cods) +
+                                                                                            " AND " + periodoDia('T.DTNEG') +
+                                                                                            filtros('T.CODEMP', 'T.CODPROJ', 'T.CODCENCUS') +
+                                                                                            " GROUP BY T.NUNOTA, T.NUMNOTA, T.DTNEG, T.CODEMP, T.CODPROJ, T.CODCENCUS"
+                                                                                        );
+                                                                                    });
+                                                                                }
 
                                                                                     // ── 10.2 CUSTOMIZACAO: COMISSOES ──
                                                                                     var natCUS = _todosIds(g.CUS || {});
@@ -3398,7 +3398,7 @@
                                                                                         alert('A Data inicial não pode ser maior que a Data final.');
                                                                                         return;
                                                                                     }
-
+                                                                                
                                                                                     // O REALIZADO vem dos lancamentos (TCBLAN / TGFFIN / TGFCAB / TGFDIN /
                                                                                     // customizacoes). A TGFMET so alimenta Orcado e Forecast.
                                                                                     var btn = this;
@@ -3414,7 +3414,7 @@
                                                                                     } finally {
                                                                                         btn.disabled = false; btn.textContent = txt;
                                                                                     }
-
+                                                                                
                                                                                     carregado = true;
                                                                                     render();
                                                                                     _mostrarAvisoRealizado();
@@ -3455,113 +3455,6 @@
                                                                                 mostrarPrompt();   // aguarda o preenchimento do período + Carregar
                                                                             });
                                                                         </script>
-
-                                                        <script>
-                                                            // ─── Limpeza da moldura do Sankhya ────────────────────────
-                                                            // Esta tela roda dentro de um iframe do workspace. Os botoes
-                                                            // de "abrir em outra aba" e a marca no canto superior direito
-                                                            // pertencem ao documento pai, nao a este JSP. Escondemos
-                                                            // apenas o que esta dentro do painel desta tela.
-                                                            (function () {
-                                                                'use strict';
-
-                                                                var RE_MARCA = /^\s*mitralab\s*$/i;
-                                                                var RE_ABA = /(nova|outra)\s+(aba|guia|janela)|abrir\s+em\s+(nova|outra)/i;
-
-                                                                function docPai() {
-                                                                    try {
-                                                                        var d = (window.parent && window.parent !== window) ? window.parent.document : null;
-                                                                        if (d && d.body) return d;
-                                                                    } catch (e) { }
-                                                                    return null;
-                                                                }
-
-                                                                function meuIframe(d) {
-                                                                    var fs = d.getElementsByTagName('iframe');
-                                                                    for (var i = 0; i < fs.length; i++) {
-                                                                        try { if (fs[i].contentWindow === window) return fs[i]; } catch (e) { }
-                                                                    }
-                                                                    return null;
-                                                                }
-
-                                                                // Painel da tela: algumas camadas acima do iframe, para nao
-                                                                // varrer o ERP inteiro.
-                                                                function escopo(frame) {
-                                                                    var n = frame, i = 0;
-                                                                    while (n.parentElement && i < 6) { n = n.parentElement; i++; }
-                                                                    return n;
-                                                                }
-
-                                                                function textoDireto(el) {
-                                                                    var t = '', c;
-                                                                    for (var i = 0; i < el.childNodes.length; i++) {
-                                                                        c = el.childNodes[i];
-                                                                        if (c.nodeType === 3) t += c.nodeValue;
-                                                                    }
-                                                                    return t;
-                                                                }
-
-                                                                function rotulos(el) {
-                                                                    return [
-                                                                        el.getAttribute('title'),
-                                                                        el.getAttribute('aria-label'),
-                                                                        el.getAttribute('data-tooltip'),
-                                                                        el.getAttribute('alt'),
-                                                                        textoDireto(el)
-                                                                    ].filter(function (s) { return s && s.trim(); });
-                                                                }
-
-                                                                function esconder(el, motivo) {
-                                                                    if (el.getAttribute('data-opet-oculto')) return;
-                                                                    el.setAttribute('data-opet-oculto', motivo);
-                                                                    el.style.setProperty('display', 'none', 'important');
-                                                                    console.log('[OPET] moldura oculta (' + motivo + '):', el);
-                                                                }
-
-                                                                function limpar() {
-                                                                    var d = docPai();
-                                                                    if (!d) return;
-                                                                    var frame = meuIframe(d);
-                                                                    if (!frame) return;
-                                                                    var raiz = escopo(frame);
-                                                                    if (!raiz) return;
-
-                                                                    var els = raiz.querySelectorAll('a, button, span, div, i, img, label, [title], [aria-label]');
-                                                                    for (var i = 0; i < els.length; i++) {
-                                                                        var el = els[i];
-                                                                        // nunca esconder um ancestral desta propria tela
-                                                                        if (el === frame || el.contains(frame)) continue;
-
-                                                                        var rs = rotulos(el);
-                                                                        for (var j = 0; j < rs.length; j++) {
-                                                                            if (RE_MARCA.test(rs[j])) { esconder(el, 'marca'); break; }
-                                                                            if (RE_ABA.test(rs[j])) { esconder(el, 'abrir-em-aba'); break; }
-                                                                        }
-                                                                    }
-                                                                }
-
-                                                                function agendar() {
-                                                                    [0, 300, 800, 1500, 3000].forEach(function (ms) { setTimeout(limpar, ms); });
-
-                                                                    // A moldura pode ser redesenhada; observamos por 20s.
-                                                                    var d = docPai();
-                                                                    if (!d || typeof MutationObserver !== 'function') return;
-                                                                    var frame = meuIframe(d);
-                                                                    if (!frame) return;
-                                                                    var raiz = escopo(frame);
-                                                                    if (!raiz) return;
-                                                                    var obs = new MutationObserver(function () { limpar(); });
-                                                                    obs.observe(raiz, { childList: true, subtree: true });
-                                                                    setTimeout(function () { obs.disconnect(); }, 20000);
-                                                                }
-
-                                                                if (document.readyState === 'loading') {
-                                                                    document.addEventListener('DOMContentLoaded', agendar);
-                                                                } else {
-                                                                    agendar();
-                                                                }
-                                                            })();
-                                                        </script>
                                                     </body>
 
                         </html>
