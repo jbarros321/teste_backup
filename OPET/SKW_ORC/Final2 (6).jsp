@@ -2300,7 +2300,7 @@
 
                                                         // REALIZADO da tela: AD_ANALIORC (consolidado da Mitra), agregado por
                                                         // mes / origem / empresa / projeto / CR / natureza. As metas (MEDIDA
-                                                        // ORCADO e FORECAST) ficam de fora: elas ja vieram no <snk:query>.
+                                                        // ORCADO e FORECAST) ficam de fora: elas ja vieram no 
                                                         function _buildSqlRealizado(dtIni, dtFim) {
                                                             return "SELECT TO_CHAR(L.DTREF,'YYYY-MM') AS MES_ANO, L.ORIGEM," +
                                                                 " L.CODEMP, NVL(E.NOMEFANTASIA, TO_CHAR(L.CODEMP)) AS EMPRESA_NOME," +
