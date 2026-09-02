@@ -160,7 +160,7 @@ Backup do arquivo original em `Final2 (6).jsp.bak`.
 | # | Local | Antes | Agora |
 |---|---|---|---|
 | A | `<snk:query var="dados">` | UNION ALL de TGFFIN + TGFCAB×3 + TCBLAN + direitos autorais + TGFCOM + TGFMET×2 (~270 linhas) | `AD_AGREGORC` (48 linhas) |
-| B | `_buildSqlRealizado()` | dezenas de blocos montados a partir de `DRE_REGRAS` | `AD_ANALIORC` agregada, com `ORIGEM` |
+| B | `_buildSqlRealizado()` | dezenas de blocos montados a partir de `DRE_REGRAS` | `AD_ANALIORC` agregada por `ANO`/`MES`, com `ORIGEM`, `SUM(VLR)` puro |
 | C | `_buildSqlTitulos()` | os mesmos blocos, um lançamento por linha | `AD_ANALIORC` detalhada |
 | D | `_carregarRealizado()` / `abrirModalTitulos()` | sondavam `ALL_TAB_COLUMNS` via `_carregarCapacidades()` | não precisam mais |
 | E | `_avisosDoNo()` | avisava sobre naturezas fora da matriz DRE | só avisa se o nó não tem natureza |
@@ -168,6 +168,10 @@ Backup do arquivo original em `Final2 (6).jsp.bak`.
 | G | `window.DRE_REGRAS` / `DRE_CFG` e 18 funções | matriz origem×sinal por natureza e o sondador de dicionário | **removidos** (ver seção 4) |
 | H | `min`/`max` dos inputs de data | fixos em `2026-01-01` / `2026-12-31` | derivados do período que a consulta trouxe |
 | I | cabeçalho | não indicava a idade dos dados | badge `<snk:query var="carga">` com a data da carga da Mitra |
+| J | `isReceita()` | `TIPNAT === 'R'` (TGFNAT) | `NAT_N1 === '1000000'` — grupo do DRE (regra 3) |
+| K | sinal dos valores | `ABS()` no orçado, normalizado no realizado | soma direta, sinal da carga (regra 1) |
+| L | período das consultas | `DTREF` | `ANO`/`MES` via `_periodoAnoMes()` (regra 2) |
+| M | filtro projeto/CR | sem aviso | `_mostrarAvisoGranularidade()` (regra 4) |
 
 Contrato preservado: `window.DADOS_FORECAST` continua com as mesmas 17 colunas
 (`MES_ANO … REALIZADO_DESP`), `_carregarRealizado` continua lendo 14 colunas
@@ -182,11 +186,12 @@ regeradas a partir do que foi realmente carregado.
 
 ### Detalhe de implementação
 
-- `DTREF` guarda sempre o dia 1 do mês, então o período da tela é comparado por
-  mês (`_periodoMesAD`), não por dia — senão um filtro de 01/01 a 31/01 não
-  pegaria nada em 01/02.
+- O período vira `ANO * 100 + MES BETWEEN ...` em `_periodoAnoMes()` (regra 2),
+  a partir das datas da tela.
 - `HISTORICO` é CLOB: no detalhamento sai como
-  `NVL(TO_CHAR(SUBSTR(L.HISTORICO,1,400)),'-')`.
+  `DBMS_LOB.SUBSTR(L.HISTORICO, 200, 1)`, como manda a doc do consolidado.
+- O detalhamento mostra na coluna *Motivo* quando o lançamento foi remetido de
+  competência (`AJUSTADO='S'`), com o `MES_ORIGEM`/`ANO_ORIGEM`.
 - O detalhamento resolve as naturezas do nó clicado com `_natsDoNo(natId).ids`
   (a árvore da `TGFNAT`), que já existia.
 
@@ -240,7 +245,7 @@ trouxe, então acompanha sozinho a mudança do filtro de ano.
 
 ---
 
-## 6. Conferência com a Mitra — a carga do Sankhya está atrasada
+## 6. Conferência com a Mitra (resolvido)
 
 Comparando `AD_AGREGORC` (Sankhya) com `CONS_AGREGADO` (API Mitra) para 2026,
 mês a mês:
@@ -256,7 +261,9 @@ mês a mês:
 O mesmo aparece no analítico: em agosto faltam **1.119 lançamentos** e em
 setembro **7** — 1.126 no total, exatamente os R$ 2.698.757,52.
 
-**Causa:** a carga é que está defasada, não a consulta.
+**Causa:** a carga é que estava defasada, não a consulta.
+**Situação atual: reconciliado.** Agosto está com 1.479 linhas e
+−4.024.467,81, batendo com a origem.
 
 | | timestamp |
 |---|---|

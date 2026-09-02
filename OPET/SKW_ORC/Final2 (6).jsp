@@ -861,74 +861,74 @@
                             </style>
                         </head>
 
-                        <%--============================================================
-                            ORCADO vs REALIZADO - consolidado do DRE gerencial, copiado da
-                            Mitra para AD_AGREGORC (agregado) e AD_ANALIORC (analitico).
-
-                            As 4 regras que fazem o numero bater com o DRE:
-                            1. Tudo e SOMA. O sinal ja vem aplicado na carga (receita +,
-                               custo e despesa -). Nao usar ABS nem inverter sinal: quem
-                               inverte dobra o erro.
-                            2. Periodo e ANO/MES (gerencial, ja com as remessas de
-                               competencia), nunca DTLANC - essa e so para auditoria.
-                            3. Grupo do DRE e NAT_N1, nao o TIPNAT da natureza:
-                               1 receita liquida | 2 custo editoras | 3 custos ensinos |
-                               4 despesas | 5 depreciacao e financeiro | 6 tributos |
-                               7 investimentos (fora do resultado).
-                            4. Orcado x realizado so fecha ate empresa x natureza. O orcado
-                               sempre tem CR e projeto; o realizado tem R$ 32 mi sem projeto
-                               e R$ 14 mi sem CR (receita e CMV). Filtrar por projeto ou CR
-                               cria variacao com "orcado zero" que nao existe - a tela avisa.
-                            ============================================================--%>
+                        <%--============================================================ ORCADO vs REALIZADO -
+                            consolidado do DRE gerencial, copiado da Mitra para AD_AGREGORC (agregado) e AD_ANALIORC
+                            (analitico). As 4 regras que fazem o numero bater com o DRE: 1. Tudo e SOMA. O sinal ja vem
+                            aplicado na carga (receita +, custo e despesa -). Nao usar ABS nem inverter sinal: quem
+                            inverte dobra o erro. 2. Periodo e ANO/MES (gerencial, ja com as remessas de competencia),
+                            nunca DTLANC - essa e so para auditoria. 3. Grupo do DRE e NAT_N1, nao o TIPNAT da natureza:
+                            1 receita liquida | 2 custo editoras | 3 custos ensinos | 4 despesas | 5 depreciacao e
+                            financeiro | 6 tributos | 7 investimentos (fora do resultado). 4. Orcado x realizado so
+                            fecha ate empresa x natureza. O orcado sempre tem CR e projeto; o realizado tem R$ 32 mi sem
+                            projeto e R$ 14 mi sem CR (receita e CMV). Filtrar por projeto ou CR cria variacao
+                            com "orcado zero" que nao existe - a tela
+                            avisa.============================================================--%>
                             <snk:query var="dados">
-SELECT
-Q.MES_ANO,
-Q.CODEMP,
-Q.EMPRESA_NOME,
-Q.CODPROJ,
-Q.PROJETO_NOME,
-Q.CODCENCUS,
-Q.CC_NOME,
-Q.CODRESP,
-Q.RESP_NOME,
-Q.CODNAT,
-Q.NATUREZA_NOME,
-Q.NAT_N1,
-Q.TIPNAT,
-T.TIPO,
-SUM(CASE WHEN Q.TIPNAT = 'R' AND T.TIPO = 'ORCAMENTO' THEN Q.VLR_ORCADO WHEN Q.TIPNAT = 'R' AND T.TIPO = 'FORECAST' THEN Q.VLR_FORECAST ELSE 0 END) AS ORCADO_REC,
-SUM(CASE WHEN Q.TIPNAT <> 'R' AND T.TIPO = 'ORCAMENTO' THEN Q.VLR_ORCADO WHEN Q.TIPNAT <> 'R' AND T.TIPO = 'FORECAST' THEN Q.VLR_FORECAST ELSE 0 END) AS ORCADO_DESP,
-SUM(CASE WHEN Q.TIPNAT = 'R' AND T.TIPO = 'REALIZADO' THEN Q.VLR_REALIZADO ELSE 0 END) AS REALIZADO_REC,
-SUM(CASE WHEN Q.TIPNAT <> 'R' AND T.TIPO = 'REALIZADO' THEN Q.VLR_REALIZADO ELSE 0 END) AS REALIZADO_DESP
-FROM (
-SELECT
-TO_CHAR(A.ANO) || '-' || LPAD(TO_CHAR(A.MES), 2, '0') AS MES_ANO,
-A.CODEMP, A.CODPROJ, A.CODCENCUS, A.CODNAT, A.NAT_N1,
-NVL(A.VLR_ORCADO, 0) AS VLR_ORCADO,
-NVL(A.VLR_REALIZADO, 0) AS VLR_REALIZADO,
-NVL(A.VLR_FORECAST, 0) AS VLR_FORECAST,
-E.NOMEFANTASIA AS EMPRESA_NOME,
-P.IDENTIFICACAO AS PROJETO_NOME,
-C.DESCRCENCUS AS CC_NOME,
-C.CODUSURESP AS CODRESP,
-U.NOMEUSU AS RESP_NOME,
-N.DESCRNAT AS NATUREZA_NOME,
-CASE WHEN A.NAT_N1 = '1000000' THEN 'R' ELSE 'D' END AS TIPNAT
-FROM AD_AGREGORC A
-LEFT JOIN TGFNAT N ON N.CODNAT = A.CODNAT
-LEFT JOIN TSIEMP E ON E.CODEMP = A.CODEMP
-LEFT JOIN TCSPRJ P ON P.CODPROJ = A.CODPROJ
-LEFT JOIN TSICUS C ON C.CODCENCUS = A.CODCENCUS
-LEFT JOIN TSIUSU U ON U.CODUSU = C.CODUSURESP
-WHERE A.ANO >= 2026
-) Q
-CROSS JOIN (SELECT 'ORCAMENTO' AS TIPO FROM DUAL UNION ALL SELECT 'FORECAST' FROM DUAL UNION ALL SELECT 'REALIZADO' FROM DUAL) T
-WHERE (CASE T.TIPO WHEN 'ORCAMENTO' THEN Q.VLR_ORCADO WHEN 'FORECAST' THEN Q.VLR_FORECAST ELSE Q.VLR_REALIZADO END) <> 0
-GROUP BY Q.MES_ANO, Q.CODEMP, Q.EMPRESA_NOME, Q.CODPROJ, Q.PROJETO_NOME,
-Q.CODCENCUS, Q.CC_NOME, Q.CODRESP, Q.RESP_NOME, Q.CODNAT, Q.NATUREZA_NOME,
-Q.NAT_N1, Q.TIPNAT, T.TIPO
-ORDER BY Q.MES_ANO, Q.NATUREZA_NOME
-</snk:query>
+                                SELECT
+                                Q.MES_ANO,
+                                Q.CODEMP,
+                                Q.EMPRESA_NOME,
+                                Q.CODPROJ,
+                                Q.PROJETO_NOME,
+                                Q.CODCENCUS,
+                                Q.CC_NOME,
+                                Q.CODRESP,
+                                Q.RESP_NOME,
+                                Q.CODNAT,
+                                Q.NATUREZA_NOME,
+                                Q.NAT_N1,
+                                Q.TIPNAT,
+                                T.TIPO,
+                                SUM(CASE WHEN Q.TIPNAT = 'R' AND T.TIPO = 'ORCAMENTO' THEN Q.VLR_ORCADO WHEN Q.TIPNAT =
+                                'R' AND T.TIPO = 'FORECAST' THEN Q.VLR_FORECAST ELSE 0 END) AS ORCADO_REC,
+                                SUM(CASE WHEN Q.TIPNAT <> 'R' AND T.TIPO = 'ORCAMENTO' THEN Q.VLR_ORCADO WHEN Q.TIPNAT
+                                    <> 'R' AND T.TIPO = 'FORECAST' THEN Q.VLR_FORECAST ELSE 0 END) AS ORCADO_DESP,
+                                        SUM(CASE WHEN Q.TIPNAT = 'R' AND T.TIPO = 'REALIZADO' THEN Q.VLR_REALIZADO ELSE
+                                        0 END) AS REALIZADO_REC,
+                                        SUM(CASE WHEN Q.TIPNAT <> 'R' AND T.TIPO = 'REALIZADO' THEN Q.VLR_REALIZADO ELSE
+                                            0 END) AS REALIZADO_DESP
+                                            FROM (
+                                            SELECT
+                                            TO_CHAR(A.ANO) || '-' || LPAD(TO_CHAR(A.MES), 2, '0') AS MES_ANO,
+                                            A.CODEMP, A.CODPROJ, A.CODCENCUS, A.CODNAT, A.NAT_N1,
+                                            NVL(A.VLR_ORCADO, 0) AS VLR_ORCADO,
+                                            NVL(A.VLR_REALIZADO, 0) AS VLR_REALIZADO,
+                                            NVL(A.VLR_FORECAST, 0) AS VLR_FORECAST,
+                                            E.NOMEFANTASIA AS EMPRESA_NOME,
+                                            P.IDENTIFICACAO AS PROJETO_NOME,
+                                            C.DESCRCENCUS AS CC_NOME,
+                                            C.CODUSURESP AS CODRESP,
+                                            U.NOMEUSU AS RESP_NOME,
+                                            N.DESCRNAT AS NATUREZA_NOME,
+                                            CASE WHEN A.NAT_N1 = '1000000' THEN 'R' ELSE 'D' END AS TIPNAT
+                                            FROM AD_AGREGORC A
+                                            LEFT JOIN TGFNAT N ON N.CODNAT = A.CODNAT
+                                            LEFT JOIN TSIEMP E ON E.CODEMP = A.CODEMP
+                                            LEFT JOIN TCSPRJ P ON P.CODPROJ = A.CODPROJ
+                                            LEFT JOIN TSICUS C ON C.CODCENCUS = A.CODCENCUS
+                                            LEFT JOIN TSIUSU U ON U.CODUSU = C.CODUSURESP
+                                            WHERE A.ANO >= 2026
+                                            ) Q
+                                            CROSS JOIN (SELECT 'ORCAMENTO' AS TIPO FROM DUAL UNION ALL SELECT 'FORECAST'
+                                            FROM DUAL UNION ALL SELECT 'REALIZADO' FROM DUAL) T
+                                            WHERE (CASE T.TIPO WHEN 'ORCAMENTO' THEN Q.VLR_ORCADO WHEN 'FORECAST' THEN
+                                            Q.VLR_FORECAST ELSE Q.VLR_REALIZADO END) <> 0
+                                                GROUP BY Q.MES_ANO, Q.CODEMP, Q.EMPRESA_NOME, Q.CODPROJ, Q.PROJETO_NOME,
+                                                Q.CODCENCUS, Q.CC_NOME, Q.CODRESP, Q.RESP_NOME, Q.CODNAT,
+                                                Q.NATUREZA_NOME,
+                                                Q.NAT_N1, Q.TIPNAT, T.TIPO
+                                                ORDER BY Q.MES_ANO, Q.NATUREZA_NOME
+                            </snk:query>
 
                             <%-- Hierarquia completa de naturezas para montar a árvore DRE --%>
                                 <snk:query var="carga">
@@ -1232,7 +1232,7 @@ ORDER BY Q.MES_ANO, Q.NATUREZA_NOME
                                                     "CODNAT": "${r.CODNAT}",
                                                     "NATUREZA_NOME": "${fn:replace(fn:replace(r.NATUREZA_NOME, '\\', '\\\\'), '"', '\\"')}",
                                                     "NAT_N1": "${r.NAT_N1}",
-                                    "TIPNAT": "${r.TIPNAT}",
+                                                    "TIPNAT": "${r.TIPNAT}",
                                                     "TIPO": "${r.TIPO}",
                                                     "ORCADO_REC": "${empty r.ORCADO_REC ? 0 : r.ORCADO_REC}",
                                                     "ORCADO_DESP": "${empty r.ORCADO_DESP ? 0 : r.ORCADO_DESP}",
@@ -1327,7 +1327,7 @@ ORDER BY Q.MES_ANO, Q.NATUREZA_NOME
                                                                 CODNAT: r.CODNAT,
                                                                 NATUREZA_NOME: (r.NATUREZA_NOME && r.NATUREZA_NOME.trim()) ? r.NATUREZA_NOME.trim() : ('Natureza ' + r.CODNAT),
                                                                 NAT_N1: (r.NAT_N1 || '').trim(),
-                                                            TIPNAT: (r.TIPNAT || '').trim(),
+                                                                TIPNAT: (r.TIPNAT || '').trim(),
                                                                 TIPO: (r.TIPO || '').trim(),
                                                                 orcRec: num(r.ORCADO_REC), orcDesp: num(r.ORCADO_DESP),
                                                                 realRec: num(r.REALIZADO_REC), realDesp: num(r.REALIZADO_DESP)
@@ -2420,7 +2420,7 @@ ORDER BY Q.MES_ANO, Q.NATUREZA_NOME
                                                                     CODRESP: r[8], RESP_NOME: (r[9] && String(r[9]).trim()) || ((r[8] != null && r[8] !== '') ? ('Usuario ' + r[8]) : 'Sem responsavel'),
                                                                     CODNAT: r[10], NATUREZA_NOME: (r[11] && String(r[11]).trim()) || ('Natureza ' + r[10]),
                                                                     TIPNAT: tipnat,
-                                                            NAT_N1: (r[13] || '').trim(),
+                                                                    NAT_N1: (r[13] || '').trim(),
                                                                     TIPO: (r[1] || 'REALIZADO').trim(),
                                                                     orcRec: 0, orcDesp: 0,
                                                                     realRec: tipnat === 'R' ? valor : 0,
