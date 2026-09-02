@@ -3455,6 +3455,113 @@
                                                                                 mostrarPrompt();   // aguarda o preenchimento do período + Carregar
                                                                             });
                                                                         </script>
+
+                                                        <script>
+                                                            // ─── Limpeza da moldura do Sankhya ────────────────────────
+                                                            // Esta tela roda dentro de um iframe do workspace. Os botoes
+                                                            // de "abrir em outra aba" e a marca no canto superior direito
+                                                            // pertencem ao documento pai, nao a este JSP. Escondemos
+                                                            // apenas o que esta dentro do painel desta tela.
+                                                            (function () {
+                                                                'use strict';
+
+                                                                var RE_MARCA = /^\s*mitralab\s*$/i;
+                                                                var RE_ABA = /(nova|outra)\s+(aba|guia|janela)|abrir\s+em\s+(nova|outra)/i;
+
+                                                                function docPai() {
+                                                                    try {
+                                                                        var d = (window.parent && window.parent !== window) ? window.parent.document : null;
+                                                                        if (d && d.body) return d;
+                                                                    } catch (e) { }
+                                                                    return null;
+                                                                }
+
+                                                                function meuIframe(d) {
+                                                                    var fs = d.getElementsByTagName('iframe');
+                                                                    for (var i = 0; i < fs.length; i++) {
+                                                                        try { if (fs[i].contentWindow === window) return fs[i]; } catch (e) { }
+                                                                    }
+                                                                    return null;
+                                                                }
+
+                                                                // Painel da tela: algumas camadas acima do iframe, para nao
+                                                                // varrer o ERP inteiro.
+                                                                function escopo(frame) {
+                                                                    var n = frame, i = 0;
+                                                                    while (n.parentElement && i < 6) { n = n.parentElement; i++; }
+                                                                    return n;
+                                                                }
+
+                                                                function textoDireto(el) {
+                                                                    var t = '', c;
+                                                                    for (var i = 0; i < el.childNodes.length; i++) {
+                                                                        c = el.childNodes[i];
+                                                                        if (c.nodeType === 3) t += c.nodeValue;
+                                                                    }
+                                                                    return t;
+                                                                }
+
+                                                                function rotulos(el) {
+                                                                    return [
+                                                                        el.getAttribute('title'),
+                                                                        el.getAttribute('aria-label'),
+                                                                        el.getAttribute('data-tooltip'),
+                                                                        el.getAttribute('alt'),
+                                                                        textoDireto(el)
+                                                                    ].filter(function (s) { return s && s.trim(); });
+                                                                }
+
+                                                                function esconder(el, motivo) {
+                                                                    if (el.getAttribute('data-opet-oculto')) return;
+                                                                    el.setAttribute('data-opet-oculto', motivo);
+                                                                    el.style.setProperty('display', 'none', 'important');
+                                                                    console.log('[OPET] moldura oculta (' + motivo + '):', el);
+                                                                }
+
+                                                                function limpar() {
+                                                                    var d = docPai();
+                                                                    if (!d) return;
+                                                                    var frame = meuIframe(d);
+                                                                    if (!frame) return;
+                                                                    var raiz = escopo(frame);
+                                                                    if (!raiz) return;
+
+                                                                    var els = raiz.querySelectorAll('a, button, span, div, i, img, label, [title], [aria-label]');
+                                                                    for (var i = 0; i < els.length; i++) {
+                                                                        var el = els[i];
+                                                                        // nunca esconder um ancestral desta propria tela
+                                                                        if (el === frame || el.contains(frame)) continue;
+
+                                                                        var rs = rotulos(el);
+                                                                        for (var j = 0; j < rs.length; j++) {
+                                                                            if (RE_MARCA.test(rs[j])) { esconder(el, 'marca'); break; }
+                                                                            if (RE_ABA.test(rs[j])) { esconder(el, 'abrir-em-aba'); break; }
+                                                                        }
+                                                                    }
+                                                                }
+
+                                                                function agendar() {
+                                                                    [0, 300, 800, 1500, 3000].forEach(function (ms) { setTimeout(limpar, ms); });
+
+                                                                    // A moldura pode ser redesenhada; observamos por 20s.
+                                                                    var d = docPai();
+                                                                    if (!d || typeof MutationObserver !== 'function') return;
+                                                                    var frame = meuIframe(d);
+                                                                    if (!frame) return;
+                                                                    var raiz = escopo(frame);
+                                                                    if (!raiz) return;
+                                                                    var obs = new MutationObserver(function () { limpar(); });
+                                                                    obs.observe(raiz, { childList: true, subtree: true });
+                                                                    setTimeout(function () { obs.disconnect(); }, 20000);
+                                                                }
+
+                                                                if (document.readyState === 'loading') {
+                                                                    document.addEventListener('DOMContentLoaded', agendar);
+                                                                } else {
+                                                                    agendar();
+                                                                }
+                                                            })();
+                                                        </script>
                                                     </body>
 
                         </html>
