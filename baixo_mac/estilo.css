@@ -1,0 +1,295 @@
+:root{
+  --fundo:#12131a;
+  --cartao:#1b1d27;
+  --cartao2:#232635;
+  --borda:#2f3346;
+  --texto:#e9eaf0;
+  --suave:#9aa0b5;
+  --laranja:#ff8a3d;
+  --verde:#3ddc84;
+  --vermelho:#ff5c6c;
+  --azul:#54a0ff;
+  --madeira:#3a2a20;
+  --madeira2:#4a362a;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--fundo);
+  color:var(--texto);
+  font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+  font-size:15px;
+  line-height:1.45;
+}
+h1,h2{margin:0;font-weight:650}
+h1{font-size:20px}
+h2{font-size:22px}
+.sub{color:var(--suave);font-size:13px;margin:2px 0 0}
+.oculto{display:none !important}
+
+/* ---------- topo ---------- */
+.topo{
+  display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;
+  padding:14px 20px;background:var(--cartao);border-bottom:1px solid var(--borda);
+  position:sticky;top:0;z-index:20;
+}
+.marca{display:flex;gap:12px;align-items:center}
+.logo{font-size:30px}
+.controles-topo{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
+.campo{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--suave)}
+.campo select,.campo input[type=range]{min-width:260px}
+select{
+  background:var(--cartao2);color:var(--texto);border:1px solid var(--borda);
+  border-radius:8px;padding:8px 10px;font-size:14px;
+}
+.modos{display:flex;gap:6px;background:var(--cartao2);padding:4px;border-radius:10px}
+.modo{
+  background:transparent;border:0;color:var(--suave);padding:8px 14px;border-radius:8px;
+  cursor:pointer;font-size:13px;font-weight:600;
+}
+.modo.ativo{background:var(--laranja);color:#1a1206}
+
+/* ---------- estrutura ---------- */
+main{max-width:1180px;margin:0 auto;padding:18px 20px 60px;display:flex;flex-direction:column;gap:16px}
+.cartao{background:var(--cartao);border:1px solid var(--borda);border-radius:14px;padding:16px}
+.rot-secao{font-size:13px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--suave);margin-bottom:12px}
+.rot-secao .sub{display:inline;text-transform:none;letter-spacing:0;font-weight:400}
+
+/* ---------- microfone ---------- */
+#barra-mic{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+#barra-mic.mic-off{border-color:#5a3a2a;background:linear-gradient(90deg,#241a16,var(--cartao))}
+#barra-mic.mic-on{border-color:#2a5a3f}
+.mic-esq{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+#mic-status{color:var(--suave);font-size:13px;flex:1 1 220px;min-width:200px}
+.campo-mic{gap:3px}
+.linha-mic{display:flex;gap:6px;align-items:center}
+.campo-mic select{min-width:240px;max-width:340px;padding:6px 8px;font-size:13px;
+  text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+#btn-atualizar-mics{font-size:15px;line-height:1;padding:6px 9px}
+.mic-dir{display:flex;align-items:center;gap:14px}
+.nivel{width:160px;height:10px;background:var(--cartao2);border-radius:6px;overflow:hidden}
+#nivel-barra{height:100%;width:0;background:linear-gradient(90deg,var(--verde),var(--laranja));transition:width .06s}
+.mic-nota{font-size:22px;font-weight:700;min-width:110px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* ---------- botões ---------- */
+.botao{
+  background:var(--cartao2);color:var(--texto);border:1px solid var(--borda);
+  border-radius:10px;padding:9px 14px;font-size:14px;font-weight:600;cursor:pointer;
+}
+.botao:hover:not(:disabled){border-color:var(--laranja)}
+.botao:disabled{opacity:.4;cursor:not-allowed}
+.botao.primario{background:var(--laranja);color:#1a1206;border-color:var(--laranja)}
+.botao.grande{padding:12px 20px;font-size:15px}
+.botao.pequeno{padding:5px 10px;font-size:12px}
+.check{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--suave)}
+
+/* ---------- cabeçalho da música ---------- */
+.cabecalho-musica{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:flex-start}
+.dica{margin:8px 0 0;color:#cdd2e4;font-size:13px;background:var(--cartao2);padding:8px 12px;border-radius:8px;border-left:3px solid var(--azul)}
+.bpm-box{min-width:280px}
+.bpm-atalhos{display:flex;gap:6px;margin-top:8px}
+input[type=range]{width:100%;accent-color:var(--laranja)}
+
+/* ---------- nota atual ---------- */
+.nota-atual{background:linear-gradient(160deg,#1f2230,var(--cartao))}
+.na-passo{font-size:13px;color:var(--suave);margin-bottom:12px}
+.na-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.na-item{background:var(--cartao2);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:2px}
+.na-rot{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--suave)}
+.na-grande{font-size:24px;line-height:1.15}
+.na-sub{font-size:12px;color:var(--suave)}
+.feedback{
+  margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--cartao2);
+  font-size:15px;min-height:46px;display:flex;align-items:center;
+}
+.feedback.certo{background:rgba(61,220,132,.15);color:var(--verde);font-weight:600}
+.feedback.errado{background:rgba(255,92,108,.15);color:var(--vermelho);font-weight:600}
+.feedback.espera{background:rgba(84,160,255,.12);color:var(--azul)}
+
+/* ---------- braço do baixo ---------- */
+.braco{
+  background:linear-gradient(180deg,var(--madeira2),var(--madeira));
+  border-radius:10px;padding:10px 6px;overflow-x:auto;
+}
+.braco-linha{display:grid;align-items:center;gap:0;min-width:820px}
+.braco-corda{
+  font-size:12px;font-weight:700;color:#f0d9c5;padding-right:10px;text-align:right;
+  white-space:nowrap;
+}
+.casa{
+  position:relative;height:44px;display:flex;align-items:center;justify-content:center;
+  border-right:3px solid #b9a48c;
+}
+.casa.solta{border-right:5px solid #efe3d3;background:rgba(0,0,0,.18)}
+.casa .fio{position:absolute;left:0;right:0;top:50%;height:2px;background:#c9c9d4;opacity:.55}
+.braco-linha[data-corda="E"] .fio{height:4px}
+.braco-linha[data-corda="A"] .fio{height:3.4px}
+.braco-linha[data-corda="D"] .fio{height:2.6px}
+.braco-linha[data-corda="G"] .fio{height:2px}
+.marcador{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.13)}
+.bolinha{
+  position:relative;z-index:2;width:30px;height:30px;border-radius:50%;
+  display:none;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#12131a;
+}
+.casa.on .bolinha{display:flex}
+.casa.alvo .bolinha{background:var(--laranja);box-shadow:0 0 0 4px rgba(255,138,61,.28);animation:pulsa 1s infinite}
+.casa.prox .bolinha{background:#6b7290;color:#eef0f7}
+.casa.certo .bolinha{background:var(--verde);box-shadow:0 0 0 4px rgba(61,220,132,.25)}
+.casa.errado .bolinha{background:var(--vermelho);color:#fff}
+@keyframes pulsa{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.numeros-casas{display:grid;min-width:820px;font-size:11px;color:#d8c3ac;text-align:center;margin-top:4px}
+.legenda{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--suave)}
+.legenda i.pt{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px}
+.pt.alvo{background:var(--laranja)}.pt.prox{background:#6b7290}
+.pt.certo{background:var(--verde)}.pt.errado{background:var(--vermelho)}
+
+/* ---------- tablatura ---------- */
+.tab{overflow-x:auto;padding-bottom:6px}
+.tab-grade{display:flex;gap:0;min-width:min-content;font-family:"Consolas","Courier New",monospace}
+.tab-rotulos{display:flex;flex-direction:column;position:sticky;left:0;background:var(--cartao);z-index:2;padding-right:6px}
+.tab-rotulos div{height:26px;line-height:26px;font-size:12px;font-weight:700;color:var(--suave)}
+.tab-col{display:flex;flex-direction:column;width:34px;flex:0 0 34px;text-align:center;border-radius:6px}
+.tab-col.atual{background:rgba(255,138,61,.18);box-shadow:inset 0 0 0 1px var(--laranja)}
+.tab-col.ok{background:rgba(61,220,132,.14)}
+.tab-col.falhou{background:rgba(255,92,108,.14)}
+.tab-col.barra{margin-left:8px;border-left:1px solid var(--borda)}
+.tab-col div{height:26px;line-height:26px;font-size:13px;color:#4d5268}
+.tab-col div.nota{color:var(--texto);font-weight:700}
+
+/* ---------- ações / resultado ---------- */
+.acoes{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#resultado-corpo table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+#resultado-corpo td,#resultado-corpo th{padding:6px 8px;border-bottom:1px solid var(--borda);text-align:left}
+.placar{font-size:34px;font-weight:800}
+
+/* ---------- afinador ---------- */
+.afinador{display:flex;flex-direction:column;align-items:center;gap:14px;padding:10px 0 4px}
+.af-nota{font-size:64px;font-weight:800;line-height:1}
+.af-regua{position:relative;width:min(560px,92%);height:26px;background:var(--cartao2);border-radius:13px;overflow:hidden}
+.af-centro{position:absolute;left:50%;top:0;bottom:0;width:3px;background:var(--verde);transform:translateX(-50%)}
+.af-agulha{position:absolute;left:50%;top:3px;bottom:3px;width:6px;border-radius:3px;background:var(--laranja);transform:translateX(-50%);transition:left .08s}
+.af-texto{color:var(--suave);font-size:14px}
+.af-cordas{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:16px}
+.af-corda{background:var(--cartao2);border-radius:10px;padding:10px;text-align:center;border:1px solid transparent}
+.af-corda.ativa{border-color:var(--laranja)}
+.af-corda b{font-size:18px;display:block}
+.af-corda span{font-size:12px;color:var(--suave)}
+
+/* ---------- rodapé ---------- */
+.rodape{
+  border-top:1px solid var(--borda);padding:16px 20px;color:var(--suave);font-size:13px;text-align:center;
+}
+code{background:var(--cartao2);padding:2px 6px;border-radius:5px;font-size:12px}
+
+/* ============================================================
+   MODOS NOVOS — metrônomo, escalas, tocar junto e buscar partitura
+   ============================================================ */
+
+.modos{flex-wrap:wrap}
+.botao.redondo{width:44px;height:44px;border-radius:50%;padding:0;font-size:14px;font-weight:700}
+input[type=text],input[type=number]{
+  background:var(--cartao2);color:var(--texto);border:1px solid var(--borda);
+  border-radius:8px;padding:9px 11px;font-size:14px;font-family:inherit;
+}
+input[type=text]:focus,input[type=number]:focus{outline:none;border-color:var(--laranja)}
+input.mini{width:64px;padding:5px 7px}
+
+/* ---------- 4 · metrônomo ---------- */
+.metro-topo{display:flex;flex-direction:column;align-items:center;gap:14px;padding:6px 0 2px}
+.metro-bpm{display:flex;align-items:center;gap:12px}
+.metro-numero{display:flex;flex-direction:column;align-items:center;min-width:150px}
+.metro-numero b{font-size:62px;font-weight:800;line-height:1}
+.metro-numero span{font-size:12px;letter-spacing:2px;color:var(--suave)}
+.metro-numero small{font-size:12px;color:var(--laranja);margin-top:2px}
+.metro-slider{width:min(620px,94%)}
+.metro-atalhos{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.metro-pontos{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:18px 0 4px}
+.metro-ponto{
+  width:52px;height:52px;border-radius:50%;border:2px solid var(--borda);background:var(--cartao2);
+  color:var(--suave);font-size:15px;font-weight:800;cursor:pointer;transition:transform .06s,background .06s;
+}
+.metro-ponto.acento-2{border-color:var(--laranja);color:var(--laranja)}
+.metro-ponto.acento-0{opacity:.35;text-decoration:line-through}
+.metro-ponto.batendo{background:var(--laranja);color:#1a1206;border-color:var(--laranja);transform:scale(1.16)}
+.metro-ponto.acento-2.batendo{background:var(--verde);border-color:var(--verde);color:#08210f}
+.metro-ajuda{text-align:center;margin:0 0 14px}
+.metro-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-bottom:14px}
+.metro-grade .campo select,.metro-grade .campo input[type=range]{min-width:0;width:100%}
+.metro-treino{
+  display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--cartao2);
+  border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:13px;
+}
+.metro-treino-cfg{color:var(--suave)}
+.metro-contador{color:var(--suave);font-size:13px;margin-left:auto}
+
+/* ---------- 5 · escalas e tons ---------- */
+.esc-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:16px}
+.esc-grade .campo select,.esc-grade .campo input[type=range]{min-width:0;width:100%}
+.esc-tab{
+  background:#0d0e14;border:1px solid var(--borda);border-radius:10px;padding:14px;
+  overflow-x:auto;font-family:"Cascadia Mono",Consolas,monospace;font-size:13px;line-height:1.7;
+  color:var(--verde);margin:0 0 18px;
+}
+.braco-mapa .bolinha{width:26px;height:26px;font-size:11px;background:#6b7290;color:#eef0f7}
+.braco-mapa .bolinha.dotom{display:flex;background:#5b6488;color:#eef0f7}
+.braco-mapa .bolinha.tonica{display:flex;background:var(--laranja);color:#1a1206}
+
+/* ---------- 6 · tocar junto ---------- */
+.pa-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.pa-link{
+  display:flex;flex-direction:column;gap:3px;background:var(--cartao2);border:1px solid var(--borda);
+  border-radius:10px;padding:12px;text-decoration:none;color:var(--texto);
+}
+.pa-link:hover{border-color:var(--laranja)}
+.pa-link span{font-size:11px;color:var(--suave);word-break:break-all}
+.pa-add{display:flex;gap:8px;margin-top:12px}
+.pa-add input{flex:1}
+.pa-drop{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  border:2px dashed var(--borda);border-radius:12px;padding:26px;text-align:center;
+}
+.pa-drop.sobre{border-color:var(--laranja);background:rgba(255,138,61,.07)}
+.pa-drop .botao{cursor:pointer}
+.pa-nome{font-size:16px;font-weight:700;margin:14px 0 10px}
+.pa-linha-tempo{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--suave)}
+.pa-linha-tempo input[type=range]{flex:1;min-width:0}
+.pa-loop-barra{position:relative;height:6px;background:var(--cartao2);border-radius:3px;margin:4px 0 14px}
+#pa-loop-faixa{position:absolute;top:0;bottom:0;background:var(--laranja);border-radius:3px;opacity:.75}
+.pa-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:16px 0}
+.pa-grade .campo input[type=range]{min-width:0;width:100%}
+.pa-aviso{border-left:3px solid var(--laranja);padding-left:10px;margin-top:16px}
+
+/* ---------- 7 · buscar partitura ---------- */
+.pt-busca{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.pt-busca input{flex:1;min-width:240px}
+.pt-resultados{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.pt-cartao{background:var(--cartao2);border:1px solid var(--borda);border-radius:12px;padding:14px}
+.pt-cabeca{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.pt-cabeca b{font-size:16px;display:block}
+.pt-cabeca .sub{display:block}
+.pt-cabeca .botao{text-decoration:none;white-space:nowrap}
+.pt-faixas{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pt-faixa{
+  display:flex;flex-direction:column;gap:2px;min-width:190px;text-decoration:none;color:var(--texto);
+  background:var(--cartao);border:1px solid var(--borda);border-left:4px solid var(--suave);
+  border-radius:9px;padding:9px 12px;
+}
+.pt-faixa:hover{border-color:var(--laranja);border-left-color:var(--laranja)}
+.pt-faixa b{font-size:13px}
+.pt-faixa span{font-size:12px;color:var(--suave)}
+.pt-faixa small{font-size:11px;color:var(--suave);opacity:.8}
+.pt-faixa.fam-baixo{border-left-color:var(--laranja)}
+.pt-faixa.fam-guitarra{border-left-color:var(--azul)}
+.pt-faixa.fam-bateria{border-left-color:var(--vermelho)}
+.pt-faixa.fam-vocal{border-left-color:var(--verde)}
+.pt-faixa.fam-teclado{border-left-color:#b78cff}
+.pt-reserva{font-size:13px;color:var(--suave);margin-top:6px}
+.pt-reserva a{color:var(--azul)}
+
+@media (max-width:720px){
+  .metro-numero b{font-size:46px}
+  .metro-ponto{width:42px;height:42px}
+  .campo select,.campo input[type=range]{min-width:0;width:100%}
+}

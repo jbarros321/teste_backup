@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula de Contrabaixo — 4 cordas</title>
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+
+<header class="topo">
+  <div class="marca">
+    <span class="logo">🎸</span>
+    <div>
+      <h1>Aula de Contrabaixo</h1>
+      <p class="sub">4 cordas · afinação padrão Mi–Lá–Ré–Sol</p>
+    </div>
+  </div>
+
+  <div class="controles-topo">
+    <label class="campo" id="campo-musica">
+      <span>Música</span>
+      <select id="sel-musica"></select>
+    </label>
+
+    <div class="modos" id="modos">
+      <button class="modo ativo" data-modo="aprender">1 · Aprender</button>
+      <button class="modo" data-modo="tocar">2 · Tocar no tempo</button>
+      <button class="modo" data-modo="afinador">3 · Afinador</button>
+      <button class="modo" data-modo="metronomo">4 · Metrônomo</button>
+      <button class="modo" data-modo="escalas">5 · Escalas e tons</button>
+      <button class="modo" data-modo="playalong">6 · Tocar junto</button>
+      <button class="modo" data-modo="partituras">7 · Buscar partitura</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= MICROFONE ================= -->
+  <section id="barra-mic" class="cartao mic-off">
+    <div class="mic-esq">
+      <button id="btn-mic" class="botao primario">🎤 Ligar microfone</button>
+      <label class="campo campo-mic">
+        <span>Entrada de áudio</span>
+        <span class="linha-mic">
+          <select id="sel-mic"><option value="">Microfone padrão do sistema</option></select>
+          <button id="btn-atualizar-mics" class="botao pequeno" title="Atualizar a lista de microfones">⟳</button>
+        </span>
+      </label>
+      <span id="mic-status">O microfone está desligado — eu não consigo te ouvir ainda.</span>
+    </div>
+    <div class="mic-dir">
+      <div class="nivel"><div id="nivel-barra"></div></div>
+      <div id="mic-nota" class="mic-nota">—</div>
+    </div>
+  </section>
+
+  <!-- ================= PAINEL MÚSICA ================= -->
+  <section id="painel-musica">
+
+    <div class="cartao cabecalho-musica">
+      <div>
+        <h2 id="musica-nome">—</h2>
+        <p id="musica-artista" class="sub"></p>
+        <p id="musica-dica" class="dica"></p>
+      </div>
+      <div class="bpm-box">
+        <label class="campo">
+          <span>Velocidade: <b id="bpm-valor">80</b> BPM</span>
+          <input type="range" id="bpm" min="30" max="200" step="1" value="80">
+        </label>
+        <div class="bpm-atalhos">
+          <button class="botao pequeno" data-bpm-pct="50">50%</button>
+          <button class="botao pequeno" data-bpm-pct="75">75%</button>
+          <button class="botao pequeno" data-bpm-pct="100">100%</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cartão da nota atual -->
+    <div class="cartao nota-atual" id="nota-atual">
+      <div class="na-passo">
+        Nota <b id="na-indice">1</b> de <b id="na-total">1</b>
+      </div>
+      <div class="na-grade">
+        <div class="na-item">
+          <span class="na-rot">Corda</span>
+          <b id="na-corda" class="na-grande">—</b>
+          <span id="na-corda-sub" class="na-sub"></span>
+        </div>
+        <div class="na-item">
+          <span class="na-rot">Casa (traste)</span>
+          <b id="na-casa" class="na-grande">—</b>
+          <span class="na-sub" id="na-casa-sub"></span>
+        </div>
+        <div class="na-item">
+          <span class="na-rot">Dedo — mão esquerda</span>
+          <b id="na-dedo" class="na-grande">—</b>
+          <span id="na-dedo-sub" class="na-sub"></span>
+        </div>
+        <div class="na-item">
+          <span class="na-rot">Mão direita</span>
+          <b id="na-mao" class="na-grande">—</b>
+          <span class="na-sub">alterne sempre os dedos</span>
+        </div>
+        <div class="na-item">
+          <span class="na-rot">Som que deve sair</span>
+          <b id="na-nota" class="na-grande">—</b>
+          <span id="na-nota-sub" class="na-sub"></span>
+        </div>
+      </div>
+      <div id="feedback" class="feedback">Escolha uma música e clique em <b>Começar</b>.</div>
+    </div>
+
+    <!-- Braço do baixo -->
+    <div class="cartao">
+      <div class="rot-secao">Braço do baixo <span class="sub">— a bolinha mostra onde apertar</span></div>
+      <div id="braco" class="braco"></div>
+      <div class="legenda">
+        <span><i class="pt alvo"></i> nota de agora</span>
+        <span><i class="pt prox"></i> próxima nota</span>
+        <span><i class="pt certo"></i> acertou</span>
+        <span><i class="pt errado"></i> errou</span>
+      </div>
+    </div>
+
+    <!-- Tablatura -->
+    <div class="cartao">
+      <div class="rot-secao">Tablatura <span class="sub">— o número é a casa; 0 = corda solta</span></div>
+      <div id="tab" class="tab"></div>
+    </div>
+
+    <!-- Barra de ações -->
+    <div class="cartao acoes">
+      <button id="btn-comecar" class="botao primario grande">▶ Começar</button>
+      <button id="btn-parar" class="botao grande" disabled>■ Parar</button>
+      <button id="btn-exemplo" class="botao grande">🔊 Ouvir exemplo</button>
+      <button id="btn-anterior" class="botao">◀ Nota anterior</button>
+      <button id="btn-pular" class="botao">Pular nota ▶</button>
+      <label class="check"><input type="checkbox" id="chk-metronomo" checked> Metrônomo</label>
+    </div>
+
+    <!-- Resultado -->
+    <div class="cartao oculto" id="resultado">
+      <div class="rot-secao">Resultado</div>
+      <div id="resultado-corpo"></div>
+    </div>
+
+  </section>
+
+  <!-- ================= AFINADOR ================= -->
+  <section id="painel-afinador" class="oculto">
+    <div class="cartao">
+      <div class="rot-secao">Afinador — toque uma corda solta de cada vez</div>
+      <div class="afinador">
+        <div id="af-nota" class="af-nota">—</div>
+        <div class="af-regua">
+          <div class="af-centro"></div>
+          <div id="af-agulha" class="af-agulha"></div>
+        </div>
+        <div id="af-texto" class="af-texto">Ligue o microfone e toque uma corda.</div>
+      </div>
+      <div class="af-cordas" id="af-cordas"></div>
+    </div>
+  </section>
+
+  <!-- ================= METRÔNOMO ================= -->
+  <section id="painel-metronomo" class="oculto">
+    <div class="cartao">
+      <div class="rot-secao">Metrônomo <span class="sub">— só o tempo, sem música nenhuma</span></div>
+
+      <div class="metro-topo">
+        <div class="metro-bpm">
+          <button class="botao redondo" id="mt-menos5" title="-5 BPM">−5</button>
+          <button class="botao redondo" id="mt-menos1" title="-1 BPM">−1</button>
+          <div class="metro-numero">
+            <b id="mt-bpm">90</b>
+            <span>BPM</span>
+            <small id="mt-andamento">Andante</small>
+          </div>
+          <button class="botao redondo" id="mt-mais1" title="+1 BPM">+1</button>
+          <button class="botao redondo" id="mt-mais5" title="+5 BPM">+5</button>
+        </div>
+        <input type="range" id="mt-slider" min="20" max="280" step="1" value="90" class="metro-slider">
+        <div class="metro-atalhos">
+          <button class="botao pequeno" data-mt-bpm="40">40</button>
+          <button class="botao pequeno" data-mt-bpm="60">60</button>
+          <button class="botao pequeno" data-mt-bpm="80">80</button>
+          <button class="botao pequeno" data-mt-bpm="100">100</button>
+          <button class="botao pequeno" data-mt-bpm="120">120</button>
+          <button class="botao pequeno" data-mt-bpm="160">160</button>
+          <button class="botao pequeno" id="mt-tap">👆 Bater o tempo (tap)</button>
+        </div>
+      </div>
+
+      <div id="mt-pontos" class="metro-pontos"></div>
+      <p class="sub metro-ajuda">Clique num círculo para trocar: <b>forte</b> → normal → <b>mudo</b>.</p>
+
+      <div class="metro-grade">
+        <label class="campo">
+          <span>Batidas por compasso</span>
+          <select id="mt-compasso">
+            <option>1</option><option>2</option><option>3</option>
+            <option selected>4</option><option>5</option><option>6</option>
+            <option>7</option><option>8</option><option>9</option>
+            <option>10</option><option>11</option><option>12</option>
+          </select>
+        </label>
+        <label class="campo">
+          <span>Subdivisão</span>
+          <select id="mt-subdiv">
+            <option value="1" selected>1 — semínimas (ta)</option>
+            <option value="2">2 — colcheias (ta-ta)</option>
+            <option value="3">3 — tercinas (ta-ta-ta)</option>
+            <option value="4">4 — semicolcheias</option>
+          </select>
+        </label>
+        <label class="campo">
+          <span>Volume: <b id="mt-vol-valor">70</b>%</span>
+          <input type="range" id="mt-volume" min="0" max="100" step="1" value="70">
+        </label>
+        <label class="campo">
+          <span>Som</span>
+          <select id="mt-som">
+            <option value="click" selected>Clique seco</option>
+            <option value="madeira">Madeira</option>
+            <option value="bip">Bip eletrônico</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="metro-treino">
+        <label class="check"><input type="checkbox" id="mt-prog"> Treino progressivo — acelerar sozinho</label>
+        <span class="metro-treino-cfg">
+          <b>+</b><input type="number" id="mt-prog-passo" value="5" min="1" max="20" class="mini">
+          BPM a cada <input type="number" id="mt-prog-comp" value="4" min="1" max="32" class="mini"> compassos,
+          até <input type="number" id="mt-prog-max" value="140" min="20" max="280" class="mini"> BPM
+        </span>
+      </div>
+
+      <div class="acoes">
+        <button id="mt-iniciar" class="botao primario grande">▶ Iniciar</button>
+        <button id="mt-parar" class="botao grande" disabled>■ Parar</button>
+        <span class="metro-contador">Compassos: <b id="mt-compassos">0</b></span>
+      </div>
+      <p class="sub">Atalho: <b>Espaço</b> liga e desliga.</p>
+    </div>
+  </section>
+
+  <!-- ================= ESCALAS E TONS ================= -->
+  <section id="painel-escalas" class="oculto">
+    <div class="cartao">
+      <div class="rot-secao">Escalas e tons <span class="sub">— escolha o tom, eu escrevo a partitura e ponho o metrônomo</span></div>
+
+      <div class="esc-grade">
+        <label class="campo">
+          <span>Tônica (o tom)</span>
+          <select id="esc-tonica"></select>
+        </label>
+        <label class="campo">
+          <span>O que estudar</span>
+          <select id="esc-tipo"></select>
+        </label>
+        <label class="campo">
+          <span>Extensão</span>
+          <select id="esc-oitavas">
+            <option value="1">1 oitava — subindo</option>
+            <option value="1v" selected>1 oitava — subindo e descendo</option>
+            <option value="2">2 oitavas — subindo</option>
+            <option value="2v">2 oitavas — subindo e descendo</option>
+          </select>
+        </label>
+        <label class="campo">
+          <span>Ritmo</span>
+          <select id="esc-ritmo">
+            <option value="1" selected>Semínimas (1 nota por tempo)</option>
+            <option value="0.5">Colcheias (2 por tempo)</option>
+            <option value="0.3333">Tercinas (3 por tempo)</option>
+            <option value="0.25">Semicolcheias (4 por tempo)</option>
+          </select>
+        </label>
+        <label class="campo">
+          <span>Posição no braço</span>
+          <select id="esc-posicao"></select>
+        </label>
+        <label class="campo">
+          <span>Velocidade: <b id="esc-bpm-valor">70</b> BPM</span>
+          <input type="range" id="esc-bpm" min="30" max="200" step="1" value="70">
+        </label>
+      </div>
+
+      <div class="acoes">
+        <button id="esc-gerar" class="botao primario grande">🎼 Gerar partitura</button>
+        <button id="esc-ouvir" class="botao grande" disabled>🔊 Ouvir</button>
+        <button id="esc-metronomo" class="botao grande" disabled>🥁 Tocar com metrônomo</button>
+        <button id="esc-aprender" class="botao grande" disabled>👂 Estudar nota por nota</button>
+        <button id="esc-copiar" class="botao" disabled>📋 Copiar tablatura</button>
+      </div>
+    </div>
+
+    <div class="cartao oculto" id="esc-saida">
+      <h2 id="esc-titulo">—</h2>
+      <p class="sub" id="esc-notas-nomes"></p>
+      <p class="dica" id="esc-dica"></p>
+      <div class="rot-secao">Tablatura</div>
+      <pre id="esc-tab" class="esc-tab"></pre>
+      <div class="rot-secao">Braço — todas as notas deste tom</div>
+      <div id="esc-braco" class="braco braco-mapa"></div>
+    </div>
+  </section>
+
+  <!-- ================= TOCAR JUNTO (estilo Moises) ================= -->
+  <section id="painel-playalong" class="oculto">
+    <div class="cartao">
+      <div class="rot-secao">Meus links do Moises <span class="sub">— vêm do arquivo <code>tex.md</code></span></div>
+      <div id="pa-links" class="pa-links">Lendo <code>tex.md</code>…</div>
+      <div class="pa-add">
+        <input type="text" id="pa-novo-link" placeholder="Cole aqui outro link do Moises (ou de qualquer player)">
+        <button id="pa-abrir-link" class="botao">Abrir</button>
+      </div>
+    </div>
+
+    <div class="cartao">
+      <div class="rot-secao">Tocar junto com a música <span class="sub">— arquivo do seu computador, sem enviar nada pra internet</span></div>
+
+      <div id="pa-drop" class="pa-drop">
+        <b>Arraste um MP3/WAV aqui</b>
+        <span class="sub">ou</span>
+        <label class="botao primario">
+          📂 Escolher arquivo
+          <input type="file" id="pa-arquivo" accept="audio/*" hidden>
+        </label>
+        <span class="sub">Dica: no Moises você baixa a faixa <b>sem o baixo</b> e abre ela aqui.</span>
+      </div>
+
+      <audio id="pa-audio" preload="metadata"></audio>
+
+      <div id="pa-player" class="oculto">
+        <div class="pa-nome" id="pa-nome">—</div>
+
+        <div class="pa-linha-tempo">
+          <span id="pa-tempo">0:00</span>
+          <input type="range" id="pa-seek" min="0" max="1000" value="0" step="1">
+          <span id="pa-duracao">0:00</span>
+        </div>
+        <div class="pa-loop-barra"><div id="pa-loop-faixa"></div></div>
+
+        <div class="acoes">
+          <button id="pa-play" class="botao primario grande">▶ Tocar</button>
+          <button id="pa-voltar10" class="botao">↺ 10s</button>
+          <button id="pa-frente10" class="botao">10s ↻</button>
+          <button id="pa-marcar-a" class="botao">Marcar A</button>
+          <button id="pa-marcar-b" class="botao">Marcar B</button>
+          <button id="pa-limpar-ab" class="botao">Limpar A–B</button>
+          <span class="sub" id="pa-ab-txt">Sem repetição marcada</span>
+        </div>
+
+        <div class="pa-grade">
+          <label class="campo">
+            <span>Velocidade: <b id="pa-vel-valor">100</b>% <small>(o tom não muda)</small></span>
+            <input type="range" id="pa-velocidade" min="25" max="150" step="1" value="100">
+          </label>
+          <label class="campo">
+            <span>Transpor: <b id="pa-tom-valor">0</b> semitons</span>
+            <input type="range" id="pa-tom" min="-6" max="6" step="1" value="0">
+          </label>
+          <label class="campo">
+            <span>Tirar o baixo da gravação: <b id="pa-kill-valor">0</b>%</span>
+            <input type="range" id="pa-kill" min="0" max="100" step="1" value="0">
+          </label>
+          <label class="campo">
+            <span>Tirar o que está no centro (voz): <b id="pa-centro-valor">0</b>%</span>
+            <input type="range" id="pa-centro" min="0" max="100" step="1" value="0">
+          </label>
+          <label class="campo">
+            <span>Volume: <b id="pa-vol-valor">100</b>%</span>
+            <input type="range" id="pa-volume" min="0" max="150" step="1" value="100">
+          </label>
+          <label class="campo">
+            <span>Metrônomo junto: <b id="pa-bpm-valor">90</b> BPM</span>
+            <input type="range" id="pa-bpm" min="30" max="220" step="1" value="90">
+          </label>
+        </div>
+
+        <div class="acoes">
+          <label class="check"><input type="checkbox" id="pa-chk-metronomo"> Metrônomo por cima</label>
+          <label class="check"><input type="checkbox" id="pa-chk-loop" checked> Repetir A–B em loop</label>
+          <button id="pa-reset-audio" class="botao pequeno">Zerar filtros</button>
+        </div>
+
+        <p class="sub pa-aviso">
+          “Tirar o baixo” e “tirar o centro” são truques de equalização — ajudam, mas não separam
+          as faixas de verdade. Para separação real use o Moises nos links acima e baixe a versão
+          sem baixo; depois abra o arquivo aqui para estudar com velocidade, tom e loop A–B.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= BUSCAR PARTITURA ================= -->
+  <section id="painel-partituras" class="oculto">
+    <div class="cartao">
+      <div class="rot-secao">Buscar partitura / tablatura <span class="sub">— digite o nome da música e escolha o instrumento</span></div>
+
+      <div class="pt-busca">
+        <input type="text" id="pt-q" placeholder="Ex.: Seven Nation Army, Tempo Perdido…">
+        <select id="pt-instrumento">
+          <option value="baixo" selected>Baixo</option>
+          <option value="guitarra">Guitarra / violão</option>
+          <option value="bateria">Bateria</option>
+          <option value="vocal">Voz</option>
+          <option value="teclado">Teclado / piano</option>
+          <option value="todos">Todos os instrumentos</option>
+        </select>
+        <button id="pt-buscar" class="botao primario">🔎 Buscar</button>
+      </div>
+
+      <div id="pt-status" class="sub">Precisa de internet. O resultado abre a partitura interativa do Songsterr já na faixa do instrumento escolhido.</div>
+      <div id="pt-resultados" class="pt-resultados"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="rodape">
+  Quer aprender outra música? Peça pro Claude: <b>"adiciona a música X no baixo-aula"</b> — ele escreve a tablatura no arquivo <code>musicas.js</code>.
+</footer>
+
+<script src="musicas.js"></script>
+<script src="audio.js"></script>
+<script src="app.js"></script>
+<script src="metronomo.js"></script>
+<script src="escalas.js"></script>
+<script src="playalong.js"></script>
+<script src="partituras.js"></script>
+</body>
+</html>
