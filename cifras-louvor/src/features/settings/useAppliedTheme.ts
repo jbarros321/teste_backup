@@ -1,12 +1,15 @@
 import { useEffect } from 'react'
 
+import { usePlayerStore } from '@/features/player/usePlayerStore'
+
 import { useSettingsStore } from './useSettingsStore'
 
 /**
  * Aplica tema e preferências de leitura no <html>.
  * `stage` vence qualquer preferência: no palco o fundo é sempre preto.
  */
-export function useAppliedTheme(stageMode = false) {
+export function useAppliedTheme() {
+  const stageMode = usePlayerStore((s) => s.stageMode)
   const theme = useSettingsStore((s) => s.theme)
   const fontSize = useSettingsStore((s) => s.fontSize)
   const chordScale = useSettingsStore((s) => s.chordScale)

@@ -1,8 +1,12 @@
 /**
- * Acervo de exemplo enquanto o Supabase não entra (M3).
+ * Acervo de domínio público.
  *
- * São hinos em domínio público, cifrados por nós — nada é copiado de base de
- * terceiros, conforme a política de conteúdo do projeto.
+ * Serve de duas formas: é o que a demonstração mostra sem Supabase, e é o que
+ * a igreja pode importar de uma vez para começar com o acervo já povoado.
+ *
+ * São hinos cujo texto está em domínio público, com as cifras escritas por
+ * nós. Nada vem de base de terceiros. Ainda assim, CONFIRA a letra com o seu
+ * hinário antes de usar no culto — grafias e traduções variam entre edições.
  */
 import { parseChordPro } from '@/lib/chordpro/parser'
 import type { SongDocument } from '@/lib/chordpro/types'
@@ -114,3 +118,6 @@ export const SAMPLE_SONGS: SampleSong[] = SOURCES.map(({ slug, category, chordpr
 export function findSampleSong(slug: string): SampleSong | undefined {
   return SAMPLE_SONGS.find((song) => song.slug === slug)
 }
+
+/** Os mesmos hinos, em ChordPro cru, para gravar no banco da igreja. */
+export const PUBLIC_DOMAIN_LIBRARY = SOURCES

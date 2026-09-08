@@ -25,9 +25,11 @@ Cada um deve terminar com "Success. No rows returned".
 Ainda no SQL Editor, rode `supabase/tests/rls_isolation.sql`.
 
 Ele cria duas igrejas de mentira, verifica que uma não enxerga nem escreve na
-outra, e desfaz tudo no fim. Precisa terminar com a mensagem
-`OK: isolamento entre igrejas confirmado.` — se abortar com "VAZAMENTO", **não
-suba para produção** e me avise.
+outra, e desfaz tudo no fim.
+
+- **Aprovado:** devolve uma linha com `resultado = APROVADO`.
+- **Reprovado:** aborta com erro em vermelho dizendo o que vazou. Nesse caso
+  **não suba para produção** e me avise.
 
 ## 4. Pegar as chaves
 
@@ -51,17 +53,38 @@ npm run dev
 
 ## 6. Login com Google (opcional)
 
-**Authentication → Providers → Google**: habilite e cole o Client ID e o Secret
-do Google Cloud Console. Nas **URL Configuration**, adicione
-`http://localhost:5173` em *Redirect URLs*.
+O app **esconde** o botão "Entrar com Google" enquanto o provedor estiver
+desligado, para não oferecer um caminho que não funciona. Para habilitar:
 
-Sem isso, o botão "Entrar com Google" avisa que o provedor não está habilitado —
-o login por e-mail e senha continua funcionando.
+1. No **Google Cloud Console** → *APIs e Serviços* → *Credenciais* → *Criar
+   credenciais* → *ID do cliente OAuth* → tipo **Aplicativo da Web**.
+2. Em *URIs de redirecionamento autorizados*, cole:
+   `https://sdobcmjsnsbummbyhmqj.supabase.co/auth/v1/callback`
+3. No Supabase, **Authentication → Sign In / Providers → Google**: habilite e
+   cole o *Client ID* e o *Client Secret*.
+4. Em **Authentication → URL Configuration**, adicione `http://localhost:5173`
+   em *Redirect URLs*.
 
-## 7. Durante o desenvolvimento
+O botão aparece sozinho assim que o provedor ficar ligado — o app consulta os
+provedores habilitados ao abrir a tela de login.
 
-Em **Authentication → Providers → Email**, desligue *Confirm email* para não
-precisar confirmar cada conta de teste. Religue antes de colocar no ar.
+## 7. Desligar a confirmação de e-mail (importante no início)
+
+Em **Authentication → Sign In / Providers → Email**, desligue **Confirm email**
+e salve.
+
+Isto não é só conveniência. Com a confirmação ligada, o Supabase usa o serviço
+de e-mail embutido, que envia **poucas mensagens por hora e só para endereços da
+equipe do projeto**. Na segunda tentativa de cadastro você bate no limite e
+recebe `email rate limit exceeded` — um erro que parece problema de senha e não
+é.
+
+Com *Confirm email* desligado, o cadastro já devolve a sessão e você entra
+direto.
+
+Antes de colocar no ar, religue a confirmação **e** configure um SMTP próprio em
+**Project Settings → Authentication → SMTP Settings** (Resend, Brevo, SendGrid…).
+Sem SMTP próprio, o e-mail de confirmação não chega para os músicos da igreja.
 
 ## Primeiro acesso
 

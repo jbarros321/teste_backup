@@ -5,7 +5,9 @@
 -- usuários e duas igrejas, verifica que nenhum dos dois enxerga o
 -- conteúdo do outro, e desfaz tudo no final (a transação é revertida).
 --
--- Se qualquer verificação falhar, o script aborta com a mensagem do erro.
+-- APROVADO  = a última linha devolve resultado = APROVADO.
+-- REPROVADO = o script aborta com erro em vermelho, e a mensagem diz o que
+--             vazou. Nesse caso NÃO suba para produção.
 -- =====================================================================
 
 begin;
@@ -87,8 +89,13 @@ begin
   end if;
 
   reset role;
-  raise notice 'OK: isolamento entre igrejas confirmado.';
 end
 $$;
+
+-- Chegar até aqui significa que nenhuma verificação abortou.
+-- (O SQL Editor não mostra NOTICE, por isso devolvemos uma linha de verdade.)
+select
+  'APROVADO' as resultado,
+  'Nenhuma igreja enxerga ou escreve no conteúdo da outra' as detalhe;
 
 rollback;

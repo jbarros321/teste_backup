@@ -1,5 +1,5 @@
 import { Music2 } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 
 import { Alert } from '@/components/ui/alert'
@@ -28,6 +28,20 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [googleEnabled, setGoogleEnabled] = useState<boolean | null>(null)
+
+  // Só mostramos o botão do Google se o provedor estiver ligado no projeto —
+  // caso contrário ele seria um botão morto que devolve erro genérico.
+  useEffect(() => {
+    if (!isSupabaseConfigured) return
+    let active = true
+    void authService.getEnabledProviders().then((providers) => {
+      if (active) setGoogleEnabled(providers.google)
+    })
+    return () => {
+      active = false
+    }
+  }, [])
 
   if (status === 'signed_in') return <Navigate to="/" replace />
 
@@ -41,8 +55,12 @@ export default function LoginPage() {
       if (mode === 'signin') {
         await authService.signIn({ email, password })
       } else if (mode === 'signup') {
-        await authService.signUp({ email, password }, name.trim())
-        setNotice('Conta criada. Se o projeto exigir confirmação, verifique seu e-mail.')
+        const { needsEmailConfirmation } = await authService.signUp({ email, password }, name.trim())
+        setNotice(
+          needsEmailConfirmation
+            ? 'Conta criada. Confirme pelo link que enviamos ao seu e-mail para poder entrar.'
+            : 'Conta criada. Entrando…',
+        )
       } else {
         await authService.resetPassword(email)
         setNotice('Enviamos um link de recuperação para o seu e-mail.')
@@ -126,20 +144,22 @@ export default function LoginPage() {
               {busy ? 'Aguarde…' : TITLES[mode]}
             </Button>
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              disabled={busy || !isSupabaseConfigured}
-              onClick={() => {
-                setError(null)
-                authService.signInWithGoogle().catch((cause: unknown) => {
-                  setError(cause instanceof Error ? cause.message : 'Falha ao entrar com Google.')
-                })
-              }}
-            >
-              Entrar com Google
-            </Button>
+            {googleEnabled && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                disabled={busy}
+                onClick={() => {
+                  setError(null)
+                  authService.signInWithGoogle().catch((cause: unknown) => {
+                    setError(cause instanceof Error ? cause.message : 'Falha ao entrar com Google.')
+                  })
+                }}
+              >
+                Entrar com Google
+              </Button>
+            )}
           </form>
 
           <div className="mt-4 flex flex-wrap justify-between gap-2 text-sm">

@@ -7,6 +7,8 @@ import { AppLayout } from './layouts/AppLayout'
 
 const HomePage = lazy(() => import('@/pages/HomePage'))
 const SongPage = lazy(() => import('@/pages/SongPage'))
+const SongEditorPage = lazy(() => import('@/pages/SongEditorPage'))
+const ImportPage = lazy(() => import('@/pages/ImportPage'))
 const FavoritesPage = lazy(() => import('@/pages/FavoritesPage'))
 const RepertoiresPage = lazy(() => import('@/pages/RepertoiresPage'))
 const HistoryPage = lazy(() => import('@/pages/HistoryPage'))
@@ -42,7 +44,10 @@ const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <HomePage /> },
+      { path: 'musica/nova', element: <SongEditorPage /> },
+      { path: 'importar', element: <ImportPage /> },
       { path: 'musica/:slug', element: <SongPage /> },
+      { path: 'musica/:slug/editar', element: <SongEditorPage /> },
       { path: 'favoritos', element: <FavoritesPage /> },
       { path: 'repertorios', element: <RepertoiresPage /> },
       { path: 'historico', element: <HistoryPage /> },

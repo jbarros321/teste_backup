@@ -50,6 +50,20 @@ Regras que o código segue:
 Sem `.env.local`, o app roda em **modo demonstração** com o acervo de exemplo.
 Para ligar o backend, siga o `SETUP.md`.
 
+## Política de conteúdo
+
+O sistema **não** raspa nem copia letra ou cifra de terceiros. Conteúdo entra por
+três caminhos, todos legítimos:
+
+1. **Cadastro e importação por texto colado** — o usuário traz o que ele já tem.
+2. **Metadados de bases abertas** — MusicBrainz (CC0): título, artista, álbum,
+   ano e duração. Metadado é fato, não obra protegida.
+3. **Acervo de domínio público** — hinos cujo texto caiu em domínio público,
+   com as cifras escritas por nós.
+
+BPM e tom não vêm de serviço externo: o tom sai da nossa análise dos acordes
+(`lib/music/key.ts`) e o BPM, do tap tempo.
+
 ## Status
 
 Plano completo em `~/.claude/plans/scalable-munching-shore.md`.
@@ -58,9 +72,10 @@ Plano completo em `~/.claude/plans/scalable-munching-shore.md`.
 - [x] **M1** Motor musical: acordes, tonalidades, transposição e ChordPro (95 testes)
 - [x] **M2** SongViewer: acordes sobre a letra, transposição e tamanho de fonte
 - [x] **M3** Supabase: schema, RLS multi-tenant, auth e camada de serviços
-- [ ] M4 Dashboard, busca e CRUD
-- [ ] M5 Metrônomo
-- [ ] M6 Auto scroll, modo palco e atalhos
+- [x] **M4** Dashboard, busca, CRUD de músicas, editor ChordPro, categorias e artistas
+- [x] **M4.5** Aquisição de músicas: importação de texto colado, metadados MusicBrainz, acervo de domínio público
+- [x] **M5** Metrônomo: Tone.js, compasso, subdivisão, acento, tap tempo, atalhos
+- [x] **M6** Auto scroll, modo palco e atalhos de teclado
 - [ ] M7 Repertórios, favoritos e histórico
 - [ ] M8 Importação (TXT, ChordPro, texto colado)
 - [ ] M9 PWA e offline
