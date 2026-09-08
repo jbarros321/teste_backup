@@ -1,0 +1,235 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant stage (&:where(.stage, .stage *));
+
+/* ---------------------------------------------------------------
+   Cifra Ministério — design tokens
+   Light é o padrão; .dark e .stage sobrescrevem apenas as cores.
+   --------------------------------------------------------------- */
+:root {
+  --radius: 0.625rem;
+
+  --background: oklch(0.99 0.002 265);
+  --foreground: oklch(0.21 0.02 265);
+
+  --card: oklch(1 0 0);
+  --card-foreground: var(--foreground);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--foreground);
+
+  --primary: oklch(0.52 0.17 275);
+  --primary-foreground: oklch(0.99 0.002 265);
+
+  --secondary: oklch(0.96 0.006 265);
+  --secondary-foreground: oklch(0.28 0.02 265);
+
+  --muted: oklch(0.96 0.006 265);
+  --muted-foreground: oklch(0.52 0.015 265);
+
+  --accent: oklch(0.95 0.02 275);
+  --accent-foreground: oklch(0.3 0.05 275);
+
+  --destructive: oklch(0.58 0.21 27);
+  --destructive-foreground: oklch(0.99 0.002 265);
+
+  --border: oklch(0.91 0.008 265);
+  --input: oklch(0.91 0.008 265);
+  --ring: oklch(0.52 0.17 275);
+
+  /* Tokens musicais — usados pelo renderizador de cifra */
+  --chord: oklch(0.52 0.17 275);
+  --chord-hover: oklch(0.42 0.19 275);
+  --lyric: var(--foreground);
+  --section-label: oklch(0.52 0.015 265);
+  --beat-accent: oklch(0.62 0.19 40);
+  --beat-normal: oklch(0.72 0.02 265);
+
+  /* Preferências de leitura (sobrescritas em runtime) */
+  --song-font-size: 1rem;
+  --song-line-height: 1.9;
+  --song-chord-scale: 0.85;
+}
+
+.dark {
+  --background: oklch(0.17 0.012 265);
+  --foreground: oklch(0.95 0.005 265);
+
+  --card: oklch(0.21 0.014 265);
+  --card-foreground: var(--foreground);
+
+  --popover: oklch(0.21 0.014 265);
+  --popover-foreground: var(--foreground);
+
+  --primary: oklch(0.72 0.15 275);
+  --primary-foreground: oklch(0.17 0.012 265);
+
+  --secondary: oklch(0.26 0.016 265);
+  --secondary-foreground: oklch(0.95 0.005 265);
+
+  --muted: oklch(0.26 0.016 265);
+  --muted-foreground: oklch(0.68 0.014 265);
+
+  --accent: oklch(0.3 0.03 275);
+  --accent-foreground: oklch(0.92 0.02 275);
+
+  --destructive: oklch(0.65 0.19 27);
+  --destructive-foreground: oklch(0.17 0.012 265);
+
+  --border: oklch(0.3 0.016 265);
+  --input: oklch(0.3 0.016 265);
+  --ring: oklch(0.72 0.15 275);
+
+  --chord: oklch(0.78 0.14 85);
+  --chord-hover: oklch(0.86 0.15 85);
+  --section-label: oklch(0.68 0.014 265);
+  --beat-normal: oklch(0.45 0.02 265);
+}
+
+/* Modo palco: preto real, contraste alto, para tela de celular no tripé */
+.stage {
+  --background: oklch(0.09 0 0);
+  --foreground: oklch(0.98 0 0);
+
+  --card: oklch(0.13 0 0);
+  --card-foreground: var(--foreground);
+
+  --muted: oklch(0.16 0 0);
+  --muted-foreground: oklch(0.72 0 0);
+
+  --border: oklch(0.24 0 0);
+
+  --chord: oklch(0.83 0.16 85);
+  --chord-hover: oklch(0.9 0.16 85);
+  --section-label: oklch(0.68 0 0);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chord: var(--chord);
+  --color-chord-hover: var(--chord-hover);
+  --color-section-label: var(--section-label);
+  --color-beat-accent: var(--beat-accent);
+  --color-beat-normal: var(--beat-normal);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  html:has(.dark),
+  html:has(.stage) {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family:
+      'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Cifra: acordes sobre a letra.
+   Cada palavra é um flex item indivisível; a linha quebra ENTRE
+   palavras. Dentro da palavra, cada acorde abre uma coluna própria,
+   o que permite acorde no meio da palavra sem desalinhar nada.
+   --------------------------------------------------------------- */
+@layer components {
+  .song-sheet {
+    font-size: var(--song-font-size);
+    line-height: var(--song-line-height);
+  }
+
+  .song-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+  .song-word {
+    display: inline-flex;
+    align-items: flex-end;
+  }
+
+  .song-part {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .song-chord {
+    display: block;
+    font-size: calc(1em * var(--song-chord-scale));
+    font-weight: 600;
+    line-height: 1.15;
+    white-space: nowrap;
+    color: var(--chord);
+    padding-right: 0.5ch;
+  }
+
+  .song-chord:is(button):hover {
+    color: var(--chord-hover);
+    text-decoration: underline;
+  }
+
+  /* Placeholder que reserva a faixa do acorde nas partes sem acorde, para
+     que a letra não suba e desça ao longo da mesma linha. */
+  .song-chord--empty {
+    /* Sem conteúdo de texto de propósito: um &nbsp; sujaria a letra copiada
+       e o que os leitores de tela anunciam. A altura vem só do CSS. */
+    height: calc(1em * var(--song-chord-scale) * 1.15);
+    padding-right: 0;
+  }
+
+  .song-lyric {
+    display: block;
+    white-space: pre;
+  }
+
+  .song-tab {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: calc(1em * 0.85);
+    white-space: pre;
+    overflow-x: auto;
+  }
+}
