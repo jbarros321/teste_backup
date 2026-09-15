@@ -974,14 +974,6 @@
                                         END, N.CODNAT
                                 </snk:query>
 
-                                <%-- Vinculo empresa x CR/projeto (AD_VINCEMP). ORIGEM: 'C' = centro de
-                                    resultado, 'P' = projeto. Usado so para enxugar as listas dos filtros. --%>
-                                    <snk:query var="vincEmp">
-                                        SELECT V.ORIGEM, V.CODEMP, V.CODIGO
-                                        FROM AD_VINCEMP V
-                                        WHERE V.ORIGEM IN ('C','P') AND V.CODEMP IS NOT NULL AND V.CODIGO IS NOT NULL
-                                    </snk:query>
-
                                 <body>
                                     <div class="wrap">
 
@@ -1277,20 +1269,7 @@
                                                 ];
                                             </script>
 
-                                            <%-- Vínculos de empresa x CR/projeto para os filtros --%>
-                                                <script>
-                                                    window.VINC_EMP = [
-                                                        <c:forEach items="${vincEmp.rows}" var="v" varStatus="st">
-                                                            {
-                                                                "ORIGEM": "${v.ORIGEM}",
-                                                            "CODEMP": "${v.CODEMP}",
-                                                            "CODIGO": "${v.CODIGO}"
-                                                                    }<c:if test="${!st.last}">,</c:if>
-                                                        </c:forEach>
-                                                    ];
-                                                </script>
-
-                                                <%-- Lógica em JavaScript puro: usa CONCATENAÇÃO de string (nunca template
+                                            <%-- Lógica em JavaScript puro: usa CONCATENAÇÃO de string (nunca template
                                                 literals), para não colidir com a sintaxe ${...} do EL do JSP. --%>
                                                 <script>
                                                     document.addEventListener('DOMContentLoaded', function () {
@@ -1647,39 +1626,6 @@
                                                             sel.innerHTML = html;
                                                         }
 
-                                                        // AD_VINCEMP amarra CR (ORIGEM='C') e projeto (ORIGEM='P') a empresa.
-                                                        // Ao filtrar empresa, as listas de CR e Projeto mostram so os vinculados.
-                                                        var _VINC = null;
-                                                        function _mapaVinculos() {
-                                                            if (_VINC === null) {
-                                                                _VINC = { C: {}, P: {} };
-                                                                (window.VINC_EMP || []).forEach(function (v) {
-                                                                    var o = String(v.ORIGEM || '').toUpperCase().charAt(0);
-                                                                    if (o !== 'C' && o !== 'P') return;
-                                                                    var emp = String(v.CODEMP);
-                                                                    if (!_VINC[o][emp]) _VINC[o][emp] = {};
-                                                                    _VINC[o][emp][String(v.CODIGO)] = true;
-                                                                });
-                                                            }
-                                                            return _VINC;
-                                                        }
-
-                                                        // Conjunto de codigos liberados para as empresas marcadas. Devolve null
-                                                        // quando nenhuma delas tem vinculo desse tipo - ai a lista sai inteira,
-                                                        // em vez de vazia (ex.: AD_VINCEMP ainda sem linhas de projeto).
-                                                        function codigosVinculados(origem, emps) {
-                                                            if (!emps || !emps.length) return null;
-                                                            var mapa = _mapaVinculos()[origem] || {};
-                                                            var permitidos = null;
-                                                            emps.forEach(function (e) {
-                                                                var m = mapa[String(e)];
-                                                                if (!m) return;
-                                                                if (!permitidos) permitidos = {};
-                                                                Object.keys(m).forEach(function (k) { permitidos[k] = true; });
-                                                            });
-                                                            return permitidos;
-                                                        }
-
                                                         function atualizarFiltrosCascata() {
                                                             var selectedEmps = msEmp ? msEmp.getSelected() : [];
                                                             var empFilter = function (r) {
@@ -1687,20 +1633,11 @@
                                                                 return selectedEmps.indexOf(String(r.CODEMP)) >= 0;
                                                             };
 
-                                                            var vincCc = codigosVinculados('C', selectedEmps);
-                                                            var vincProj = codigosVinculados('P', selectedEmps);
-
                                                             if (msCc) {
-                                                                msCc.setItems(distinct('CODCENCUS', 'CC_NOME', function (r) {
-                                                                    if (!empFilter(r)) return false;
-                                                                    return !vincCc || !!vincCc[String(r.CODCENCUS)];
-                                                                }), true);
+                                                                msCc.setItems(distinct('CODCENCUS', 'CC_NOME', empFilter), true);
                                                             }
                                                             if (msProj) {
-                                                                msProj.setItems(distinct('CODPROJ', 'PROJETO_NOME', function (r) {
-                                                                    if (!empFilter(r)) return false;
-                                                                    return !vincProj || !!vincProj[String(r.CODPROJ)];
-                                                                }), true);
+                                                                msProj.setItems(distinct('CODPROJ', 'PROJETO_NOME', empFilter), true);
                                                             }
                                                             if (fResp) {
                                                                 var curVal = fResp.value;
@@ -1745,9 +1682,6 @@
                                                             fResp.value = resp;
                                                             if (fResp.selectedIndex < 0) fResp.value = '';
                                                             popularOrigens();
-                                                            // As listas acima saem completas: reaplica o recorte por empresa e
-                                                            // os vinculos da AD_VINCEMP, senao o Carregar desfaz o filtro.
-                                                            atualizarFiltrosCascata();
                                                         }
 
                                                         // Origem: apenas origens de realizado (as metas ficam no filtro Cenario).
