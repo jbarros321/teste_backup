@@ -1,0 +1,2 @@
+URL https://analytics2.mitrasheet.com:4435/rest/v0
+CHAVE eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBUEkzIiwiWC1UZW5hbnRJRCI6InRlbmFudF82MDY3NyJ9.p272PMyjRwty0dKEStlQPmxPKNUvBwUfdP2tAoyRNzd0uXj8vrnTV3qJytszJGK7rC8wvWIBi1X1a4QwLiKkHQ
