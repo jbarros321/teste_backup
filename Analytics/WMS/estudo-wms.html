@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Doca a Doca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  :root{
+    --ground:#f2f1ed;
+    --panel:#ffffff;
+    --panel-2:#e9e8e2;
+    --ink:#1b1e24;
+    --ink-2:#4e545f;
+    --ink-3:#7c8492;
+    --rule:#d3d2cb;
+    --rule-strong:#b3b2a9;
+    --accent:#1f4f7a;        /* azul doca */
+    --accent-soft:#e1ebf3;
+    --hazard:#c8951a;        /* amarelo sinalização */
+    --hazard-soft:#f6ecd4;
+    --good:#2f6a4f;
+    --crit:#a3382b;
+    --shadow:0 1px 0 rgba(27,30,36,.06), 0 8px 24px -18px rgba(27,30,36,.45);
+    color-scheme:light dark;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#14171c;
+      --panel:#1b1f26;
+      --panel-2:#222731;
+      --ink:#eceef1;
+      --ink-2:#b2b9c4;
+      --ink-3:#7e8794;
+      --rule:#2e343e;
+      --rule-strong:#414954;
+      --accent:#78b2dd;
+      --accent-soft:#1d2c39;
+      --hazard:#e0b453;
+      --hazard-soft:#332a14;
+      --good:#6fb894;
+      --crit:#e08a7c;
+      --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 26px -18px rgba(0,0,0,.9);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#14171c;
+    --panel:#1b1f26;
+    --panel-2:#222731;
+    --ink:#eceef1;
+    --ink-2:#b2b9c4;
+    --ink-3:#7e8794;
+    --rule:#2e343e;
+    --rule-strong:#414954;
+    --accent:#78b2dd;
+    --accent-soft:#1d2c39;
+    --hazard:#e0b453;
+    --hazard-soft:#332a14;
+    --good:#6fb894;
+    --crit:#e08a7c;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 26px -18px rgba(0,0,0,.9);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--ground);
+    color:var(--ink);
+    font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    font-size:16px;
+    line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px 96px}
+  @media (max-width:640px){ .wrap{padding:0 16px 64px} }
+
+  h1,h2,h3{font-family:Archivo,"IBM Plex Sans",sans-serif;text-wrap:balance;margin:0}
+  h1{font-weight:800;font-size:clamp(2.1rem,5.4vw,3.4rem);line-height:1.02;letter-spacing:-.022em}
+  h2{font-weight:800;font-size:clamp(1.35rem,2.6vw,1.75rem);letter-spacing:-.015em;line-height:1.15}
+  h3{font-weight:600;font-size:1.02rem;letter-spacing:-.005em}
+  p{margin:0}
+  a{color:var(--accent)}
+
+  .eyebrow{
+    font-family:"IBM Plex Mono",monospace;font-size:.7rem;font-weight:600;
+    letter-spacing:.17em;text-transform:uppercase;color:var(--ink-3);
+  }
+
+  /* ---------- cabeçalho ---------- */
+  header.top{
+    display:flex;flex-direction:column;gap:22px;
+    padding:56px 0 34px;border-bottom:2px solid var(--ink);
+  }
+  .bar{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:baseline;justify-content:space-between}
+  .lede{max-width:64ch;color:var(--ink-2);font-size:1.06rem}
+  .lede em{color:var(--ink);font-style:italic}
+
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:6px}
+  .kpi{background:var(--ground);padding:14px 16px}
+  .kpi .n{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-size:1.5rem;font-weight:600;color:var(--accent);display:block;line-height:1.2}
+  .kpi .l{font-size:.78rem;color:var(--ink-3);line-height:1.35;display:block;margin-top:2px}
+
+  /* ---------- seções ---------- */
+  section{padding-top:52px}
+  .sec-head{display:flex;flex-direction:column;gap:8px;margin-bottom:22px}
+  .sec-head p{color:var(--ink-2);max-width:66ch}
+
+  /* ---------- fluxo (sequência real: 9 etapas) ---------- */
+  .flow{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+  .step{
+    background:var(--panel);border:1px solid var(--rule);border-top:3px solid var(--accent);
+    padding:14px 16px 16px;display:flex;flex-direction:column;gap:7px;box-shadow:var(--shadow);
+  }
+  .step .num{font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:600;color:var(--accent);letter-spacing:.1em}
+  .step p{font-size:.88rem;color:var(--ink-2)}
+  .step .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:auto;padding-top:6px}
+  .tag{
+    font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.04em;
+    background:var(--panel-2);color:var(--ink-2);padding:2px 6px;border:1px solid var(--rule);
+  }
+  .step.cross{border-top-color:var(--hazard)}
+  .step.cross .num{color:var(--hazard)}
+
+  /* ---------- blocos de definição ---------- */
+  .defs{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule)}
+  .def{background:var(--panel);padding:16px 18px;display:grid;grid-template-columns:200px 1fr;gap:6px 26px;align-items:start}
+  @media (max-width:640px){ .def{grid-template-columns:1fr} }
+  .def h3{color:var(--ink)}
+  .def .t{font-family:"IBM Plex Mono",monospace;font-size:.7rem;color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase;grid-column:1;margin-top:3px}
+  .def p{font-size:.93rem;color:var(--ink-2);grid-column:2}
+  @media (max-width:640px){ .def p,.def .t{grid-column:1} }
+
+  /* ---------- tabela ---------- */
+  .tablewrap{overflow-x:auto;border:1px solid var(--rule);background:var(--panel)}
+  table{border-collapse:collapse;width:100%;min-width:660px;font-size:.9rem}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{
+    font-family:"IBM Plex Mono",monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;
+    color:var(--ink-3);font-weight:600;background:var(--panel-2);border-bottom:1px solid var(--rule-strong);
+    position:sticky;top:0;
+  }
+  tbody tr:last-child td{border-bottom:none}
+  td strong{font-weight:600}
+  td code{font-family:"IBM Plex Mono",monospace;font-size:.82em;color:var(--accent)}
+
+  /* ---------- fases ---------- */
+  .phases{display:grid;gap:10px}
+  .phase{
+    display:grid;grid-template-columns:auto 1fr auto;gap:4px 16px;align-items:baseline;
+    padding:11px 16px;background:var(--panel);border:1px solid var(--rule);border-left:3px solid var(--rule-strong);
+  }
+  .phase .f{font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:600;color:var(--ink-3)}
+  .phase .d{font-family:"IBM Plex Mono",monospace;font-size:.76rem;color:var(--ink-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .phase .w{font-size:.85rem;color:var(--ink-2);grid-column:2;grid-row:2}
+  .phase.golive{border-left-color:var(--hazard);background:var(--hazard-soft)}
+  .phase.golive .f{color:var(--hazard)}
+  @media (max-width:640px){
+    .phase{grid-template-columns:1fr auto}
+    .phase .w{grid-column:1/-1;grid-row:auto}
+  }
+
+  /* ---------- dois lados ---------- */
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:720px){ .duo{grid-template-columns:1fr} }
+  .side{background:var(--panel);border:1px solid var(--rule);padding:16px 18px}
+  .side ul{margin:10px 0 0;padding-left:1.1em;display:grid;gap:7px}
+  .side li{font-size:.9rem;color:var(--ink-2)}
+  .side.do{border-top:3px solid var(--good)}
+  .side.dont{border-top:3px solid var(--crit)}
+  .side.do h3{color:var(--good)} .side.dont h3{color:var(--crit)}
+
+  /* ---------- destaque ---------- */
+  .pull{
+    background:var(--accent-soft);border-left:3px solid var(--accent);
+    padding:16px 20px;font-size:1.02rem;color:var(--ink);max-width:70ch;
+  }
+  .pull strong{font-family:Archivo,sans-serif;font-weight:600}
+
+  /* ---------- glossário ---------- */
+  .gloss{columns:2;column-gap:32px}
+  @media (max-width:640px){ .gloss{columns:1} }
+  .gloss div{break-inside:avoid;padding:8px 0;border-bottom:1px dotted var(--rule)}
+  .gloss dt{font-family:"IBM Plex Mono",monospace;font-size:.82rem;font-weight:600;color:var(--ink)}
+  .gloss dd{margin:2px 0 0;font-size:.86rem;color:var(--ink-2)}
+
+  footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--rule);color:var(--ink-3);font-size:.84rem;display:grid;gap:6px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="top">
+  <div class="bar">
+    <span class="eyebrow">Estudo resumido · Logística 4.0</span>
+    <span class="eyebrow">Base: e-book WMS de Alexsandro C. Lopes</span>
+  </div>
+  <h1>Doca a doca:<br>o WMS em uma leitura</h1>
+  <p class="lede">O WMS é o sistema que decide <em>onde guardar, quem busca, em que ordem e dentro de qual caixa</em>. Este resumo cobre as nove etapas do fluxo de um centro de distribuição, os dois processos transversais que sustentam tudo, e o que separa uma implantação bem-sucedida de uma que trava no go-live.</p>
+  <div class="kpis">
+    <div class="kpi"><span class="n">99,8%</span><span class="l">acuracidade de estoque em operação madura</span></div>
+    <div class="kpi"><span class="n">−35%</span><span class="l">custo de mão de obra direta</span></div>
+    <div class="kpi"><span class="n">+60%</span><span class="l">produtividade de picking</span></div>
+    <div class="kpi"><span class="n">30–60 d</span><span class="l">estabilização pós go-live</span></div>
+  </div>
+</header>
+
+<section>
+  <div class="sec-head">
+    <span class="eyebrow">01 · Ponto de partida</span>
+    <h2>O que o WMS realmente faz</h2>
+    <p>Um WMS (<em>Warehouse Management System</em>) gerencia o armazém no nível do endereço e da tarefa — não do saldo contábil. O ERP sabe que existem 400 unidades; o WMS sabe que 120 estão no porta-palete <code>A-03-04-2</code>, lote <code>L2411</code>, validade 07/2027, e que o operador João deve buscá-las antes das 14h.</p>
+  </div>
+  <div class="defs">
+    <div class="def"><span class="t">Posição no ecossistema</span><p><strong>ERP</strong> envia pedidos e notas. <strong>OMS</strong> orquestra a promessa ao cliente. <strong>WMS</strong> executa dentro das quatro paredes. <strong>TMS</strong> assume a partir da doca. Sem WMS, o ERP tenta controlar o armazém por saldo — e erra por endereço, lote e sequência.</p></div>
+    <div class="def"><span class="t">Sinais de que falta um</span><p>Inventário só fecha com ajuste manual; o operador “sabe de cabeça” onde o item está; separação depende de papel; avaria e divergência viram e-mail; nenhum indicador por operador existe.</p></div>
+    <div class="def"><span class="t">Modalidades</span><p><strong>On-premise</strong> (controle total, TI própria), <strong>cloud/SaaS</strong> (implantação rápida, custo recorrente), <strong>módulo do ERP</strong> (integração nativa, menor profundidade) e <strong>autônomo 4.0</strong> (best-of-breed, integra com automação e robótica).</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <span class="eyebrow">02 · Macro fluxo</span>
+    <h2>Nove etapas, da portaria ao caminhão</h2>
+    <p>A numeração aqui não é enfeite: cada etapa consome o resultado da anterior. Uma etiqueta de palete mal gerada no recebimento reaparece como volume perdido no carregamento.</p>
+  </div>
+  <div class="flow">
+    <article class="step">
+      <span class="num">ETAPA 01</span><h3>Recebimento</h3>
+      <p>Conferência cega: o conferente registra o que vê, sem enxergar a quantidade esperada. O sistema compara depois e abre a divergência — inclusive gerando NF de devolução automática.</p>
+      <div class="tags"><span class="tag">blind receiving</span><span class="tag">avaria</span><span class="tag">NF devolução</span></div>
+    </article>
+    <article class="step">
+      <span class="num">ETAPA 02</span><h3>Armazenagem</h3>
+      <p>Slotting decide o endereço: curva ABC por giro, zoneamento por velocidade, regra de saída (FIFO / FEFO / LIFO) e cross-docking para o que nem deve ser guardado.</p>
+      <div class="tags"><span class="tag">curva ABC</span><span class="tag">FEFO</span><span class="tag">cross-dock</span></div>
+    </article>
+    <article class="step">
+      <span class="num">ETAPA 03</span><h3>Picking</h3>
+      <p>A escolha da estratégia é o maior ganho isolado da operação — o mesmo conjunto de pedidos pode custar 380 m ou 80 m de caminhada por operador.</p>
+      <div class="tags"><span class="tag">wave</span><span class="tag">cluster</span><span class="tag">zone</span></div>
+    </article>
+    <article class="step">
+      <span class="num">ETAPA 04</span><h3>Conferência de saída</h3>
+      <p>Última chance de barrar o erro antes do cliente: leitura de código ou RFID, verificação por peso, registro fotográfico e re-picking automático quando falta item.</p>
+      <div class="tags"><span class="tag">barcode</span><span class="tag">pesagem</span><span class="tag">re-picking</span></div>
+    </article>
+    <article class="step">
+      <span class="num">ETAPA 05</span><h3>Packing</h3>
+      <p>Cartonização sugere a menor caixa viável; o sistema calcula peso cúbico (DIM weight), material de proteção e tratamento especial para frágil, perecível e alto valor.</p>
+      <div class="tags"><span class="tag">cartonization</span><span class="tag">cubagem</span></div>
+    </article>
+    <article class="step">
+      <span class="num">ETAPA 06</span><h3>Etiquetagem de volume</h3>
+      <p>Cada volume ganha um SSCC — código GS1 de 18 dígitos que identifica unicamente aquela embalagem no mundo — mais etiqueta da transportadora e avisos de cuidado.</p>
+      <div class="tags"><span class="tag">SSCC</span><span class="tag">GS1</span><span class="tag">multi-carrier</span></div>
+    </article>
+    <article class="step">
+      <span class="num">ETAPA 07</span><h3>Conferência de volumes</h3>
+      <p>Bipar cada SSCC fecha o romaneio: o pedido só é liberado quando todos os volumes existem, pesam o previsto e estão consolidados.</p>
+      <div class="tags"><span class="tag">romaneio</span><span class="tag">consolidação</span></div>
+    </article>
+    <article class="step">
+      <span class="num">ETAPA 08</span><h3>Carregamento</h3>
+      <p>Designação de doca, plano de carga em sequência LIFO (último a entrar é o primeiro a descer), emissão de CT-e e manifesto, e transmissão ao TMS.</p>
+      <div class="tags"><span class="tag">dock door</span><span class="tag">load plan</span><span class="tag">CT-e</span></div>
+    </article>
+    <article class="step cross">
+      <span class="num">TRANSVERSAL</span><h3>Estoque &amp; mão de obra</h3>
+      <p>Inventário global, cíclico e rotativo; rastreabilidade por lote, série e grade. Do outro lado, <em>task interleaving</em>, alocação por zona e KPIs por operador (picks/hora, acuracidade, distância).</p>
+      <div class="tags"><span class="tag">inventário cíclico</span><span class="tag">track &amp; trace</span><span class="tag">picks/h</span></div>
+    </article>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <span class="eyebrow">03 · Picking em detalhe</span>
+    <h2>Seis estratégias, um critério</h2>
+    <p>Não existe estratégia melhor — existe a que combina com o perfil do pedido. A pergunta decisiva: quantas linhas tem o pedido médio e quantos pedidos compartilham os mesmos SKUs?</p>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Estratégia</th><th>Como funciona</th><th>Indicada quando</th><th>Custo oculto</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Discreto</strong></td><td>1 operador, 1 pedido, do começo ao fim</td><td>Pedidos grandes, volume baixo, operação simples</td><td>Maior distância percorrida por linha</td></tr>
+        <tr><td><strong>Onda (wave)</strong></td><td>Pedidos liberados em janelas programadas</td><td>Há corte de transportadora por horário</td><td>Ociosidade entre ondas</td></tr>
+        <tr><td><strong>Cluster</strong></td><td>1 operador leva N pedidos no mesmo carrinho</td><td>Pedidos pequenos, e-commerce</td><td>Erro de caixa destino; exige <em>put-to-light</em> ou disciplina</td></tr>
+        <tr><td><strong>Batch</strong></td><td>Agrupa por SKU; separa tudo e rateia depois</td><td>Poucos SKUs, muitos pedidos iguais</td><td>Precisa de área e etapa de sorter</td></tr>
+        <tr><td><strong>Zone</strong></td><td>Cada operador cobre uma zona; caixa passa adiante (<em>pick-and-pass</em>)</td><td>Armazém grande, SKUs muito distintos</td><td>Gargalo na zona mais lenta</td></tr>
+        <tr><td><strong>Wavy</strong></td><td>Wave + cluster combinados</td><td>Alto volume com janelas de expedição</td><td>Complexidade de parametrização</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <span class="eyebrow">04 · Implantação</span>
+    <h2>Oito fases até o dia D</h2>
+    <p>Prazo típico de ponta a ponta: cerca de 4 a 7 meses. As fases 1 a 3 definem o sucesso; as demais executam o que foi decidido nelas.</p>
+  </div>
+  <div class="phases">
+    <div class="phase"><span class="f">FASE 1</span><h3>Diagnóstico AS-IS</h3><span class="d">2–3 sem.</span><span class="w">Fotografia honesta da operação atual, com os números reais de volume e sazonalidade.</span></div>
+    <div class="phase"><span class="f">FASE 2</span><h3>Levantamento de processos</h3><span class="d">2–4 sem.</span><span class="w">Entrevista com operadores, walk-through no armazém, dados históricos e fluxograma validado. É aqui que aparecem as exceções que ninguém documentou.</span></div>
+    <div class="phase"><span class="f">FASE 3</span><h3>Gap analysis (FIT × GAP)</h3><span class="d">1–2 sem.</span><span class="w">O que o WMS já faz nativamente (FIT) e o que exigiria customização (GAP).</span></div>
+    <div class="phase"><span class="f">FASE 4</span><h3>Configuração e parametrização</h3><span class="d">4–8 sem.</span><span class="w">Endereçamento, regras de slotting, perfis de tarefa, integrações com ERP e TMS.</span></div>
+    <div class="phase"><span class="f">FASE 5</span><h3>Testes e homologação</h3><span class="d">3–4 sem.</span><span class="w">Cenários reais, inclusive os de exceção: divergência, avaria, recall, cancelamento.</span></div>
+    <div class="phase"><span class="f">FASE 6</span><h3>Treinamento</h3><span class="d">2–3 sem.</span><span class="w">Key users primeiro, depois end users — com coletor na mão, no ambiente de homologação.</span></div>
+    <div class="phase golive"><span class="f">FASE 7</span><h3>Go-live (cutover)</h3><span class="d">dia D</span><span class="w">Inventário de virada, congelamento de movimentação, saldo carregado, operação no ar. Nunca em pico de demanda.</span></div>
+    <div class="phase"><span class="f">FASE 8</span><h3>Suporte e estabilização</h3><span class="d">30–60 d</span><span class="w">Produtividade cai no início e se recupera em torno de 90 dias. Planeje a queda em vez de se assustar com ela.</span></div>
+  </div>
+  <div class="pull" style="margin-top:20px">
+    <strong>Regra de ouro:</strong> adapte o processo ao WMS, não o WMS ao processo. Cada customização vira dívida em toda atualização futura — só se justifica quando o processo é diferencial competitivo real, não hábito.
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <span class="eyebrow">05 · Boas práticas</span>
+    <h2>Combinar SKU, estrutura e parâmetro</h2>
+    <p>A maior parte dos erros de projeto nasce de um casamento errado entre o tipo de produto, a estrutura física que o abriga e a regra configurada no sistema.</p>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Tipo de SKU</th><th>Estrutura ideal</th><th>Configuração no WMS</th><th>Ponto de atenção</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Validade</strong> (alimento, farma)</td><td>Flow rack</td><td><code>FEFO</code> + bloqueio por shelf life mínimo</td><td>Definir quem aprova venda de lote curto</td></tr>
+        <tr><td><strong>Número de série</strong> (eletrônicos)</td><td>Picking em bin / prateleira</td><td>Captura de série na saída</td><td>Leitura unitária derruba produtividade — dimensione</td></tr>
+        <tr><td><strong>Grade</strong> (tamanho × cor)</td><td>Bin fracionado, zona A</td><td>Matriz de grade, não SKU por variante solta</td><td>Explosão de endereços</td></tr>
+        <tr><td><strong>Peso variável</strong> (hortifrúti, açougue)</td><td>Flow rack refrigerado</td><td>Captura de peso na conferência</td><td>Divergência de peso × quantidade faturada</td></tr>
+        <tr><td><strong>Alto volume, palete cheio</strong></td><td>Porta-palete</td><td>Reabastecimento automático do picking</td><td>Ponto de ressuprimento mal ajustado gera ruptura</td></tr>
+        <tr><td><strong>Alta densidade, lote único</strong></td><td>Drive-in / push-back</td><td><code>LIFO</code></td><td>Incompatível com FEFO — não misture lotes</td></tr>
+        <tr><td><strong>Peças longas</strong></td><td>Cantilever</td><td>Endereço sem cubagem padrão</td><td>Cartonização não se aplica</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="duo" style="margin-top:14px">
+    <div class="side do">
+      <h3>Faça</h3>
+      <ul>
+        <li>Treinar em homologação com o coletor real, não em slide.</li>
+        <li>Formar multiplicadores por turno — o operador aprende melhor com o colega.</li>
+        <li>Gamificar os KPIs individuais nas primeiras semanas.</li>
+        <li>Fazer survey de RF antes de comprar qualquer hardware: sem Wi-Fi em 100% da área, o WMS não existe.</li>
+        <li>Testar os cenários de exceção com a mesma seriedade do fluxo feliz.</li>
+      </ul>
+    </div>
+    <div class="side dont">
+      <h3>Evite</h3>
+      <ul>
+        <li>Go-live em pico de sazonalidade.</li>
+        <li>Comprar coletores e impressoras antes de escolher o WMS.</li>
+        <li>Customizar para preservar um processo que só existe por hábito.</li>
+        <li>Treinamento exclusivamente teórico, sem prática no chão.</li>
+        <li>Prometer produtividade igual ou maior já na primeira semana.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <span class="eyebrow">06 · Referência rápida</span>
+    <h2>Glossário</h2>
+  </div>
+  <dl class="gloss">
+    <div><dt>FIFO / FEFO / LIFO</dt><dd>Primeiro que entra sai primeiro / primeiro que vence sai primeiro / último que entra sai primeiro.</dd></div>
+    <div><dt>SSCC</dt><dd>Serial Shipping Container Code — 18 dígitos GS1 que identificam unicamente um volume de transporte.</dd></div>
+    <div><dt>Slotting</dt><dd>Decisão de qual endereço recebe cada SKU, com base em giro, peso, cubagem e afinidade de pedido.</dd></div>
+    <div><dt>Task interleaving</dt><dd>Encadear tarefas para eliminar deslocamento vazio — guardar um palete no caminho de volta de um picking.</dd></div>
+    <div><dt>Cartonization</dt><dd>Cálculo da menor caixa que comporta os itens do pedido.</dd></div>
+    <div><dt>DIM weight</dt><dd>Peso cúbico; base de cobrança do frete quando o volume pesa mais que a balança indica.</dd></div>
+    <div><dt>Cross-docking</dt><dd>Mercadoria que vai do recebimento direto à expedição, sem armazenagem.</dd></div>
+    <div><dt>Inventário cíclico</dt><dd>Contagem recorrente de subconjuntos do estoque, sem parar a operação.</dd></div>
+    <div><dt>FIT / GAP</dt><dd>Funcionalidade atendida nativamente pelo sistema / lacuna que exige customização ou mudança de processo.</dd></div>
+    <div><dt>Pick-and-pass</dt><dd>A caixa percorre as zonas e cada operador insere os itens da sua área.</dd></div>
+  </dl>
+</section>
+
+<footer>
+  <span>Estudo resumido elaborado a partir do e-book <em>WMS — Logística 4.0</em>, de Alexsandro C. Lopes (2025), disponível em <a href="https://alexsandrowms-ux.github.io/wms-ebook/">alexsandrowms-ux.github.io/wms-ebook</a>, que traz ainda simuladores e quizzes por módulo.</span>
+  <span>Os indicadores citados são os apresentados na fonte como resultados de operações maduras — trate-os como referência de mercado, não como promessa de projeto.</span>
+</footer>
+
+</div>
+
+</body>
+</html>
