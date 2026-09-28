@@ -69,7 +69,7 @@ const M = (() => {
     let susDone = false;
     for (let t of toks) {
       let flat = false, sharp = false;
-      if (t === 'MAJ7') { add.add(11); continue; }
+      if (t === 'MAJ7' || t === '7+') { add.add(11); continue; }
       if (t === 'M') { continue; }
       if (t === 'sus' || t === 'sus4') { third = 5; susDone = true; continue; }
       if (t === 'sus2') { third = 2; susDone = true; continue; }
@@ -118,11 +118,7 @@ const M = (() => {
   }
 
   // Voicing no estilo da apostila: ME = baixo na oitava 2, MD = notas dentro de C4..B4
-  function voicing(sym, songV) {
-    if (songV && songV[sym] && songV[sym][1] && songV[sym][1].length) {
-      const me = midiOf(songV[sym][0]);
-      return { me: me != null ? [me] : [], md: songV[sym][1].map(midiOf).filter(x => x != null) };
-    }
+  function voicing(sym) {
     const c = parseChord(sym);
     if (!c) return { me: [], md: [] };
     let ints = [...c.ints].sort((a, b) => a - b);
@@ -188,7 +184,8 @@ const M = (() => {
     ['7ª menor', 'som de blues / dominante'], ['7ª maior', 'sonhador — acorde 7M'], ['Oitava', 'mesma nota, mais aguda']
   ];
 
-  function detectKey(chords) { // estimativa do tom pelos acordes
+  function detectKey(chords, hint) { // estimativa do tom pelos acordes (hint = tom/primeiro acorde da apostila)
+    const hp = hint ? parseChord(hint) : null;
     let best = null;
     for (let k = 0; k < 12; k++) for (const minor of [false, true]) {
       const f = field(k, minor, false).map(x => x.chord);
@@ -201,6 +198,8 @@ const M = (() => {
         if (i === 0 && p.rootPc === k) score += 2;
         if (i === chords.length - 1 && p.rootPc === k) score += 1;
       });
+      if (hp && hp.rootPc === k && (hp.third === 3) === minor) score += Math.max(3, chords.length * 0.2);
+      if (!minor) score += 0.5;
       if (!best || score > best.score) best = { k, minor, score };
     }
     return best;
