@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balanço Patrimonial</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 84% 4.9%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
+        }
+
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --primary: 210 40% 98%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 212.7 26.8% 83.9%;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        }
+    </style>
+</head>
+
+<body class="p-4 sm:p-6 lg:p-8">
+    <div id="report-container" class="w-full h-full">
+        <div id="loading-state" class="flex items-center justify-center h-full">
+            <p class="text-lg text-muted-foreground">Carregando dados do balanço...</p>
+        </div>
+        <div id="report-content" class="hidden">
+            <div id="periodo-label" class="mb-6 text-sm text-muted-foreground"></div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
+                <!-- Coluna da Esquerda: Ativo -->
+                <div id="ativo-container" class="space-y-8"></div>
+
+                <!-- Coluna da Direita: Passivo e PL -->
+                <div id="passivo-pl-container" class="space-y-8"></div>
+            </div>
+
+            <!-- Seção de Totais -->
+            <div id="totais-container" class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
+            </div>
+
+            <div id="aviso-container" class="mt-8"></div>
+        </div>
+    </div>
+
+    <script>
+        const MITRA_UPDATE_EVENT_NAME = 'mitra-update-balanco-patrimonial';
+
+        function updateMitra() {
+            console.log("Sinal de update para [Balanço Patrimonial] recebido. Disparando evento.");
+            document.body.dispatchEvent(new CustomEvent(MITRA_UPDATE_EVENT_NAME));
+        }
+
+        /* ------------------------------------------------------------------
+           Resolução tolerante dos parâmetros do componente.
+
+           A trava antiga lia window.componentData.varMes pelo nome exato.
+           Nome de propriedade em JavaScript diferencia maiúscula de
+           minúscula, então um parâmetro registrado como "Varmes" ou
+           "VarDataInicio" fazia a condição nunca fechar: venciam os 5
+           segundos e a tela morria em branco, sem dizer o que faltou.
+
+           Agora o nome é resolvido ignorando caixa, underscore e ponto, e
+           aceitando apelidos. E a mensagem de erro diz QUAL parâmetro
+           faltou.
+           ------------------------------------------------------------------ */
+        function normalizeKey(k) {
+            return String(k).toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+
+        function pickParam(obj, ...nomes) {
+            if (!obj) return undefined;
+            const mapa = {};
+            Object.keys(obj).forEach(k => { mapa[normalizeKey(k)] = obj[k]; });
+            for (const n of nomes) {
+                const v = mapa[normalizeKey(n)];
+                if (v !== undefined && v !== null && String(v).trim() !== '') {
+                    return v;
+                }
+            }
+            return undefined;
+        }
+
+        const PARAMS = {
+            queryDados: ['queryDados', 'query_dados', 'querydado'],
+            varEmpresa: ['varEmpresa', 'var_empresa', 'empresa'],
+            varDataInicio: ['varDataInicio', 'varDtInicio', 'var_data_inicio', 'dataInicio', 'dtInicio'],
+            /* "varMes" fica como apelido porque é assim que o parâmetro da
+               data final está registrado hoje na plataforma (varMes =
+               :VAR_DATA_FIM). Assim a tela funciona antes e depois de
+               renomear o parâmetro, sem virada combinada. */
+            varDataFim: ['varDataFim', 'varDtFim', 'var_data_fim', 'dataFim', 'dtFim', 'varMes']
+        };
+
+        function resolveParams() {
+            const cd = window.componentData || {};
+            const out = {}, faltando = [];
+            for (const [alvo, nomes] of Object.entries(PARAMS)) {
+                const v = pickParam(cd, ...nomes);
+                if (v === undefined) faltando.push(alvo); else out[alvo] = v;
+            }
+            return { valores: out, faltando, chaves: Object.keys(cd) };
+        }
+
+        /* Valores completos e exatos: sem divisão por 1000 e com os
+           centavos. A versão anterior dividia tudo por 1000 e arredondava
+           para inteiro, então a tela mostrava milhares. */
+        function formatCurrency(value) {
+            const num = parseFloat(value);
+            if (isNaN(num)) return '0,00';
+            const formatted = new Intl.NumberFormat('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(Math.abs(num));
+            return num < 0 ? `(${formatted})` : formatted;
+        }
+
+        function formatDateBR(valor) {
+            if (!valor) return '';
+            const iso = String(valor).split(' ')[0].split('T')[0];
+            const p = iso.split('-');
+            return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : String(valor);
+        }
+
+        function subtractOneYear(valor) {
+            const iso = String(valor || '').split(' ')[0].split('T')[0];
+            const p = iso.split('-');
+            if (p.length !== 3) return '';
+            return `${String(Number(p[0]) - 1).padStart(4, '0')}-${p[1]}-${p[2]}`;
+        }
+
+        function generateTableHtml(title, items, subtotal, colAtual, colAnterior) {
+            let itemsHtml = items.map(item => `
+                <tr class="border-b border-border">
+                    <td class="py-2 px-4 text-sm text-muted-foreground">${item.nomeGrupo}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(item.valorAtual)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(item.valorAnterior)}</td>
+                </tr>
+            `).join('');
+
+            let subtotalHtml = `
+                <tr class="font-bold bg-secondary">
+                    <td class="py-2 px-4 text-sm">${subtotal.descricao}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotal.valorAtual)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotal.valorAnterior)}</td>
+                </tr>
+            `;
+
+            return `
+                <div class="w-full">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="border-b-2 border-foreground">
+                                <th class="py-2 px-4 text-left text-base font-bold">${title}</th>
+                                <th class="py-2 px-4 text-right text-sm font-semibold w-40">${colAtual}</th>
+                                <th class="py-2 px-4 text-right text-sm font-semibold w-40">${colAnterior}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml}
+                            ${subtotalHtml}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function generateTotalTableHtml(title, total) {
+            return `
+                <div class="w-full">
+                    <table class="w-full border-collapse">
+                        <tbody>
+                             <tr class="font-bold border-y-2 border-double border-foreground bg-secondary">
+                                <td class="py-3 px-4 text-base">${title}</td>
+                                <td class="py-3 px-4 text-base text-right tabular-nums w-40">${formatCurrency(total.valorAtual)}</td>
+                                <td class="py-3 px-4 text-base text-right tabular-nums w-40">${formatCurrency(total.valorAnterior)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function normalizeOrder(value) {
+            return String(value || '').replace(/\s+/g, '');
+        }
+
+        function startsWithOrder(ordem, prefixo) {
+            return normalizeOrder(ordem).startsWith(normalizeOrder(prefixo));
+        }
+
+        function createSubtotal(descricao) {
+            return { descricao, valorAtual: 0, valorAnterior: 0 };
+        }
+
+        function sumItems(items, descricao) {
+            return items.reduce((acc, item) => {
+                acc.valorAtual += item.valorAtual;
+                acc.valorAnterior += item.valorAnterior;
+                return acc;
+            }, createSubtotal(descricao));
+        }
+
+        function renderReport(data, periodo) {
+            const colAtual = formatDateBR(periodo.dataFim);
+            const colAnterior = formatDateBR(subtractOneYear(periodo.dataFim));
+
+            document.getElementById('periodo-label').textContent =
+                `Período: ${formatDateBR(periodo.dataInicio)} a ${formatDateBR(periodo.dataFim)}`
+                + `  •  saldos acumulados até ${colAtual}, comparados com ${colAnterior}`;
+
+            const ativoCirculanteItems = data.filter(d => startsWithOrder(d.ordem, '1.1.'));
+            const subtotalAtivoCirculante = sumItems(ativoCirculanteItems, '1.1. = Total do ativo circulante');
+
+            const ativoNaoCirculanteItems = data.filter(d => startsWithOrder(d.ordem, '1.2.'));
+            const subtotalAtivoNaoCirculante = sumItems(ativoNaoCirculanteItems, '1.2. = Total do ativo não circulante');
+
+            const totalAtivo = {
+                valorAtual: subtotalAtivoCirculante.valorAtual + subtotalAtivoNaoCirculante.valorAtual,
+                valorAnterior: subtotalAtivoCirculante.valorAnterior + subtotalAtivoNaoCirculante.valorAnterior
+            };
+
+            document.getElementById('ativo-container').innerHTML =
+                generateTableHtml('1.1. = Ativo circulante', ativoCirculanteItems, subtotalAtivoCirculante, colAtual, colAnterior)
+                + generateTableHtml('1.2. = Ativo não circulante', ativoNaoCirculanteItems, subtotalAtivoNaoCirculante, colAtual, colAnterior);
+
+            const passivoCirculanteItems = data.filter(d => startsWithOrder(d.ordem, '2.1.'));
+            const subtotalPassivoCirculante = sumItems(passivoCirculanteItems, '2.1. = Total do passivo circulante');
+
+            const passivoNaoCirculanteItems = data.filter(d => startsWithOrder(d.ordem, '2.2.'));
+            const subtotalPassivoNaoCirculante = sumItems(passivoNaoCirculanteItems, '2.2. = Total do passivo não circulante');
+
+            const plItems = data.filter(d => startsWithOrder(d.ordem, '3.'));
+            const subtotalPL = sumItems(plItems, '3. = Total do patrimônio líquido');
+
+            const totalPassivoPL = {
+                valorAtual: subtotalPassivoCirculante.valorAtual + subtotalPassivoNaoCirculante.valorAtual + subtotalPL.valorAtual,
+                valorAnterior: subtotalPassivoCirculante.valorAnterior + subtotalPassivoNaoCirculante.valorAnterior + subtotalPL.valorAnterior
+            };
+
+            document.getElementById('passivo-pl-container').innerHTML =
+                generateTableHtml('2.1. = Passivo circulante', passivoCirculanteItems, subtotalPassivoCirculante, colAtual, colAnterior)
+                + generateTableHtml('2.2. = Passivo não circulante', passivoNaoCirculanteItems, subtotalPassivoNaoCirculante, colAtual, colAnterior)
+                + generateTableHtml('3. = Patrimônio líquido', plItems, subtotalPL, colAtual, colAnterior);
+
+            document.getElementById('totais-container').innerHTML =
+                generateTotalTableHtml('1. = Total do ativo', totalAtivo)
+                + generateTotalTableHtml('2. + 3. = Total do passivo e patrimônio líquido', totalPassivoPL);
+
+            /* O balanço do cadastro atual não fecha. Em vez de esconder
+               isso, a tela mostra a diferença - é dado de cadastro, e
+               silenciar faria o número parecer conferido. */
+            const dif = totalAtivo.valorAtual - totalPassivoPL.valorAtual;
+            document.getElementById('aviso-container').innerHTML = Math.abs(dif) < 0.01 ? '' : `
+                <div class="rounded-lg border border-border bg-secondary p-4 text-sm">
+                    <span class="font-semibold">Atenção:</span>
+                    o ativo e o passivo + patrimônio líquido não fecham nesta data —
+                    diferença de <span class="tabular-nums font-semibold">${formatCurrency(dif)}</span>.
+                    Isso vem do cadastro da estrutura (contas sem vínculo no ano, ou
+                    linha de resultado fora da estrutura), não do cálculo.
+                </div>`;
+
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('report-content').classList.remove('hidden');
+        }
+
+        async function fetchAndRenderData() {
+            const contentEl = document.getElementById('report-content');
+            const loadingEl = document.getElementById('loading-state');
+
+            contentEl.classList.add('hidden');
+            loadingEl.classList.remove('hidden');
+            loadingEl.innerHTML = `<p class="text-lg text-muted-foreground">Carregando dados do balanço...</p>`;
+
+            try {
+                const { valores, faltando, chaves } = resolveParams();
+                if (faltando.length) {
+                    throw new Error(`Parâmetro(s) do componente não configurado(s): ${faltando.join(', ')}. `
+                        + `A plataforma expôs: ${chaves.join(', ') || '(nada)'}.`);
+                }
+
+                /* Uma consulta só. A versão anterior disparava uma segunda
+                   query ("SELECT :VAR_MES_FILTRO") apenas para descobrir a
+                   data de referência, e morria quando ela vinha vazia. A
+                   query corrigida já devolve DATA_INICIO_USADA e
+                   DATA_FIM_USADA, então esse ponto de falha deixou de
+                   existir. */
+                const reportResult = await queryMitra({ query: valores.queryDados });
+
+                if (!reportResult || !reportResult.data) {
+                    throw new Error("A consulta principal não retornou dados válidos.");
+                }
+
+                const headers = (reportResult.headers || []).map(h => (h && h.name ? h.name.toUpperCase() : ''));
+                const col = n => headers.indexOf(n);
+                const colMap = {
+                    ordem: col('ORDEM'),
+                    nomeGrupo: col('NOME_GRUPO'),
+                    valorAtual: col('VLRLANC_ATU'),
+                    valorAnterior: col('VLRLANC_ANT'),
+                    dataInicio: col('DATA_INICIO_USADA'),
+                    dataFim: col('DATA_FIM_USADA')
+                };
+
+                const obrigatorias = ['ordem', 'nomeGrupo', 'valorAtual', 'valorAnterior'];
+                const ausentes = obrigatorias.filter(k => colMap[k] === -1);
+                if (ausentes.length) {
+                    console.error('Erro de mapeamento de colunas. A query deve retornar ORDEM, NOME_GRUPO, VLRLANC_ATU, VLRLANC_ANT.', headers);
+                    throw new Error(`A query configurada não retorna as colunas esperadas (faltou: ${ausentes.join(', ')}).`);
+                }
+
+                if (!reportResult.data.length) {
+                    throw new Error("A consulta não retornou nenhuma linha. "
+                        + "Verifique se a empresa selecionada tem balancete no período e se o ano da estrutura tem contas vinculadas.");
+                }
+
+                const processedData = reportResult.data.map(row => ({
+                    ordem: row[colMap.ordem] || '',
+                    nomeGrupo: row[colMap.nomeGrupo] || 'N/A',
+                    /* valores completos, sem dividir por 1000 */
+                    valorAtual: parseFloat(row[colMap.valorAtual]) || 0,
+                    valorAnterior: parseFloat(row[colMap.valorAnterior]) || 0
+                }));
+
+                const primeira = reportResult.data[0];
+                const periodo = {
+                    dataInicio: colMap.dataInicio !== -1 ? primeira[colMap.dataInicio] : '',
+                    dataFim: colMap.dataFim !== -1 ? primeira[colMap.dataFim] : ''
+                };
+
+                renderReport(processedData, periodo);
+
+            } catch (error) {
+                console.error("Falha ao carregar dados do balanço:", error);
+                loadingEl.innerHTML = `<div class="p-8 text-center text-destructive-foreground bg-destructive h-full flex items-center justify-center rounded-lg">Erro: ${error.message}</div>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.addEventListener(MITRA_UPDATE_EVENT_NAME, fetchAndRenderData);
+
+            /* A trava espera apenas a query e as duas datas. Ela não morre
+               mais em branco: ao vencer o tempo, diz exatamente qual
+               parâmetro faltou e quais nomes a plataforma expôs. */
+            const maxWaitTime = 5000;
+            const startTime = Date.now();
+            const checkInterval = setInterval(() => {
+                const { faltando } = resolveParams();
+                if (!faltando.length) {
+                    clearInterval(checkInterval);
+                    fetchAndRenderData();
+                } else if (Date.now() - startTime > maxWaitTime) {
+                    clearInterval(checkInterval);
+                    const chaves = Object.keys(window.componentData || {});
+                    console.error("Configurações do componente não carregadas. Faltou:", faltando, "| expostas:", chaves);
+                    document.getElementById('report-container').innerHTML =
+                        `<div class="p-8 text-center rounded-lg border border-border bg-secondary h-full flex items-center justify-center">
+                            <div>
+                                <p class="text-base font-semibold text-destructive">Configuração do componente incompleta</p>
+                                <p class="mt-2 text-sm">Faltou: <span class="font-mono">${faltando.join(', ')}</span></p>
+                                <p class="mt-1 text-sm text-muted-foreground">A plataforma expôs: <span class="font-mono">${chaves.join(', ') || '(nada)'}</span></p>
+                            </div>
+                        </div>`;
+                }
+            }, 100);
+        });
+    </script>
+</body>
+
+</html>
