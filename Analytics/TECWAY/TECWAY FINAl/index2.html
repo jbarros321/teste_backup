@@ -61,6 +61,7 @@
             <p class="text-lg text-muted-foreground">Carregando dados do balanço...</p>
         </div>
         <div id="report-content" class="hidden">
+            <div id="periodo-label" class="mb-6 text-sm text-muted-foreground"></div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
                 <!-- Coluna da Esquerda: Ativo -->
                 <div id="ativo-container" class="space-y-8"></div>
@@ -70,6 +71,7 @@
             <!-- Seção de Totais -->
             <div id="totais-container" class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
             </div>
+            <div id="aviso-container" class="mt-8"></div>
         </div>
     </div>
     <script>
@@ -78,6 +80,87 @@
             console.log("Sinal de update para [Balanço Patrimonial] recebido. Disparando evento.");
             document.body.dispatchEvent(new CustomEvent(MITRA_UPDATE_EVENT_NAME));
         }
+        /* ------------------------------------------------------------------
+           Resolução tolerante dos parâmetros do componente.
+
+           A trava antiga lia componentData.varMes pelo nome exato. Nome de
+           propriedade em JavaScript diferencia maiúscula de minúscula, então
+           um parâmetro registrado como "Varmes" ou "VarDataInicio" fazia a
+           condição nunca fechar: venciam os 5 segundos e a tela morria em
+           branco, sem dizer o que faltou.
+           ------------------------------------------------------------------ */
+        function normalizeKey(k) {
+            return String(k).toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+
+        function pickParam(obj, ...nomes) {
+            if (!obj) return undefined;
+            const mapa = {};
+            Object.keys(obj).forEach(k => { mapa[normalizeKey(k)] = obj[k]; });
+            for (const n of nomes) {
+                const v = mapa[normalizeKey(n)];
+                if (v !== undefined && v !== null && String(v).trim() !== '') return v;
+            }
+            return undefined;
+        }
+
+        /* SO a query e obrigatoria.
+
+           As datas e a empresa NAO precisam de parametro no componente: a
+           plataforma resolve :VAR_DATA_INICIO, :VAR_DATA_FIM e
+           :VAR_EMPRESA_DRE direto no texto da query, a partir dos filtros da
+           tela. O "varMes" so existia porque o JavaScript montava uma segunda
+           consulta com ele - e essa consulta foi removida. */
+        const PARAMS = {
+            queryDados: ['queryDados', 'query_dados', 'querydado', 'query']
+        };
+
+        function resolveParams() {
+            const cd = window.componentData || {};
+            const out = {}, faltando = [];
+            for (const [alvo, nomes] of Object.entries(PARAMS)) {
+                const v = pickParam(cd, ...nomes);
+                if (v === undefined) faltando.push(alvo); else out[alvo] = v;
+            }
+            return { valores: out, faltando, chaves: Object.keys(cd) };
+        }
+
+        /* NULL vindo da query significa "o ano desta coluna nao tem conta
+           vinculada". Isso NAO e zero. Antes a tela fazia
+           parseFloat(v) || 0 e mostrava 0,00, ou seja falta de cadastro
+           passava por saldo zero. */
+        function isSemCadastro(v) {
+            return v === null || v === undefined || v === '';
+        }
+
+        function toNumeroOuNulo(v) {
+            if (isSemCadastro(v)) return null;
+            const n = parseFloat(v);
+            return isNaN(n) ? null : n;
+        }
+
+        function renderValor(value) {
+            if (isSemCadastro(value)) {
+                return '<span class="text-muted-foreground italic" title="O ano desta coluna nao tem conta contabil vinculada nesta linha">sem cadastro</span>';
+            }
+            return formatCurrency(value);
+        }
+
+        /* subtotal a que faltam linhas ganha asterisco, para nao ser lido
+           como numero fechado */
+        function renderSubtotal(valor, falta) {
+            const base = isSemCadastro(valor) ? renderValor(valor) : formatCurrency(valor);
+            if (!falta) return base;
+            return `${base} <span class="text-muted-foreground" title="${falta} linha(s) deste grupo sem cadastro no ano - subtotal incompleto">*</span>`;
+        }
+
+        function formatDateBR(valor) {
+            if (!valor) return '';
+            const iso = String(valor).split(' ')[0].split('T')[0];
+            const p = iso.split('-');
+            return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : String(valor);
+        }
+
         function formatCurrency(value) {
             const num = parseFloat(value);
             if (isNaN(num)) {
@@ -93,15 +176,15 @@
             let itemsHtml = items.map(item => `
                 <tr class="border-b border-border">
                     <td class="py-2 px-4 text-sm text-muted-foreground">${item.nomeGrupo}</td>
-                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(item.valorAtual)}</td>
-                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(item.valorAnterior)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderValor(item.valorAtual)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderValor(item.valorAnterior)}</td>
                 </tr>
             `).join('');
             let subtotalHtml = `
                 <tr class="font-bold bg-secondary">
                     <td class="py-2 px-4 text-sm">${subtotal.descricao}</td>
-                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotal.valorAtual)}</td>
-                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotal.valorAnterior)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotal.valorAtual, subtotal.faltaAtual)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotal.valorAnterior, subtotal.faltaAnterior)}</td>
                 </tr>
             `;
             return `
@@ -129,8 +212,8 @@
                         <tbody>
                              <tr class="font-bold border-y-2 border-double border-foreground bg-secondary">
                                 <td class="py-3 px-4 text-base">${title}</td>
-                                <td class="py-3 px-4 text-base text-right tabular-nums w-32">${formatCurrency(total.valorAtual)}</td>
-                                <td class="py-3 px-4 text-base text-right tabular-nums w-32">${formatCurrency(total.valorAnterior)}</td>
+                                <td class="py-3 px-4 text-base text-right tabular-nums w-32">${renderSubtotal(total.valorAtual, total.faltaAtual)}</td>
+                                <td class="py-3 px-4 text-base text-right tabular-nums w-32">${renderSubtotal(total.valorAnterior, total.faltaAnterior)}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -146,16 +229,44 @@
             return normalizado.startsWith(prefixoNormalizado);
         }
         function createSubtotal(descricao) {
-            return { descricao, valorAtual: 0, valorAnterior: 0 };
+            return { descricao, valorAtual: 0, valorAnterior: 0, faltaAtual: 0, faltaAnterior: 0 };
         }
+        /* Soma apenas as linhas que tem cadastro, e CONTA as que nao tem.
+           Tratar "sem cadastro" como zero daria um subtotal que parece
+           completo e nao e. */
         function sumItems(items, descricao) {
             return items.reduce((acc, item) => {
-                acc.valorAtual += item.valorAtual;
-                acc.valorAnterior += item.valorAnterior;
+                if (isSemCadastro(item.valorAtual)) acc.faltaAtual++;
+                else acc.valorAtual += item.valorAtual;
+                if (isSemCadastro(item.valorAnterior)) acc.faltaAnterior++;
+                else acc.valorAnterior += item.valorAnterior;
                 return acc;
             }, createSubtotal(descricao));
         }
-        function renderReport(data, currentYear, previousYear) {
+        function somaTotais(descricao, ...partes) {
+            return partes.reduce((acc, p) => {
+                acc.valorAtual += p.valorAtual;
+                acc.valorAnterior += p.valorAnterior;
+                acc.faltaAtual += p.faltaAtual;
+                acc.faltaAnterior += p.faltaAnterior;
+                return acc;
+            }, createSubtotal(descricao));
+        }
+        function renderReport(data, currentYear, previousYear, periodo) {
+            periodo = periodo || {};
+
+            /* Cada coluna usa o cadastro do SEU ano. Deixar isso visivel evita
+               a leitura de que as duas colunas compartilham o mapeamento. */
+            const semAtu = data.filter(d => isSemCadastro(d.valorAtual)).length;
+            const semAnt = data.filter(d => isSemCadastro(d.valorAnterior)).length;
+
+            const labelEl = document.getElementById('periodo-label');
+            if (labelEl) {
+                labelEl.innerHTML =
+                    `Período: <span class="font-semibold">${formatDateBR(periodo.dataInicio)} a ${formatDateBR(periodo.dataFim)}</span>`
+                    + `  •  coluna ${currentYear} comparada com ${previousYear}`
+                    + `  •  cada coluna usa o cadastro de contas do seu próprio ano`;
+            }
             // ATIVO
             const ativoCirculanteItems = data.filter(d => startsWithOrder(d.ordem, '1.1.'));
             ativoCirculanteItems.sort((a, b) => normalizeOrder(a.ordem).localeCompare(normalizeOrder(b.ordem)));
@@ -164,10 +275,8 @@
             const ativoNaoCirculanteItems = data.filter(d => startsWithOrder(d.ordem, '1.2.'));
             ativoNaoCirculanteItems.sort((a, b) => normalizeOrder(a.ordem).localeCompare(normalizeOrder(b.ordem)));
             const subtotalAtivoNaoCirculante = sumItems(ativoNaoCirculanteItems, '1.2. = Total do ativo não circulante');
-            const totalAtivo = {
-                valorAtual: subtotalAtivoCirculante.valorAtual + subtotalAtivoNaoCirculante.valorAtual,
-                valorAnterior: subtotalAtivoCirculante.valorAnterior + subtotalAtivoNaoCirculante.valorAnterior
-            };
+            const totalAtivo = somaTotais('1. = Total do ativo',
+                subtotalAtivoCirculante, subtotalAtivoNaoCirculante);
             
             // Subtotais customizados (somente exibição) para não impactar totais gerais
             const duplicatasAReceberItems = ativoCirculanteItems.filter(item =>
@@ -206,8 +315,8 @@
                     acBodyHtml += `
                         <tr class="font-bold bg-secondary">
                             <td class="py-2 px-4 text-sm pl-4">${subtotalCreditos.descricao}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalCreditos.valorAtual)}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalCreditos.valorAnterior)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalCreditos.valorAtual, subtotalCreditos.faltaAtual)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalCreditos.valorAnterior, subtotalCreditos.faltaAnterior)}</td>
                         </tr>
                     `;
                     creditosGroupAdded = true;
@@ -218,8 +327,8 @@
                     acBodyHtml += `
                         <tr class="font-bold bg-secondary">
                             <td class="py-2 px-4 text-sm pl-8">${subtotalDuplicatasAReceber.descricao}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalDuplicatasAReceber.valorAtual)}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalDuplicatasAReceber.valorAnterior)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalDuplicatasAReceber.valorAtual, subtotalDuplicatasAReceber.faltaAtual)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalDuplicatasAReceber.valorAnterior, subtotalDuplicatasAReceber.faltaAnterior)}</td>
                         </tr>
                     `;
                     duplicatasGroupAdded = true;
@@ -230,8 +339,8 @@
                 acBodyHtml += `
                     <tr class="border-b border-border">
                         <td class="py-2 px-4 text-sm text-muted-foreground ${indentClass}">${item.nomeGrupo}</td>
-                        <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(item.valorAtual)}</td>
-                        <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(item.valorAnterior)}</td>
+                        <td class="py-2 px-4 text-sm text-right tabular-nums">${renderValor(item.valorAtual)}</td>
+                        <td class="py-2 px-4 text-sm text-right tabular-nums">${renderValor(item.valorAnterior)}</td>
                     </tr>
                 `;
             });
@@ -239,8 +348,8 @@
             const subtotalAcHtml = `
                 <tr class="font-bold bg-secondary">
                     <td class="py-2 px-4 text-sm">${subtotalAtivoCirculante.descricao}</td>
-                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalAtivoCirculante.valorAtual)}</td>
-                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalAtivoCirculante.valorAnterior)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalAtivoCirculante.valorAtual, subtotalAtivoCirculante.faltaAtual)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalAtivoCirculante.valorAnterior, subtotalAtivoCirculante.faltaAnterior)}</td>
                 </tr>
             `;
 
@@ -303,8 +412,8 @@
                     ancBodyHtml += `
                         <tr class="font-bold bg-secondary">
                             <td class="py-2 px-4 text-sm pl-4">${subtotalInvestimentos.descricao}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalInvestimentos.valorAtual)}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalInvestimentos.valorAnterior)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalInvestimentos.valorAtual, subtotalInvestimentos.faltaAtual)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalInvestimentos.valorAnterior, subtotalInvestimentos.faltaAnterior)}</td>
                         </tr>
                     `;
                     investimentosGroupAdded = true;
@@ -314,8 +423,8 @@
                     ancBodyHtml += `
                         <tr class="font-bold bg-secondary">
                             <td class="py-2 px-4 text-sm pl-4">${subtotalImobilizado.descricao}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalImobilizado.valorAtual)}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalImobilizado.valorAnterior)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalImobilizado.valorAtual, subtotalImobilizado.faltaAtual)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalImobilizado.valorAnterior, subtotalImobilizado.faltaAnterior)}</td>
                         </tr>
                     `;
                     imobilizadoGroupAdded = true;
@@ -325,8 +434,8 @@
                     ancBodyHtml += `
                         <tr class="font-bold bg-secondary">
                             <td class="py-2 px-4 text-sm pl-4">${subtotalIntangivel.descricao}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalIntangivel.valorAtual)}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalIntangivel.valorAnterior)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalIntangivel.valorAtual, subtotalIntangivel.faltaAtual)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalIntangivel.valorAnterior, subtotalIntangivel.faltaAnterior)}</td>
                         </tr>
                     `;
                     intangivelGroupAdded = true;
@@ -336,8 +445,8 @@
                 ancBodyHtml += `
                     <tr class="border-b border-border">
                         <td class="py-2 px-4 text-sm text-muted-foreground ${indentClass}">${item.nomeGrupo}</td>
-                        <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(item.valorAtual)}</td>
-                        <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(item.valorAnterior)}</td>
+                        <td class="py-2 px-4 text-sm text-right tabular-nums">${renderValor(item.valorAtual)}</td>
+                        <td class="py-2 px-4 text-sm text-right tabular-nums">${renderValor(item.valorAnterior)}</td>
                     </tr>
                 `;
             });
@@ -345,8 +454,8 @@
             const subtotalAncHtml = `
                 <tr class="font-bold bg-secondary">
                     <td class="py-2 px-4 text-sm">${subtotalAtivoNaoCirculante.descricao}</td>
-                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalAtivoNaoCirculante.valorAtual)}</td>
-                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalAtivoNaoCirculante.valorAnterior)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalAtivoNaoCirculante.valorAtual, subtotalAtivoNaoCirculante.faltaAtual)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalAtivoNaoCirculante.valorAnterior, subtotalAtivoNaoCirculante.faltaAnterior)}</td>
                 </tr>
             `;
 
@@ -388,11 +497,8 @@
             const subtotalFinanciamentosPc = sumItems(financiamentosPcItems, 'Financiamentos');
 
             // Totalizador-pai (circulante): Empréstimos + Financiamentos
-            const subtotalEmprestimosFinanciamentosPc = {
-                descricao: 'Empréstimos, financiamentos',
-                valorAtual: subtotalEmprestimosPc.valorAtual + subtotalFinanciamentosPc.valorAtual,
-                valorAnterior: subtotalEmprestimosPc.valorAnterior + subtotalFinanciamentosPc.valorAnterior
-            };
+            const subtotalEmprestimosFinanciamentosPc = somaTotais('Empréstimos, financiamentos',
+                subtotalEmprestimosPc, subtotalFinanciamentosPc);
 
             // O subtotal principal continua somando todos os itens, para não impactar o total geral.
             const subtotalPassivoCirculante = sumItems(passivoCirculanteItemsAll, '2.1. = Total do passivo circulante');
@@ -416,8 +522,8 @@
                     pcBodyHtml += `
                         <tr class="font-bold bg-secondary">
                             <td class="py-2 px-4 text-sm pl-4">${subtotalEmprestimosFinanciamentosPc.descricao}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalEmprestimosFinanciamentosPc.valorAtual)}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalEmprestimosFinanciamentosPc.valorAnterior)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalEmprestimosFinanciamentosPc.valorAtual, subtotalEmprestimosFinanciamentosPc.faltaAtual)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalEmprestimosFinanciamentosPc.valorAnterior, subtotalEmprestimosFinanciamentosPc.faltaAnterior)}</td>
                         </tr>
                     `;
                     emprestimosFinanciamentosPcGroupAdded = true;
@@ -428,8 +534,8 @@
                     pcBodyHtml += `
                         <tr class="font-bold bg-secondary">
                             <td class="py-2 px-4 text-sm pl-8">${subtotalEmprestimosPc.descricao}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalEmprestimosPc.valorAtual)}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalEmprestimosPc.valorAnterior)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalEmprestimosPc.valorAtual, subtotalEmprestimosPc.faltaAtual)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalEmprestimosPc.valorAnterior, subtotalEmprestimosPc.faltaAnterior)}</td>
                         </tr>
                     `;
                     emprestimosPcGroupAdded = true;
@@ -440,8 +546,8 @@
                     pcBodyHtml += `
                         <tr class="font-bold bg-secondary">
                             <td class="py-2 px-4 text-sm pl-8">${subtotalFinanciamentosPc.descricao}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalFinanciamentosPc.valorAtual)}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalFinanciamentosPc.valorAnterior)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalFinanciamentosPc.valorAtual, subtotalFinanciamentosPc.faltaAtual)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalFinanciamentosPc.valorAnterior, subtotalFinanciamentosPc.faltaAnterior)}</td>
                         </tr>
                     `;
                     financiamentosPcGroupAdded = true;
@@ -452,8 +558,8 @@
                 pcBodyHtml += `
                     <tr class="border-b border-border">
                         <td class="py-2 px-4 text-sm text-muted-foreground ${indentClass}">${item.nomeGrupo}</td>
-                        <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(item.valorAtual)}</td>
-                        <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(item.valorAnterior)}</td>
+                        <td class="py-2 px-4 text-sm text-right tabular-nums">${renderValor(item.valorAtual)}</td>
+                        <td class="py-2 px-4 text-sm text-right tabular-nums">${renderValor(item.valorAnterior)}</td>
                     </tr>
                 `;
             });
@@ -461,8 +567,8 @@
             const subtotalPcHtml = `
                 <tr class="font-bold bg-secondary">
                     <td class="py-2 px-4 text-sm">${subtotalPassivoCirculante.descricao}</td>
-                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalPassivoCirculante.valorAtual)}</td>
-                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalPassivoCirculante.valorAnterior)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalPassivoCirculante.valorAtual, subtotalPassivoCirculante.faltaAtual)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalPassivoCirculante.valorAnterior, subtotalPassivoCirculante.faltaAnterior)}</td>
                 </tr>
             `;
 
@@ -503,11 +609,8 @@
             const subtotalFinanciamentos = sumItems(financiamentosItems, 'Financiamentos');
             
             // Novo totalizador-pai
-            const subtotalEmprestimosFinanciamentos = {
-                descricao: 'Empréstimos, financiamentos',
-                valorAtual: subtotalEmprestimos.valorAtual + subtotalFinanciamentos.valorAtual,
-                valorAnterior: subtotalEmprestimos.valorAnterior + subtotalFinanciamentos.valorAnterior
-            };
+            const subtotalEmprestimosFinanciamentos = somaTotais('Empréstimos, financiamentos',
+                subtotalEmprestimos, subtotalFinanciamentos);
 
             // O subtotal principal continua somando todos os itens, para não impactar o total geral.
             const subtotalPassivoNaoCirculante = sumItems(passivoNaoCirculanteItemsAll, '2.2. = Total do passivo não circulante');
@@ -531,8 +634,8 @@
                     pncBodyHtml += `
                         <tr class="font-bold bg-secondary">
                             <td class="py-2 px-4 text-sm pl-8">${subtotalEmprestimosFinanciamentos.descricao}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalEmprestimosFinanciamentos.valorAtual)}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalEmprestimosFinanciamentos.valorAnterior)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalEmprestimosFinanciamentos.valorAtual, subtotalEmprestimosFinanciamentos.faltaAtual)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalEmprestimosFinanciamentos.valorAnterior, subtotalEmprestimosFinanciamentos.faltaAnterior)}</td>
                         </tr>
                     `;
                     emprestimosFinanciamentosGroupAdded = true;
@@ -542,8 +645,8 @@
                     pncBodyHtml += `
                         <tr class="font-bold bg-secondary">
                             <td class="py-2 px-4 text-sm pl-12">${subtotalEmprestimos.descricao}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalEmprestimos.valorAtual)}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalEmprestimos.valorAnterior)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalEmprestimos.valorAtual, subtotalEmprestimos.faltaAtual)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalEmprestimos.valorAnterior, subtotalEmprestimos.faltaAnterior)}</td>
                         </tr>
                     `;
                     emprestimosGroupAdded = true;
@@ -553,8 +656,8 @@
                     pncBodyHtml += `
                         <tr class="font-bold bg-secondary">
                             <td class="py-2 px-4 text-sm pl-12">${subtotalFinanciamentos.descricao}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalFinanciamentos.valorAtual)}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalFinanciamentos.valorAnterior)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalFinanciamentos.valorAtual, subtotalFinanciamentos.faltaAtual)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalFinanciamentos.valorAnterior, subtotalFinanciamentos.faltaAnterior)}</td>
                         </tr>
                     `;
                     financiamentosGroupAdded = true;
@@ -565,8 +668,8 @@
                 pncBodyHtml += `
                     <tr class="border-b border-border">
                         <td class="py-2 px-4 text-sm text-muted-foreground ${indentClass}">${item.nomeGrupo}</td>
-                        <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(item.valorAtual)}</td>
-                        <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(item.valorAnterior)}</td>
+                        <td class="py-2 px-4 text-sm text-right tabular-nums">${renderValor(item.valorAtual)}</td>
+                        <td class="py-2 px-4 text-sm text-right tabular-nums">${renderValor(item.valorAnterior)}</td>
                     </tr>
                 `;
             });
@@ -575,8 +678,8 @@
             const subtotalPncHtml = `
                 <tr class="font-bold bg-secondary">
                     <td class="py-2 px-4 text-sm">${subtotalPassivoNaoCirculante.descricao}</td>
-                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalPassivoNaoCirculante.valorAtual)}</td>
-                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalPassivoNaoCirculante.valorAnterior)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalPassivoNaoCirculante.valorAtual, subtotalPassivoNaoCirculante.faltaAtual)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalPassivoNaoCirculante.valorAnterior, subtotalPassivoNaoCirculante.faltaAnterior)}</td>
                 </tr>
             `;
 
@@ -622,8 +725,8 @@
                     plBodyHtml += `
                         <tr class="font-bold bg-secondary">
                             <td class="py-2 px-4 text-sm pl-4">${subtotalLucrosPrejuizos.descricao}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalLucrosPrejuizos.valorAtual)}</td>
-                            <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalLucrosPrejuizos.valorAnterior)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalLucrosPrejuizos.valorAtual, subtotalLucrosPrejuizos.faltaAtual)}</td>
+                            <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalLucrosPrejuizos.valorAnterior, subtotalLucrosPrejuizos.faltaAnterior)}</td>
                         </tr>
                     `;
                     groupAdded = true;
@@ -633,8 +736,8 @@
                 plBodyHtml += `
                     <tr class="border-b border-border">
                         <td class="py-2 px-4 text-sm text-muted-foreground ${indentClass}">${item.nomeGrupo}</td>
-                        <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(item.valorAtual)}</td>
-                        <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(item.valorAnterior)}</td>
+                        <td class="py-2 px-4 text-sm text-right tabular-nums">${renderValor(item.valorAtual)}</td>
+                        <td class="py-2 px-4 text-sm text-right tabular-nums">${renderValor(item.valorAnterior)}</td>
                     </tr>
                 `;
             });
@@ -643,8 +746,8 @@
             const subtotalPLHtml = `
                 <tr class="font-bold bg-secondary">
                     <td class="py-2 px-4 text-sm">${subtotalPL.descricao}</td>
-                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalPL.valorAtual)}</td>
-                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotalPL.valorAnterior)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalPL.valorAtual, subtotalPL.faltaAtual)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotalPL.valorAnterior, subtotalPL.faltaAnterior)}</td>
                 </tr>
             `;
 
@@ -669,14 +772,76 @@
             document.getElementById('passivo-pl-container').innerHTML = htmlPassivoCirculante + htmlPassivoNaoCirculante + htmlPL;
 
             // TOTAIS
-            const totalPassivoPL = {
-                valorAtual: subtotalPassivoCirculante.valorAtual + subtotalPassivoNaoCirculante.valorAtual + subtotalPL.valorAtual,
-                valorAnterior: subtotalPassivoCirculante.valorAnterior + subtotalPassivoNaoCirculante.valorAnterior + subtotalPL.valorAnterior
-            };
+            const totalPassivoPL = somaTotais('2. + 3. = Total do passivo e patrimônio líquido',
+                subtotalPassivoCirculante, subtotalPassivoNaoCirculante, subtotalPL);
 
             const htmlTotalAtivo = generateTotalTableHtml('1. = Total do ativo', totalAtivo, currentYear, previousYear);
             const htmlTotalPassivoPL = generateTotalTableHtml('2. + 3. = Total do passivo e patrimônio líquido', totalPassivoPL, currentYear, previousYear);
             document.getElementById('totais-container').innerHTML = htmlTotalAtivo + htmlTotalPassivoPL;
+
+            const avisos = [];
+            /* 0) A causa mais comum de "tudo 0,00": o balancete nao devolveu
+                  linha nenhuma para a empresa. Isso NAO e falta de cadastro
+                  da estrutura, e por isso tem mensagem propria - sem ela, as
+                  tres causas viram o mesmo zero na tela. */
+            const diag = window.__DIAG || {};
+            if (diag.lancEmpresa === 0) {
+                avisos.push(`
+                    <div class="rounded-lg border border-destructive bg-secondary p-4 text-sm">
+                        <span class="font-semibold text-destructive">Nenhum lan\u00e7amento encontrado para a empresa selecionada.</span>
+                        Todos os valores v\u00eam zerados por isso, e n\u00e3o por falta de cadastro da estrutura.
+                        Duas causas poss\u00edveis, nesta ordem:
+                        <ol class="mt-2 ml-5 list-decimal space-y-1">
+                            <li>O par\u00e2metro <span class="font-mono">varEmpresa</span> = <span class="font-mono">:VAR_EMPRESA_DRE</span>
+                                n\u00e3o est\u00e1 declarado na configura\u00e7\u00e3o do componente. A plataforma s\u00f3
+                                substitui um <span class="font-mono">:VAR_*</span> que esteja declarado; sem isso o
+                                <span class="font-mono">CODEMP</span> fica nulo e o balancete n\u00e3o casa com nada.</li>
+                            <li>A empresa selecionada realmente n\u00e3o tem balancete carregado.</li>
+                        </ol>
+                    </div>`);
+            } else if (diag.lancPeriodo === 0 && diag.lancEmpresa > 0) {
+                avisos.push(`
+                    <div class="rounded-lg border border-border bg-secondary p-4 text-sm">
+                        <span class="font-semibold">A empresa tem balancete, mas nada no per\u00edodo filtrado.</span>
+                        S\u00e3o ${diag.lancEmpresa} lan\u00e7amentos no total e nenhum entre as datas escolhidas.
+                        Ajuste o per\u00edodo, ou confira se <span class="font-mono">varDataInicio</span> e
+                        <span class="font-mono">varDataFim</span> est\u00e3o declarados no componente.
+                    </div>`);
+            }
+
+
+            /* 1) Falta de cadastro no ano. Sem este aviso, uma coluna inteira em
+                  branco parece "empresa sem movimento". */
+            if (semAtu || semAnt) {
+                const partes = [];
+                if (semAtu) partes.push(`<b>${semAtu}</b> de ${data.length} linha(s) não têm conta contábil vinculada no ano <b>${currentYear}</b>`);
+                if (semAnt) partes.push(`<b>${semAnt}</b> de ${data.length} linha(s) não têm conta contábil vinculada no ano <b>${previousYear}</b>`);
+                avisos.push(`
+                    <div class="rounded-lg border border-border bg-secondary p-4 text-sm">
+                        <span class="font-semibold">Cadastro do ano incompleto:</span>
+                        ${partes.join(' e ')}.
+                        Essas linhas aparecem como <span class="italic">sem cadastro</span> — não como zero —
+                        e os subtotais que as incluem estão marcados com <span class="font-semibold">*</span>,
+                        porque não estão completos.
+                    </div>`);
+            }
+
+            /* 2) Fechamento do balanco - so se confere quando a coluna esta
+                  completa; com linha sem cadastro a diferenca nao diz nada. */
+            const completoAtu = !totalAtivo.faltaAtual && !totalPassivoPL.faltaAtual;
+            const dif = totalAtivo.valorAtual - totalPassivoPL.valorAtual;
+            if (completoAtu && Math.abs(dif) >= 0.01) {
+                avisos.push(`
+                    <div class="rounded-lg border border-border bg-secondary p-4 text-sm">
+                        <span class="font-semibold">Atenção:</span>
+                        o ativo e o passivo + patrimônio líquido não fecham em ${currentYear} —
+                        diferença de <span class="tabular-nums font-semibold">${formatCurrency(dif)}</span>.
+                        Isso vem do cadastro da estrutura, não do cálculo.
+                    </div>`);
+            }
+
+            const avisoEl = document.getElementById('aviso-container');
+            if (avisoEl) avisoEl.innerHTML = avisos.join('');
             
             document.getElementById('loading-state').classList.add('hidden');
             document.getElementById('report-content').classList.remove('hidden');
@@ -690,53 +855,74 @@
             loadingEl.innerHTML = `<p class="text-lg text-muted-foreground">Carregando dados do balanço...</p>`;
             
             try {
-                const [reportResult, mesResult] = await Promise.all([
-                    queryMitra({ query: componentData.queryDados }),
-                    queryMitra({ query: `SELECT ${componentData.varMes}` })
-                ]);
+                const { valores, faltando, chaves } = resolveParams();
+                if (faltando.length) {
+                    throw new Error(`Parâmetro(s) do componente não configurado(s): ${faltando.join(', ')}. `
+                        + `A plataforma expôs: ${chaves.join(', ') || '(nada)'}.`);
+                }
+
+                /* Uma consulta só. Antes havia uma segunda ("SELECT :VAR_MES")
+                   apenas para descobrir a data de referência, e a tela morria
+                   quando ela vinha vazia. A query corrigida já devolve
+                   ANO_ATU, ANO_ANT e as datas usadas. */
+                const reportResult = await queryMitra({ query: valores.queryDados });
 
                 if (!reportResult || !reportResult.data) {
                     throw new Error("A consulta principal não retornou dados válidos.");
                 }
 
-                if (!mesResult || !mesResult.data || !mesResult.data[0] || !mesResult.data[0][0]) {
-                    throw new Error("Não foi possível obter a data de referência da plataforma. Por favor, selecione uma data no filtro.");
-                }
-
-                const dataReferenciaStr = mesResult.data[0][0];
-                const datePart = dataReferenciaStr.split(' ')[0];
-                const dataReferencia = new Date(datePart + 'T00:00:00');
-                
-                if (isNaN(dataReferencia.getTime())) {
-                    throw new Error(`Data de referência inválida: "${dataReferenciaStr}"`);
-                }
-
-                const currentYear = dataReferencia.getFullYear();
-                const previousYear = currentYear - 1;
-
-                const headers = reportResult.headers.map(h => (h && h.name ? h.name.toUpperCase() : ''));
+                const headers = (reportResult.headers || []).map(h => (h && h.name ? h.name.toUpperCase() : ''));
+                const col = n => headers.indexOf(n);
                 const colMap = {
-                    ordem: headers.indexOf('ORDEM'),
-                    nomeGrupo: headers.indexOf('NOME_GRUPO'),
-                    valorAtual: headers.indexOf('ANO_ATUAL'),
-                    valorAnterior: headers.indexOf('ANO_ANTERIOR')
+                    ordem: col('ORDEM'),
+                    nomeGrupo: col('NOME_GRUPO'),
+                    valorAtual: col('ANO_ATUAL'),
+                    valorAnterior: col('ANO_ANTERIOR'),
+                    anoAtu: col('ANO_ATU'),
+                    anoAnt: col('ANO_ANT'),
+                    dataInicio: col('DATA_INICIO_USADA'),
+                    dataFim: col('DATA_FIM_USADA')
                 };
 
-                if (Object.values(colMap).some(index => index === -1)) {
-                    console.error('Erro de mapeamento de colunas. A query deve retornar: ORDEM, NOME_GRUPO, ANO_ATUAL, ANO_ANTERIOR.', headers);
-                    throw new Error("A query configurada não retorna as colunas esperadas.");
+                const ausentes = ['ordem', 'nomeGrupo', 'valorAtual', 'valorAnterior'].filter(k => colMap[k] === -1);
+                if (ausentes.length) {
+                    console.error('A query deve retornar ORDEM, NOME_GRUPO, ANO_ATUAL, ANO_ANTERIOR.', headers);
+                    throw new Error(`A query configurada não retorna as colunas esperadas (faltou: ${ausentes.join(', ')}).`);
+                }
+
+                if (!reportResult.data.length) {
+                    throw new Error("A consulta não retornou nenhuma linha. Verifique se a empresa "
+                        + "selecionada tem balancete no período.");
                 }
 
                 const processedData = reportResult.data.map(row => {
                     return {
                         ordem: row[colMap.ordem] || '',
                         nomeGrupo: row[colMap.nomeGrupo] || 'N/A',
-                        valorAtual: parseFloat(row[colMap.valorAtual]) || 0,
-                        valorAnterior: parseFloat(row[colMap.valorAnterior]) || 0
+                        /* NULL fica NULL: e "sem cadastro no ano", nao zero */
+                        valorAtual: toNumeroOuNulo(row[colMap.valorAtual]),
+                        valorAnterior: toNumeroOuNulo(row[colMap.valorAnterior])
                     };
                 });
-                
-                renderReport(processedData, currentYear, previousYear);
+
+                const primeira = reportResult.data[0];
+                /* contadores de diagnostico: dizem POR QUE veio zerado */
+                const iLancEmp = col('LANC_EMPRESA');
+                const iLancPer = col('LANC_PERIODO');
+                window.__DIAG = {
+                    lancEmpresa: iLancEmp !== -1 ? Number(primeira[iLancEmp]) : null,
+                    lancPeriodo: iLancPer !== -1 ? Number(primeira[iLancPer]) : null
+                };
+                const anoAtu = colMap.anoAtu !== -1 ? Number(primeira[colMap.anoAtu]) : null;
+                const anoAnt = colMap.anoAnt !== -1 ? Number(primeira[colMap.anoAnt]) : null;
+                const periodo = {
+                    dataInicio: colMap.dataInicio !== -1 ? primeira[colMap.dataInicio] : '',
+                    dataFim: colMap.dataFim !== -1 ? primeira[colMap.dataFim] : '',
+                    anoAtu: anoAtu,
+                    anoAnt: anoAnt
+                };
+
+                renderReport(processedData, anoAtu, anoAnt, periodo);
             } catch (error) {
                 console.error("Falha ao carregar dados do balanço:", error);
                 loadingEl.innerHTML = `<div class="p-8 text-center text-destructive-foreground bg-destructive h-full flex items-center justify-center rounded-lg">Erro Crítico: ${error.message}</div>`;
@@ -753,13 +939,22 @@
                 const intervalTime = 100;
                 const startTime = Date.now();
                 const checkInterval = setInterval(() => {
-                    if (window.componentData && window.componentData.queryDados && window.componentData.varMes && window.componentData.varEmpresa) {
+                    const { faltando } = resolveParams();
+                    if (!faltando.length) {
                         clearInterval(checkInterval);
                         initializeComponent();
                     } else if (Date.now() - startTime > maxWaitTime) {
                         clearInterval(checkInterval);
-                        console.error("Erro: As configurações do componente (componentData) não foram carregadas a tempo.");
-                        document.getElementById('report-container').innerHTML = `<div class="p-8 text-center text-red-700 bg-red-50 h-full flex items-center justify-center">Erro Crítico: As configurações do componente (queryDados, varMes, varEmpresa) não foram carregadas da plataforma.</div>`;
+                        const chaves = Object.keys(window.componentData || {});
+                        console.error("Configurações do componente não carregadas. Faltou:", faltando, "| expostas:", chaves);
+                        document.getElementById('report-container').innerHTML =
+                            `<div class="p-8 text-center rounded-lg border border-border bg-secondary h-full flex items-center justify-center">
+                                <div>
+                                    <p class="text-base font-semibold text-destructive">Configuração do componente incompleta</p>
+                                    <p class="mt-2 text-sm">Faltou: <span class="font-mono">${faltando.join(', ')}</span></p>
+                                    <p class="mt-1 text-sm text-muted-foreground">A plataforma expôs: <span class="font-mono">${chaves.join(', ') || '(nada)'}</span></p>
+                                </div>
+                            </div>`;
                     }
                 }, intervalTime);
             };

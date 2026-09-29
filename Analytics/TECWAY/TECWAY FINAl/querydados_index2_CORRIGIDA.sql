@@ -322,7 +322,25 @@ SELECT
     (SELECT ANO_ATU FROM D)                       AS ANO_ATU,
     (SELECT ANO_ANT FROM D)                       AS ANO_ANT,
     (SELECT DT_INI  FROM D)                       AS DATA_INICIO_USADA,
-    (SELECT DT_FIM  FROM D)                       AS DATA_FIM_USADA
+    (SELECT DT_FIM  FROM D)                       AS DATA_FIM_USADA,
+    /* ------------------------------------------------------------------
+       Dois contadores para a tela poder dizer POR QUE veio zerado. Sem
+       eles, "tudo 0,00" tem tres causas possiveis e nenhuma aparece:
+
+         a) o parametro :VAR_EMPRESA_DRE nao esta declarado no componente,
+            entao CODEMP = NULL e o balancete nao casa com nada;
+         b) a empresa selecionada nao tem lancamento no balancete;
+         c) a empresa tem lancamento, mas nao no periodo filtrado.
+
+       LANC_EMPRESA = 0  -> caso (a) ou (b)
+       LANC_EMPRESA > 0 e LANC_PERIODO = 0 -> caso (c)
+       ------------------------------------------------------------------ */
+    (SELECT COUNT(*) FROM IMP_BASE_BALANCETE
+      WHERE CODEMP = :VAR_EMPRESA_DRE)                       AS LANC_EMPRESA,
+    (SELECT COUNT(*) FROM IMP_BASE_BALANCETE
+      WHERE CODEMP = :VAR_EMPRESA_DRE
+        AND DATE(REFERENCIA) BETWEEN (SELECT DT_INI FROM D)
+                                 AND (SELECT DT_FIM FROM D)) AS LANC_PERIODO
 FROM linhas L
 LEFT JOIN qtd_atu QA ON QA.ORDEM = L.ORDEM AND QA.NOME_GRUPO = L.NOME_GRUPO
 LEFT JOIN qtd_ant QB ON QB.ORDEM = L.ORDEM AND QB.NOME_GRUPO = L.NOME_GRUPO

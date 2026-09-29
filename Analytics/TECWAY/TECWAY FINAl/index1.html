@@ -65,7 +65,6 @@
             <p class="text-lg text-muted-foreground">Carregando dados do balanço...</p>
         </div>
         <div id="report-content" class="hidden">
-            <div id="periodo-label" class="mb-6 text-sm text-muted-foreground"></div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
                 <!-- Coluna da Esquerda: Ativo -->
@@ -121,15 +120,15 @@
             return undefined;
         }
 
+        /* SO a query e obrigatoria.
+
+           As datas e a empresa NAO precisam de parametro no componente: a
+           plataforma resolve :VAR_DATA_INICIO, :VAR_DATA_FIM e
+           :VAR_EMPRESA_DRE direto no texto da query, a partir dos filtros da
+           tela. O "varMes" so existia porque o JavaScript montava uma segunda
+           consulta com ele - e essa consulta foi removida. */
         const PARAMS = {
-            queryDados: ['queryDados', 'query_dados', 'querydado'],
-            varEmpresa: ['varEmpresa', 'var_empresa', 'empresa'],
-            varDataInicio: ['varDataInicio', 'varDtInicio', 'var_data_inicio', 'dataInicio', 'dtInicio'],
-            /* "varMes" fica como apelido porque é assim que o parâmetro da
-               data final está registrado hoje na plataforma (varMes =
-               :VAR_DATA_FIM). Assim a tela funciona antes e depois de
-               renomear o parâmetro, sem virada combinada. */
-            varDataFim: ['varDataFim', 'varDtFim', 'var_data_fim', 'dataFim', 'dtFim', 'varMes']
+            queryDados: ['queryDados', 'query_dados', 'querydado', 'query']
         };
 
         function resolveParams() {
@@ -173,6 +172,16 @@
             if (isSemCadastro(v)) return null;
             const n = parseFloat(v);
             return isNaN(n) ? null : n;
+        }
+
+        /* A plataforma devolve a data de formas diferentes conforme o
+       componente: '2026-09-29', '2026-09-29T00:00:00', '29/09/2026' e
+       '29/09/2026 00:00:00' todos ja apareceram. Para o cabecalho so
+       interessa o ANO, e o primeiro grupo de 4 digitos resolve os quatro
+       casos (dia e mes tem 2 digitos, entao nunca casam primeiro). */
+        function anoDe(valor) {
+            const m = String(valor || '').match(/(\d{4})/);
+            return m ? Number(m[1]) : null;
         }
 
         function formatDateBR(valor) {
@@ -285,19 +294,14 @@
         }
 
         function renderReport(data, periodo) {
-            const colAtual = formatDateBR(periodo.dataFim);
-            const colAnterior = formatDateBR(subtractOneYear(periodo.dataFim));
-
-            /* Cada coluna usa o cadastro de contas do SEU ano. Deixar isso
-               visível no cabeçalho evita a leitura de que as duas colunas
-               compartilham o mesmo mapeamento. */
-            const semAtu = data.filter(d => isSemCadastro(d.valorAtual)).length;
-            const semAnt = data.filter(d => isSemCadastro(d.valorAnterior)).length;
-
-            document.getElementById('periodo-label').innerHTML =
-                `Período: <span class="font-semibold">${formatDateBR(periodo.dataInicio)} a ${formatDateBR(periodo.dataFim)}</span>`
-                + `  •  saldos acumulados até ${colAtual}, comparados com ${colAnterior}`
-                + `  •  cada coluna usa o cadastro de contas do seu próprio ano`;
+            /* cabecalho das colunas: so o ano */
+            /* tudo passa pelo anoDe: se a plataforma devolver ANO_ATU como
+               data (ja aconteceu), o ano e extraido igual e o cabecalho nunca
+               volta a mostrar '29/09/2026 00:00:00' */
+            const anoAtual = anoDe(periodo.anoAtu) || anoDe(periodo.dataFim) || new Date().getFullYear();
+            const anoAnterior = anoDe(periodo.anoAnt) || (anoAtual - 1);
+            const colAtual = String(anoAtual);
+            const colAnterior = String(anoAnterior);
 
             const ativoCirculanteItems = data.filter(d => startsWithOrder(d.ordem, '1.1.'));
             const subtotalAtivoCirculante = sumItems(ativoCirculanteItems, '1.1. = Total do ativo circulante');
@@ -334,23 +338,35 @@
                 + generateTotalTableHtml('2. + 3. = Total do passivo e patrimônio líquido', totalPassivoPL);
 
             const avisos = [];
-
-            /* 1) Falta de cadastro no ano. É o aviso mais importante: sem ele,
-                  uma coluna inteira em branco parece "empresa sem movimento". */
-            if (semAtu || semAnt) {
-                const partes = [];
-                if (semAtu) partes.push(`<b>${semAtu}</b> de ${data.length} linha(s) não têm conta contábil vinculada no ano <b>${periodo.anoAtu ?? colAtual}</b> (coluna ${colAtual})`);
-                if (semAnt) partes.push(`<b>${semAnt}</b> de ${data.length} linha(s) não têm conta contábil vinculada no ano <b>${periodo.anoAnt ?? colAnterior}</b> (coluna ${colAnterior})`);
+            /* 0) A causa mais comum de "tudo 0,00": o balancete nao devolveu
+                  linha nenhuma para a empresa. Isso NAO e falta de cadastro
+                  da estrutura, e por isso tem mensagem propria - sem ela, as
+                  tres causas viram o mesmo zero na tela. */
+            const diag = window.__DIAG || {};
+            if (diag.lancEmpresa === 0) {
+                avisos.push(`
+                    <div class="rounded-lg border border-destructive bg-secondary p-4 text-sm">
+                        <span class="font-semibold text-destructive">Nenhum lan\u00e7amento encontrado para a empresa selecionada.</span>
+                        Todos os valores v\u00eam zerados por isso, e n\u00e3o por falta de cadastro da estrutura.
+                        Duas causas poss\u00edveis, nesta ordem:
+                        <ol class="mt-2 ml-5 list-decimal space-y-1">
+                            <li>O par\u00e2metro <span class="font-mono">varEmpresa</span> = <span class="font-mono">:VAR_EMPRESA_DRE</span>
+                                n\u00e3o est\u00e1 declarado na configura\u00e7\u00e3o do componente. A plataforma s\u00f3
+                                substitui um <span class="font-mono">:VAR_*</span> que esteja declarado; sem isso o
+                                <span class="font-mono">CODEMP</span> fica nulo e o balancete n\u00e3o casa com nada.</li>
+                            <li>A empresa selecionada realmente n\u00e3o tem balancete carregado.</li>
+                        </ol>
+                    </div>`);
+            } else if (diag.lancPeriodo === 0 && diag.lancEmpresa > 0) {
                 avisos.push(`
                     <div class="rounded-lg border border-border bg-secondary p-4 text-sm">
-                        <span class="font-semibold">Cadastro do ano incompleto:</span>
-                        ${partes.join(' e ')}.
-                        Essas linhas aparecem como <span class="italic">sem cadastro</span> — não como zero —
-                        e os subtotais que as incluem estão marcados com <span class="font-semibold">*</span>,
-                        porque não estão completos. Para a coluna trazer valor, as contas
-                        precisam ser vinculadas àquele ano no cadastro da estrutura.
+                        <span class="font-semibold">A empresa tem balancete, mas nada no per\u00edodo filtrado.</span>
+                        S\u00e3o ${diag.lancEmpresa} lan\u00e7amentos no total e nenhum entre as datas escolhidas.
+                        Ajuste o per\u00edodo, ou confira se <span class="font-mono">varDataInicio</span> e
+                        <span class="font-mono">varDataFim</span> est\u00e3o declarados no componente.
                     </div>`);
             }
+
 
             /* 2) Fechamento do balanço - só faz sentido conferir quando a
                   coluna está completa. Com linha sem cadastro, a diferença
@@ -436,6 +452,13 @@
                 }));
 
                 const primeira = reportResult.data[0];
+                /* contadores de diagnostico: dizem POR QUE veio zerado */
+                const iLancEmp = col('LANC_EMPRESA');
+                const iLancPer = col('LANC_PERIODO');
+                window.__DIAG = {
+                    lancEmpresa: iLancEmp !== -1 ? Number(primeira[iLancEmp]) : null,
+                    lancPeriodo: iLancPer !== -1 ? Number(primeira[iLancPer]) : null
+                };
                 const periodo = {
                     dataInicio: colMap.dataInicio !== -1 ? primeira[colMap.dataInicio] : '',
                     dataFim: colMap.dataFim !== -1 ? primeira[colMap.dataFim] : '',
