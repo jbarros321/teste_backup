@@ -11,22 +11,25 @@
    grava tudo numa unica linha, e um -- comentaria todo o resto.
 
    ---------------------------------------------------------------------
-   FONTE: BALANCETE (IMP_BASE_BALANCETE), como as telas index1 a index9
+   FONTE: DRE_TECWAY (mantida, por decisao de 29/09/2026)
    ---------------------------------------------------------------------
-   A versao anterior lia DRE_TECWAY. Essa tabela so tem dados ate 04/2026 e so das empresas
-   6, 7 e 999.
-   Agora os valores saem do balancete, pelo MESMO vinculo de contas que
-   ja existia (CAD_CONTA_DRE_TW -> DET_DRE_TW), em valor cheio (a tabela
-   antiga guardava em milhares).
+   A DRE_TECWAY guarda, em cada mes, o ACUMULADO DO ANO ate aquele mes,
+   em milhares (x1000 = reais). Em dezembro bate ao centavo com o
+   resultado do ano no balancete (CODEMP 999: 2025 = 911.300,74). O
+   balancete de 2022-2025 so tem o resultado em dezembro, por isso a DRE
+   mes a mes continua nesta tabela. Limitacao: vai ate 04/2026 e so tem
+   as empresas 6, 7 e 999.
 
-   MESES: os 12 meses do ano da data fim. So os meses que tocam o
-   periodo filtrado tem valor; os outros vem NULL.
+   MESES: os 12 meses do ano da data fim; so os que tocam o periodo
+   filtrado tem valor, os outros vem NULL. Cada coluna e o acumulado de
+   janeiro ate aquele mes (e o que a tabela guarda).
 
-   VALOR DO MES = MOVIMENTO do mes (so a parte do mes dentro do
-   periodo). Sem SINAL: no balancete receita ja vem positiva e despesa
-   negativa, que e o que a tela espera (ela nao aplica sinal na DRE).
-   As linhas 6.1/6.2 (adicoes/exclusoes) repetem contas de outras linhas
-   de proposito - a tela usa essas duas so no calculo do imposto.
+   O QUE MUDOU EM RELACAO A ORIGINAL: datas pelo parser das outras telas
+   (a original quebrava com 'DD/MM/AAAA HH:MM:SS'); :VAR_EMPRESA (lista)
+   virou :VAR_EMPRESA_DRE; vinculos com DISTINCT + TRIM; diagnostico
+   (DATAS_OK etc.). Sem SINAL: receita positiva e despesa negativa, que e
+   o que a tela espera. As linhas 6.1/6.2 (adicoes/exclusoes) repetem
+   contas de outras linhas de proposito.
    ===================================================================== */
 
 WITH PARAMS AS (
@@ -90,12 +93,13 @@ vinc AS (
     WHERE d.ID_ESTR_DRE_TW = 9
 ),
 movs AS (
-    SELECT B.CTACTB, M.N, SUM(B.VLRLANC) AS V
-    FROM IMP_BASE_BALANCETE B
+    SELECT TRIM(t.ID_CONTA_CONTABIL) AS CTACTB, M.N,
+           SUM(COALESCE(t.DRE_TECWAY, 0)) * 1000 AS V
+    FROM DRE_TECWAY t
     INNER JOIN M ON M.ATIVO = 1
-                AND DATE(B.REFERENCIA) BETWEEN M.DE AND M.ATE
-    WHERE B.CODEMP = :VAR_EMPRESA_DRE
-    GROUP BY B.CTACTB, M.N
+                AND t.MES = DATE_FORMAT(M.DE, '%m/%Y')
+    WHERE t.ID_EMPRESA = :VAR_EMPRESA_DRE
+    GROUP BY TRIM(t.ID_CONTA_CONTABIL), M.N
 ),
 LM AS (
     SELECT v.ID, s.N, SUM(s.V) AS V
@@ -134,12 +138,13 @@ SELECT
     (SELECT DT_INI FROM D)                                   AS DATA_INICIO_USADA,
     (SELECT DT_FIM FROM D)                                   AS DATA_FIM_USADA,
     (SELECT ANO    FROM D)                                   AS ANO_ATU,
-    (SELECT COUNT(*) FROM IMP_BASE_BALANCETE
-      WHERE CODEMP = :VAR_EMPRESA_DRE)                       AS LANC_EMPRESA,
-    (SELECT COUNT(*) FROM IMP_BASE_BALANCETE
-      WHERE CODEMP = :VAR_EMPRESA_DRE
-        AND DATE(REFERENCIA) BETWEEN (SELECT DT_INI FROM D)
-                                 AND (SELECT DT_FIM FROM D)) AS LANC_PERIODO,
+    (SELECT COUNT(*) FROM DRE_TECWAY
+      WHERE ID_EMPRESA = :VAR_EMPRESA_DRE)                   AS LANC_EMPRESA,
+    (SELECT COUNT(*) FROM DRE_TECWAY t2
+      INNER JOIN M ON M.ATIVO = 1 AND t2.MES = DATE_FORMAT(M.DE, '%m/%Y')
+      WHERE t2.ID_EMPRESA = :VAR_EMPRESA_DRE)                AS LANC_PERIODO,
+    (SELECT DATE_FORMAT(MAX(STR_TO_DATE(CONCAT('01/', MES), '%d/%m/%Y')), '%m/%Y')
+       FROM DRE_TECWAY WHERE ID_EMPRESA = :VAR_EMPRESA_DRE)  AS ULTIMO_MES_CARGA,
     CASE WHEN (SELECT DT_INI_IN FROM PARAMS) IS NULL
             OR (SELECT DT_FIM_IN FROM PARAMS) IS NULL
          THEN 0 ELSE 1 END                                   AS DATAS_OK

@@ -239,9 +239,10 @@ saldo base + movimentos e só fecha quando os dois períodos se encostam (ano ch
 
 # index10 — base de variáveis dos indicadores (pasta `index10/`)
 
-**Mudou a fonte:** saía de `BP_TECWAY` (vazia) e `DRE_TECWAY` (só até 04/2026); agora sai do
-balancete (`IMP_BASE_BALANCETE`), pelo mesmo vínculo de contas (`CAD_CONTA_DRE_TW`,
-estruturas 7 = BP e 9 = DRE).
+**Fonte:** o BP saía de `BP_TECWAY` (vazia) e agora sai do balancete (`IMP_BASE_BALANCETE`),
+pelo mesmo vínculo de contas (`CAD_CONTA_DRE_TW`, estrutura 7). A DRE (estrutura 9) **continua
+na `DRE_TECWAY`**: ela é o acumulado do ano mês a mês, e o balancete de 2022–2025 só tem o
+resultado em dezembro (limitação: dados até 04/2026, empresas 6, 7 e 999).
 
 | Parâmetro do componente | Arquivo |
 |---|---|
@@ -271,3 +272,20 @@ Cadastro a corrigir (estrutura 5): remover o vínculo `' 3.1.01.01.000004'` (rec
 espaço) de Disponibilidades; remover o vínculo duplicado de `1.1.01.01.000001`; ORDEM 13
 repetida (Estoque e uma linha RLP vazia); ~17,6 mi de passivo/PL fora da estrutura
 (2.3.02.02, 2.1.01.12, 2.3.04.01…), por isso o balanço não fecha.
+
+
+---
+
+# index12 — DRE mês a mês (pasta `index12/`)
+
+Fonte mantida: `DRE_TECWAY` (acumulado do ano até cada mês; dezembro = resultado do ano do
+balancete, ao centavo). Limitação: dados até 04/2026, empresas 6, 7 e 999 — a tela avisa.
+
+| Parâmetro do componente | Valor / arquivo |
+|---|---|
+| `queryDRE` | `index12/queryDRE_CORRIGIDA_oneline.sql` |
+| `varEmpresa` | `:VAR_EMPRESA_DRE` |
+| `varDataInicio` | `:VAR_DATA_INICIO` |
+| `varDataFim` | `:VAR_DATA_FIM` |
+
+`varMes` não é mais usado. Publicar `index12/index12.html`.
