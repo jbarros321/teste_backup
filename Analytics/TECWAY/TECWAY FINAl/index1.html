@@ -145,6 +145,20 @@
         /* Valores completos e exatos: sem divisão por 1000 e com os
            centavos. A versão anterior dividia tudo por 1000 e arredondava
            para inteiro, então a tela mostrava milhares. */
+        /* NULL vindo da query significa "o ano desta coluna nao tem conta
+           vinculada". Isso NAO e zero, e a celula tem que dizer isso - senao
+           falta de cadastro passa por saldo zero. */
+        function isSemCadastro(v) {
+            return v === null || v === undefined || v === '';
+        }
+
+        function renderValor(value) {
+            if (isSemCadastro(value)) {
+                return '<span class="text-muted-foreground italic" title="O ano desta coluna nao tem conta contabil vinculada nesta linha">sem cadastro</span>';
+            }
+            return formatCurrency(value);
+        }
+
         function formatCurrency(value) {
             const num = parseFloat(value);
             if (isNaN(num)) return '0,00';
@@ -153,6 +167,12 @@
                 maximumFractionDigits: 2
             }).format(Math.abs(num));
             return num < 0 ? `(${formatted})` : formatted;
+        }
+
+        function toNumeroOuNulo(v) {
+            if (isSemCadastro(v)) return null;
+            const n = parseFloat(v);
+            return isNaN(n) ? null : n;
         }
 
         function formatDateBR(valor) {
@@ -173,16 +193,16 @@
             let itemsHtml = items.map(item => `
                 <tr class="border-b border-border">
                     <td class="py-2 px-4 text-sm text-muted-foreground">${item.nomeGrupo}</td>
-                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(item.valorAtual)}</td>
-                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(item.valorAnterior)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderValor(item.valorAtual)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderValor(item.valorAnterior)}</td>
                 </tr>
             `).join('');
 
             let subtotalHtml = `
                 <tr class="font-bold bg-secondary">
                     <td class="py-2 px-4 text-sm">${subtotal.descricao}</td>
-                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotal.valorAtual)}</td>
-                    <td class="py-2 px-4 text-sm text-right tabular-nums">${formatCurrency(subtotal.valorAnterior)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotal.valorAtual, subtotal.faltaAtual)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotal.valorAnterior, subtotal.faltaAnterior)}</td>
                 </tr>
             `;
 
@@ -212,8 +232,8 @@
                         <tbody>
                              <tr class="font-bold border-y-2 border-double border-foreground bg-secondary">
                                 <td class="py-3 px-4 text-base">${title}</td>
-                                <td class="py-3 px-4 text-base text-right tabular-nums w-40">${formatCurrency(total.valorAtual)}</td>
-                                <td class="py-3 px-4 text-base text-right tabular-nums w-40">${formatCurrency(total.valorAnterior)}</td>
+                                <td class="py-3 px-4 text-base text-right tabular-nums w-40">${renderSubtotal(total.valorAtual, total.faltaAtual)}</td>
+                                <td class="py-3 px-4 text-base text-right tabular-nums w-40">${renderSubtotal(total.valorAnterior, total.faltaAnterior)}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -230,24 +250,54 @@
         }
 
         function createSubtotal(descricao) {
-            return { descricao, valorAtual: 0, valorAnterior: 0 };
+            return { descricao, valorAtual: 0, valorAnterior: 0, faltaAtual: 0, faltaAnterior: 0 };
         }
 
+        /* Soma apenas as linhas que tem cadastro, e CONTA as que nao tem.
+           Tratar "sem cadastro" como zero produziria um subtotal que parece
+           completo e nao e - por isso o subtotal incompleto vem marcado. */
         function sumItems(items, descricao) {
             return items.reduce((acc, item) => {
-                acc.valorAtual += item.valorAtual;
-                acc.valorAnterior += item.valorAnterior;
+                if (isSemCadastro(item.valorAtual)) acc.faltaAtual++;
+                else acc.valorAtual += item.valorAtual;
+                if (isSemCadastro(item.valorAnterior)) acc.faltaAnterior++;
+                else acc.valorAnterior += item.valorAnterior;
                 return acc;
             }, createSubtotal(descricao));
+        }
+
+        function somaTotais(descricao, ...partes) {
+            return partes.reduce((acc, p) => {
+                acc.valorAtual += p.valorAtual;
+                acc.valorAnterior += p.valorAnterior;
+                acc.faltaAtual += p.faltaAtual;
+                acc.faltaAnterior += p.faltaAnterior;
+                return acc;
+            }, createSubtotal(descricao));
+        }
+
+        /* subtotal a que faltam linhas ganha um asterisco, para nao ser lido
+           como numero fechado */
+        function renderSubtotal(valor, falta) {
+            const base = isSemCadastro(valor) ? renderValor(valor) : formatCurrency(valor);
+            if (!falta) return base;
+            return `${base} <span class="text-muted-foreground" title="${falta} linha(s) deste grupo sem cadastro no ano - subtotal incompleto">*</span>`;
         }
 
         function renderReport(data, periodo) {
             const colAtual = formatDateBR(periodo.dataFim);
             const colAnterior = formatDateBR(subtractOneYear(periodo.dataFim));
 
-            document.getElementById('periodo-label').textContent =
-                `Período: ${formatDateBR(periodo.dataInicio)} a ${formatDateBR(periodo.dataFim)}`
-                + `  •  saldos acumulados até ${colAtual}, comparados com ${colAnterior}`;
+            /* Cada coluna usa o cadastro de contas do SEU ano. Deixar isso
+               visível no cabeçalho evita a leitura de que as duas colunas
+               compartilham o mesmo mapeamento. */
+            const semAtu = data.filter(d => isSemCadastro(d.valorAtual)).length;
+            const semAnt = data.filter(d => isSemCadastro(d.valorAnterior)).length;
+
+            document.getElementById('periodo-label').innerHTML =
+                `Período: <span class="font-semibold">${formatDateBR(periodo.dataInicio)} a ${formatDateBR(periodo.dataFim)}</span>`
+                + `  •  saldos acumulados até ${colAtual}, comparados com ${colAnterior}`
+                + `  •  cada coluna usa o cadastro de contas do seu próprio ano`;
 
             const ativoCirculanteItems = data.filter(d => startsWithOrder(d.ordem, '1.1.'));
             const subtotalAtivoCirculante = sumItems(ativoCirculanteItems, '1.1. = Total do ativo circulante');
@@ -255,10 +305,8 @@
             const ativoNaoCirculanteItems = data.filter(d => startsWithOrder(d.ordem, '1.2.'));
             const subtotalAtivoNaoCirculante = sumItems(ativoNaoCirculanteItems, '1.2. = Total do ativo não circulante');
 
-            const totalAtivo = {
-                valorAtual: subtotalAtivoCirculante.valorAtual + subtotalAtivoNaoCirculante.valorAtual,
-                valorAnterior: subtotalAtivoCirculante.valorAnterior + subtotalAtivoNaoCirculante.valorAnterior
-            };
+            const totalAtivo = somaTotais('1. = Total do ativo',
+                subtotalAtivoCirculante, subtotalAtivoNaoCirculante);
 
             document.getElementById('ativo-container').innerHTML =
                 generateTableHtml('1.1. = Ativo circulante', ativoCirculanteItems, subtotalAtivoCirculante, colAtual, colAnterior)
@@ -273,10 +321,8 @@
             const plItems = data.filter(d => startsWithOrder(d.ordem, '3.'));
             const subtotalPL = sumItems(plItems, '3. = Total do patrimônio líquido');
 
-            const totalPassivoPL = {
-                valorAtual: subtotalPassivoCirculante.valorAtual + subtotalPassivoNaoCirculante.valorAtual + subtotalPL.valorAtual,
-                valorAnterior: subtotalPassivoCirculante.valorAnterior + subtotalPassivoNaoCirculante.valorAnterior + subtotalPL.valorAnterior
-            };
+            const totalPassivoPL = somaTotais('2. + 3. = Total do passivo e patrimônio líquido',
+                subtotalPassivoCirculante, subtotalPassivoNaoCirculante, subtotalPL);
 
             document.getElementById('passivo-pl-container').innerHTML =
                 generateTableHtml('2.1. = Passivo circulante', passivoCirculanteItems, subtotalPassivoCirculante, colAtual, colAnterior)
@@ -287,18 +333,42 @@
                 generateTotalTableHtml('1. = Total do ativo', totalAtivo)
                 + generateTotalTableHtml('2. + 3. = Total do passivo e patrimônio líquido', totalPassivoPL);
 
-            /* O balanço do cadastro atual não fecha. Em vez de esconder
-               isso, a tela mostra a diferença - é dado de cadastro, e
-               silenciar faria o número parecer conferido. */
+            const avisos = [];
+
+            /* 1) Falta de cadastro no ano. É o aviso mais importante: sem ele,
+                  uma coluna inteira em branco parece "empresa sem movimento". */
+            if (semAtu || semAnt) {
+                const partes = [];
+                if (semAtu) partes.push(`<b>${semAtu}</b> de ${data.length} linha(s) não têm conta contábil vinculada no ano <b>${periodo.anoAtu ?? colAtual}</b> (coluna ${colAtual})`);
+                if (semAnt) partes.push(`<b>${semAnt}</b> de ${data.length} linha(s) não têm conta contábil vinculada no ano <b>${periodo.anoAnt ?? colAnterior}</b> (coluna ${colAnterior})`);
+                avisos.push(`
+                    <div class="rounded-lg border border-border bg-secondary p-4 text-sm">
+                        <span class="font-semibold">Cadastro do ano incompleto:</span>
+                        ${partes.join(' e ')}.
+                        Essas linhas aparecem como <span class="italic">sem cadastro</span> — não como zero —
+                        e os subtotais que as incluem estão marcados com <span class="font-semibold">*</span>,
+                        porque não estão completos. Para a coluna trazer valor, as contas
+                        precisam ser vinculadas àquele ano no cadastro da estrutura.
+                    </div>`);
+            }
+
+            /* 2) Fechamento do balanço - só faz sentido conferir quando a
+                  coluna está completa. Com linha sem cadastro, a diferença
+                  não significa nada e afirmar que "não fecha" seria errado. */
+            const completoAtu = !totalAtivo.faltaAtual && !totalPassivoPL.faltaAtual;
             const dif = totalAtivo.valorAtual - totalPassivoPL.valorAtual;
-            document.getElementById('aviso-container').innerHTML = Math.abs(dif) < 0.01 ? '' : `
-                <div class="rounded-lg border border-border bg-secondary p-4 text-sm">
-                    <span class="font-semibold">Atenção:</span>
-                    o ativo e o passivo + patrimônio líquido não fecham nesta data —
-                    diferença de <span class="tabular-nums font-semibold">${formatCurrency(dif)}</span>.
-                    Isso vem do cadastro da estrutura (contas sem vínculo no ano, ou
-                    linha de resultado fora da estrutura), não do cálculo.
-                </div>`;
+            if (completoAtu && Math.abs(dif) >= 0.01) {
+                avisos.push(`
+                    <div class="rounded-lg border border-border bg-secondary p-4 text-sm">
+                        <span class="font-semibold">Atenção:</span>
+                        o ativo e o passivo + patrimônio líquido não fecham em ${colAtual} —
+                        diferença de <span class="tabular-nums font-semibold">${formatCurrency(dif)}</span>.
+                        Isso vem do cadastro da estrutura (conta sem vínculo, ou linha de
+                        resultado fora da estrutura), não do cálculo.
+                    </div>`);
+            }
+
+            document.getElementById('aviso-container').innerHTML = avisos.join('');
 
             document.getElementById('loading-state').classList.add('hidden');
             document.getElementById('report-content').classList.remove('hidden');
@@ -339,7 +409,9 @@
                     valorAtual: col('VLRLANC_ATU'),
                     valorAnterior: col('VLRLANC_ANT'),
                     dataInicio: col('DATA_INICIO_USADA'),
-                    dataFim: col('DATA_FIM_USADA')
+                    dataFim: col('DATA_FIM_USADA'),
+                    anoAtu: col('ANO_ATU'),
+                    anoAnt: col('ANO_ANT')
                 };
 
                 const obrigatorias = ['ordem', 'nomeGrupo', 'valorAtual', 'valorAnterior'];
@@ -357,15 +429,18 @@
                 const processedData = reportResult.data.map(row => ({
                     ordem: row[colMap.ordem] || '',
                     nomeGrupo: row[colMap.nomeGrupo] || 'N/A',
-                    /* valores completos, sem dividir por 1000 */
-                    valorAtual: parseFloat(row[colMap.valorAtual]) || 0,
-                    valorAnterior: parseFloat(row[colMap.valorAnterior]) || 0
+                    /* valores completos, sem dividir por 1000. NULL fica NULL:
+                       e "sem cadastro no ano", que nao pode virar zero. */
+                    valorAtual: toNumeroOuNulo(row[colMap.valorAtual]),
+                    valorAnterior: toNumeroOuNulo(row[colMap.valorAnterior])
                 }));
 
                 const primeira = reportResult.data[0];
                 const periodo = {
                     dataInicio: colMap.dataInicio !== -1 ? primeira[colMap.dataInicio] : '',
-                    dataFim: colMap.dataFim !== -1 ? primeira[colMap.dataFim] : ''
+                    dataFim: colMap.dataFim !== -1 ? primeira[colMap.dataFim] : '',
+                    anoAtu: colMap.anoAtu !== -1 ? primeira[colMap.anoAtu] : null,
+                    anoAnt: colMap.anoAnt !== -1 ? primeira[colMap.anoAnt] : null
                 };
 
                 renderReport(processedData, periodo);

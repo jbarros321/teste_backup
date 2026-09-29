@@ -1,8 +1,16 @@
 /* =====================================================================
    BP TECWAY - queryDados CORRIGIDA para o filtro de PERIODO
-   tenant_61302 | ESTR_DEMONSTRATIVOS.ID = 1 (Externo)
-                  para o BP Interno, troque "EST.ID = 1" por "EST.ID = 2".
-                  Agora e UM lugar so: a CTE `linhas`.
+   VERSAO PARA A TELA index2.html - BP INTERNO
+   tenant_61302 | ESTR_DEMONSTRATIVOS.ID = 2 (Interno)
+
+   Diferencas em relacao a querydados_CORRIGIDA.sql:
+       - EST.ID = 2 (Interno) em vez de 1
+       - as colunas de valor saem como ANO_ATUAL / ANO_ANTERIOR, que e como
+         a index2.html as procura (a index1.html usa VLRLANC_ATU/_ANT)
+
+   A query original desta tela tinha, alem dos defeitos listados abaixo, um
+   a mais: ela NAO usava DET_DEMONSTRATIVO_CTACTB_EXC, ou seja ignorava as
+   regras de exclusao de conta por completo. Aqui elas valem.
 
    Parametros do componente:
        :VAR_DATA_INICIO   data inicial do filtro da tela
@@ -19,8 +27,8 @@
    A tela tem duas colunas: a do periodo filtrado e a comparativa de um
    ano antes. Cada uma resolve o vinculo conta x linha no SEU ano:
 
-       VLRLANC_ATU  -> cadastro do ano de :VAR_DATA_FIM
-       VLRLANC_ANT  -> cadastro do ano de :VAR_DATA_FIM menos 1
+       ANO_ATUAL  -> cadastro do ano de :VAR_DATA_FIM
+       ANO_ANTERIOR  -> cadastro do ano de :VAR_DATA_FIM menos 1
 
    Nao ha fallback de um ano para o outro. Se o ano daquela coluna nao tem
    conta vinculada, aquela coluna vem NULL e a tela mostra "sem cadastro";
@@ -95,7 +103,7 @@
    COLUNAS DEVOLVIDAS
    ---------------------------------------------------------------------
        ORDEM, NOME_GRUPO, COD_NOTA_EXPLICATIVA
-       VLRLANC_ATU / VLRLANC_ANT    valor, ou NULL se o ano daquela
+       ANO_ATUAL / ANO_ANTERIOR    valor, ou NULL se o ano daquela
                                     coluna nao tem conta vinculada
        QTD_CONTAS_ATU / _ANT        contas vinculadas em cada ano
        SEM_CADASTRO_ATU / _ANT      1 = aquele ano nao tem cadastro
@@ -174,7 +182,7 @@ linhas AS (
     FROM ESTR_DEMONSTRATIVOS EST
     INNER JOIN DET_DEMONSTRATIVO DET
             ON EST.ID = DET.ID_ESTR_DEMONSTRATIVO
-    WHERE EST.ID = 1
+    WHERE EST.ID = 2
       AND TRIM(DET.ORDEM) <> '3.3.3'
 ),
 ref_atu AS (
@@ -305,8 +313,8 @@ SELECT
     /* ano sem cadastro -> NULL naquela coluna, para a tela mostrar
        "sem cadastro". Com cadastro -> o valor, e 0 e zero de verdade,
        nao falta de dado. */
-    CASE WHEN QA.QTD IS NULL THEN NULL ELSE IFNULL(TA.V, 0) END AS VLRLANC_ATU,
-    CASE WHEN QB.QTD IS NULL THEN NULL ELSE IFNULL(TB.V, 0) END AS VLRLANC_ANT,
+    CASE WHEN QA.QTD IS NULL THEN NULL ELSE IFNULL(TA.V, 0) END AS ANO_ATUAL,
+    CASE WHEN QB.QTD IS NULL THEN NULL ELSE IFNULL(TB.V, 0) END AS ANO_ANTERIOR,
     IFNULL(QA.QTD, 0)                             AS QTD_CONTAS_ATU,
     IFNULL(QB.QTD, 0)                             AS QTD_CONTAS_ANT,
     CASE WHEN QA.QTD IS NULL THEN 1 ELSE 0 END    AS SEM_CADASTRO_ATU,
