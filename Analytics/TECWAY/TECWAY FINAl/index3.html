@@ -101,6 +101,18 @@
                vinculada". Isso NAO e zero. Antes a tela fazia
                parseFloat(v) || 0 e mostrava 0, ou seja falta de cadastro
                passava por valor zero. */
+            /* A plataforma devolve a data como 'DD/MM/AAAA HH:MM:SS' (e as vezes
+               como AAAA-MM-DD). Para o cabecalho so interessa o ANO, e o primeiro
+               grupo de 4 digitos resolve todos os casos - dia e mes tem 2 digitos,
+               entao nunca casam primeiro.
+
+               Isto tambem blinda contra ANO_ATU voltar como data em vez de
+               inteiro: Number('01/01/2026 00:00:00') daria NaN no cabecalho. */
+            function anoDe(valor) {
+                const m = String(valor || '').match(/(\d{4})/);
+                return m ? Number(m[1]) : null;
+            }
+
             function isSemCadastro(v) {
                 return v === null || v === undefined || v === '';
             }
@@ -193,9 +205,24 @@
                     const primeira = result.data[0];
 
                     /* Se as datas nao chegaram, PARA - ver comentario na query. */
-                    const iDatasOk = headers.indexOf('DATAS_OK');
-                    if (iDatasOk !== -1 && Number(primeira[iDatasOk]) === 0) {
-                        throw new Error("O filtro de datas n\u00e3o chegou \u00e0 consulta, ent\u00e3o os n\u00fameros seriam calculados sobre a data de hoje em vez do per\u00edodo escolhido. Declare no componente os par\u00e2metros varDataInicio = :VAR_DATA_INICIO e varDataFim = :VAR_DATA_FIM (a plataforma s\u00f3 substitui um :VAR_* que esteja declarado).");
+                    const bruto = n => { const i = headers.indexOf(n); return i !== -1 ? primeira[i] : '(coluna ausente)'; };
+                    const cru = {
+                        DATAS_OK: bruto('DATAS_OK'),
+                        DATA_INICIO_USADA: bruto('DATA_INICIO_USADA'),
+                        DATA_FIM_USADA: bruto('DATA_FIM_USADA'),
+                        ANO_ATU: bruto('ANO_ATU'), ANO_ANT: bruto('ANO_ANT'),
+                        LANC_EMPRESA: bruto('LANC_EMPRESA'), LANC_PERIODO: bruto('LANC_PERIODO')
+                    };
+                    console.log('[DRE Externo] diagnostico da query:', cru);
+                    if (String(cru.DATAS_OK) === '0') {
+                        throw new Error('O filtro de datas nao chegou a consulta. '
+                            + 'DATAS_OK=' + cru.DATAS_OK
+                            + ' | DATA_INICIO_USADA=' + cru.DATA_INICIO_USADA
+                            + ' | DATA_FIM_USADA=' + cru.DATA_FIM_USADA
+                            + ' | ANO_ATU=' + cru.ANO_ATU + ' | ANO_ANT=' + cru.ANO_ANT
+                            + ' | LANC_EMPRESA=' + cru.LANC_EMPRESA
+                            + ' | LANC_PERIODO=' + cru.LANC_PERIODO
+                            + '  --  copie esta linha inteira.');
                     }
                     const iLancEmp = headers.indexOf('LANC_EMPRESA');
                     const iLancPer = headers.indexOf('LANC_PERIODO');
@@ -203,8 +230,10 @@
                         lancEmpresa: iLancEmp !== -1 ? Number(primeira[iLancEmp]) : null,
                         lancPeriodo: iLancPer !== -1 ? Number(primeira[iLancPer]) : null
                     };
-                    const currentYear = colMap.anoAtu !== -1 ? Number(primeira[colMap.anoAtu]) : new Date().getFullYear();
-                    const previousYear = colMap.anoAnt !== -1 ? Number(primeira[colMap.anoAnt]) : currentYear - 1;
+                    const currentYear = anoDe(colMap.anoAtu !== -1 ? primeira[colMap.anoAtu] : null)
+                                     || anoDe(colMap.dataFim !== -1 ? primeira[colMap.dataFim] : null)
+                                     || new Date().getFullYear();
+                    const previousYear = anoDe(colMap.anoAnt !== -1 ? primeira[colMap.anoAnt] : null) || (currentYear - 1);
                     headerCurrentYearEl.textContent = currentYear;
                     headerPreviousYearEl.textContent = previousYear;
 
@@ -292,22 +321,6 @@
 
                     const semAtu = data.filter(d => isSemCadastro(d.valor_atual)).length;
                     const semAnt = data.filter(d => isSemCadastro(d.valor_anterior)).length;
-                    if (semAtu || semAnt) {
-                        const partes = [];
-                        if (semAtu) partes.push(`<b>${semAtu}</b> de ${data.length} linha(s) sem conta contábil vinculada no ano <b>${currentYear}</b>`);
-                        if (semAnt) partes.push(`<b>${semAnt}</b> de ${data.length} linha(s) sem conta contábil vinculada no ano <b>${previousYear}</b>`);
-                        const aviso = document.createElement('tr');
-                        aviso.innerHTML = `<td colspan="4" class="pt-6">
-                            <div class="rounded-lg border border-border bg-secondary p-4 text-sm text-left">
-                                <span class="font-semibold">Cadastro do ano incompleto:</span>
-                                ${partes.join(' e ')}.
-                                Essas linhas aparecem como <span class="italic">sem cadastro</span> — não como zero —
-                                e os subtotais que as incluem levam <span class="font-semibold">*</span>,
-                                porque não estão completos.
-                            </div></td>`;
-                        fragment.appendChild(aviso);
-                    }
-
                     tbody.appendChild(fragment);
                 } catch (error) {
                     console.error("Erro ao carregar DRE:", error);

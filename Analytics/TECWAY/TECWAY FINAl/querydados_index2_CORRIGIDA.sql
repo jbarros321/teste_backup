@@ -115,13 +115,35 @@ WITH PARAMS AS (
     SELECT
         /* aceita 'AAAA-MM-DD' e 'DD/MM/AAAA', que e como a plataforma
            costuma devolver o filtro de data */
-        CASE WHEN TRIM(COALESCE(:VAR_DATA_INICIO, '')) REGEXP '^[0-9]{2}/[0-9]{2}/[0-9]{4}$'
-             THEN STR_TO_DATE(TRIM(:VAR_DATA_INICIO), '%d/%m/%Y')
-             ELSE DATE(NULLIF(TRIM(COALESCE(:VAR_DATA_INICIO, '')), ''))
+        /* A plataforma entrega a data como 'DD/MM/AAAA HH:MM:SS'. O parser
+           anterior exigia 'DD/MM/AAAA' exato, entao a hora fazia o REGEXP
+           falhar; e DATE('01/01/2025 00:00:00') devolve NULL no MySQL,
+           porque DATE() nao entende dia/mes/ano. Resultado: a data virava
+           NULL, caia no CURDATE() e a tela calculava sobre hoje.
+
+           O LEFT(...,10) corta a hora antes de testar, e as duas grafias
+           (DD/MM/AAAA e AAAA-MM-DD) sao tratadas separadamente. */
+        CASE
+            WHEN LEFT(TRIM(COALESCE(:VAR_DATA_INICIO, '')), 10) REGEXP '^[0-9]{2}/[0-9]{2}/[0-9]{4}$'
+                 THEN STR_TO_DATE(LEFT(TRIM(:VAR_DATA_INICIO), 10), '%d/%m/%Y')
+            WHEN LEFT(TRIM(COALESCE(:VAR_DATA_INICIO, '')), 10) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                 THEN DATE(LEFT(TRIM(:VAR_DATA_INICIO), 10))
+            ELSE NULL
         END AS DT_INI_IN,
-        CASE WHEN TRIM(COALESCE(:VAR_DATA_FIM, '')) REGEXP '^[0-9]{2}/[0-9]{2}/[0-9]{4}$'
-             THEN STR_TO_DATE(TRIM(:VAR_DATA_FIM), '%d/%m/%Y')
-             ELSE DATE(NULLIF(TRIM(COALESCE(:VAR_DATA_FIM, '')), ''))
+        /* A plataforma entrega a data como 'DD/MM/AAAA HH:MM:SS'. O parser
+           anterior exigia 'DD/MM/AAAA' exato, entao a hora fazia o REGEXP
+           falhar; e DATE('01/01/2025 00:00:00') devolve NULL no MySQL,
+           porque DATE() nao entende dia/mes/ano. Resultado: a data virava
+           NULL, caia no CURDATE() e a tela calculava sobre hoje.
+
+           O LEFT(...,10) corta a hora antes de testar, e as duas grafias
+           (DD/MM/AAAA e AAAA-MM-DD) sao tratadas separadamente. */
+        CASE
+            WHEN LEFT(TRIM(COALESCE(:VAR_DATA_FIM, '')), 10) REGEXP '^[0-9]{2}/[0-9]{2}/[0-9]{4}$'
+                 THEN STR_TO_DATE(LEFT(TRIM(:VAR_DATA_FIM), 10), '%d/%m/%Y')
+            WHEN LEFT(TRIM(COALESCE(:VAR_DATA_FIM, '')), 10) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                 THEN DATE(LEFT(TRIM(:VAR_DATA_FIM), 10))
+            ELSE NULL
         END AS DT_FIM_IN
 ),
 D AS (
@@ -183,7 +205,11 @@ linhas AS (
     INNER JOIN DET_DEMONSTRATIVO DET
             ON EST.ID = DET.ID_ESTR_DEMONSTRATIVO
     WHERE EST.ID = 2
-      AND TRIM(DET.ORDEM) <> '3.3.3'
+      /* O filtro `AND TRIM(DET.ORDEM) <> '3.3.3'` foi REMOVIDO. Ele vinha da
+         query original e excluia a linha 3.3.3 Lucro/Prejuizos acumulados,
+         cujo saldo em 31/12/2025 e 52.561.286,48. Sem ela o patrimonio
+         liquido ficava incompleto e o balanco nao fechava por 6.842.268,19
+         (Ativo 98.776.914,99 contra Passivo+PL 91.934.646,80). */
 ),
 ref_atu AS (
     /* a referencia do ano da COLUNA ATUAL, e so dela.
@@ -263,14 +289,16 @@ qtd_ant AS (
 map_atu AS (
     SELECT
         R.ORDEM, R.NOME_GRUPO, R.SINAL,
-        /* 3.3.1 e 3.3.2 sao linhas de RESULTADO, nao de saldo:
-           3.3.1 = saldo de abertura do periodo
-           3.3.2 = fluxo do periodo
-           qualquer outra linha = saldo acumulado ate a data fim */
-        CASE WHEN TRIM(R.ORDEM) = '3.3.1' THEN B.abertura_atu
-             WHEN TRIM(R.ORDEM) = '3.3.2' THEN B.fluxo_atu
-             ELSE B.saldo_atu
-        END AS valor,
+        /* TODAS as linhas usam o SALDO acumulado, inclusive as 3.3.x.
+
+           Antes 3.3.1 usava o saldo de abertura e 3.3.2 o fluxo do periodo,
+           herdado da query original. Conferido contra os dados: o balanco do
+           BP Interno so fecha com as cinco linhas do PL em saldo -
+           5.000.000,00 + 0,00 + 911.300,74 - 37.941.546,46 + 52.561.286,48
+           = 20.531.040,76, que e exatamente o PL necessario para igualar
+           Ativo 98.776.914,99. Testei as tres leituras em todas as
+           combinacoes possiveis e nenhuma outra fecha. */
+        B.saldo_atu AS valor,
         ROW_NUMBER() OVER (
             PARTITION BY B.CTACTB, R.ORDEM, R.NOME_GRUPO
             ORDER BY LENGTH(R.PADRAO_CTACTB) DESC, R.PADRAO_CTACTB DESC
@@ -284,10 +312,7 @@ map_atu AS (
 map_ant AS (
     SELECT
         R.ORDEM, R.NOME_GRUPO, R.SINAL,
-        CASE WHEN TRIM(R.ORDEM) = '3.3.1' THEN B.abertura_ant
-             WHEN TRIM(R.ORDEM) = '3.3.2' THEN B.fluxo_ant
-             ELSE B.saldo_ant
-        END AS valor,
+        B.saldo_ant AS valor,
         ROW_NUMBER() OVER (
             PARTITION BY B.CTACTB, R.ORDEM, R.NOME_GRUPO
             ORDER BY LENGTH(R.PADRAO_CTACTB) DESC, R.PADRAO_CTACTB DESC

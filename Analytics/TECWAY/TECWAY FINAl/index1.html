@@ -343,6 +343,31 @@
                   da estrutura, e por isso tem mensagem propria - sem ela, as
                   tres causas viram o mesmo zero na tela. */
             const diag = window.__DIAG || {};
+
+            /* Painel de diagnostico. Aparece SO quando nenhuma linha tem valor
+               - ou seja, quando a tela nao serve para nada mesmo. Nao e
+               legenda permanente: com dados, ele nao existe. Serve para nao
+               ter que adivinhar a causa a partir dos totais. */
+            const nadaComValor = data.every(d => isSemCadastro(d.valorAtual) || d.valorAtual === 0)
+                              && data.every(d => isSemCadastro(d.valorAnterior) || d.valorAnterior === 0);
+            if (nadaComValor && diag.cru) {
+                const linhas = Object.entries(diag.cru)
+                    .map(([k, v]) => `${k.padEnd(20, '\u00a0')} = ${v === null ? 'NULL' : String(v)}`)
+                    .join('<br>');
+                avisos.push(`
+                    <div class="rounded-lg border border-border bg-secondary p-4 text-sm">
+                        <div class="font-semibold mb-2">Diagn\u00f3stico \u2014 o que a consulta recebeu e devolveu</div>
+                        <div class="font-mono text-xs leading-relaxed">${linhas}</div>
+                        <div class="mt-3 text-xs text-muted-foreground">
+                            <b>DATAS_OK = 0</b>: as datas do filtro n\u00e3o chegaram \u2014 nome da vari\u00e1vel errado
+                            ou par\u00e2metro sem valor.<br>
+                            <b>DATA_FIM_USADA</b> diferente da data que voc\u00ea filtrou: mesma causa.<br>
+                            <b>LANC_EMPRESA = 0</b>: o <span class="font-mono">:VAR_EMPRESA_DRE</span> n\u00e3o chegou,
+                            ou a empresa n\u00e3o tem balancete.<br>
+                            <b>QTD_CONTAS_ATU = 0</b>: o ano da coluna n\u00e3o tem conta vinculada no cadastro.
+                        </div>
+                    </div>`);
+            }
             if (diag.lancEmpresa === 0) {
                 avisos.push(`
                     <div class="rounded-lg border border-destructive bg-secondary p-4 text-sm">
@@ -457,17 +482,45 @@
                    CURDATE() em silencio e a tela mostrava o saldo de hoje e
                    de hoje-menos-1-ano como se fosse o periodo filtrado -
                    numero plausivel e errado, sem nenhum aviso. */
-                const iDatasOk = col('DATAS_OK');
-                if (iDatasOk !== -1 && Number(primeira[iDatasOk]) === 0) {
-                    throw new Error("O filtro de datas n\u00e3o chegou \u00e0 consulta, ent\u00e3o os n\u00fameros seriam calculados sobre a data de hoje em vez do per\u00edodo escolhido. Declare no componente os par\u00e2metros varDataInicio = :VAR_DATA_INICIO e varDataFim = :VAR_DATA_FIM (a plataforma s\u00f3 substitui um :VAR_* que esteja declarado).");
-                }
                 /* contadores de diagnostico: dizem POR QUE veio zerado */
                 const iLancEmp = col('LANC_EMPRESA');
                 const iLancPer = col('LANC_PERIODO');
+                const bruto = n => { const i = col(n); return i !== -1 ? primeira[i] : '(coluna ausente)'; };
                 window.__DIAG = {
                     lancEmpresa: iLancEmp !== -1 ? Number(primeira[iLancEmp]) : null,
-                    lancPeriodo: iLancPer !== -1 ? Number(primeira[iLancPer]) : null
+                    lancPeriodo: iLancPer !== -1 ? Number(primeira[iLancPer]) : null,
+                    /* valores crus, para o painel de diagnostico abaixo */
+                    cru: {
+                        DATAS_OK: bruto('DATAS_OK'),
+                        DATA_INICIO_USADA: bruto('DATA_INICIO_USADA'),
+                        DATA_FIM_USADA: bruto('DATA_FIM_USADA'),
+                        ANO_ATU: bruto('ANO_ATU'),
+                        ANO_ANT: bruto('ANO_ANT'),
+                        LANC_EMPRESA: bruto('LANC_EMPRESA'),
+                        LANC_PERIODO: bruto('LANC_PERIODO'),
+                        QTD_CONTAS_ATU: bruto('QTD_CONTAS_ATU'),
+                        QTD_CONTAS_ANT: bruto('QTD_CONTAS_ANT'),
+                        VLRLANC_ATU: bruto('VLRLANC_ATU'),
+                        VLRLANC_ANT: bruto('VLRLANC_ANT')
+                    },
+                    linhas: reportResult.data.length
                 };
+                console.log('[BP] diagnostico da query:', window.__DIAG.cru);
+                /* Trava: se as datas nao chegaram, PARA - e mostra os valores
+                   crus, para nao haver mais rodada de adivinhacao. */
+                if (String(window.__DIAG.cru.DATAS_OK) === '0'
+                    || window.__DIAG.cru.DATAS_OK === '(coluna ausente)') {
+                    const d = window.__DIAG.cru;
+                    throw new Error('O filtro de datas nao chegou a consulta. '
+                        + 'DATAS_OK=' + d.DATAS_OK
+                        + ' | DATA_INICIO_USADA=' + d.DATA_INICIO_USADA
+                        + ' | DATA_FIM_USADA=' + d.DATA_FIM_USADA
+                        + ' | ANO_ATU=' + d.ANO_ATU + ' | ANO_ANT=' + d.ANO_ANT
+                        + ' | LANC_EMPRESA=' + d.LANC_EMPRESA
+                        + ' | LANC_PERIODO=' + d.LANC_PERIODO
+                        + '  --  a query calculou sobre a data de hoje. Copie esta linha inteira.');
+                }
+
                 const periodo = {
                     dataInicio: colMap.dataInicio !== -1 ? primeira[colMap.dataInicio] : '',
                     dataFim: colMap.dataFim !== -1 ? primeira[colMap.dataFim] : '',

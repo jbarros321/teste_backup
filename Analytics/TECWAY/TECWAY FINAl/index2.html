@@ -61,7 +61,6 @@
             <p class="text-lg text-muted-foreground">Carregando dados do balanço...</p>
         </div>
         <div id="report-content" class="hidden">
-            <div id="periodo-label" class="mb-6 text-sm text-muted-foreground"></div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
                 <!-- Coluna da Esquerda: Ativo -->
                 <div id="ativo-container" class="space-y-8"></div>
@@ -152,6 +151,18 @@
             const base = isSemCadastro(valor) ? renderValor(valor) : formatCurrency(valor);
             if (!falta) return base;
             return `${base} <span class="text-muted-foreground" title="${falta} linha(s) deste grupo sem cadastro no ano - subtotal incompleto">*</span>`;
+        }
+
+        /* A plataforma devolve a data como 'DD/MM/AAAA HH:MM:SS' (e as vezes
+           como AAAA-MM-DD). Para o cabecalho so interessa o ANO, e o primeiro
+           grupo de 4 digitos resolve todos os casos - dia e mes tem 2 digitos,
+           entao nunca casam primeiro.
+
+           Isto tambem blinda contra ANO_ATU voltar como data em vez de
+           inteiro: Number('01/01/2026 00:00:00') daria NaN no cabecalho. */
+        function anoDe(valor) {
+            const m = String(valor || '').match(/(\d{4})/);
+            return m ? Number(m[1]) : null;
         }
 
         function formatDateBR(valor) {
@@ -255,18 +266,11 @@
         function renderReport(data, currentYear, previousYear, periodo) {
             periodo = periodo || {};
 
-            /* Cada coluna usa o cadastro do SEU ano. Deixar isso visivel evita
-               a leitura de que as duas colunas compartilham o mapeamento. */
-            const semAtu = data.filter(d => isSemCadastro(d.valorAtual)).length;
-            const semAnt = data.filter(d => isSemCadastro(d.valorAnterior)).length;
+            /* cabecalho das colunas: so o ano, extraido com anoDe para nao
+               escapar '29/09/2026 00:00:00' nem NaN */
+            currentYear = anoDe(currentYear) || anoDe(periodo.dataFim) || new Date().getFullYear();
+            previousYear = anoDe(previousYear) || (currentYear - 1);
 
-            const labelEl = document.getElementById('periodo-label');
-            if (labelEl) {
-                labelEl.innerHTML =
-                    `Período: <span class="font-semibold">${formatDateBR(periodo.dataInicio)} a ${formatDateBR(periodo.dataFim)}</span>`
-                    + `  •  coluna ${currentYear} comparada com ${previousYear}`
-                    + `  •  cada coluna usa o cadastro de contas do seu próprio ano`;
-            }
             // ATIVO
             const ativoCirculanteItems = data.filter(d => startsWithOrder(d.ordem, '1.1.'));
             ativoCirculanteItems.sort((a, b) => normalizeOrder(a.ordem).localeCompare(normalizeOrder(b.ordem)));
@@ -810,23 +814,7 @@
             }
 
 
-            /* 1) Falta de cadastro no ano. Sem este aviso, uma coluna inteira em
-                  branco parece "empresa sem movimento". */
-            if (semAtu || semAnt) {
-                const partes = [];
-                if (semAtu) partes.push(`<b>${semAtu}</b> de ${data.length} linha(s) não têm conta contábil vinculada no ano <b>${currentYear}</b>`);
-                if (semAnt) partes.push(`<b>${semAnt}</b> de ${data.length} linha(s) não têm conta contábil vinculada no ano <b>${previousYear}</b>`);
-                avisos.push(`
-                    <div class="rounded-lg border border-border bg-secondary p-4 text-sm">
-                        <span class="font-semibold">Cadastro do ano incompleto:</span>
-                        ${partes.join(' e ')}.
-                        Essas linhas aparecem como <span class="italic">sem cadastro</span> — não como zero —
-                        e os subtotais que as incluem estão marcados com <span class="font-semibold">*</span>,
-                        porque não estão completos.
-                    </div>`);
-            }
-
-            /* 2) Fechamento do balanco - so se confere quando a coluna esta
+            /* Fechamento do balanco - so se confere quando a coluna esta
                   completa; com linha sem cadastro a diferenca nao diz nada. */
             const completoAtu = !totalAtivo.faltaAtual && !totalPassivoPL.faltaAtual;
             const dif = totalAtivo.valorAtual - totalPassivoPL.valorAtual;
@@ -911,9 +899,24 @@
                    CURDATE() em silencio e a tela mostrava o saldo de hoje e
                    de hoje-menos-1-ano como se fosse o periodo filtrado -
                    numero plausivel e errado, sem nenhum aviso. */
-                const iDatasOk = col('DATAS_OK');
-                if (iDatasOk !== -1 && Number(primeira[iDatasOk]) === 0) {
-                    throw new Error("O filtro de datas n\u00e3o chegou \u00e0 consulta, ent\u00e3o os n\u00fameros seriam calculados sobre a data de hoje em vez do per\u00edodo escolhido. Declare no componente os par\u00e2metros varDataInicio = :VAR_DATA_INICIO e varDataFim = :VAR_DATA_FIM (a plataforma s\u00f3 substitui um :VAR_* que esteja declarado).");
+                const bruto = n => { const i = col(n); return i !== -1 ? primeira[i] : '(coluna ausente)'; };
+                const cru = {
+                    DATAS_OK: bruto('DATAS_OK'),
+                    DATA_INICIO_USADA: bruto('DATA_INICIO_USADA'),
+                    DATA_FIM_USADA: bruto('DATA_FIM_USADA'),
+                    ANO_ATU: bruto('ANO_ATU'), ANO_ANT: bruto('ANO_ANT'),
+                    LANC_EMPRESA: bruto('LANC_EMPRESA'), LANC_PERIODO: bruto('LANC_PERIODO')
+                };
+                console.log('[BP Interno] diagnostico da query:', cru);
+                if (String(cru.DATAS_OK) === '0') {
+                    throw new Error('O filtro de datas nao chegou a consulta. '
+                        + 'DATAS_OK=' + cru.DATAS_OK
+                        + ' | DATA_INICIO_USADA=' + cru.DATA_INICIO_USADA
+                        + ' | DATA_FIM_USADA=' + cru.DATA_FIM_USADA
+                        + ' | ANO_ATU=' + cru.ANO_ATU + ' | ANO_ANT=' + cru.ANO_ANT
+                        + ' | LANC_EMPRESA=' + cru.LANC_EMPRESA
+                        + ' | LANC_PERIODO=' + cru.LANC_PERIODO
+                        + '  --  copie esta linha inteira.');
                 }
                 /* contadores de diagnostico: dizem POR QUE veio zerado */
                 const iLancEmp = col('LANC_EMPRESA');

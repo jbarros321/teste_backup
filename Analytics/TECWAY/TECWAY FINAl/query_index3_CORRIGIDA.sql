@@ -74,13 +74,35 @@
 WITH PARAMS AS (
     SELECT
         /* aceita 'AAAA-MM-DD' e 'DD/MM/AAAA' */
-        CASE WHEN TRIM(COALESCE(:VAR_DATA_INICIO, '')) REGEXP '^[0-9]{2}/[0-9]{2}/[0-9]{4}$'
-             THEN STR_TO_DATE(TRIM(:VAR_DATA_INICIO), '%d/%m/%Y')
-             ELSE DATE(NULLIF(TRIM(COALESCE(:VAR_DATA_INICIO, '')), ''))
+        /* A plataforma entrega a data como 'DD/MM/AAAA HH:MM:SS'. O parser
+           anterior exigia 'DD/MM/AAAA' exato, entao a hora fazia o REGEXP
+           falhar; e DATE('01/01/2025 00:00:00') devolve NULL no MySQL,
+           porque DATE() nao entende dia/mes/ano. Resultado: a data virava
+           NULL, caia no CURDATE() e a tela calculava sobre hoje.
+
+           O LEFT(...,10) corta a hora antes de testar, e as duas grafias
+           (DD/MM/AAAA e AAAA-MM-DD) sao tratadas separadamente. */
+        CASE
+            WHEN LEFT(TRIM(COALESCE(:VAR_DATA_INICIO, '')), 10) REGEXP '^[0-9]{2}/[0-9]{2}/[0-9]{4}$'
+                 THEN STR_TO_DATE(LEFT(TRIM(:VAR_DATA_INICIO), 10), '%d/%m/%Y')
+            WHEN LEFT(TRIM(COALESCE(:VAR_DATA_INICIO, '')), 10) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                 THEN DATE(LEFT(TRIM(:VAR_DATA_INICIO), 10))
+            ELSE NULL
         END AS DT_INI_IN,
-        CASE WHEN TRIM(COALESCE(:VAR_DATA_FIM, '')) REGEXP '^[0-9]{2}/[0-9]{2}/[0-9]{4}$'
-             THEN STR_TO_DATE(TRIM(:VAR_DATA_FIM), '%d/%m/%Y')
-             ELSE DATE(NULLIF(TRIM(COALESCE(:VAR_DATA_FIM, '')), ''))
+        /* A plataforma entrega a data como 'DD/MM/AAAA HH:MM:SS'. O parser
+           anterior exigia 'DD/MM/AAAA' exato, entao a hora fazia o REGEXP
+           falhar; e DATE('01/01/2025 00:00:00') devolve NULL no MySQL,
+           porque DATE() nao entende dia/mes/ano. Resultado: a data virava
+           NULL, caia no CURDATE() e a tela calculava sobre hoje.
+
+           O LEFT(...,10) corta a hora antes de testar, e as duas grafias
+           (DD/MM/AAAA e AAAA-MM-DD) sao tratadas separadamente. */
+        CASE
+            WHEN LEFT(TRIM(COALESCE(:VAR_DATA_FIM, '')), 10) REGEXP '^[0-9]{2}/[0-9]{2}/[0-9]{4}$'
+                 THEN STR_TO_DATE(LEFT(TRIM(:VAR_DATA_FIM), 10), '%d/%m/%Y')
+            WHEN LEFT(TRIM(COALESCE(:VAR_DATA_FIM, '')), 10) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                 THEN DATE(LEFT(TRIM(:VAR_DATA_FIM), 10))
+            ELSE NULL
         END AS DT_FIM_IN
 ),
 D AS (
