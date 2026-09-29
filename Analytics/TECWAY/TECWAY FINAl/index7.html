@@ -72,15 +72,29 @@
         document.addEventListener('DOMContentLoaded', () => {
             const reportContainer = document.getElementById('report-container');
 
+            /* A query devolve o valor cheio; a tela mostra em MILHARES,
+               arredondado para o inteiro (meio para longe do zero), como a
+               index5 e a index6. Negativo entre parenteses. */
             const formatNumber = (value) => {
-                const num = parseFloat(value);
-                if (isNaN(num)) {
+                const raw = parseFloat(value);
+                if (isNaN(raw)) {
                     return '0';
                 }
-                return new Intl.NumberFormat('pt-BR', {
+                const k = raw / 1000;
+                const num = k < 0 ? -Math.round(-k) : Math.round(k);
+                const formatted = new Intl.NumberFormat('pt-BR', {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0
-                }).format(num);
+                }).format(Math.abs(num));
+                return num < 0 ? `(${formatted})` : formatted;
+            };
+
+            /* A plataforma devolve a data como 'DD/MM/AAAA HH:MM:SS' (e as vezes
+               AAAA-MM-DD). Para o cabecalho so interessa o ANO, e o primeiro
+               grupo de 4 digitos resolve todos os casos. */
+            const anoDe = (valor) => {
+                const m = String(valor || '').match(/(\d{4})/);
+                return m ? Number(m[1]) : null;
             };
 
             const setLoadingState = () => {
@@ -102,37 +116,27 @@
                 setLoadingState();
 
                 try {
-                    const jdbcId = parseInt(componentData.jdbcId, 10);
-                    if (isNaN(jdbcId)) {
-                        throw new Error("A variável 'jdbcId' não foi configurada ou é inválida.");
+                    const jdbcId = parseInt(componentData.jdbcId || '1', 10);
+
+                    /* as telas 1 a 4 usam 'query'; esta nasceu com 'queryDados'.
+                       Aceita as duas. */
+                    const sqlTela = componentData.queryDados || componentData.query;
+                    if (!sqlTela) {
+                        throw new Error("A variavel 'queryDados' (ou 'query') nao foi configurada no componente.");
                     }
 
-                    // 1. Obter a data de referência para calcular os anos
-                    const dateQuery = `SELECT ${componentData.varMes} FROM DUAL`;
-                    const dateResult = await queryMitra({ query: dateQuery, jdbcId: jdbcId });
-
-                    if (!dateResult || !dateResult.data || dateResult.data.length === 0 || !dateResult.data[0][0]) {
-                        throw new Error(`A variável Mitra '${componentData.varMes}' não retornou uma data válida.`);
-                    }
-
-                    const referenceDateStr = dateResult.data[0][0];
-                    const referenceDate = new Date(referenceDateStr);
-                    if (isNaN(referenceDate.getTime())) {
-                        throw new Error(`O valor retornado por '${componentData.varMes}' ('${referenceDateStr}') não é uma data reconhecida.`);
-                    }
-
-                    const currentYear = referenceDate.getFullYear();
-                    const previousYear = currentYear - 1;
-
-                    // 2. Obter os dados do relatório
-                    const dataResult = await queryMitra({ query: componentData.queryDados, jdbcId: jdbcId });
+                    /* Uma consulta so. Antes havia uma segunda ("SELECT :VAR_MES
+                       FROM DUAL") apenas para descobrir o ano, e a tela morria
+                       quando ela vinha vazia. A query corrigida devolve ANO_ATU,
+                       ANO_ANT e as datas que realmente usou. */
+                    const dataResult = await queryMitra({ query: sqlTela, jdbcId: jdbcId });
 
                     if (!dataResult || !dataResult.data || dataResult.data.length === 0) {
-                        setErrorState("A consulta não retornou dados.");
+                        setErrorState("A consulta n\u00e3o retornou dados.");
                         return;
                     }
 
-                    const headers = dataResult.headers.map(h => h.name.toUpperCase());
+                    const headers = dataResult.headers.map(h => (h && h.name ? h.name.toUpperCase() : ''));
                     const valorAtualIndex = headers.indexOf('VALOR_ATUAL');
                     const valorAnteriorIndex = headers.indexOf('VALOR_ANTERIOR');
 
@@ -141,6 +145,39 @@
                     }
 
                     const firstRow = dataResult.data[0];
+                    const bruto = n => { const i = headers.indexOf(n); return i !== -1 ? firstRow[i] : '(coluna ausente)'; };
+                    const cru = {
+                        DATAS_OK: bruto('DATAS_OK'),
+                        DATA_INICIO_USADA: bruto('DATA_INICIO_USADA'),
+                        DATA_FIM_USADA: bruto('DATA_FIM_USADA'),
+                        ANO_ATU: bruto('ANO_ATU'), ANO_ANT: bruto('ANO_ANT'),
+                        LANC_EMPRESA: bruto('LANC_EMPRESA'), LANC_PERIODO: bruto('LANC_PERIODO')
+                    };
+                    console.log('[DRA] diagnostico da query:', cru);
+
+                    /* Se as datas nao chegaram, PARA - e mostra os valores crus.
+                       O fallback silencioso para CURDATE() produzia numero
+                       plausivel sobre o periodo errado, que e pior do que falhar. */
+                    if (String(cru.DATAS_OK) === '0') {
+                        throw new Error('O filtro de datas nao chegou a consulta. '
+                            + 'DATAS_OK=' + cru.DATAS_OK
+                            + ' | DATA_INICIO_USADA=' + cru.DATA_INICIO_USADA
+                            + ' | DATA_FIM_USADA=' + cru.DATA_FIM_USADA
+                            + ' | ANO_ATU=' + cru.ANO_ATU + ' | ANO_ANT=' + cru.ANO_ANT
+                            + ' | LANC_EMPRESA=' + cru.LANC_EMPRESA
+                            + ' | LANC_PERIODO=' + cru.LANC_PERIODO
+                            + '  --  copie esta linha inteira.');
+                    }
+
+                    const currentYear = anoDe(cru.ANO_ATU) || anoDe(cru.DATA_FIM_USADA) || new Date().getFullYear();
+                    const previousYear = anoDe(cru.ANO_ANT) || (currentYear - 1);
+
+                    const numOuNulo = v => (v === '(coluna ausente)' || v === null || v === undefined || v === '') ? null : Number(v);
+                    const diag = {
+                        lancEmpresa: numOuNulo(cru.LANC_EMPRESA),
+                        lancPeriodo: numOuNulo(cru.LANC_PERIODO)
+                    };
+
                     const valorAtual = firstRow[valorAtualIndex];
                     const valorAnterior = firstRow[valorAnteriorIndex];
 
@@ -180,7 +217,22 @@
                         </div>
                     `;
 
-                    reportContainer.innerHTML = reportHTML;
+                    /* Por que veio zerado - mesmas mensagens das outras telas. */
+                    let aviso = '';
+                    if (diag.lancEmpresa === 0) {
+                        aviso = `<span class="font-semibold text-destructive">Nenhum lan\u00e7amento encontrado para a empresa selecionada.</span>
+                            Os valores v\u00eam zerados por isso. Confira se o par\u00e2metro
+                            <span class="font-mono">varEmpresa</span> = <span class="font-mono">:VAR_EMPRESA_DRE</span>
+                            est\u00e1 declarado na configura\u00e7\u00e3o do componente \u2014 a plataforma s\u00f3 substitui
+                            <span class="font-mono">:VAR_*</span> que esteja declarado.`;
+                    } else if (diag.lancPeriodo === 0 && diag.lancEmpresa > 0) {
+                        aviso = `<span class="font-semibold">A empresa tem balancete, mas nada no per\u00edodo filtrado.</span>
+                            ${diag.lancEmpresa} lan\u00e7amentos no total, nenhum entre as datas escolhidas.`;
+                    }
+
+                    reportContainer.innerHTML = reportHTML + (aviso
+                        ? `<div class="w-full max-w-xl mt-6 rounded-lg border border-border bg-secondary p-4 text-sm">${aviso}</div>`
+                        : '');
 
                 } catch (error) {
                     console.error("Falha ao renderizar o relatório DRA:", error);
@@ -196,12 +248,16 @@
                 const startTime = Date.now();
 
                 const checkInterval = setInterval(() => {
-                    if (window.componentData && window.componentData.queryDados && window.componentData.varMes && window.componentData.jdbcId) {
+                    /* So a query e obrigatoria. As datas e a empresa sao
+                       resolvidas pela plataforma dentro do texto da query; o
+                       varMes so existia por causa da segunda consulta, que foi
+                       removida. jdbcId, se ausente, vale 1. */
+                    if (window.componentData && (window.componentData.queryDados || window.componentData.query)) {
                         clearInterval(checkInterval);
                         renderReport();
                     } else if (Date.now() - startTime > maxWaitTime) {
                         clearInterval(checkInterval);
-                        const errorMessage = "Erro Crítico: As configurações obrigatórias (queryDados, varMes, jdbcId) do componente não foram carregadas da plataforma.";
+                        const errorMessage = "Erro Crítico: A configuração 'queryDados' (ou 'query') do componente não foram carregadas da plataforma.";
                         console.error(errorMessage);
                         setErrorState(errorMessage);
                     }

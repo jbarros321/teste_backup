@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demonstração das Mutações do Patrimônio Líquido (DMPL)</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 84% 4.9%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
+        }
+
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --primary: 210 40% 98%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 212.7 26.8% 83.9%;
+        }
+
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+    </style>
+</head>
+
+<body class="h-full w-full">
+
+    <div id="dmpl-container" class="h-full w-full p-4 sm:p-6 overflow-auto">
+        <!-- Content will be injected here -->
+    </div>
+
+    <script>
+        const MITRA_UPDATE_EVENT_NAME = 'mitra-update-dmpl-report';
+
+        function updateMitra() {
+            console.log("Sinal de update para [DMPL Report] recebido. Disparando evento.");
+            document.body.dispatchEvent(new CustomEvent(MITRA_UPDATE_EVENT_NAME));
+        }
+
+        function formatNumber(value) {
+            const num = parseFloat(value);
+            if (value === null || value === undefined || isNaN(num)) {
+                return '-';
+            }
+            if (Math.abs(num) < 0.01) { // Treat values very close to zero as zero
+                return '-';
+            }
+            const formatted = Math.abs(num).toLocaleString('pt-BR', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
+            return num < 0 ? `(${formatted})` : formatted;
+        }
+
+        /* A plataforma devolve a data como 'DD/MM/AAAA HH:MM:SS' (e as vezes
+           AAAA-MM-DD). Extrai dia, mes e ano nas duas grafias. */
+        function partesData(valor) {
+            const s = String(valor || '');
+            let m = s.match(/(\d{4})-(\d{2})-(\d{2})/);
+            if (m) return { d: +m[3], m: +m[2], a: +m[1] };
+            m = s.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+            if (m) return { d: +m[1], m: +m[2], a: +m[3] };
+            return null;
+        }
+
+        function anoDe(valor) {
+            const m = String(valor || '').match(/(\d{4})/);
+            return m ? Number(m[1]) : null;
+        }
+
+        /* "31 de dezembro de 2024". Com filtro de ano cheio o rotulo fica
+           igual ao de antes; com periodo parcial mostra a data real do
+           saldo, em vez de afirmar "31 de dezembro" sobre outra data. */
+        const MESES = ['janeiro', 'fevereiro', 'mar\u00e7o', 'abril', 'maio', 'junho', 'julho',
+            'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+        function dataPorExtenso(valor, anoFallback) {
+            const p = partesData(valor);
+            if (!p) return `31 de dezembro de ${anoFallback}`;
+            return `${p.d} de ${MESES[p.m - 1]} de ${p.a}`;
+        }
+
+        function renderLoading() {
+            const container = document.getElementById('dmpl-container');
+            container.innerHTML = `
+                <div class="flex items-center justify-center h-full text-muted-foreground">
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Carregando relatório...</span>
+                </div>`;
+        }
+
+        function renderError(message) {
+            const container = document.getElementById('dmpl-container');
+            container.innerHTML = `<div class="p-8 text-center text-destructive bg-destructive/10 h-full flex items-center justify-center">${message}</div>`;
+        }
+
+        function renderReport(data) {
+            const container = document.getElementById('dmpl-container');
+
+            const tableHTML = `
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[800px] border-collapse text-sm text-foreground">
+                        <thead>
+                            <tr class="text-center font-bold">
+                                <th class="w-[34%] text-left font-normal pb-2"></th>
+                                <th class="w-[16.5%] pb-2 border-b-2 border-foreground">Capital Social</th>
+                                <th class="w-[16.5%] pb-2 border-b-2 border-foreground">Ajuste da Avaliação</th>
+                                <th class="w-[16.5%] pb-2 border-b-2 border-foreground">Lucros ou Prejuízos<br>Acumulados</th>
+                                <th class="w-[16.5%] pb-2 border-b-2 border-foreground">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Ano Base -->
+                            <tr><td colspan="5" class="pt-4"></td></tr>
+                            <tr class="font-bold">
+                                <td>Saldos em ${data.labels.base}</td>
+                                <td class="text-center">${formatNumber(data.saldoBase.capital)}</td>
+                                <td class="text-center">${formatNumber(data.saldoBase.ajuste)}</td>
+                                <td class="text-center">${formatNumber(data.saldoBase.acumulados)}</td>
+                                <td class="text-center">${formatNumber(data.saldoBase.total)}</td>
+                            </tr>
+                            <tr><td colspan="5" class="pt-4"></td></tr>
+                            
+                            <!-- Movimentações Ano Anterior -->
+                            <tr>
+                                <td>Lucro distribuídos</td>
+                                <td></td>
+                                <td></td>
+                                <td class="text-center">${formatNumber(data.movAnt.distribuidos)}</td>
+                                <td class="text-center">${formatNumber(data.movAnt.distribuidos)}</td>
+                            </tr>
+                            <tr>
+                                <td>Lucro do exercício</td>
+                                <td></td>
+                                <td></td>
+                                <td class="text-center">${formatNumber(data.movAnt.lucro)}</td>
+                                <td class="text-center">${formatNumber(data.movAnt.lucro)}</td>
+                            </tr>
+                            <tr>
+                                <td>Ajuste de Avaliação</td>
+                                <td></td>
+                                <td class="text-center">${formatNumber(data.movAnt.ajuste)}</td>
+                                <td></td>
+                                <td class="text-center">${formatNumber(data.movAnt.ajuste)}</td>
+                            </tr>
+                            <tr><td colspan="5" class="pt-2"></td></tr>
+
+                            <!-- Saldo Ano Anterior -->
+                            <tr class="font-bold">
+                                <td class="border-t-2 border-foreground pt-2">Saldos em ${data.labels.anterior}</td>
+                                <td class="border-t-2 border-foreground pt-2 text-center">${formatNumber(data.saldoAnt.capital)}</td>
+                                <td class="border-t-2 border-foreground pt-2 text-center">${formatNumber(data.saldoAnt.ajuste)}</td>
+                                <td class="border-t-2 border-foreground pt-2 text-center">${formatNumber(data.saldoAnt.acumulados)}</td>
+                                <td class="border-t-2 border-foreground pt-2 text-center">${formatNumber(data.saldoAnt.total)}</td>
+                            </tr>
+                            <tr><td colspan="5" class="pt-4"></td></tr>
+                            ${data.abertura ? `
+                            <tr class="font-bold">
+                                <td>Saldos em ${data.labels.abertura}</td>
+                                <td class="text-center">${formatNumber(data.abertura.capital)}</td>
+                                <td class="text-center">${formatNumber(data.abertura.ajuste)}</td>
+                                <td class="text-center">${formatNumber(data.abertura.acumulados)}</td>
+                                <td class="text-center">${formatNumber(data.abertura.total)}</td>
+                            </tr>
+                            <tr><td colspan="5" class="pt-2"></td></tr>` : ''}
+
+                            <!-- Movimentações Ano Atual -->
+                            <tr>
+                                <td>Lucro distribuídos</td>
+                                <td></td>
+                                <td></td>
+                                <td class="text-center">${formatNumber(data.movAtual.distribuidos)}</td>
+                                <td class="text-center">${formatNumber(data.movAtual.distribuidos)}</td>
+                            </tr>
+                             <tr>
+                                <td>Lucro do exercício</td>
+                                <td></td>
+                                <td></td>
+                                <td class="text-center">${formatNumber(data.movAtual.lucro)}</td>
+                                <td class="text-center">${formatNumber(data.movAtual.lucro)}</td>
+                            </tr>
+                             <tr>
+                                <td>Ajuste de Avaliação</td>
+                                <td></td>
+                                <td class="text-center">${formatNumber(data.movAtual.ajuste)}</td>
+                                <td></td>
+                                <td class="text-center">${formatNumber(data.movAtual.ajuste)}</td>
+                            </tr>
+                            <tr><td colspan="5" class="pt-2"></td></tr>
+
+                            <!-- Saldo Ano Atual (Final) -->
+                            <tr class="font-bold">
+                                <td class="border-t-2 border-double border-foreground pt-2">Saldo em ${data.labels.atual}</td>
+                                <td class="border-t-2 border-double border-foreground pt-2 text-center">${formatNumber(data.saldoAtual.capital)}</td>
+                                <td class="border-t-2 border-double border-foreground pt-2 text-center">${formatNumber(data.saldoAtual.ajuste)}</td>
+                                <td class="border-t-2 border-double border-foreground pt-2 text-center">${formatNumber(data.saldoAtual.acumulados)}</td>
+                                <td class="border-t-2 border-double border-foreground pt-2 text-center">${formatNumber(data.saldoAtual.total)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            container.innerHTML = tableHTML + (data.avisos || []).map(a =>
+                `<div class="mt-6 rounded-lg border border-border bg-secondary p-4 text-sm">${a}</div>`).join('');
+        }
+
+        async function fetchDataAndRender() {
+            renderLoading();
+
+            try {
+                /* as telas 1 a 4 usam 'query'; esta nasceu com 'queryDados'. */
+                const sqlTela = componentData.queryDados || componentData.query;
+                if (!sqlTela) {
+                    throw new Error("A variavel 'queryDados' (ou 'query') nao foi configurada no componente.");
+                }
+
+                /* Uma consulta so. Antes havia uma segunda ("SELECT :VAR_MES")
+                   apenas para descobrir o ano, e a tela morria quando ela vinha
+                   vazia. A query corrigida devolve ANO_ATU e a data de cada
+                   saldo. */
+                const result = await queryMitra({ query: sqlTela });
+
+                if (!result || !result.data || !result.data.length) {
+                    throw new Error("A consulta de dados n\u00e3o retornou resultados.");
+                }
+
+                const headers = result.headers.map(h => (h && h.name ? h.name.toUpperCase() : ''));
+                const colMap = {
+                    ordem: headers.indexOf('ORDEM'),
+                    anoBase: headers.indexOf('ANO_BASE'),
+                    anoAnt: headers.indexOf('ANO_ANT'),
+                    anoAtual: headers.indexOf('ANO_ATUAL')
+                };
+
+                if (Object.values(colMap).some(index => index === -1)) {
+                    throw new Error("A query n\u00e3o retornou as colunas esperadas: ORDEM, ANO_BASE, ANO_ANT, ANO_ATUAL.");
+                }
+
+                const primeira = result.data[0];
+                const bruto = n => { const i = headers.indexOf(n); return i !== -1 ? primeira[i] : '(coluna ausente)'; };
+                const cru = {
+                    DATAS_OK: bruto('DATAS_OK'),
+                    DATA_INICIO_USADA: bruto('DATA_INICIO_USADA'),
+                    DATA_FIM_USADA: bruto('DATA_FIM_USADA'),
+                    ANO_ATU: bruto('ANO_ATU'),
+                    LANC_EMPRESA: bruto('LANC_EMPRESA'), LANC_PERIODO: bruto('LANC_PERIODO')
+                };
+                console.log('[DMPL] diagnostico da query:', cru);
+
+                /* Se as datas nao chegaram, PARA - e mostra os valores crus.
+                   O fallback silencioso para CURDATE() produzia numero
+                   plausivel sobre o periodo errado, que e pior do que falhar. */
+                if (String(cru.DATAS_OK) === '0') {
+                    throw new Error('O filtro de datas nao chegou a consulta. '
+                        + 'DATAS_OK=' + cru.DATAS_OK
+                        + ' | DATA_INICIO_USADA=' + cru.DATA_INICIO_USADA
+                        + ' | DATA_FIM_USADA=' + cru.DATA_FIM_USADA
+                        + ' | ANO_ATU=' + cru.ANO_ATU
+                        + ' | LANC_EMPRESA=' + cru.LANC_EMPRESA
+                        + ' | LANC_PERIODO=' + cru.LANC_PERIODO
+                        + '  --  copie esta linha inteira.');
+                }
+
+                const currentYear = anoDe(cru.ANO_ATU) || anoDe(cru.DATA_FIM_USADA) || new Date().getFullYear();
+                const years = {
+                    atual: currentYear,
+                    anterior: currentYear - 1,
+                    base: currentYear - 2
+                };
+                const labels = {
+                    base: dataPorExtenso(bruto('DATA_SALDO_BASE'), years.base),
+                    anterior: dataPorExtenso(bruto('DATA_SALDO_ANT'), years.anterior),
+                    atual: dataPorExtenso(bruto('DATA_SALDO_ATU'), years.atual)
+                };
+
+                const numOuNulo = v => (v === '(coluna ausente)' || v === null || v === undefined || v === '') ? null : Number(v);
+                const diag = {
+                    lancEmpresa: numOuNulo(cru.LANC_EMPRESA),
+                    lancPeriodo: numOuNulo(cru.LANC_PERIODO)
+                };
+                const iSem = headers.indexOf('SEM_CADASTRO');
+                const semCadastro = iSem === -1 ? [] : result.data
+                    .filter(r => String(r[iSem]) === '1')
+                    .map(r => String(r[colMap.ordem]).trim());
+
+                const iAbert = headers.indexOf('ABERTURA_ATU');
+                const rawData = {};
+                result.data.forEach(row => {
+                    const ordem = String(row[colMap.ordem]).trim();
+                    /* a query devolve o valor cheio; a tela mostra em MILHARES
+                       (antes a divisao por 1000 era feita no SQL) */
+                    rawData[ordem] = {
+                        base: (parseFloat(row[colMap.anoBase]) || 0) / 1000,
+                        anterior: (parseFloat(row[colMap.anoAnt]) || 0) / 1000,
+                        atual: (parseFloat(row[colMap.anoAtual]) || 0) / 1000,
+                        abert: iAbert !== -1 ? (parseFloat(row[iAbert]) || 0) / 1000 : null
+                    };
+                });
+
+                // 4. Mapear dados processados para nomes legíveis
+                const d = {
+                    capital: rawData['1'] || { base: 0, anterior: 0, atual: 0, abert: null },
+                    distribuidos: rawData['2'] || { base: 0, anterior: 0, atual: 0, abert: null },
+                    lucro: rawData['3'] || { base: 0, anterior: 0, atual: 0, abert: null },
+                    ajuste: rawData['4'] || { base: 0, anterior: 0, atual: 0, abert: null },
+                    acumulados: rawData['5'] || { base: 0, anterior: 0, atual: 0, abert: null }
+                };
+
+                // 5. Realizar os cálculos
+                const reportData = { years, labels };
+
+                /* Por que veio zerado / incompleto - mesmas mensagens das
+                   outras telas. */
+                reportData.avisos = [];
+                if (diag.lancEmpresa === 0) {
+                    reportData.avisos.push(`<span class="font-semibold text-destructive">Nenhum lan\u00e7amento encontrado para a empresa selecionada.</span>
+                        Os valores v\u00eam zerados por isso. Confira se o par\u00e2metro
+                        <span class="font-mono">varEmpresa</span> = <span class="font-mono">:VAR_EMPRESA_DRE</span>
+                        est\u00e1 declarado na configura\u00e7\u00e3o do componente \u2014 a plataforma s\u00f3 substitui
+                        <span class="font-mono">:VAR_*</span> que esteja declarado.`);
+                } else if (diag.lancPeriodo === 0 && diag.lancEmpresa > 0) {
+                    reportData.avisos.push(`<span class="font-semibold">A empresa tem balancete, mas nada no per\u00edodo filtrado.</span>
+                        ${diag.lancEmpresa} lan\u00e7amentos no total, nenhum entre as datas escolhidas.`);
+                }
+                if (semCadastro.length) {
+                    reportData.avisos.push(`<span class="font-semibold">Linhas sem cadastro:</span>
+                        ${semCadastro.join(', ')} \u2014 n\u00e3o h\u00e1 conta vinculada at\u00e9 ${currentYear} na estrutura,
+                        ent\u00e3o entram como zero e os saldos est\u00e3o incompletos.`);
+                }
+
+                // Saldo Base (Ano - 2)
+                reportData.saldoBase = {
+                    capital: d.capital.base,
+                    ajuste: 0, // Ajuste começa em zero no primeiro saldo
+                    acumulados: d.acumulados.base,
+                    get total() { return this.capital + this.ajuste + this.acumulados; }
+                };
+
+                // Movimentações do Ano Anterior (Ano - 1)
+                reportData.movAnt = {
+                    distribuidos: d.distribuidos.anterior,
+                    lucro: d.lucro.anterior,
+                    ajuste: d.ajuste.anterior
+                };
+
+                // Saldo Anterior (Ano - 1)
+                reportData.saldoAnt = {
+                    capital: reportData.saldoBase.capital,
+                    ajuste: reportData.saldoBase.ajuste + reportData.movAnt.ajuste,
+                    acumulados: reportData.saldoBase.acumulados + reportData.movAnt.lucro + reportData.movAnt.distribuidos,
+                    get total() { return this.capital + this.ajuste + this.acumulados; }
+                };
+
+                /* Periodo parcial: o fim do comparativo (ex.: 31/07/2024) nao
+                   encosta no inicio do atual (01/03/2025). Encadear somaria
+                   so os dois blocos e perderia os meses do meio - em
+                   dez/2024, por exemplo, o lucro de 6,5 mi. Nesse caso o bloco
+                   atual parte do saldo REAL na vespera da data inicio, e a
+                   tela mostra essa linha. No ano cheio as datas encostam e
+                   nada muda. */
+                const pAnt = partesData(bruto('DATA_SALDO_ANT'));
+                const pAbe = partesData(bruto('DATA_ABERTURA_ATU'));
+                const temIntervalo = !!(pAnt && pAbe && d.capital.abert !== null
+                    && (pAnt.d !== pAbe.d || pAnt.m !== pAbe.m || pAnt.a !== pAbe.a));
+                if (temIntervalo) {
+                    reportData.labels.abertura = dataPorExtenso(bruto('DATA_ABERTURA_ATU'), years.anterior);
+                    reportData.abertura = {
+                        capital: d.capital.abert,
+                        ajuste: reportData.saldoAnt.ajuste,
+                        acumulados: d.acumulados.abert,
+                        get total() { return this.capital + this.ajuste + this.acumulados; }
+                    };
+                }
+                const partida = reportData.abertura || reportData.saldoAnt;
+
+                // Movimentações do Ano Atual (Ano)
+                reportData.movAtual = {
+                    distribuidos: d.distribuidos.atual,
+                    lucro: d.lucro.atual,
+                    ajuste: d.ajuste.atual
+                };
+
+                // Saldo Atual (Final)
+                reportData.saldoAtual = {
+                    capital: partida.capital,
+                    ajuste: partida.ajuste + reportData.movAtual.ajuste,
+                    acumulados: partida.acumulados + reportData.movAtual.lucro + reportData.movAtual.distribuidos,
+                    get total() { return this.capital + this.ajuste + this.acumulados; }
+                };
+
+                // 6. Renderizar o relatório com os dados calculados
+                renderReport(reportData);
+
+            } catch (error) {
+                console.error("Erro ao gerar relatório DMPL:", error);
+                renderError(error.message || "Ocorreu um erro ao carregar os dados do relatório.");
+            }
+        }
+
+        function initializeComponent() {
+            document.body.addEventListener(MITRA_UPDATE_EVENT_NAME, fetchDataAndRender);
+            fetchDataAndRender();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const waitForMitraAndInit = () => {
+                const maxWaitTime = 5000;
+                const intervalTime = 100;
+                const startTime = Date.now();
+
+                const checkInterval = setInterval(() => {
+                    /* So a query e obrigatoria. As datas e a empresa sao
+                       resolvidas pela plataforma dentro do texto da query; o
+                       varMes so existia por causa da segunda consulta. */
+                    if (window.componentData && (componentData.queryDados || componentData.query)) {
+                        clearInterval(checkInterval);
+                        initializeComponent();
+                    } else if (Date.now() - startTime > maxWaitTime) {
+                        clearInterval(checkInterval);
+                        const errorMsg = "Erro Crítico: As configurações do componente (queryDados ou query) não foram carregadas da plataforma.";
+                        console.error(errorMsg);
+                        renderError(errorMsg);
+                    }
+                }, intervalTime);
+            };
+
+            waitForMitraAndInit();
+        });
+    </script>
+</body>
+
+</html>

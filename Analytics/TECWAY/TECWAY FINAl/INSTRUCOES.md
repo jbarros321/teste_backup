@@ -8,7 +8,7 @@ parâmetros (removi a segunda consulta que os usava), mas a **plataforma** preci
 declarados para saber o que substituir no texto da query. Um `:VAR_*` não declarado não é
 substituído, e o `WHERE` não casa com nada.
 
-Declare nas **seis** telas (index1 a index6):
+Declare nas **nove** telas (index1 a index9):
 
 | Nome | Valor | Situação hoje |
 |---|---|---|
@@ -37,6 +37,9 @@ Abra o arquivo, copie **tudo** (é uma linha só) e cole no parâmetro da query 
 | `index4.html` | `query_index4_CORRIGIDA_oneline.sql` | DRE Interno | `EST.ID = 4` |
 | `index5.html` | `query_index5_CORRIGIDA_oneline.sql` (parâmetro `queryDados` ou `query`) | DFC Externo | `EST.ID = 10` |
 | `index6.html` | `query_index6_CORRIGIDA_oneline.sql` (parâmetro `queryDados` ou `query`) | Indicadores (BP Externo) | `EST.ID = 1` |
+| `index7.html` | `query_index7_CORRIGIDA_oneline.sql` (parâmetro `queryDados` ou `query`) | DRA (resultado abrangente) | contas 3, 4 e 5 |
+| `index8.html` | `query_index8_CORRIGIDA_oneline.sql` (parâmetro `queryDados` ou `query`) | DMPL | `EST.ID = 11` |
+| `index9/index9.html` | várias consultas — ver seção **index9** abaixo | Relatório completo | 1, 3, 10, 11 |
 
 Cada uma já vem com o `EST.ID` certo e com os nomes de coluna que aquela tela procura
 (`VLRLANC_ATU/ANT`, `ANO_ATUAL/ANTERIOR`, `VALOR_ANO_ATUAL/ANTERIOR`,
@@ -201,3 +204,33 @@ Duas causas conhecidas para a DRE zerada:
    As telas de BP funcionavam porque lá esse parâmetro já existia.
 2. **Cinco empresas não têm lançamento de resultado nenhum**: `CODEMP` 3, 14, 15, 600 e
    888 têm zero linhas em contas 3/4/5 em 2025. Se a seleção for uma delas, zera de verdade.
+
+
+---
+
+# index9 — relatório completo (pasta `index9/`)
+
+Usa os mesmos parâmetros das outras telas: `varEmpresa` = `:VAR_EMPRESA_DRE`,
+`varDataInicio` = `:VAR_DATA_INICIO`, `varDataFim` = `:VAR_DATA_FIM`.
+O `varMes` (`:VAR_DATA_REF_DRE`) **não é mais necessário**: a data do relatório vem do
+`queryBP` (`DATA_FIM_USADA`).
+
+Cole cada arquivo `_CORRIGIDA_oneline.sql` no parâmetro de mesmo nome:
+
+| Parâmetro do componente | Arquivo |
+|---|---|
+| `queryBP` | `index9/queryBP_CORRIGIDA_oneline.sql` |
+| `queryDRE` | `index9/queryDRE_CORRIGIDA_oneline.sql` |
+| `queryDFC` | `index9/queryDFC_CORRIGIDA_oneline.sql` |
+| `queryDMPL` | `index9/queryDMPL_CORRIGIDA_oneline.sql` |
+| `queryIndicadores` | `index9/queryIndicadores_CORRIGIDA_oneline.sql` |
+| `queryDRA` | `index9/queryDRA_CORRIGIDA_oneline.sql` |
+| `queryNotas` | `index9/queryNotas_CORRIGIDA_oneline.sql` |
+| `queryNotasTab` | `index9/queryNotasTab_CORRIGIDA_oneline.sql` |
+| `queryCompSociet` | `index9/queryCompSociet_CORRIGIDA_oneline.sql` |
+| `varNotaImg` | `index9/varNotaImg_CORRIGIDA_oneline.sql` |
+| `queryEmpresaDetalhes` | sem alteração (não usa data) |
+
+O relatório é de exercício ("exercícios findos em …"): use o filtro de **01/01 a 31/12**.
+Com período parcial, BP/DRE/DFC/DRA/indicadores respeitam o período, mas a DMPL encadeia
+saldo base + movimentos e só fecha quando os dois períodos se encostam (ano cheio).
