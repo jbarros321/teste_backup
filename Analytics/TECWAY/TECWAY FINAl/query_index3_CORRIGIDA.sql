@@ -267,7 +267,25 @@ SELECT
     (SELECT COUNT(*) FROM IMP_BASE_BALANCETE
       WHERE CODEMP = :VAR_EMPRESA_DRE
         AND DATE(REFERENCIA) BETWEEN (SELECT DT_INI FROM D)
-                                 AND (SELECT DT_FIM FROM D)) AS LANC_PERIODO
+                                 AND (SELECT DT_FIM FROM D)) AS LANC_PERIODO,
+    /* ------------------------------------------------------------------
+       1 = as duas datas do filtro chegaram e foram interpretadas.
+       0 = pelo menos uma nao chegou.
+
+       Isto existe porque o fallback para CURDATE() era SILENCIOSO: com a
+       data fim ausente a query passava a calcular o saldo de hoje e o de
+       hoje-menos-1-ano, devolvia numeros plausiveis, e nada na tela dizia
+       que o filtro tinha sido ignorado. Foi assim que o BP Externo mostrou
+       107.338.229,09 (Passivo+PL em 29/09/2025) para quem havia filtrado o
+       ano de 2025 inteiro, e por isso a coluna de 2024 nunca aparecia.
+
+       A causa e o parametro nao declarado no componente: a plataforma so
+       substitui um :VAR_* que esteja declarado. Com a tela nova, DATAS_OK=0
+       interrompe e diz isso, em vez de mostrar numero errado.
+       ------------------------------------------------------------------ */
+    CASE WHEN (SELECT DT_INI_IN FROM PARAMS) IS NULL
+            OR (SELECT DT_FIM_IN FROM PARAMS) IS NULL
+         THEN 0 ELSE 1 END                                  AS DATAS_OK
 FROM linhas L
 LEFT JOIN qtd_atu QA ON QA.ORDEM = L.ORDEM AND QA.NOME_GRUPO = L.NOME_GRUPO
 LEFT JOIN qtd_ant QB ON QB.ORDEM = L.ORDEM AND QB.NOME_GRUPO = L.NOME_GRUPO

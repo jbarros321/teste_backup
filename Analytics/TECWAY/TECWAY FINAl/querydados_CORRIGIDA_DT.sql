@@ -1,20 +1,26 @@
 /* =====================================================================
-   BP TECWAY - queryDados CORRIGIDA para o filtro de PERIODO
-   VERSAO PARA A TELA index2.html - BP INTERNO
-   tenant_61302 | ESTR_DEMONSTRATIVOS.ID = 2 (Interno)
+   BP TECWAY - queryDados CORRIGIDA - VARIANTE :VAR_DT_INICIO / :VAR_DT_FIM
 
-   Diferencas em relacao a querydados_CORRIGIDA.sql:
-       - EST.ID = 2 (Interno) em vez de 1
-       - as colunas de valor saem como ANO_ATUAL / ANO_ANTERIOR, que e como
-         a index2.html as procura (a index1.html usa VLRLANC_ATU/_ANT)
+   IDENTICA a querydados_CORRIGIDA.sql, mudando SO o nome das duas
+   variaveis de data:
+       :VAR_DATA_INICIO  ->  :VAR_DT_INICIO
+       :VAR_DATA_FIM     ->  :VAR_DT_FIM
 
-   A query original desta tela tinha, alem dos defeitos listados abaixo, um
-   a mais: ela NAO usava DET_DEMONSTRATIVO_CTACTB_EXC, ou seja ignorava as
-   regras de exclusao de conta por completo. Aqui elas valem.
+   Motivo: no tenant, :VAR_EMPRESA_DRE E substituido (o balancete retorna
+   dados), mas as datas nao - a query recebia NULL e caia em CURDATE(),
+   produzindo o saldo de hoje e de hoje-1-ano com rotulo de outro periodo.
+   Os dashboards da DH, que funcionam, usam :VAR_DT_INICIO e :VAR_DT_FIM
+   (62 e 42 ocorrencias); o TECWAY usa :VAR_DATA_* em 181 lugares e e
+   justamente onde a data nao chega.
+
+   Se esta variante trouxer as datas certas, o nome era este.
+   tenant_61302 | ESTR_DEMONSTRATIVOS.ID = 1 (Externo)
+                  para o BP Interno, troque "EST.ID = 1" por "EST.ID = 2".
+                  Agora e UM lugar so: a CTE `linhas`.
 
    Parametros do componente:
-       :VAR_DATA_INICIO   data inicial do filtro da tela
-       :VAR_DATA_FIM      data final   do filtro da tela
+       :VAR_DT_INICIO   data inicial do filtro da tela
+       :VAR_DT_FIM      data final   do filtro da tela
        :VAR_EMPRESA_DRE   CODEMP
 
    ATENCAO: nao use comentario de linha (--) nesta query. O componente
@@ -27,8 +33,8 @@
    A tela tem duas colunas: a do periodo filtrado e a comparativa de um
    ano antes. Cada uma resolve o vinculo conta x linha no SEU ano:
 
-       ANO_ATUAL  -> cadastro do ano de :VAR_DATA_FIM
-       ANO_ANTERIOR  -> cadastro do ano de :VAR_DATA_FIM menos 1
+       VLRLANC_ATU  -> cadastro do ano de :VAR_DT_FIM
+       VLRLANC_ANT  -> cadastro do ano de :VAR_DT_FIM menos 1
 
    Nao ha fallback de um ano para o outro. Se o ano daquela coluna nao tem
    conta vinculada, aquela coluna vem NULL e a tela mostra "sem cadastro";
@@ -56,7 +62,7 @@
       20251201, 20261201 (AAAAMMDD). Dos 356 registros, 352 sao AAAAMMDD
       e 4 sao ano puro.
 
-      A comparacao `ANO_REFERENCIA <= YEAR(:VAR_DATA_FIM)` virava
+      A comparacao `ANO_REFERENCIA <= YEAR(:VAR_DT_FIM)` virava
       `20251201 <= 2026`, que e FALSO. Logo MAX(...) devolvia NULL, o
       `DETREF.ANO_REFERENCIA = NULL` nunca casava e a linha desaparecia
       sem deixar rastro: 24 de 24 linhas do BP Externo em ZERO, e 36 de
@@ -70,7 +76,7 @@
    2) BETWEEN NO BALANCO PATRIMONIAL DAVA MOVIMENTO, NAO SALDO.
       IMP_BASE_BALANCETE guarda MOVIMENTO por competencia. O saldo de uma
       conta patrimonial e o acumulado desde o inicio, nao o do periodo.
-      `REFERENCIA BETWEEN :VAR_DATA_INICIO AND :VAR_DATA_FIM` devolvia so
+      `REFERENCIA BETWEEN :VAR_DT_INICIO AND :VAR_DT_FIM` devolvia so
       a movimentacao da janela - numero errado em toda linha de balanco.
       Agora: saldo = acumulado ATE a data fim da coluna. O BETWEEN ficou
       apenas onde a linha e de fluxo (3.3.2).
@@ -103,7 +109,7 @@
    COLUNAS DEVOLVIDAS
    ---------------------------------------------------------------------
        ORDEM, NOME_GRUPO, COD_NOTA_EXPLICATIVA
-       ANO_ATUAL / ANO_ANTERIOR    valor, ou NULL se o ano daquela
+       VLRLANC_ATU / VLRLANC_ANT    valor, ou NULL se o ano daquela
                                     coluna nao tem conta vinculada
        QTD_CONTAS_ATU / _ANT        contas vinculadas em cada ano
        SEM_CADASTRO_ATU / _ANT      1 = aquele ano nao tem cadastro
@@ -115,13 +121,13 @@ WITH PARAMS AS (
     SELECT
         /* aceita 'AAAA-MM-DD' e 'DD/MM/AAAA', que e como a plataforma
            costuma devolver o filtro de data */
-        CASE WHEN TRIM(COALESCE(:VAR_DATA_INICIO, '')) REGEXP '^[0-9]{2}/[0-9]{2}/[0-9]{4}$'
-             THEN STR_TO_DATE(TRIM(:VAR_DATA_INICIO), '%d/%m/%Y')
-             ELSE DATE(NULLIF(TRIM(COALESCE(:VAR_DATA_INICIO, '')), ''))
+        CASE WHEN TRIM(COALESCE(:VAR_DT_INICIO, '')) REGEXP '^[0-9]{2}/[0-9]{2}/[0-9]{4}$'
+             THEN STR_TO_DATE(TRIM(:VAR_DT_INICIO), '%d/%m/%Y')
+             ELSE DATE(NULLIF(TRIM(COALESCE(:VAR_DT_INICIO, '')), ''))
         END AS DT_INI_IN,
-        CASE WHEN TRIM(COALESCE(:VAR_DATA_FIM, '')) REGEXP '^[0-9]{2}/[0-9]{2}/[0-9]{4}$'
-             THEN STR_TO_DATE(TRIM(:VAR_DATA_FIM), '%d/%m/%Y')
-             ELSE DATE(NULLIF(TRIM(COALESCE(:VAR_DATA_FIM, '')), ''))
+        CASE WHEN TRIM(COALESCE(:VAR_DT_FIM, '')) REGEXP '^[0-9]{2}/[0-9]{2}/[0-9]{4}$'
+             THEN STR_TO_DATE(TRIM(:VAR_DT_FIM), '%d/%m/%Y')
+             ELSE DATE(NULLIF(TRIM(COALESCE(:VAR_DT_FIM, '')), ''))
         END AS DT_FIM_IN
 ),
 D AS (
@@ -182,7 +188,7 @@ linhas AS (
     FROM ESTR_DEMONSTRATIVOS EST
     INNER JOIN DET_DEMONSTRATIVO DET
             ON EST.ID = DET.ID_ESTR_DEMONSTRATIVO
-    WHERE EST.ID = 2
+    WHERE EST.ID = 1
       AND TRIM(DET.ORDEM) <> '3.3.3'
 ),
 ref_atu AS (
@@ -313,8 +319,8 @@ SELECT
     /* ano sem cadastro -> NULL naquela coluna, para a tela mostrar
        "sem cadastro". Com cadastro -> o valor, e 0 e zero de verdade,
        nao falta de dado. */
-    CASE WHEN QA.QTD IS NULL THEN NULL ELSE IFNULL(TA.V, 0) END AS ANO_ATUAL,
-    CASE WHEN QB.QTD IS NULL THEN NULL ELSE IFNULL(TB.V, 0) END AS ANO_ANTERIOR,
+    CASE WHEN QA.QTD IS NULL THEN NULL ELSE IFNULL(TA.V, 0) END AS VLRLANC_ATU,
+    CASE WHEN QB.QTD IS NULL THEN NULL ELSE IFNULL(TB.V, 0) END AS VLRLANC_ANT,
     IFNULL(QA.QTD, 0)                             AS QTD_CONTAS_ATU,
     IFNULL(QB.QTD, 0)                             AS QTD_CONTAS_ANT,
     CASE WHEN QA.QTD IS NULL THEN 1 ELSE 0 END    AS SEM_CADASTRO_ATU,

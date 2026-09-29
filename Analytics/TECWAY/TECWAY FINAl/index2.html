@@ -906,6 +906,15 @@
                 });
 
                 const primeira = reportResult.data[0];
+
+                /* Se as datas nao chegaram, PARA. Antes a query caia em
+                   CURDATE() em silencio e a tela mostrava o saldo de hoje e
+                   de hoje-menos-1-ano como se fosse o periodo filtrado -
+                   numero plausivel e errado, sem nenhum aviso. */
+                const iDatasOk = col('DATAS_OK');
+                if (iDatasOk !== -1 && Number(primeira[iDatasOk]) === 0) {
+                    throw new Error("O filtro de datas n\u00e3o chegou \u00e0 consulta, ent\u00e3o os n\u00fameros seriam calculados sobre a data de hoje em vez do per\u00edodo escolhido. Declare no componente os par\u00e2metros varDataInicio = :VAR_DATA_INICIO e varDataFim = :VAR_DATA_FIM (a plataforma s\u00f3 substitui um :VAR_* que esteja declarado).");
+                }
                 /* contadores de diagnostico: dizem POR QUE veio zerado */
                 const iLancEmp = col('LANC_EMPRESA');
                 const iLancPer = col('LANC_PERIODO');
