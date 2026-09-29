@@ -1,0 +1,437 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRE - Demonstrativo de Resultado do Exercício</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 84% 4.9%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
+        }
+
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --primary: 210 40% 98%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 212.7 26.8% 83.9%;
+        }
+
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        .total-row {
+            background-color: hsl(var(--secondary));
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <div id="dre-container" class="h-full w-full bg-background text-foreground flex flex-col">
+        <main class="flex-grow overflow-y-auto">
+            <div id="report-content" class="p-4">
+                <table class="w-full text-sm">
+                    <thead class="sticky top-0 bg-background z-10">
+                        <tr>
+                            <th class="text-left font-semibold p-2 w-2/4 border-b-2 border-primary">Conta Gerencial</th>
+                            <th class="text-right font-semibold p-2 border-b-2 border-primary" id="header-current-year"></th>
+                            <th class="text-right font-semibold p-2 border-b-2 border-primary" id="header-previous-year"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-body">
+                        <!-- Rows will be injected by JavaScript -->
+                    </tbody>
+                </table>
+                 <div id="loading-state" class="p-8 text-center text-muted-foreground">Carregando dados...</div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        const MITRA_UPDATE_EVENT_NAME = 'mitra-update-dre-report-component';
+
+        function updateMitra() {
+            console.log("Sinal de update para [DRE Report] recebido. Disparando evento.");
+            document.body.dispatchEvent(new CustomEvent(MITRA_UPDATE_EVENT_NAME));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const reportBody = document.getElementById('report-body');
+            const loadingState = document.getElementById('loading-state');
+    
+            function formatCurrency(value) {
+                const num = Number(value) || 0;
+                const formatted = new Intl.NumberFormat('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).format(Math.abs(num));
+                return num < 0 ? `(${formatted})` : formatted;
+            }
+
+            /* NULL vindo da query significa "o ano desta coluna nao tem conta
+               vinculada". Isso NAO e zero. Antes a tela fazia
+               parseFloat(v) || 0 e mostrava 0,00, ou seja falta de cadastro
+               passava por valor zero. */
+            /* A plataforma devolve a data como 'DD/MM/AAAA HH:MM:SS' (e as vezes
+               como AAAA-MM-DD). Para o cabecalho so interessa o ANO, e o primeiro
+               grupo de 4 digitos resolve todos os casos - dia e mes tem 2 digitos,
+               entao nunca casam primeiro.
+
+               Isto tambem blinda contra ANO_ATU voltar como data em vez de
+               inteiro: Number('01/01/2026 00:00:00') daria NaN no cabecalho. */
+            function anoDe(valor) {
+                const m = String(valor || '').match(/(\d{4})/);
+                return m ? Number(m[1]) : null;
+            }
+
+            function isSemCadastro(v) {
+                return v === null || v === undefined || v === '';
+            }
+            function toNumeroOuNulo(v) {
+                if (isSemCadastro(v)) return null;
+                const n = parseFloat(v);
+                return isNaN(n) ? null : n;
+            }
+
+            /* Quantas linhas do demonstrativo nao tem cadastro em cada ano.
+               Preenchido no renderReport, antes de montar as linhas.
+
+               Os 13 acumuladores de subtotal somam null como zero (em
+               JavaScript x += null nao altera x), entao o numero deles nao
+               fica errado - fica INCOMPLETO. Por isso toda linha de subtotal
+               recebe * quando ha linha sem cadastro: o total nao e falso, mas
+               tambem nao esta fechado. */
+            const FALTA = { atu: 0, ant: 0 };
+
+            function fmtValor(v, falta) {
+                if (isSemCadastro(v)) {
+                    return '<span class="text-muted-foreground italic" title="O ano desta coluna nao tem conta contabil vinculada nesta linha">sem cadastro</span>';
+                }
+                const base = formatCurrency(v);
+                if (!falta) return base;
+                return base + ' <span class="text-muted-foreground" title="' + falta + ' linha(s) sem cadastro no ano - subtotal incompleto">*</span>';
+            }
+
+            function createRow(level, description, value_current, value_previous, isBold = false, isTotal = false, isNegative = false) {
+                const paddingLeft = (level > 0 ? level -1 : 0) * 1.5;
+                const fontWeight = isBold ? 'font-semibold' : 'font-normal';
+                const totalClass = isTotal ? 'total-row' : '';
+                
+                /* linha de dado: nulo mostra "sem cadastro".
+                   linha de subtotal (isBold): leva * se faltar cadastro. */
+                const valueCurrentText = fmtValor(value_current, isBold ? FALTA.atu : 0);
+                const valuePreviousText = fmtValor(value_previous, isBold ? FALTA.ant : 0);
+                
+                const isCurrentNegativeForClass = (Number(value_current) < 0 || isNegative);
+                const isPreviousNegativeForClass = (Number(value_previous) < 0 || isNegative);
+                
+                const textColorCurrent = isCurrentNegativeForClass ? 'text-destructive' : 'text-foreground';
+                const textColorPrevious = isPreviousNegativeForClass ? 'text-destructive' : 'text-foreground';
+
+                return `
+                    <tr class="border-b border-border/50 ${totalClass}">
+                        <td class="py-2 px-2 ${fontWeight}" style="padding-left: ${paddingLeft + 0.5}rem;">${description}</td>
+                        <td class="py-2 px-2 text-right ${fontWeight} ${textColorCurrent}">${valueCurrentText}</td>
+                        <td class="py-2 px-2 text-right ${fontWeight} ${textColorPrevious}">${valuePreviousText}</td>
+                    </tr>
+                `;
+            }
+
+            function createSpacerRow() {
+                return `<tr class="h-4"><td colspan="3"></td></tr>`;
+            }
+
+            async function renderReport() {
+                loadingState.style.display = 'block';
+                reportBody.innerHTML = '';
+
+                try {
+                    /* Uma consulta so. Antes havia uma segunda ("SELECT :VAR_MES")
+                       apenas para descobrir o ano, e a tela morria quando ela
+                       vinha vazia. A query corrigida devolve ANO_ATU e ANO_ANT. */
+                    const result = await queryMitra({
+                        query: componentData.query,
+                        jdbcId: parseInt(componentData.jdbcId || '1', 10)
+                    });
+
+                    if (!result || !result.data || result.data.length === 0) {
+                        loadingState.textContent = 'Nenhum dado encontrado para o per\u00edodo selecionado.';
+                        return;
+                    }
+
+                    const headers = result.headers.map(h => (h && h.name ? h.name.toUpperCase() : ''));
+                    const colMap = {
+                        ordem: headers.indexOf('ORDEM'),
+                        nome: headers.indexOf('NOME_GRUPO'),
+                        atual: headers.indexOf('VALOR_ATUAL'),
+                        anterior: headers.indexOf('VALOR_ANTERIOR'),
+                    };
+
+                    if (Object.values(colMap).some(index => index === -1)) {
+                        throw new Error(`Query inv\u00e1lida. Colunas esperadas: ORDEM, NOME_GRUPO, VALOR_ATUAL, VALOR_ANTERIOR. Recebido: ${headers.join(', ')}`);
+                    }
+
+                    const iAnoAtu = headers.indexOf('ANO_ATU');
+                    const iAnoAnt = headers.indexOf('ANO_ANT');
+                    const primeira = result.data[0];
+                    const currentYear = anoDe(iAnoAtu !== -1 ? primeira[iAnoAtu] : null)
+                                     || anoDe(headers.indexOf('DATA_FIM_USADA') !== -1 ? primeira[headers.indexOf('DATA_FIM_USADA')] : null)
+                                     || new Date().getFullYear();
+                    const previousYear = anoDe(iAnoAnt !== -1 ? primeira[iAnoAnt] : null) || (currentYear - 1);
+                    document.getElementById('header-current-year').textContent = String(currentYear);
+                    document.getElementById('header-previous-year').textContent = String(previousYear);
+
+                    const data = result.data.map(row => ({
+                        hierarquia: row[colMap.ordem] || '',
+                        descricao: row[colMap.nome] || '',
+                        /* NULL fica NULL: e "sem cadastro no ano", nao zero */
+                        valor_atual: toNumeroOuNulo(row[colMap.atual]),
+                        valor_anterior: toNumeroOuNulo(row[colMap.anterior]),
+                    })).sort((a, b) => a.hierarquia.localeCompare(b.hierarquia, undefined, { numeric: true }));
+
+                    const bruto = n => { const i = headers.indexOf(n); return i !== -1 ? primeira[i] : '(coluna ausente)'; };
+                    const cru = {
+                        DATAS_OK: bruto('DATAS_OK'),
+                        DATA_INICIO_USADA: bruto('DATA_INICIO_USADA'),
+                        DATA_FIM_USADA: bruto('DATA_FIM_USADA'),
+                        ANO_ATU: bruto('ANO_ATU'), ANO_ANT: bruto('ANO_ANT'),
+                        LANC_EMPRESA: bruto('LANC_EMPRESA'), LANC_PERIODO: bruto('LANC_PERIODO')
+                    };
+                    console.log('[DRE Interno] diagnostico da query:', cru);
+                    if (String(cru.DATAS_OK) === '0') {
+                        throw new Error('O filtro de datas nao chegou a consulta. '
+                            + 'DATAS_OK=' + cru.DATAS_OK
+                            + ' | DATA_INICIO_USADA=' + cru.DATA_INICIO_USADA
+                            + ' | DATA_FIM_USADA=' + cru.DATA_FIM_USADA
+                            + ' | ANO_ATU=' + cru.ANO_ATU + ' | ANO_ANT=' + cru.ANO_ANT
+                            + ' | LANC_EMPRESA=' + cru.LANC_EMPRESA
+                            + ' | LANC_PERIODO=' + cru.LANC_PERIODO
+                            + '  --  copie esta linha inteira.');
+                    }
+                    const iLancEmp = headers.indexOf('LANC_EMPRESA');
+                    const iLancPer = headers.indexOf('LANC_PERIODO');
+                    const diag = {
+                        lancEmpresa: iLancEmp !== -1 ? Number(primeira[iLancEmp]) : null,
+                        lancPeriodo: iLancPer !== -1 ? Number(primeira[iLancPer]) : null
+                    };
+                    FALTA.atu = data.filter(d => isSemCadastro(d.valor_atual)).length;
+                    FALTA.ant = data.filter(d => isSemCadastro(d.valor_anterior)).length;
+
+                    const totals = {
+                        receita_bruta: { atual: 0, anterior: 0 },
+                        receita_liquida: { atual: 0, anterior: 0 },
+                        csp: { atual: 0, anterior: 0 },
+                        despesas_op: { atual: 0, anterior: 0 },
+                        despesas_admin: { atual: 0, anterior: 0 },
+                        despesas_comerc: { atual: 0, anterior: 0 },
+                        pecld: { atual: 0, anterior: 0 },
+                        depreciacao: { atual: 0, anterior: 0 },
+                        resultado_fin: { atual: 0, anterior: 0 },
+                        outras_desp_rec: { atual: 0, anterior: 0 },
+                        outras_receitas_nao_op: { atual: 0, anterior: 0 },
+                        impostos_corrente: { atual: 0, anterior: 0 },
+                        impostos_diferido: { atual: 0, anterior: 0 }
+                    };
+
+                    for (const item of data) {
+                        const h = item.hierarquia + '.';
+                        if (h.startsWith('1.1.') || h.startsWith('1.2.') || h.startsWith('1.3.')) {
+                            totals.receita_bruta.atual += item.valor_atual;
+                            totals.receita_bruta.anterior += item.valor_anterior;
+                        }
+                        if (h.startsWith('1.1.') || h.startsWith('1.2.') || h.startsWith('1.3.') || h.startsWith('1.4.')) {
+                            totals.receita_liquida.atual += item.valor_atual;
+                            totals.receita_liquida.anterior += item.valor_anterior;
+                        }
+                        if (h.startsWith('3.')) totals.csp.atual += item.valor_atual, totals.csp.anterior += item.valor_anterior;
+                        if (h.startsWith('5.')) totals.despesas_op.atual += item.valor_atual, totals.despesas_op.anterior += item.valor_anterior;
+                        if (h.startsWith('5.1.')) totals.despesas_admin.atual += item.valor_atual, totals.despesas_admin.anterior += item.valor_anterior;
+                        if (h.startsWith('5.2.')) totals.despesas_comerc.atual += item.valor_atual, totals.despesas_comerc.anterior += item.valor_anterior;
+                        if (h.startsWith('5.3.')) totals.pecld.atual += item.valor_atual, totals.pecld.anterior += item.valor_anterior;
+                        if (h.startsWith('5.4.')) totals.depreciacao.atual += item.valor_atual, totals.depreciacao.anterior += item.valor_anterior;
+                        if (h.startsWith('5.5.')) totals.resultado_fin.atual += item.valor_atual, totals.resultado_fin.anterior += item.valor_anterior;
+                        if (h.startsWith('5.6.')) totals.outras_desp_rec.atual += item.valor_atual, totals.outras_desp_rec.anterior += item.valor_anterior;
+                        if (h.startsWith('7.')) totals.outras_receitas_nao_op.atual += item.valor_atual, totals.outras_receitas_nao_op.anterior += item.valor_anterior;
+                        if (h.startsWith('9.1.') || h.startsWith('9.2.') || h.startsWith('9.3.')) {
+                            totals.impostos_corrente.atual += item.valor_atual;
+                            totals.impostos_corrente.anterior += item.valor_anterior;
+                        }
+                        if (h.startsWith('9.4.') || h.startsWith('9.5.') || h.startsWith('9.6.')) {
+                            totals.impostos_diferido.atual += item.valor_atual;
+                            totals.impostos_diferido.anterior += item.valor_anterior;
+                        }
+                    }
+                    
+                    const resultado_bruto = {
+                        atual: totals.receita_liquida.atual + totals.csp.atual,
+                        anterior: totals.receita_liquida.anterior + totals.csp.anterior
+                    };
+                    const resultado_op_liquido = {
+                        atual: resultado_bruto.atual + totals.despesas_op.atual,
+                        anterior: resultado_bruto.anterior + totals.despesas_op.anterior
+                    };
+                    const resultado_antes_impostos = {
+                        atual: resultado_op_liquido.atual + totals.outras_receitas_nao_op.atual,
+                        anterior: resultado_op_liquido.anterior + totals.outras_receitas_nao_op.anterior
+                    };
+                    const resultado_liquido_exercicio = {
+                        atual: resultado_antes_impostos.atual + totals.impostos_corrente.atual + totals.impostos_diferido.atual,
+                        anterior: resultado_antes_impostos.anterior + totals.impostos_corrente.anterior + totals.impostos_diferido.anterior
+                    };
+                    
+                    let html = '';
+                    const renderGroup = (groupPrefix) => {
+                        let groupHtml = '';
+                        const items = data.filter(d => (d.hierarquia + '.').startsWith(groupPrefix + '.'));
+                        items.forEach(item => {
+                            const level = item.hierarquia.split('.').length;
+                            groupHtml += createRow(level, `${item.descricao}`, item.valor_atual, item.valor_anterior);
+                        });
+                        return groupHtml;
+                    };
+                    
+                    // --- INÍCIO DA LÓGICA DE RENDERIZAÇÃO CORRIGIDA ---
+
+                    // 1. RECEITA BRUTA
+                    html += createRow(1, '1. (+) RECEITA BRUTA', totals.receita_bruta.atual, totals.receita_bruta.anterior, true);
+                    html += renderGroup('1');
+                    html += createRow(1, '2. (=) RECEITA OPERACIONAL LÍQUIDA', totals.receita_liquida.atual, totals.receita_liquida.anterior, true, true);
+                    html += createSpacerRow();
+
+                    // 2. CUSTO E RESULTADO BRUTO
+                    html += createRow(1, '3. (-) CUSTO DO SERVIÇO PRESTADO (CSP)', totals.csp.atual, totals.csp.anterior, true, false, true);
+                    html += renderGroup('3');
+                    html += createRow(1, '4. (=) RESULTADO OPERACIONAL BRUTO', resultado_bruto.atual, resultado_bruto.anterior, true, true);
+                    html += createSpacerRow();
+                    
+                    // 3. DESPESAS OPERACIONAIS
+                    html += createRow(1, '5. DESPESAS E RECEITAS OPERACIONAIS', totals.despesas_op.atual, totals.despesas_op.anterior, true);
+                    html += createRow(2, '5.1 DESPESAS ADMINISTRATIVAS', totals.despesas_admin.atual, totals.despesas_admin.anterior, true);
+                    html += renderGroup('5.1');
+                    html += createRow(2, '5.2 DESPESAS COMERCIAIS', totals.despesas_comerc.atual, totals.despesas_comerc.anterior, true);
+                    html += renderGroup('5.2');
+                    html += createRow(2, '5.3 PECLD', totals.pecld.atual, totals.pecld.anterior, true);
+                    html += renderGroup('5.3');
+                    html += createRow(2, '5.4 DESPESAS C/ DEPRECIAÇÃO E AMORTIZAÇÃO', totals.depreciacao.atual, totals.depreciacao.anterior, true);
+                    html += renderGroup('5.4');
+                    html += createRow(2, '5.5 RESULTADO FINANCEIRO', totals.resultado_fin.atual, totals.resultado_fin.anterior, true);
+                    html += renderGroup('5.5');
+                    html += createRow(2, '5.6 OUTRAS DESPESAS E RECEITAS NÃO DEDUTÍVEIS', totals.outras_desp_rec.atual, totals.outras_desp_rec.anterior, true);
+                    html += renderGroup('5.6');
+                    html += createRow(1, '6. (=) RESULTADO OPERACIONAL LÍQUIDO', resultado_op_liquido.atual, resultado_op_liquido.anterior, true, true);
+                    html += createSpacerRow();
+
+                    // 4. RESULTADO ANTES DOS IMPOSTOS E RESULTADO FINAL
+                    html += createRow(1, '7. OUTRAS RECEITAS NÃO OPERACIONAIS', totals.outras_receitas_nao_op.atual, totals.outras_receitas_nao_op.anterior, true);
+                    html += renderGroup('7');
+                    html += createRow(1, '8. (=) RESULTADO ANTES DOS IMPOSTOS APURADOS', resultado_antes_impostos.atual, resultado_antes_impostos.anterior, true, true);
+                    
+                    html += createSpacerRow();
+
+                    // Renderiza os itens normais de 9.1, 9.2, 9.3
+                    html += renderGroup('9.1');
+                    html += renderGroup('9.2');
+                    html += renderGroup('9.3');
+
+                    // Adiciona o totalizador para Corrente
+                    html += createRow(2, 'TOTAL de CSLL e IRPJ - Corrente', totals.impostos_corrente.atual, totals.impostos_corrente.anterior, true, true, true);
+                    html += createSpacerRow();
+
+                    // Renderiza os itens normais de 9.4, 9.5, 9.6
+                    html += renderGroup('9.4');
+                    html += renderGroup('9.5');
+                    html += renderGroup('9.6');
+
+                    // Adiciona o totalizador para Diferido
+                    html += createRow(2, 'TOTAL de CSLL e IRPJ - Diferido', totals.impostos_diferido.atual, totals.impostos_diferido.anterior, true, true, true);
+                    html += createSpacerRow();
+
+                    // Adiciona o resultado líquido final
+                    html += createRow(1, '(=) RESULTADO LÍQUIDO DO EXERCÍCIO', resultado_liquido_exercicio.atual, resultado_liquido_exercicio.anterior, true, true);
+
+                    // --- FIM DA LÓGICA DE RENDERIZAÇÃO ---
+
+                    reportBody.innerHTML = html;
+
+                    /* Aviso de falta de cadastro: sem ele, uma coluna inteira em
+                       branco parece "empresa sem movimento". */
+                    if (diag.lancEmpresa === 0 || (diag.lancPeriodo === 0 && diag.lancEmpresa > 0)) {
+                        const d = document.createElement('div');
+                        d.className = 'rounded-lg border border-destructive bg-secondary p-4 text-sm mt-8';
+                        d.innerHTML = diag.lancEmpresa === 0
+                            ? `<span class="font-semibold text-destructive">Nenhum lan\u00e7amento encontrado para a empresa selecionada.</span>
+                               Os valores v\u00eam zerados por isso, n\u00e3o por falta de cadastro. Confira se o par\u00e2metro
+                               <span class="font-mono">varEmpresa</span> = <span class="font-mono">:VAR_EMPRESA_DRE</span>
+                               est\u00e1 declarado no componente \u2014 esta tela n\u00e3o tinha esse par\u00e2metro.`
+                            : `<span class="font-semibold">A empresa tem balancete, mas nada no per\u00edodo filtrado.</span>
+                               ${diag.lancEmpresa} lan\u00e7amentos no total, nenhum entre as datas escolhidas.`;
+                        if (reportBody.parentNode) reportBody.parentNode.appendChild(d);
+                    }
+
+                } catch (error) {
+                    console.error("Falha ao gerar o relatório DRE:", error);
+                    loadingState.innerHTML = `<div class="p-8 text-center text-red-700 bg-red-50">Ocorreu um erro ao carregar os dados. <br><small>${error.message}</small></div>`;
+                } finally {
+                    loadingState.style.display = 'none';
+                }
+            }
+            
+            const initializeComponent = async () => {
+                await renderReport();
+            };
+    
+            document.body.addEventListener(MITRA_UPDATE_EVENT_NAME, renderReport);
+
+            const waitForMitraAndInit = () => {
+                const maxWaitTime = 5000;
+                const intervalTime = 100;
+                const startTime = Date.now();
+
+                const checkInterval = setInterval(() => {
+                    if (window.componentData && window.componentData.query) {
+                        clearInterval(checkInterval);
+                        initializeComponent();
+                    } else if (Date.now() - startTime > maxWaitTime) {
+                        clearInterval(checkInterval);
+                        console.error("Erro: componentData.query não foi carregado a tempo.");
+                        document.body.innerHTML = `<div class="p-8 text-center text-red-700 bg-red-50 h-full flex items-center justify-center">Erro Crítico: A configuração da query do componente não foi carregada da plataforma.</div>`;
+                    }
+                }, intervalTime);
+            };
+
+            waitForMitraAndInit();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balanço Patrimonial</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 84% 4.9%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
+        }
+
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --primary: 210 40% 98%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 212.7 26.8% 83.9%;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        }
+    </style>
+</head>
+
+<body class="p-4 sm:p-6 lg:p-8">
+    <div id="report-container" class="w-full h-full">
+        <div id="loading-state" class="flex items-center justify-center h-full">
+            <p class="text-lg text-muted-foreground">Carregando dados do balanço...</p>
+        </div>
+        <div id="report-content" class="hidden">
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
+                <!-- Coluna da Esquerda: Ativo -->
+                <div id="ativo-container" class="space-y-8"></div>
+
+                <!-- Coluna da Direita: Passivo e PL -->
+                <div id="passivo-pl-container" class="space-y-8"></div>
+            </div>
+
+            <!-- Seção de Totais -->
+            <div id="totais-container" class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
+            </div>
+
+            <div id="aviso-container" class="mt-8"></div>
+        </div>
+    </div>
+
+    <script>
+        const MITRA_UPDATE_EVENT_NAME = 'mitra-update-balanco-patrimonial';
+
+        function updateMitra() {
+            console.log("Sinal de update para [Balanço Patrimonial] recebido. Disparando evento.");
+            document.body.dispatchEvent(new CustomEvent(MITRA_UPDATE_EVENT_NAME));
+        }
+
+        /* ------------------------------------------------------------------
+           Resolução tolerante dos parâmetros do componente.
+
+           A trava antiga lia window.componentData.varMes pelo nome exato.
+           Nome de propriedade em JavaScript diferencia maiúscula de
+           minúscula, então um parâmetro registrado como "Varmes" ou
+           "VarDataInicio" fazia a condição nunca fechar: venciam os 5
+           segundos e a tela morria em branco, sem dizer o que faltou.
+
+           Agora o nome é resolvido ignorando caixa, underscore e ponto, e
+           aceitando apelidos. E a mensagem de erro diz QUAL parâmetro
+           faltou.
+           ------------------------------------------------------------------ */
+        function normalizeKey(k) {
+            return String(k).toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+
+        function pickParam(obj, ...nomes) {
+            if (!obj) return undefined;
+            const mapa = {};
+            Object.keys(obj).forEach(k => { mapa[normalizeKey(k)] = obj[k]; });
+            for (const n of nomes) {
+                const v = mapa[normalizeKey(n)];
+                if (v !== undefined && v !== null && String(v).trim() !== '') {
+                    return v;
+                }
+            }
+            return undefined;
+        }
+
+        /* SO a query e obrigatoria.
+
+           As datas e a empresa NAO precisam de parametro no componente: a
+           plataforma resolve :VAR_DATA_INICIO, :VAR_DATA_FIM e
+           :VAR_EMPRESA_DRE direto no texto da query, a partir dos filtros da
+           tela. O "varMes" so existia porque o JavaScript montava uma segunda
+           consulta com ele - e essa consulta foi removida. */
+        const PARAMS = {
+            queryDados: ['queryDados', 'query_dados', 'querydado', 'query']
+        };
+
+        function resolveParams() {
+            const cd = window.componentData || {};
+            const out = {}, faltando = [];
+            for (const [alvo, nomes] of Object.entries(PARAMS)) {
+                const v = pickParam(cd, ...nomes);
+                if (v === undefined) faltando.push(alvo); else out[alvo] = v;
+            }
+            return { valores: out, faltando, chaves: Object.keys(cd) };
+        }
+
+        /* Valores completos e exatos: sem divisão por 1000 e com os
+           centavos. A versão anterior dividia tudo por 1000 e arredondava
+           para inteiro, então a tela mostrava milhares. */
+        /* NULL vindo da query significa "o ano desta coluna nao tem conta
+           vinculada". Isso NAO e zero, e a celula tem que dizer isso - senao
+           falta de cadastro passa por saldo zero. */
+        function isSemCadastro(v) {
+            return v === null || v === undefined || v === '';
+        }
+
+        function renderValor(value) {
+            if (isSemCadastro(value)) {
+                return '<span class="text-muted-foreground italic" title="O ano desta coluna nao tem conta contabil vinculada nesta linha">sem cadastro</span>';
+            }
+            return formatCurrency(value);
+        }
+
+        function formatCurrency(value) {
+            const num = parseFloat(value);
+            if (isNaN(num)) return '0,00';
+            const formatted = new Intl.NumberFormat('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(Math.abs(num));
+            return num < 0 ? `(${formatted})` : formatted;
+        }
+
+        function toNumeroOuNulo(v) {
+            if (isSemCadastro(v)) return null;
+            const n = parseFloat(v);
+            return isNaN(n) ? null : n;
+        }
+
+        /* A plataforma devolve a data de formas diferentes conforme o
+       componente: '2026-09-29', '2026-09-29T00:00:00', '29/09/2026' e
+       '29/09/2026 00:00:00' todos ja apareceram. Para o cabecalho so
+       interessa o ANO, e o primeiro grupo de 4 digitos resolve os quatro
+       casos (dia e mes tem 2 digitos, entao nunca casam primeiro). */
+        function anoDe(valor) {
+            const m = String(valor || '').match(/(\d{4})/);
+            return m ? Number(m[1]) : null;
+        }
+
+        function formatDateBR(valor) {
+            if (!valor) return '';
+            const iso = String(valor).split(' ')[0].split('T')[0];
+            const p = iso.split('-');
+            return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : String(valor);
+        }
+
+        function subtractOneYear(valor) {
+            const iso = String(valor || '').split(' ')[0].split('T')[0];
+            const p = iso.split('-');
+            if (p.length !== 3) return '';
+            return `${String(Number(p[0]) - 1).padStart(4, '0')}-${p[1]}-${p[2]}`;
+        }
+
+        function generateTableHtml(title, items, subtotal, colAtual, colAnterior) {
+            let itemsHtml = items.map(item => `
+                <tr class="border-b border-border">
+                    <td class="py-2 px-4 text-sm text-muted-foreground">${item.nomeGrupo}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderValor(item.valorAtual)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderValor(item.valorAnterior)}</td>
+                </tr>
+            `).join('');
+
+            let subtotalHtml = `
+                <tr class="font-bold bg-secondary">
+                    <td class="py-2 px-4 text-sm">${subtotal.descricao}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotal.valorAtual, subtotal.faltaAtual)}</td>
+                    <td class="py-2 px-4 text-sm text-right tabular-nums">${renderSubtotal(subtotal.valorAnterior, subtotal.faltaAnterior)}</td>
+                </tr>
+            `;
+
+            return `
+                <div class="w-full">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="border-b-2 border-foreground">
+                                <th class="py-2 px-4 text-left text-base font-bold">${title}</th>
+                                <th class="py-2 px-4 text-right text-sm font-semibold w-40">${colAtual}</th>
+                                <th class="py-2 px-4 text-right text-sm font-semibold w-40">${colAnterior}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml}
+                            ${subtotalHtml}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function generateTotalTableHtml(title, total) {
+            return `
+                <div class="w-full">
+                    <table class="w-full border-collapse">
+                        <tbody>
+                             <tr class="font-bold border-y-2 border-double border-foreground bg-secondary">
+                                <td class="py-3 px-4 text-base">${title}</td>
+                                <td class="py-3 px-4 text-base text-right tabular-nums w-40">${renderSubtotal(total.valorAtual, total.faltaAtual)}</td>
+                                <td class="py-3 px-4 text-base text-right tabular-nums w-40">${renderSubtotal(total.valorAnterior, total.faltaAnterior)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function normalizeOrder(value) {
+            return String(value || '').replace(/\s+/g, '');
+        }
+
+        function startsWithOrder(ordem, prefixo) {
+            return normalizeOrder(ordem).startsWith(normalizeOrder(prefixo));
+        }
+
+        function createSubtotal(descricao) {
+            return { descricao, valorAtual: 0, valorAnterior: 0, faltaAtual: 0, faltaAnterior: 0 };
+        }
+
+        /* Soma apenas as linhas que tem cadastro, e CONTA as que nao tem.
+           Tratar "sem cadastro" como zero produziria um subtotal que parece
+           completo e nao e - por isso o subtotal incompleto vem marcado. */
+        function sumItems(items, descricao) {
+            return items.reduce((acc, item) => {
+                if (isSemCadastro(item.valorAtual)) acc.faltaAtual++;
+                else acc.valorAtual += item.valorAtual;
+                if (isSemCadastro(item.valorAnterior)) acc.faltaAnterior++;
+                else acc.valorAnterior += item.valorAnterior;
+                return acc;
+            }, createSubtotal(descricao));
+        }
+
+        function somaTotais(descricao, ...partes) {
+            return partes.reduce((acc, p) => {
+                acc.valorAtual += p.valorAtual;
+                acc.valorAnterior += p.valorAnterior;
+                acc.faltaAtual += p.faltaAtual;
+                acc.faltaAnterior += p.faltaAnterior;
+                return acc;
+            }, createSubtotal(descricao));
+        }
+
+        /* subtotal a que faltam linhas ganha um asterisco, para nao ser lido
+           como numero fechado */
+        function renderSubtotal(valor, falta) {
+            const base = isSemCadastro(valor) ? renderValor(valor) : formatCurrency(valor);
+            if (!falta) return base;
+            return `${base} <span class="text-muted-foreground" title="${falta} linha(s) deste grupo sem cadastro no ano - subtotal incompleto">*</span>`;
+        }
+
+        function renderReport(data, periodo) {
+            /* cabecalho das colunas: so o ano */
+            /* tudo passa pelo anoDe: se a plataforma devolver ANO_ATU como
+               data (ja aconteceu), o ano e extraido igual e o cabecalho nunca
+               volta a mostrar '29/09/2026 00:00:00' */
+            const anoAtual = anoDe(periodo.anoAtu) || anoDe(periodo.dataFim) || new Date().getFullYear();
+            const anoAnterior = anoDe(periodo.anoAnt) || (anoAtual - 1);
+            const colAtual = String(anoAtual);
+            const colAnterior = String(anoAnterior);
+
+            const ativoCirculanteItems = data.filter(d => startsWithOrder(d.ordem, '1.1.'));
+            const subtotalAtivoCirculante = sumItems(ativoCirculanteItems, '1.1. = Total do ativo circulante');
+
+            const ativoNaoCirculanteItems = data.filter(d => startsWithOrder(d.ordem, '1.2.'));
+            const subtotalAtivoNaoCirculante = sumItems(ativoNaoCirculanteItems, '1.2. = Total do ativo não circulante');
+
+            const totalAtivo = somaTotais('1. = Total do ativo',
+                subtotalAtivoCirculante, subtotalAtivoNaoCirculante);
+
+            document.getElementById('ativo-container').innerHTML =
+                generateTableHtml('1.1. = Ativo circulante', ativoCirculanteItems, subtotalAtivoCirculante, colAtual, colAnterior)
+                + generateTableHtml('1.2. = Ativo não circulante', ativoNaoCirculanteItems, subtotalAtivoNaoCirculante, colAtual, colAnterior);
+
+            const passivoCirculanteItems = data.filter(d => startsWithOrder(d.ordem, '2.1.'));
+            const subtotalPassivoCirculante = sumItems(passivoCirculanteItems, '2.1. = Total do passivo circulante');
+
+            const passivoNaoCirculanteItems = data.filter(d => startsWithOrder(d.ordem, '2.2.'));
+            const subtotalPassivoNaoCirculante = sumItems(passivoNaoCirculanteItems, '2.2. = Total do passivo não circulante');
+
+            const plItems = data.filter(d => startsWithOrder(d.ordem, '3.'));
+            const subtotalPL = sumItems(plItems, '3. = Total do patrimônio líquido');
+
+            const totalPassivoPL = somaTotais('2. + 3. = Total do passivo e patrimônio líquido',
+                subtotalPassivoCirculante, subtotalPassivoNaoCirculante, subtotalPL);
+
+            document.getElementById('passivo-pl-container').innerHTML =
+                generateTableHtml('2.1. = Passivo circulante', passivoCirculanteItems, subtotalPassivoCirculante, colAtual, colAnterior)
+                + generateTableHtml('2.2. = Passivo não circulante', passivoNaoCirculanteItems, subtotalPassivoNaoCirculante, colAtual, colAnterior)
+                + generateTableHtml('3. = Patrimônio líquido', plItems, subtotalPL, colAtual, colAnterior);
+
+            document.getElementById('totais-container').innerHTML =
+                generateTotalTableHtml('1. = Total do ativo', totalAtivo)
+                + generateTotalTableHtml('2. + 3. = Total do passivo e patrimônio líquido', totalPassivoPL);
+
+            const avisos = [];
+            /* 0) A causa mais comum de "tudo 0,00": o balancete nao devolveu
+                  linha nenhuma para a empresa. Isso NAO e falta de cadastro
+                  da estrutura, e por isso tem mensagem propria - sem ela, as
+                  tres causas viram o mesmo zero na tela. */
+            const diag = window.__DIAG || {};
+
+            /* Painel de diagnostico. Aparece SO quando nenhuma linha tem valor
+               - ou seja, quando a tela nao serve para nada mesmo. Nao e
+               legenda permanente: com dados, ele nao existe. Serve para nao
+               ter que adivinhar a causa a partir dos totais. */
+            const nadaComValor = data.every(d => isSemCadastro(d.valorAtual) || d.valorAtual === 0)
+                              && data.every(d => isSemCadastro(d.valorAnterior) || d.valorAnterior === 0);
+            if (nadaComValor && diag.cru) {
+                const linhas = Object.entries(diag.cru)
+                    .map(([k, v]) => `${k.padEnd(20, '\u00a0')} = ${v === null ? 'NULL' : String(v)}`)
+                    .join('<br>');
+                avisos.push(`
+                    <div class="rounded-lg border border-border bg-secondary p-4 text-sm">
+                        <div class="font-semibold mb-2">Diagn\u00f3stico \u2014 o que a consulta recebeu e devolveu</div>
+                        <div class="font-mono text-xs leading-relaxed">${linhas}</div>
+                        <div class="mt-3 text-xs text-muted-foreground">
+                            <b>DATAS_OK = 0</b>: as datas do filtro n\u00e3o chegaram \u2014 nome da vari\u00e1vel errado
+                            ou par\u00e2metro sem valor.<br>
+                            <b>DATA_FIM_USADA</b> diferente da data que voc\u00ea filtrou: mesma causa.<br>
+                            <b>LANC_EMPRESA = 0</b>: o <span class="font-mono">:VAR_EMPRESA_DRE</span> n\u00e3o chegou,
+                            ou a empresa n\u00e3o tem balancete.<br>
+                            <b>QTD_CONTAS_ATU = 0</b>: o ano da coluna n\u00e3o tem conta vinculada no cadastro.
+                        </div>
+                    </div>`);
+            }
+            if (diag.lancEmpresa === 0) {
+                avisos.push(`
+                    <div class="rounded-lg border border-destructive bg-secondary p-4 text-sm">
+                        <span class="font-semibold text-destructive">Nenhum lan\u00e7amento encontrado para a empresa selecionada.</span>
+                        Todos os valores v\u00eam zerados por isso, e n\u00e3o por falta de cadastro da estrutura.
+                        Duas causas poss\u00edveis, nesta ordem:
+                        <ol class="mt-2 ml-5 list-decimal space-y-1">
+                            <li>O par\u00e2metro <span class="font-mono">varEmpresa</span> = <span class="font-mono">:VAR_EMPRESA_DRE</span>
+                                n\u00e3o est\u00e1 declarado na configura\u00e7\u00e3o do componente. A plataforma s\u00f3
+                                substitui um <span class="font-mono">:VAR_*</span> que esteja declarado; sem isso o
+                                <span class="font-mono">CODEMP</span> fica nulo e o balancete n\u00e3o casa com nada.</li>
+                            <li>A empresa selecionada realmente n\u00e3o tem balancete carregado.</li>
+                        </ol>
+                    </div>`);
+            } else if (diag.lancPeriodo === 0 && diag.lancEmpresa > 0) {
+                avisos.push(`
+                    <div class="rounded-lg border border-border bg-secondary p-4 text-sm">
+                        <span class="font-semibold">A empresa tem balancete, mas nada no per\u00edodo filtrado.</span>
+                        S\u00e3o ${diag.lancEmpresa} lan\u00e7amentos no total e nenhum entre as datas escolhidas.
+                        Ajuste o per\u00edodo, ou confira se <span class="font-mono">varDataInicio</span> e
+                        <span class="font-mono">varDataFim</span> est\u00e3o declarados no componente.
+                    </div>`);
+            }
+
+
+            /* 2) Fechamento do balanço - só faz sentido conferir quando a
+                  coluna está completa. Com linha sem cadastro, a diferença
+                  não significa nada e afirmar que "não fecha" seria errado. */
+            const completoAtu = !totalAtivo.faltaAtual && !totalPassivoPL.faltaAtual;
+            const dif = totalAtivo.valorAtual - totalPassivoPL.valorAtual;
+            if (completoAtu && Math.abs(dif) >= 0.01) {
+                avisos.push(`
+                    <div class="rounded-lg border border-border bg-secondary p-4 text-sm">
+                        <span class="font-semibold">Atenção:</span>
+                        o ativo e o passivo + patrimônio líquido não fecham em ${colAtual} —
+                        diferença de <span class="tabular-nums font-semibold">${formatCurrency(dif)}</span>.
+                        Isso vem do cadastro da estrutura (conta sem vínculo, ou linha de
+                        resultado fora da estrutura), não do cálculo.
+                    </div>`);
+            }
+
+            document.getElementById('aviso-container').innerHTML = avisos.join('');
+
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('report-content').classList.remove('hidden');
+        }
+
+        async function fetchAndRenderData() {
+            const contentEl = document.getElementById('report-content');
+            const loadingEl = document.getElementById('loading-state');
+
+            contentEl.classList.add('hidden');
+            loadingEl.classList.remove('hidden');
+            loadingEl.innerHTML = `<p class="text-lg text-muted-foreground">Carregando dados do balanço...</p>`;
+
+            try {
+                const { valores, faltando, chaves } = resolveParams();
+                if (faltando.length) {
+                    throw new Error(`Parâmetro(s) do componente não configurado(s): ${faltando.join(', ')}. `
+                        + `A plataforma expôs: ${chaves.join(', ') || '(nada)'}.`);
+                }
+
+                /* Uma consulta só. A versão anterior disparava uma segunda
+                   query ("SELECT :VAR_MES_FILTRO") apenas para descobrir a
+                   data de referência, e morria quando ela vinha vazia. A
+                   query corrigida já devolve DATA_INICIO_USADA e
+                   DATA_FIM_USADA, então esse ponto de falha deixou de
+                   existir. */
+                const reportResult = await queryMitra({ query: valores.queryDados });
+
+                if (!reportResult || !reportResult.data) {
+                    throw new Error("A consulta principal não retornou dados válidos.");
+                }
+
+                const headers = (reportResult.headers || []).map(h => (h && h.name ? h.name.toUpperCase() : ''));
+                const col = n => headers.indexOf(n);
+                const colMap = {
+                    ordem: col('ORDEM'),
+                    nomeGrupo: col('NOME_GRUPO'),
+                    valorAtual: col('VLRLANC_ATU'),
+                    valorAnterior: col('VLRLANC_ANT'),
+                    dataInicio: col('DATA_INICIO_USADA'),
+                    dataFim: col('DATA_FIM_USADA'),
+                    anoAtu: col('ANO_ATU'),
+                    anoAnt: col('ANO_ANT')
+                };
+
+                const obrigatorias = ['ordem', 'nomeGrupo', 'valorAtual', 'valorAnterior'];
+                const ausentes = obrigatorias.filter(k => colMap[k] === -1);
+                if (ausentes.length) {
+                    console.error('Erro de mapeamento de colunas. A query deve retornar ORDEM, NOME_GRUPO, VLRLANC_ATU, VLRLANC_ANT.', headers);
+                    throw new Error(`A query configurada não retorna as colunas esperadas (faltou: ${ausentes.join(', ')}).`);
+                }
+
+                if (!reportResult.data.length) {
+                    throw new Error("A consulta não retornou nenhuma linha. "
+                        + "Verifique se a empresa selecionada tem balancete no período e se o ano da estrutura tem contas vinculadas.");
+                }
+
+                const processedData = reportResult.data.map(row => ({
+                    ordem: row[colMap.ordem] || '',
+                    nomeGrupo: row[colMap.nomeGrupo] || 'N/A',
+                    /* valores completos, sem dividir por 1000. NULL fica NULL:
+                       e "sem cadastro no ano", que nao pode virar zero. */
+                    valorAtual: toNumeroOuNulo(row[colMap.valorAtual]),
+                    valorAnterior: toNumeroOuNulo(row[colMap.valorAnterior])
+                }));
+
+                const primeira = reportResult.data[0];
+
+                /* Se as datas nao chegaram, PARA. Antes a query caia em
+                   CURDATE() em silencio e a tela mostrava o saldo de hoje e
+                   de hoje-menos-1-ano como se fosse o periodo filtrado -
+                   numero plausivel e errado, sem nenhum aviso. */
+                /* contadores de diagnostico: dizem POR QUE veio zerado */
+                const iLancEmp = col('LANC_EMPRESA');
+                const iLancPer = col('LANC_PERIODO');
+                const bruto = n => { const i = col(n); return i !== -1 ? primeira[i] : '(coluna ausente)'; };
+                window.__DIAG = {
+                    lancEmpresa: iLancEmp !== -1 ? Number(primeira[iLancEmp]) : null,
+                    lancPeriodo: iLancPer !== -1 ? Number(primeira[iLancPer]) : null,
+                    /* valores crus, para o painel de diagnostico abaixo */
+                    cru: {
+                        DATAS_OK: bruto('DATAS_OK'),
+                        DATA_INICIO_USADA: bruto('DATA_INICIO_USADA'),
+                        DATA_FIM_USADA: bruto('DATA_FIM_USADA'),
+                        ANO_ATU: bruto('ANO_ATU'),
+                        ANO_ANT: bruto('ANO_ANT'),
+                        LANC_EMPRESA: bruto('LANC_EMPRESA'),
+                        LANC_PERIODO: bruto('LANC_PERIODO'),
+                        QTD_CONTAS_ATU: bruto('QTD_CONTAS_ATU'),
+                        QTD_CONTAS_ANT: bruto('QTD_CONTAS_ANT'),
+                        VLRLANC_ATU: bruto('VLRLANC_ATU'),
+                        VLRLANC_ANT: bruto('VLRLANC_ANT')
+                    },
+                    linhas: reportResult.data.length
+                };
+                console.log('[BP] diagnostico da query:', window.__DIAG.cru);
+                /* Trava: se as datas nao chegaram, PARA - e mostra os valores
+                   crus, para nao haver mais rodada de adivinhacao. */
+                if (String(window.__DIAG.cru.DATAS_OK) === '0'
+                    || window.__DIAG.cru.DATAS_OK === '(coluna ausente)') {
+                    const d = window.__DIAG.cru;
+                    throw new Error('O filtro de datas nao chegou a consulta. '
+                        + 'DATAS_OK=' + d.DATAS_OK
+                        + ' | DATA_INICIO_USADA=' + d.DATA_INICIO_USADA
+                        + ' | DATA_FIM_USADA=' + d.DATA_FIM_USADA
+                        + ' | ANO_ATU=' + d.ANO_ATU + ' | ANO_ANT=' + d.ANO_ANT
+                        + ' | LANC_EMPRESA=' + d.LANC_EMPRESA
+                        + ' | LANC_PERIODO=' + d.LANC_PERIODO
+                        + '  --  a query calculou sobre a data de hoje. Copie esta linha inteira.');
+                }
+
+                const periodo = {
+                    dataInicio: colMap.dataInicio !== -1 ? primeira[colMap.dataInicio] : '',
+                    dataFim: colMap.dataFim !== -1 ? primeira[colMap.dataFim] : '',
+                    anoAtu: colMap.anoAtu !== -1 ? primeira[colMap.anoAtu] : null,
+                    anoAnt: colMap.anoAnt !== -1 ? primeira[colMap.anoAnt] : null
+                };
+
+                renderReport(processedData, periodo);
+
+            } catch (error) {
+                console.error("Falha ao carregar dados do balanço:", error);
+                loadingEl.innerHTML = `<div class="p-8 text-center text-destructive-foreground bg-destructive h-full flex items-center justify-center rounded-lg">Erro: ${error.message}</div>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.addEventListener(MITRA_UPDATE_EVENT_NAME, fetchAndRenderData);
+
+            /* A trava espera apenas a query e as duas datas. Ela não morre
+               mais em branco: ao vencer o tempo, diz exatamente qual
+               parâmetro faltou e quais nomes a plataforma expôs. */
+            const maxWaitTime = 5000;
+            const startTime = Date.now();
+            const checkInterval = setInterval(() => {
+                const { faltando } = resolveParams();
+                if (!faltando.length) {
+                    clearInterval(checkInterval);
+                    fetchAndRenderData();
+                } else if (Date.now() - startTime > maxWaitTime) {
+                    clearInterval(checkInterval);
+                    const chaves = Object.keys(window.componentData || {});
+                    console.error("Configurações do componente não carregadas. Faltou:", faltando, "| expostas:", chaves);
+                    document.getElementById('report-container').innerHTML =
+                        `<div class="p-8 text-center rounded-lg border border-border bg-secondary h-full flex items-center justify-center">
+                            <div>
+                                <p class="text-base font-semibold text-destructive">Configuração do componente incompleta</p>
+                                <p class="mt-2 text-sm">Faltou: <span class="font-mono">${faltando.join(', ')}</span></p>
+                                <p class="mt-1 text-sm text-muted-foreground">A plataforma expôs: <span class="font-mono">${chaves.join(', ') || '(nada)'}</span></p>
+                            </div>
+                        </div>`;
+                }
+            }, 100);
+        });
+    </script>
+</body>
+
+</html>
