@@ -234,3 +234,40 @@ Cole cada arquivo `_CORRIGIDA_oneline.sql` no parâmetro de mesmo nome:
 O relatório é de exercício ("exercícios findos em …"): use o filtro de **01/01 a 31/12**.
 Com período parcial, BP/DRE/DFC/DRA/indicadores respeitam o período, mas a DMPL encadeia
 saldo base + movimentos e só fecha quando os dois períodos se encostam (ano cheio).
+
+---
+
+# index10 — base de variáveis dos indicadores (pasta `index10/`)
+
+**Mudou a fonte:** saía de `BP_TECWAY` (vazia) e `DRE_TECWAY` (só até 04/2026); agora sai do
+balancete (`IMP_BASE_BALANCETE`), pelo mesmo vínculo de contas (`CAD_CONTA_DRE_TW`,
+estruturas 7 = BP e 9 = DRE).
+
+| Parâmetro do componente | Arquivo |
+|---|---|
+| `queryDadosBP` | `index10/queryDadosBP_CORRIGIDA_oneline.sql` |
+| `queryDadosDRE` | `index10/queryDadosDRE_CORRIGIDA_oneline.sql` |
+| `varEmpresa` | `:VAR_EMPRESA_DRE` |
+| `varDataInicio` | `:VAR_DATA_INICIO` |
+| `varDataFim` | `:VAR_DATA_FIM` |
+
+Publicar `index10/index10.html`. Meses fora do período filtrado aparecem vazios.
+
+---
+
+# index11 — balanço mês a mês + indicadores (pasta `index11/`)
+
+| Parâmetro do componente | Valor / arquivo |
+|---|---|
+| `queryDados` | `index11/queryDados_CORRIGIDA_oneline.sql` |
+| `varEmpresa` | `:VAR_EMPRESA_DRE` |
+| `varDataInicio` | `:VAR_DATA_INICIO` |
+| `varDataFim` | `:VAR_DATA_FIM` |
+
+`varMes` não é mais usado. Publicar `index11/index11.html`. Coluna mais recente = mês da
+data fim; meses anteriores à data início aparecem vazios.
+
+Cadastro a corrigir (estrutura 5): remover o vínculo `' 3.1.01.01.000004'` (receita, com
+espaço) de Disponibilidades; remover o vínculo duplicado de `1.1.01.01.000001`; ORDEM 13
+repetida (Estoque e uma linha RLP vazia); ~17,6 mi de passivo/PL fora da estrutura
+(2.3.02.02, 2.1.01.12, 2.3.04.01…), por isso o balanço não fecha.
