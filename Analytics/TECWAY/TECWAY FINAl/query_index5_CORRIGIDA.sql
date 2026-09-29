@@ -48,12 +48,17 @@
       Agora as duas datas passam por um parser que aceita 'DD/MM/AAAA' e
       'AAAA-MM-DD', com ou sem hora (o LEFT(...,10) corta a hora).
 
-   3) UM CADASTRO SO PARA AS DUAS COLUNAS.
-      A coluna do periodo e a comparativa usavam o mesmo ano de cadastro.
-      Agora cada uma resolve o seu: a atual no ano de :VAR_DATA_FIM, a
-      comparativa no ano anterior. Sem fallback - se o ano daquela coluna
-      nao tem conta vinculada, a coluna vem NULL e a tela mostra isso, em
-      vez de usar o mapeamento de outro exercicio em silencio.
+   3) CADASTRO DAS DUAS COLUNAS.
+      As duas colunas usam o cadastro do ano mais recente que seja <= ano
+      da data fim, como na query original (ver comentario em ref_atu).
+      Sem nenhum cadastro ate esse ano, a linha vem NULL e a tela mostra.
+
+   3b) SALDO DE ABERTURA AMARRADO A DATA FIM.
+      A linha 5.1 (caixa inicial) e as de VARIACAO usavam como abertura o
+      saldo em "data fim menos 1 ano". So coincide com a vespera da data
+      inicio quando o filtro e o ano cheio. Agora a abertura e o saldo
+      ate a vespera de :VAR_DATA_INICIO (e da data inicio - 1 ano, na
+      comparativa). Com filtro de ano cheio o resultado e identico.
 
    4) DIVISAO POR 1000.
       A query dividia tudo por 1000, e a tela nao desfaz - ou seja o
@@ -63,8 +68,8 @@
    SITUACAO DO CADASTRO (conferido em 28/09/2026)
    ---------------------------------------------------------------------
    A estrutura 10 tem os anos 2023, 2024 e 2025 - NAO tem 2026. Com o
-   filtro em 2026 a coluna atual vem "sem cadastro" e a comparativa (2025)
-   vem preenchida. Com o filtro em 2025, as duas vem completas.
+   filtro em 2026 as duas colunas usam o cadastro de 2025 (o mais recente
+   ate 2026).
 
    As 35 regras de exclusao estao distribuidas assim:
        2.1 Contas a receber            2024, 2025
@@ -110,10 +115,7 @@ D AS (
         YEAR(GREATEST(DT_INI, DT_FIM))                      AS ANO_ATU,
         YEAR(GREATEST(DT_INI, DT_FIM)) - 1                  AS ANO_ANT,
         DATE_SUB(LEAST(DT_INI, DT_FIM),    INTERVAL 1 YEAR) AS DT_INI_ANT,
-        DATE_SUB(GREATEST(DT_INI, DT_FIM), INTERVAL 1 YEAR) AS DT_FIM_ANT,
-        /* a DFC precisa de dois anos atras: as linhas 5.1 e as de VARIACAO
-           comparam saldo de abertura com saldo de fechamento */
-        DATE_SUB(GREATEST(DT_INI, DT_FIM), INTERVAL 2 YEAR) AS DT_FIM_ANT2
+        DATE_SUB(GREATEST(DT_INI, DT_FIM), INTERVAL 1 YEAR) AS DT_FIM_ANT
     FROM (
         SELECT
             COALESCE(DT_FIM_IN, CURDATE())                              AS DT_FIM,
@@ -132,13 +134,22 @@ base_bal AS (
         SUM(CASE WHEN DATE(REFERENCIA) BETWEEN (SELECT DT_INI_ANT FROM D)
                                           AND (SELECT DT_FIM_ANT FROM D)
                  THEN VLRLANC ELSE 0 END) AS ano_ant,
-        /* saldos acumulados nos tres cortes */
+        /* saldos de FECHAMENTO: acumulado ate a data fim de cada coluna */
         SUM(CASE WHEN DATE(REFERENCIA) <= (SELECT DT_FIM FROM D)
                  THEN VLRLANC ELSE 0 END) AS acum_atu,
         SUM(CASE WHEN DATE(REFERENCIA) <= (SELECT DT_FIM_ANT FROM D)
                  THEN VLRLANC ELSE 0 END) AS acum_ant,
-        SUM(CASE WHEN DATE(REFERENCIA) <= (SELECT DT_FIM_ANT2 FROM D)
-                 THEN VLRLANC ELSE 0 END) AS acum_ant2
+        /* saldos de ABERTURA: acumulado ate a vespera da data inicio de
+           cada coluna. Antes a abertura era "data fim menos 1 ano", o que so
+           acerta quando o filtro e o ano inteiro: filtrando 01/03 a 31/07,
+           o caixa inicial saia em 31/07 do ano anterior e a DFC nao fechava
+           (caixa inicial + fluxo do periodo <> caixa final). Com < DT_INI a
+           abertura, o fluxo (BETWEEN) e o fechamento (<= DT_FIM) cobrem o
+           mesmo balancete sem buraco nem sobreposicao. */
+        SUM(CASE WHEN DATE(REFERENCIA) < (SELECT DT_INI FROM D)
+                 THEN VLRLANC ELSE 0 END) AS abert_atu,
+        SUM(CASE WHEN DATE(REFERENCIA) < (SELECT DT_INI_ANT FROM D)
+                 THEN VLRLANC ELSE 0 END) AS abert_ant
     FROM IMP_BASE_BALANCETE
     WHERE CODEMP = :VAR_EMPRESA_DRE
     GROUP BY CTACTB
@@ -153,27 +164,33 @@ linhas AS (
     WHERE EST.ID = 10
 ),
 ref_atu AS (
-    /* a referencia do ano da COLUNA ATUAL, e so dela. O CASE normaliza os
-       dois formatos de ANO_REFERENCIA; o LIMIT 1 impede que um ano com
-       dois registros dobre os vinculos. */
+    /* UM cadastro para as DUAS colunas: o do ano mais recente que seja
+       <= ano da data fim (regra da query original). Filtrando 2025, a
+       coluna 2024 tambem usa o cadastro de 2025 - e assim que a DFC
+       publicada foi montada: em 2024 a 4.3 Mutuos fica 786 mil (com as
+       contas 2.1.01.05.000001 e 2.1.01.12.000005..09, que so existem no
+       cadastro de 2025) e o aumento de caixa (2.933) mil. Com o cadastro
+       proprio de 2024 dava (2.910), divergindo do publicado.
+
+       O CASE normaliza os dois formatos de ANO_REFERENCIA (2025 e
+       20251201). O ORDER BY usa o ano JA normalizado: ordenando o valor
+       cru, 20251201 venceria 2026. O LIMIT 1 impede que um ano com dois
+       registros dobre os vinculos. */
     SELECT L.ID_DET,
         (SELECT R.ID FROM DET_DEMONSTRATIVO_REFERENCIA R
           WHERE R.ID_DET_DEMONSTRATIVO = L.ID_DET
             AND (CASE WHEN R.ANO_REFERENCIA > 10000
                       THEN FLOOR(R.ANO_REFERENCIA / 10000)
-                      ELSE R.ANO_REFERENCIA END) = (SELECT ANO_ATU FROM D)
-          ORDER BY R.ANO_REFERENCIA DESC, R.ID DESC LIMIT 1) AS ID_REF
+                      ELSE R.ANO_REFERENCIA END) <= (SELECT ANO_ATU FROM D)
+          ORDER BY (CASE WHEN R.ANO_REFERENCIA > 10000
+                         THEN FLOOR(R.ANO_REFERENCIA / 10000)
+                         ELSE R.ANO_REFERENCIA END) DESC,
+                   R.ANO_REFERENCIA DESC, R.ID DESC LIMIT 1) AS ID_REF
     FROM linhas L
 ),
 ref_ant AS (
-    SELECT L.ID_DET,
-        (SELECT R.ID FROM DET_DEMONSTRATIVO_REFERENCIA R
-          WHERE R.ID_DET_DEMONSTRATIVO = L.ID_DET
-            AND (CASE WHEN R.ANO_REFERENCIA > 10000
-                      THEN FLOOR(R.ANO_REFERENCIA / 10000)
-                      ELSE R.ANO_REFERENCIA END) = (SELECT ANO_ANT FROM D)
-          ORDER BY R.ANO_REFERENCIA DESC, R.ID DESC LIMIT 1) AS ID_REF
-    FROM linhas L
+    /* a coluna comparativa usa o MESMO cadastro da atual */
+    SELECT ID_DET, ID_REF FROM ref_atu
 ),
 regras_atu AS (
     SELECT DISTINCT L.ORDEM, C.PADRAO_CTACTB, C.SINAL
@@ -196,12 +213,12 @@ qtd_ant AS (
     SELECT ORDEM, COUNT(*) AS QTD FROM regras_ant GROUP BY ORDEM
 ),
 val_atu AS (
-    /* os cinco agregados por linha, para a coluna ATUAL */
+    /* fluxo, fechamento e abertura por linha, para a coluna ATUAL */
     SELECT
         R.ORDEM,
         SUM(IFNULL(B.ano_atu,   0) * R.SINAL) AS ano_v,
         SUM(IFNULL(B.acum_atu,  0) * R.SINAL) AS acum_v,
-        SUM(IFNULL(B.acum_ant,  0) * R.SINAL) AS acum_ant_v
+        SUM(IFNULL(B.abert_atu, 0) * R.SINAL) AS acum_ant_v
     FROM regras_atu R
     LEFT JOIN base_bal B ON B.CTACTB = R.PADRAO_CTACTB
     GROUP BY R.ORDEM
@@ -212,7 +229,7 @@ val_ant AS (
         R.ORDEM,
         SUM(IFNULL(B.ano_ant,   0) * R.SINAL) AS ano_v,
         SUM(IFNULL(B.acum_ant,  0) * R.SINAL) AS acum_v,
-        SUM(IFNULL(B.acum_ant2, 0) * R.SINAL) AS acum_ant_v
+        SUM(IFNULL(B.abert_ant, 0) * R.SINAL) AS acum_ant_v
     FROM regras_ant R
     LEFT JOIN base_bal B ON B.CTACTB = R.PADRAO_CTACTB
     GROUP BY R.ORDEM
@@ -249,7 +266,9 @@ exc_ant AS (
     GROUP BY L.ORDEM
 ),
 outros AS (
-    /* lancamento manual da linha 1.9.1 */
+    /* lancamento manual da linha 1.9.1. Sem linha em OUTROS_DFC o SUM
+       devolve NULL, e a 1.9.1 sairia como "sem cadastro" - por isso o
+       IFNULL(...,0) no SELECT final. */
     SELECT
         SUM(CASE WHEN DATE(REFERENCIA) BETWEEN (SELECT DT_INI FROM D)
                                           AND (SELECT DT_FIM FROM D)
@@ -276,7 +295,7 @@ SELECT
     CASE WHEN QA.QTD IS NULL AND TRIM(L.ORDEM) <> '1.9.1' THEN NULL ELSE
         (CASE
             WHEN TRIM(L.ORDEM) = '1.9.1' AND IFNULL(VA.ano_v, 0) = 0
-                 THEN (SELECT v_atu FROM outros)
+                 THEN IFNULL((SELECT v_atu FROM outros), 0)
             WHEN TRIM(L.ORDEM) = '5.1' THEN VA.acum_ant_v
             WHEN TRIM(L.ORDEM) = '5.2' THEN VA.acum_v
             WHEN L.VARIACAO = 'Sim'    THEN VA.acum_ant_v - VA.acum_v
@@ -286,7 +305,7 @@ SELECT
     CASE WHEN QB.QTD IS NULL AND TRIM(L.ORDEM) <> '1.9.1' THEN NULL ELSE
         (CASE
             WHEN TRIM(L.ORDEM) = '1.9.1' AND IFNULL(VB.ano_v, 0) = 0
-                 THEN (SELECT v_ant FROM outros)
+                 THEN IFNULL((SELECT v_ant FROM outros), 0)
             WHEN TRIM(L.ORDEM) = '5.1' THEN VB.acum_ant_v
             WHEN TRIM(L.ORDEM) = '5.2' THEN VB.acum_v
             WHEN L.VARIACAO = 'Sim'    THEN VB.acum_ant_v - VB.acum_v

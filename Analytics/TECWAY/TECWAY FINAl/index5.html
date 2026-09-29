@@ -107,6 +107,15 @@
             return num < 0 ? -Math.round(-num) : Math.round(num);
         }
 
+        /* A query devolve o valor cheio; a tela mostra em MILHARES. Cada
+           linha e convertida e arredondada UMA vez aqui, e os subtotais somam
+           esses valores ja arredondados - assim o total bate com a soma do que
+           aparece na tela. */
+        function toMilhares(value) {
+            if (value === null || value === undefined || value === '') return NaN;
+            return roundValue(parseFloat(value) / 1000);
+        }
+
         function formatValue(value) {
             const num = roundValue(value);
             if (value === null || value === undefined || isNaN(num) || num === 0) {
@@ -269,8 +278,8 @@
                     (valorAtual !== null && valorAtual !== undefined) ||
                     (valorAnterior !== null && valorAnterior !== undefined);
                 if (!hasValues) return;
-                const na = roundValue(valorAtual);
-                const nb = roundValue(valorAnterior);
+                const na = toMilhares(valorAtual);
+                const nb = toMilhares(valorAnterior);
                 if (!isNaN(na)) sumAtual += na;
                 if (!isNaN(nb)) sumAnt += nb;
             });
@@ -291,8 +300,8 @@
                     (valorAtual !== null && valorAtual !== undefined) ||
                     (valorAnterior !== null && valorAnterior !== undefined);
                 if (!hasValues) return;
-                const na = roundValue(valorAtual);
-                const nb = roundValue(valorAnterior);
+                const na = toMilhares(valorAtual);
+                const nb = toMilhares(valorAnterior);
                 if (!isNaN(na)) sumAtual += na;
                 if (!isNaN(nb)) sumAnt += nb;
             });
@@ -313,8 +322,8 @@
                     (valorAtual !== null && valorAtual !== undefined) ||
                     (valorAnterior !== null && valorAnterior !== undefined);
                 if (!hasValues) return;
-                const na = roundValue(valorAtual);
-                const nb = roundValue(valorAnterior);
+                const na = toMilhares(valorAtual);
+                const nb = toMilhares(valorAnterior);
                 if (!isNaN(na)) sumAtual += na;
                 if (!isNaN(nb)) sumAnt += nb;
             });
@@ -335,8 +344,8 @@
                     (valorAtual !== null && valorAtual !== undefined) ||
                     (valorAnterior !== null && valorAnterior !== undefined);
                 if (!hasValues) return;
-                const na = roundValue(valorAtual);
-                const nb = roundValue(valorAnterior);
+                const na = toMilhares(valorAtual);
+                const nb = toMilhares(valorAnterior);
                 if (!isNaN(na)) sumAtual += na;
                 if (!isNaN(nb)) sumAnt += nb;
             });
@@ -604,11 +613,11 @@
 
                 let tdValAtual = document.createElement('td');
                 tdValAtual.className = 'py-1.5 px-4 text-right tabular-nums';
-                tdValAtual.textContent = hasValues ? formatValue(valorAtual) : '';
+                tdValAtual.textContent = hasValues ? formatValue(toMilhares(valorAtual)) : '';
 
                 let tdValAnterior = document.createElement('td');
                 tdValAnterior.className = 'py-1.5 pl-4 text-right tabular-nums';
-                tdValAnterior.textContent = hasValues ? formatValue(valorAnterior) : '';
+                tdValAnterior.textContent = hasValues ? formatValue(toMilhares(valorAnterior)) : '';
 
                 if (isTotal) {
                     tdDesc.classList.add('font-bold');

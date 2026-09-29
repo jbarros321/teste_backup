@@ -8,7 +8,7 @@ parâmetros (removi a segunda consulta que os usava), mas a **plataforma** preci
 declarados para saber o que substituir no texto da query. Um `:VAR_*` não declarado não é
 substituído, e o `WHERE` não casa com nada.
 
-Declare nas **quatro** telas:
+Declare nas **seis** telas (index1 a index6):
 
 | Nome | Valor | Situação hoje |
 |---|---|---|
@@ -35,6 +35,8 @@ Abra o arquivo, copie **tudo** (é uma linha só) e cole no parâmetro da query 
 | `index2.html` | `querydados_index2_CORRIGIDA_oneline.sql` | BP Interno | `EST.ID = 2` |
 | `index3.html` | `query_index3_CORRIGIDA_oneline.sql` | DRE Externo | `EST.ID = 3` |
 | `index4.html` | `query_index4_CORRIGIDA_oneline.sql` | DRE Interno | `EST.ID = 4` |
+| `index5.html` | `query_index5_CORRIGIDA_oneline.sql` (parâmetro `queryDados` ou `query`) | DFC Externo | `EST.ID = 10` |
+| `index6.html` | `query_index6_CORRIGIDA_oneline.sql` (parâmetro `queryDados` ou `query`) | Indicadores (BP Externo) | `EST.ID = 1` |
 
 Cada uma já vem com o `EST.ID` certo e com os nomes de coluna que aquela tela procura
 (`VLRLANC_ATU/ANT`, `ANO_ATUAL/ANTERIOR`, `VALOR_ANO_ATUAL/ANTERIOR`,

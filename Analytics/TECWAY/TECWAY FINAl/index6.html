@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indicadores Financeiros</title>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 84% 4.9%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
+        }
+
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --primary: 210 40% 98%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 212.7 26.8% 83.9%;
+        }
+
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+    </style>
+</head>
+
+<body class="w-full h-full">
+    <div id="indicators-container" class="p-4 sm:p-6 md:p-8 w-full h-full overflow-y-auto">
+        <!-- Conteúdo será injetado pelo JavaScript -->
+    </div>
+
+    <script>
+        const MITRA_UPDATE_EVENT_NAME = 'mitra-update-financial-indicators';
+
+        function updateMitra() {
+            document.body.dispatchEvent(new CustomEvent(MITRA_UPDATE_EVENT_NAME));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('indicators-container');
+
+            const formatCurrency = (value) => {
+                if (typeof value !== 'number' || isNaN(value)) return '-';
+                // Arredonda para o inteiro mais próximo e formata sem casas decimais
+                return Math.round(value).toLocaleString('pt-BR', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                });
+            };
+
+            const formatRatio = (value) => {
+                if (typeof value !== 'number' || isNaN(value)) return '-';
+                return value.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            };
+
+            /* A plataforma devolve a data como 'DD/MM/AAAA HH:MM:SS' (e as vezes
+               AAAA-MM-DD). Para o cabecalho so interessa o ANO, e o primeiro
+               grupo de 4 digitos resolve todos os casos. */
+            const anoDe = (valor) => {
+                const m = String(valor || '').match(/(\d{4})/);
+                return m ? Number(m[1]) : null;
+            };
+
+            const safeDivide = (numerator, denominator) => {
+                const num = parseFloat(numerator);
+                const den = parseFloat(denominator);
+                if (isNaN(num) || isNaN(den) || den === 0) {
+                    return 0;
+                }
+                return num / den;
+            };
+
+            const createIndicatorBlockHTML = (title, numLabel, denLabel, numAtu, denAtu, ratioAtu, numAnt, denAnt, ratioAnt) => {
+                return `
+                    <div class="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr] gap-x-8 gap-y-4 py-4 border-b border-border last:border-b-0">
+                        <!-- Col 1: Título e Fórmulas -->
+                        <div class="flex flex-col justify-between">
+                            <h3 class="text-base sm:text-lg font-semibold text-primary">${title}</h3>
+                            <div class="text-sm text-muted-foreground mt-4 space-y-2">
+                                <p>${numLabel}</p>
+                                <p>${denLabel}</p>
+                            </div>
+                        </div>
+
+                        <!-- Col 2: Ano Atual -->
+                        <div class="flex justify-center items-end text-right">
+                            <div class="text-sm text-foreground space-y-2">
+                                <p class="border-b border-current pb-1">${formatCurrency(numAtu)}</p>
+                                <p>${formatCurrency(denAtu)}</p>
+                            </div>
+                            <p class="font-semibold text-base sm:text-lg text-foreground ml-6">${formatRatio(ratioAtu)}</p>
+                        </div>
+
+                        <!-- Col 3: Ano Anterior -->
+                        <div class="flex justify-center items-end text-right">
+                            <div class="text-sm text-foreground space-y-2">
+                                <p class="border-b border-current pb-1">${formatCurrency(numAnt)}</p>
+                                <p>${formatCurrency(denAnt)}</p>
+                            </div>
+                            <p class="font-semibold text-base sm:text-lg text-foreground ml-6">${formatRatio(ratioAnt)}</p>
+                        </div>
+                    </div>
+                `;
+            };
+
+            const renderError = (message) => {
+                container.innerHTML = `<div class="flex items-center justify-center h-full text-center p-8 bg-destructive/10 text-destructive rounded-lg">
+                    <p>${message}</p>
+                </div>`;
+            };
+
+            const renderLoading = () => {
+                container.innerHTML = `<div class="flex items-center justify-center h-full text-muted-foreground">
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    Carregando dados...
+                </div>`;
+            };
+
+            async function fetchAndRenderData() {
+                renderLoading();
+
+                try {
+                    /* as telas 1 a 4 usam 'query'; esta nasceu com 'queryDados'.
+                       Aceita as duas. */
+                    const sqlTela = componentData.queryDados || componentData.query;
+                    if (!sqlTela) {
+                        throw new Error("A variavel 'queryDados' (ou 'query') nao foi configurada no componente.");
+                    }
+
+                    /* Uma consulta so. Antes havia uma segunda ("SELECT :VAR_MES
+                       FROM DUAL") apenas para descobrir o ano, e a tela morria
+                       quando ela vinha vazia. A query corrigida devolve ANO_ATU,
+                       ANO_ANT e as datas que realmente usou. */
+                    const result = await queryMitra({ query: sqlTela, jdbcId: 1 });
+
+                    if (!result || !result.data || result.data.length === 0) {
+                        renderError("Nenhum dado encontrado para os filtros selecionados.");
+                        return;
+                    }
+
+                    const headers = result.headers.map(h => (h && h.name ? h.name.toUpperCase() : ''));
+                    const values = result.data[0];
+                    const bruto = n => { const i = headers.indexOf(n); return i !== -1 ? values[i] : '(coluna ausente)'; };
+                    const cru = {
+                        DATAS_OK: bruto('DATAS_OK'),
+                        DATA_INICIO_USADA: bruto('DATA_INICIO_USADA'),
+                        DATA_FIM_USADA: bruto('DATA_FIM_USADA'),
+                        ANO_ATU: bruto('ANO_ATU'), ANO_ANT: bruto('ANO_ANT'),
+                        LANC_EMPRESA: bruto('LANC_EMPRESA'), LANC_PERIODO: bruto('LANC_PERIODO')
+                    };
+                    console.log('[Indicadores] diagnostico da query:', cru);
+
+                    /* Se as datas nao chegaram, PARA - e mostra os valores crus.
+                       O fallback silencioso para CURDATE() produzia numero
+                       plausivel sobre o periodo errado, que e pior do que falhar. */
+                    if (String(cru.DATAS_OK) === '0') {
+                        throw new Error('O filtro de datas nao chegou a consulta. '
+                            + 'DATAS_OK=' + cru.DATAS_OK
+                            + ' | DATA_INICIO_USADA=' + cru.DATA_INICIO_USADA
+                            + ' | DATA_FIM_USADA=' + cru.DATA_FIM_USADA
+                            + ' | ANO_ATU=' + cru.ANO_ATU + ' | ANO_ANT=' + cru.ANO_ANT
+                            + ' | LANC_EMPRESA=' + cru.LANC_EMPRESA
+                            + ' | LANC_PERIODO=' + cru.LANC_PERIODO
+                            + '  --  copie esta linha inteira.');
+                    }
+
+                    const anoAtual = anoDe(cru.ANO_ATU) || anoDe(cru.DATA_FIM_USADA) || new Date().getFullYear();
+                    const anoAnterior = anoDe(cru.ANO_ANT) || (anoAtual - 1);
+
+                    const numOuNulo = v => (v === '(coluna ausente)' || v === null || v === undefined || v === '') ? null : Number(v);
+                    const diag = {
+                        lancEmpresa: numOuNulo(cru.LANC_EMPRESA),
+                        lancPeriodo: numOuNulo(cru.LANC_PERIODO),
+                        semAtu: numOuNulo(bruto('SEM_CADASTRO_ATU')) || 0,
+                        semAnt: numOuNulo(bruto('SEM_CADASTRO_ANT')) || 0
+                    };
+
+                    /* valores em MILHARES, como antes; os indices (razoes) nao
+                       mudam com a escala */
+                    const dataMap = headers.reduce((obj, header, index) => {
+                        obj[header] = (parseFloat(values[index]) || 0) / 1000;
+                        return obj;
+                    }, {});
+
+                    // Cálculos Ano Atual
+                    const liqCorrenteAtu = safeDivide(dataMap.AC_ATU, dataMap.PC_ATU);
+                    const liqSecaAtu = safeDivide((dataMap.AC_ATU - dataMap.ESTOQUE_ATU), dataMap.PC_ATU);
+                    const liqGeralAtu = safeDivide((dataMap.AC_ATU + dataMap.RLP_ATU), (dataMap.PC_ATU + dataMap.PNC_ATU));
+                    const solvGeralAtu = safeDivide(dataMap.ATIVO_TOTAL_ATU, (dataMap.PC_ATU + dataMap.PNC_ATU));
+
+                    // Cálculos Ano Anterior
+                    const liqCorrenteAnt = safeDivide(dataMap.AC_ANT, dataMap.PC_ANT);
+                    const liqSecaAnt = safeDivide((dataMap.AC_ANT - dataMap.ESTOQUE_ANT), dataMap.PC_ANT);
+                    const liqGeralAnt = safeDivide((dataMap.AC_ANT + dataMap.RLP_ANT), (dataMap.PC_ANT + dataMap.PNC_ANT));
+                    const solvGeralAnt = safeDivide(dataMap.ATIVO_TOTAL_ANT, (dataMap.PC_ANT + dataMap.PNC_ANT));
+
+                    let html = `
+                        <div class="w-full mx-auto">
+                            <!-- Cabeçalho com Anos -->
+                            <div class="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr] gap-x-8 mb-2">
+                                <div></div>
+                                <div class="text-center">
+                                    <h2 class="text-lg font-bold text-foreground">${anoAtual}</h2>
+                                    <hr class="border-t-2 border-foreground mt-1">
+                                </div>
+                                <div class="text-center">
+                                    <h2 class="text-lg font-bold text-foreground">${anoAnterior}</h2>
+                                    <hr class="border-t-2 border-foreground mt-1">
+                                </div>
+                            </div>
+                            <!-- Blocos de Indicadores -->
+                            <div class="space-y-2">
+                    `;
+
+                    html += createIndicatorBlockHTML('Liquidez Corrente', 'AC', 'PC', dataMap.AC_ATU, dataMap.PC_ATU, liqCorrenteAtu, dataMap.AC_ANT, dataMap.PC_ANT, liqCorrenteAnt);
+                    html += createIndicatorBlockHTML('Liquidez Seca', 'AC - ESTOQUE', 'PC', (dataMap.AC_ATU - dataMap.ESTOQUE_ATU), dataMap.PC_ATU, liqSecaAtu, (dataMap.AC_ANT - dataMap.ESTOQUE_ANT), dataMap.PC_ANT, liqSecaAnt);
+                    html += createIndicatorBlockHTML('Liquidez Geral', 'AC + RLP', 'PC + PNC', (dataMap.AC_ATU + dataMap.RLP_ATU), (dataMap.PC_ATU + dataMap.PNC_ATU), liqGeralAtu, (dataMap.AC_ANT + dataMap.RLP_ANT), (dataMap.PC_ANT + dataMap.PNC_ANT), liqGeralAnt);
+                    html += createIndicatorBlockHTML('Solvência Geral', 'ATIVO TOTAL', 'PC + PNC', dataMap.ATIVO_TOTAL_ATU, (dataMap.PC_ATU + dataMap.PNC_ATU), solvGeralAtu, dataMap.ATIVO_TOTAL_ANT, (dataMap.PC_ANT + dataMap.PNC_ANT), solvGeralAnt);
+
+                    html += `</div>`;
+
+                    /* Por que veio zerado / incompleto - mesmas mensagens das
+                       outras telas. */
+                    const avisos = [];
+                    if (diag.lancEmpresa === 0) {
+                        avisos.push(`<span class="font-semibold text-destructive">Nenhum lan\u00e7amento encontrado para a empresa selecionada.</span>
+                            Os valores v\u00eam zerados por isso, n\u00e3o por falta de cadastro. Confira se o par\u00e2metro
+                            <span class="font-mono">varEmpresa</span> = <span class="font-mono">:VAR_EMPRESA_DRE</span>
+                            est\u00e1 declarado na configura\u00e7\u00e3o do componente \u2014 a plataforma s\u00f3 substitui
+                            <span class="font-mono">:VAR_*</span> que esteja declarado.`);
+                    } else if (diag.lancPeriodo === 0 && diag.lancEmpresa > 0) {
+                        avisos.push(`<span class="font-semibold">A empresa tem balancete, mas nada no per\u00edodo filtrado.</span>
+                            ${diag.lancEmpresa} lan\u00e7amentos no total, nenhum entre as datas escolhidas.`);
+                    }
+                    if (diag.semAtu || diag.semAnt) {
+                        avisos.push(`<span class="font-semibold">Indicadores incompletos:</span>
+                            ${diag.semAtu} linha(s) do balan\u00e7o sem cadastro em ${anoAtual} e ${diag.semAnt} em ${anoAnterior}.
+                            Essas linhas n\u00e3o entram nas somas \u2014 falta vincular as contas desse ano na estrutura.`);
+                    }
+                    html += avisos.map(a => `<div class="rounded-lg border border-border bg-secondary p-4 text-sm mt-6">${a}</div>`).join('');
+
+                    html += `</div>`;
+                    container.innerHTML = html;
+
+                } catch (error) {
+                    console.error("Erro ao carregar indicadores financeiros:", error);
+                    renderError(error.message || "Ocorreu um erro inesperado ao processar os dados.");
+                }
+            }
+
+            function initializeComponent() {
+                document.body.addEventListener(MITRA_UPDATE_EVENT_NAME, fetchAndRenderData);
+                fetchAndRenderData();
+            }
+
+            const waitForMitraAndInit = () => {
+                const maxWaitTime = 5000;
+                const intervalTime = 100;
+                const startTime = Date.now();
+                const checkInterval = setInterval(() => {
+                    /* So a query e obrigatoria. As datas e a empresa sao
+                       resolvidas pela plataforma dentro do texto da query; o
+                       varMes so existia por causa da segunda consulta, que foi
+                       removida. */
+                    if (window.componentData && (window.componentData.queryDados || window.componentData.query)) {
+                        clearInterval(checkInterval);
+                        initializeComponent();
+                    } else if (Date.now() - startTime > maxWaitTime) {
+                        clearInterval(checkInterval);
+                        console.error("Erro: As configurações do componente (componentData) não foram carregadas a tempo.");
+                        renderError("Erro Crítico: As configurações do componente não foram carregadas da plataforma.");
+                    }
+                }, intervalTime);
+            };
+
+            waitForMitraAndInit();
+        });
+    </script>
+</body>
+
+</html>
