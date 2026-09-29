@@ -289,3 +289,21 @@ balancete, ao centavo). Limitação: dados até 04/2026, empresas 6, 7 e 999 —
 | `varDataFim` | `:VAR_DATA_FIM` |
 
 `varMes` não é mais usado. Publicar `index12/index12.html`.
+
+---
+
+# index13 — indicadores financeiros mês a mês (pasta `index13/`)
+
+Mesmo JavaScript e mesmas queries da index10 (BP do balancete, estrutura 7, com contas contadas
+uma vez só; DRE da `DRE_TECWAY`, estrutura 9).
+
+| Parâmetro do componente | Valor / arquivo |
+|---|---|
+| `queryDadosBP` | `index13/queryDadosBP_CORRIGIDA_oneline.sql` |
+| `queryDadosDRE` | `index13/queryDadosDRE_CORRIGIDA_oneline.sql` |
+| `varEmpresa` | `:VAR_EMPRESA_DRE` |
+| `varDataInicio` | `:VAR_DATA_INICIO` |
+| `varDataFim` | `:VAR_DATA_FIM` |
+
+Publicar `index13/index13.html`. Pendências de fórmula/cadastro iguais às da index10 (EBITDA usa
+depreciação acumulada do BP; PL da estrutura 7 sem o resultado do exercício).
