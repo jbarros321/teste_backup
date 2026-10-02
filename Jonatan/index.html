@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jonatan Barros de Jesus — Tech Lead & Soluções ERP</title>
+<meta name="description" id="metaDesc" content="Tech Lead, consultor SQL e desenvolvedor de soluções ERP em Uberlândia, MG. Soluções ERP escaláveis, rotinas SQL, automação com Java.">
+<meta name="author" content="Jonatan Barros de Jesus">
+<meta property="og:title" content="Jonatan Barros de Jesus — Tech Lead & Soluções ERP">
+<meta property="og:description" content="Soluções ERP escaláveis que combinam domínio técnico com pensamento analítico.">
+<meta property="og:type" content="profile">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<a class="skip" href="#main" id="skipLink">Ir para o conteúdo</a>
+
+<canvas id="field" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
+<div class="glow" id="glow" aria-hidden="true"></div>
+<div class="progress" aria-hidden="true"><i id="bar"></i></div>
+
+<nav class="nav" id="nav">
+  <a class="nav__mark" href="#top" aria-label="Jonatan Barros de Jesus"><span>JB</span></a>
+
+  <ul class="nav__links" id="navLinks"></ul>
+
+  <!-- seletor de idioma -->
+  <div class="lang" id="lang" role="group" aria-label="Idioma / Language">
+    <i class="lang__pill" aria-hidden="true"></i>
+  </div>
+</nav>
+
+<main id="main">
+
+  <!-- ░░ HERO ░░ -->
+  <header class="hero" id="top">
+    <div class="hero__inner">
+      <p class="hero__eyebrow" data-reveal>
+        <span class="dot"></span><span id="availability"></span>
+      </p>
+
+      <h1 class="hero__name">
+        <span class="line" id="nameFirst"></span>
+        <span class="line line--serif" id="nameLast"></span>
+      </h1>
+
+      <ul class="hero__roles" id="roles"></ul>
+
+      <div class="hero__metrics" id="metrics"></div>
+
+      <a class="hero__cue" href="#about">
+        <span id="scrollCue"></span>
+        <svg viewBox="0 0 12 28" aria-hidden="true"><path d="M6 0v22M1 17l5 5 5-5"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- ░░ RESUMO ░░ -->
+  <section class="sec" id="about">
+    <div class="sec__head" data-reveal>
+      <span class="sec__num">01</span>
+      <h2 id="h-about"></h2>
+    </div>
+    <div class="prose" id="summary"></div>
+  </section>
+
+  <!-- ░░ MARQUEE ░░ -->
+  <section class="marquee" id="marquee" aria-hidden="true">
+    <div class="marquee__track" id="marqueeA"></div>
+    <div class="marquee__track marquee__track--rev" id="marqueeB"></div>
+  </section>
+
+  <!-- ░░ EXPERIÊNCIA ░░ -->
+  <section class="sec" id="work">
+    <div class="sec__head" data-reveal>
+      <span class="sec__num">02</span>
+      <h2 id="h-work"></h2>
+    </div>
+    <div class="timeline" id="timeline"></div>
+  </section>
+
+  <!-- ░░ COMPETÊNCIAS ░░ -->
+  <section class="sec" id="skills">
+    <div class="sec__head" data-reveal>
+      <span class="sec__num">03</span>
+      <h2 id="h-skills"></h2>
+    </div>
+    <div class="grid" id="clusters"></div>
+  </section>
+
+  <!-- ░░ FORMAÇÃO ░░ -->
+  <section class="sec sec--tight" id="training">
+    <div class="sec__head" data-reveal>
+      <span class="sec__num">04</span>
+      <h2 id="h-training"></h2>
+    </div>
+    <ul class="training" id="trainingList"></ul>
+  </section>
+
+  <!-- ░░ CONTATO ░░ -->
+  <footer class="contact" id="contact">
+    <div class="contact__inner">
+      <p class="contact__kicker" id="contactKicker" data-reveal></p>
+      <h2 class="contact__big" id="contactBig" data-reveal></h2>
+      <div class="contact__links" id="contactLinks"></div>
+      <p class="contact__foot">
+        <span id="year"></span> · Jonatan Barros de Jesus · Uberlândia, MG
+      </p>
+    </div>
+  </footer>
+
+</main>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
