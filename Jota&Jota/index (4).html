@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>.Jota&Jota — Sistemas, soluções e desenvolvimento</title>
+<meta name="description" content="Desenvolvimento de sistemas sob medida, APIs, automação e integrações.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0B1F3A;--cy:#00A8B5;--cy2:#00C2D1;--muted:#4A5B73;--line:rgba(11,31,58,.12);--mono:'JetBrains Mono',Menlo,Consolas,monospace;--sans:'Inter',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);color:var(--navy);background:#fff;line-height:1.6;overflow-x:hidden}
+#bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.veil{position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,.1) 40%,rgba(255,255,255,.55))}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+nav{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(255,255,255,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:68px}
+.logo{font-family:var(--mono);font-weight:500;font-size:22px;letter-spacing:-.5px}
+.logo i{font-style:normal;color:var(--cy)}
+.links{display:flex;gap:28px;align-items:center;font-size:14px;color:var(--muted)}
+.links a:hover{color:var(--navy)}
+.btn{display:inline-block;font-family:var(--mono);font-size:14px;font-weight:500;padding:13px 24px;border-radius:6px;border:1px solid var(--navy);background:var(--navy);color:#fff;transition:.2s;cursor:pointer}
+.btn:hover{background:var(--cy);border-color:var(--cy);transform:translateY(-2px)}
+.btn.ghost{background:transparent;color:var(--navy)}
+.btn.ghost:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+.links .btn{padding:9px 16px}
+.hero{min-height:100vh;display:flex;align-items:center;padding:120px 0 80px}
+.hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+.tag{display:inline-flex;gap:8px;align-items:center;font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--cy);text-transform:uppercase;margin-bottom:20px}
+.tag:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--cy2);box-shadow:0 0 0 4px rgba(0,194,209,.2);animation:pulse 2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 9px rgba(0,194,209,0)}}
+h1{font-size:clamp(38px,5.6vw,68px);line-height:1.05;letter-spacing:-2px;font-weight:600}
+h1 span{font-family:var(--mono);font-weight:500;color:var(--cy)}
+.lead{font-size:19px;color:var(--muted);max-width:520px;margin:24px 0 36px}
+.cta{display:flex;gap:14px;flex-wrap:wrap}
+.term{background:#0B1F3A;border-radius:12px;box-shadow:0 30px 60px -20px rgba(11,31,58,.45);overflow:hidden;font-family:var(--mono);font-size:13.5px}
+.term .bar{display:flex;gap:7px;padding:13px 16px;background:#102a4c}
+.term .bar b{width:11px;height:11px;border-radius:50%;background:#2c4a73}
+.term .bar b:first-child{background:#00C2D1}
+.term pre{padding:22px;color:#cfe3f5;min-height:250px;white-space:pre-wrap;line-height:1.75}
+.k{color:#00C2D1}.s{color:#9be7b0}.c{color:#6c86a8}
+.caret{display:inline-block;width:8px;height:15px;background:#00C2D1;vertical-align:-2px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+section{padding:90px 0}
+.glass{background:rgba(255,255,255,.78);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:14px}
+h2{font-size:clamp(28px,3.6vw,42px);letter-spacing:-1px;font-weight:600;margin-bottom:12px}
+.sub{color:var(--muted);max-width:560px;margin-bottom:44px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+.card{padding:30px;transition:.25s}
+.card:hover{transform:translateY(-6px);border-color:var(--cy);box-shadow:0 20px 40px -18px rgba(0,168,181,.4)}
+.ico{font-family:var(--mono);font-size:22px;color:var(--cy);margin-bottom:18px;font-weight:700}
+.card h3{font-size:19px;margin-bottom:8px}
+.card p{font-size:15px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));text-align:center;padding:36px 20px}
+.stats b{display:block;font-family:var(--mono);font-size:38px;font-weight:500;color:var(--cy)}
+.stats span{font-size:14px;color:var(--muted)}
+.steps{counter-reset:s;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+.step{padding:28px;position:relative}
+.step:before{counter-increment:s;content:"0" counter(s);font-family:var(--mono);color:var(--cy);font-size:14px;display:block;margin-bottom:12px}
+.step h3{margin-bottom:6px}.step p{font-size:15px;color:var(--muted)}
+.stack{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.stack span{font-family:var(--mono);font-size:13px;padding:8px 14px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.8)}
+form{padding:36px;display:grid;gap:14px;max-width:620px}
+input,textarea{font:inherit;padding:14px 16px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--navy);width:100%}
+input:focus,textarea:focus{outline:2px solid var(--cy2);border-color:transparent}
+footer{padding:36px 0;border-top:1px solid var(--line);background:rgba(255,255,255,.8);font-size:14px;color:var(--muted)}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.rv{opacity:0;transform:translateY(26px);transition:.7s}
+.rv.on{opacity:1;transform:none}
+@media(max-width:860px){.hero .wrap{grid-template-columns:1fr}.links a:not(.btn){display:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<video id="bg" autoplay muted loop playsinline preload="auto"><source src="fundo_jota_e_jota.mp4" type="video/mp4"></video>
+<div class="veil"></div>
+
+<nav><div class="wrap">
+  <a href="#topo" class="logo"><i>.</i>Jota<i>&amp;</i>Jota</a>
+  <div class="links"><a href="#servicos">Serviços</a><a href="#processo">Processo</a><a href="#stack">Tecnologias</a><a href="#contato" class="btn">Fale conosco</a></div>
+</div></nav>
+
+<header class="hero" id="topo"><div class="wrap">
+  <div>
+    <div class="tag">Sistemas · Soluções · Desenvolvimento</div>
+    <h1>Código limpo que vira <span>solução</span>.</h1>
+    <p class="lead">Desenvolvemos sistemas sob medida, APIs e automações que fazem o seu negócio rodar mais rápido, com segurança e sem gambiarra.</p>
+    <div class="cta"><a href="#contato" class="btn">Iniciar um projeto</a><a href="#servicos" class="btn ghost">Ver serviços</a></div>
+  </div>
+  <div class="term" aria-hidden="true">
+    <div class="bar"><b></b><b></b><b></b></div>
+    <pre id="t"></pre>
+  </div>
+</div></header>
+
+<section id="servicos"><div class="wrap">
+  <h2 class="rv">O que construímos</h2>
+  <p class="sub rv">Do levantamento de requisitos ao deploy, cuidamos de todo o ciclo do seu sistema.</p>
+  <div class="grid">
+    <div class="glass card rv"><div class="ico">&lt;/&gt;</div><h3>Sistemas sob medida</h3><p>Plataformas web e internas desenhadas para o seu processo, não o contrário.</p></div>
+    <div class="glass card rv"><div class="ico">{ }</div><h3>APIs e integrações</h3><p>Conectamos ERPs, pagamentos, CRMs e qualquer serviço que você já usa.</p></div>
+    <div class="glass card rv"><div class="ico">&gt;_</div><h3>Automação</h3><p>Rotinas e fluxos que eliminam trabalho manual e reduzem erros.</p></div>
+    <div class="glass card rv"><div class="ico">[ ]</div><h3>Dashboards e dados</h3><p>Painéis claros para decidir rápido com base em informação confiável.</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="glass stats rv">
+    <div><b data-n="50">0</b><span>projetos entregues</span></div>
+    <div><b data-n="99">0</b><span>% de disponibilidade</span></div>
+    <div><b data-n="24">0</b><span>h para primeiro retorno</span></div>
+    <div><b data-n="100">0</b><span>% código documentado</span></div>
+  </div>
+</div></section>
+
+<section id="processo"><div class="wrap">
+  <h2 class="rv">Como trabalhamos</h2>
+  <p class="sub rv">Processo simples, transparente e com entregas frequentes.</p>
+  <div class="steps">
+    <div class="glass step rv"><h3>Descoberta</h3><p>Entendemos o problema, o público e as regras de negócio.</p></div>
+    <div class="glass step rv"><h3>Desenho</h3><p>Arquitetura e protótipo validados antes de escrever código.</p></div>
+    <div class="glass step rv"><h3>Desenvolvimento</h3><p>Entregas curtas, testes e revisões de código constantes.</p></div>
+    <div class="glass step rv"><h3>Deploy e suporte</h3><p>Publicação segura, monitoramento e evolução contínua.</p></div>
+  </div>
+</div></section>
+
+<section id="stack"><div class="wrap">
+  <h2 class="rv">Tecnologias</h2>
+  <p class="sub rv">Ferramentas modernas e consolidadas, escolhidas conforme cada projeto.</p>
+  <div class="stack rv"><span>JavaScript</span><span>TypeScript</span><span>Node.js</span><span>React</span><span>Python</span><span>PostgreSQL</span><span>Docker</span><span>REST</span><span>Git</span><span>Cloud</span></div>
+</div></section>
+
+<section id="contato"><div class="wrap">
+  <h2 class="rv">Vamos conversar?</h2>
+  <p class="sub rv">Conte sobre o seu projeto e respondemos rapidinho.</p>
+  <form class="glass rv" onsubmit="enviar(event)">
+    <input id="n" placeholder="Seu nome" required>
+    <input id="e" type="email" placeholder="Seu e-mail" required>
+    <textarea id="m" rows="4" placeholder="Fale um pouco sobre o projeto" required></textarea>
+    <button class="btn" type="submit">Enviar mensagem</button>
+  </form>
+</div></section>
+
+<footer><div class="wrap"><span class="logo" style="font-size:16px"><i>.</i>Jota<i>&amp;</i>Jota</span><span>© <span id="y"></span> .Jota&amp;Jota. Todos os direitos reservados.</span></div></footer>
+
+<script>
+document.getElementById('y').textContent=new Date().getFullYear();
+var EMAIL='contato@seudominio.com.br';
+function enviar(ev){ev.preventDefault();var n=document.getElementById('n').value,e=document.getElementById('e').value,m=document.getElementById('m').value;
+location.href='mailto:'+EMAIL+'?subject='+encodeURIComponent('Contato pelo site - '+n)+'&body='+encodeURIComponent(m+'\n\n'+n+' ('+e+')');}
+var lines=['<span class="c">// .Jota&Jota</span>','<span class="k">const</span> projeto = <span class="k">await</span> Jota.criar({','  tipo: <span class="s">"sistema sob medida"</span>,','  qualidade: <span class="s">"código limpo"</span>,','  prazo: <span class="s">"no tempo certo"</span>','});','','<span class="k">await</span> projeto.deploy();','<span class="c">// ✔ solução no ar</span>'];
+var el=document.getElementById('t'),html='',li=0,ci=0;
+function plain(s){return s.replace(/<[^>]+>/g,'')}
+function type(){
+  if(li>=lines.length){el.innerHTML=html+'<span class="caret"></span>';return}
+  var src=lines[li],txt=plain(src);
+  ci++;
+  if(ci>txt.length){html+=src+'\n';li++;ci=0;el.innerHTML=html+'<span class="caret"></span>';return setTimeout(type,220)}
+  var shown=0,out='',tag=false;
+  for(var i=0;i<src.length&&shown<ci;i++){var ch=src[i];out+=ch;if(ch==='<')tag=true;else if(ch==='>')tag=false;else if(!tag)shown++}
+  var open=out.match(/<span[^>]*>/g)||[],close=out.match(/<\/span>/g)||[];
+  for(var k=0;k<open.length-close.length;k++)out+='</span>';
+  el.innerHTML=html+out+'<span class="caret"></span>';
+  setTimeout(type,28);
+}
+type();
+var io=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting){x.target.classList.add('on');
+x.target.querySelectorAll('[data-n]').forEach(function(b){var t=+b.dataset.n,v=0,st=Math.max(1,Math.round(t/40));var h=setInterval(function(){v+=st;if(v>=t){v=t;clearInterval(h)}b.textContent=v+(t===50?'+':'')},30)});
+io.unobserve(x.target)}})},{threshold:.15});
+document.querySelectorAll('.rv').forEach(function(e){io.observe(e)});
+</script>
+</body>
+</html>
