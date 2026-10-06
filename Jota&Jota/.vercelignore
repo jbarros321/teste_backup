@@ -7,3 +7,4 @@ index (4).html
 .env*
 !.env.example
 .git
+dev-server.mjs

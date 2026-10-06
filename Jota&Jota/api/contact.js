@@ -8,17 +8,22 @@ const MAX = { nome: 120, email: 180, mensagem: 4000 };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 // Rate limit best-effort, por instância quente da lambda.
+// Dois tetos: um largo contra flood de requisições, um estreito contra
+// flood de e-mails. Separados para que erros de digitação não travem
+// um visitante legítimo.
 const hits = new Map();
 const WINDOW_MS = 10 * 60 * 1000;
-const LIMIT = 5;
+const LIMIT_REQ = 30;
+const LIMIT_SEND = 5;
 
-function rateLimited(ip) {
+function rateLimited(ip, bucket, limit) {
+  const key = `${bucket}:${ip}`;
   const now = Date.now();
-  const list = (hits.get(ip) || []).filter((t) => now - t < WINDOW_MS);
+  const list = (hits.get(key) || []).filter((t) => now - t < WINDOW_MS);
   list.push(now);
-  hits.set(ip, list);
+  hits.set(key, list);
   if (hits.size > 5000) hits.clear(); // teto de memória
-  return list.length > LIMIT;
+  return list.length > limit;
 }
 
 const clean = (v, max) =>
@@ -51,7 +56,7 @@ export default async function handler(req, res) {
     (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
     req.socket?.remoteAddress ||
     'unknown';
-  if (rateLimited(ip)) {
+  if (rateLimited(ip, 'req', LIMIT_REQ)) {
     return res.status(429).json({ ok: false, error: 'Muitas tentativas. Tente de novo em alguns minutos.' });
   }
 
@@ -76,6 +81,10 @@ export default async function handler(req, res) {
     return res.status(400).json({ ok: false, error: 'Preencha nome, e-mail válido e uma mensagem.' });
   }
 
+  if (rateLimited(ip, 'send', LIMIT_SEND)) {
+    return res.status(429).json({ ok: false, error: 'Você já enviou várias mensagens. Aguarde alguns minutos.' });
+  }
+
   const texto = `Nome: ${nome}\nE-mail: ${email}\nIP: ${ip}\n\n${mensagem}`;
 
   try {
@@ -97,6 +106,8 @@ export default async function handler(req, res) {
       console.error('contact: provedor respondeu', r.status, await r.text().catch(() => ''));
       return res.status(502).json({ ok: false, error: 'Não foi possível enviar agora. Tente mais tarde.' });
     }
+    const sent = await r.json().catch(() => ({}));
+    console.log('contact: enviado', sent.id || '(sem id)');
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('contact: falha no envio', err?.message);
