@@ -1,0 +1,9 @@
+# Nada aqui vai para o deploy público.
+*.docx
+*.xlsx
+*.pdf
+index (4).html
+*.bak
+.env*
+!.env.example
+.git

@@ -70,6 +70,10 @@ h2{font-size:clamp(28px,3.6vw,42px);letter-spacing:-1px;font-weight:600;margin-b
 form{padding:36px;display:grid;gap:14px;max-width:620px}
 input,textarea{font:inherit;padding:14px 16px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--navy);width:100%}
 input:focus,textarea:focus{outline:2px solid var(--cy2);border-color:transparent}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
+.status{font-size:14px;min-height:20px;color:var(--muted)}
+.status.ok{color:#0a7d53}.status.err{color:#b3261e}
+button[disabled]{opacity:.6;cursor:progress}
 footer{padding:36px 0;border-top:1px solid var(--line);background:rgba(255,255,255,.8);font-size:14px;color:var(--muted)}
 footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
 .kicker{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--cy);text-transform:uppercase;margin-bottom:10px}
@@ -229,41 +233,18 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
 <section id="contato"><div class="wrap">
   <h2 class="rv">Vamos conversar?</h2>
   <p class="sub rv">Conte sobre o seu projeto e respondemos rapidinho.</p>
-  <form class="glass rv" onsubmit="enviar(event)">
-    <input id="n" placeholder="Seu nome" required>
-    <input id="e" type="email" placeholder="Seu e-mail" required>
-    <textarea id="m" rows="4" placeholder="Fale um pouco sobre o projeto" required></textarea>
-    <button class="btn" type="submit">Enviar mensagem</button>
+  <form id="f" class="glass rv" novalidate>
+    <input id="n" name="nome" placeholder="Seu nome" autocomplete="name" maxlength="120" required>
+    <input id="e" name="email" type="email" placeholder="Seu e-mail" autocomplete="email" maxlength="180" required>
+    <textarea id="m" name="mensagem" rows="4" placeholder="Fale um pouco sobre o projeto" maxlength="4000" required></textarea>
+    <input class="hp" type="text" id="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <button id="sb" class="btn" type="submit">Enviar mensagem</button>
+    <p class="status" id="st" role="status" aria-live="polite"></p>
   </form>
 </div></section>
 
 <footer><div class="wrap"><span class="logo" style="font-size:16px"><i>.</i>Jota<i>&amp;</i>Jota</span><span>© <span id="y"></span> .Jota&amp;Jota. Todos os direitos reservados.</span></div></footer>
 
-<script>
-document.getElementById('y').textContent=new Date().getFullYear();
-var EMAIL='contato@seudominio.com.br';
-function enviar(ev){ev.preventDefault();var n=document.getElementById('n').value,e=document.getElementById('e').value,m=document.getElementById('m').value;
-location.href='mailto:'+EMAIL+'?subject='+encodeURIComponent('Contato pelo site - '+n)+'&body='+encodeURIComponent(m+'\n\n'+n+' ('+e+')');}
-var lines=['<span class="c">// .Jota&Jota</span>','<span class="k">const</span> projeto = <span class="k">await</span> Jota.criar({','  erp: <span class="s">"Sankhya"</span>,','  ia: <span class="s">"integrada"</span>,','  qualidade: <span class="s">"código limpo"</span>,','  prazo: <span class="s">"no tempo certo"</span>','});','','<span class="k">await</span> projeto.deploy();','<span class="c">// ✔ solução no ar</span>'];
-var el=document.getElementById('t'),html='',li=0,ci=0;
-function plain(s){return s.replace(/<[^>]+>/g,'')}
-function type(){
-  if(li>=lines.length){el.innerHTML=html+'<span class="caret"></span>';return}
-  var src=lines[li],txt=plain(src);
-  ci++;
-  if(ci>txt.length){html+=src+'\n';li++;ci=0;el.innerHTML=html+'<span class="caret"></span>';return setTimeout(type,220)}
-  var shown=0,out='',tag=false;
-  for(var i=0;i<src.length&&shown<ci;i++){var ch=src[i];out+=ch;if(ch==='<')tag=true;else if(ch==='>')tag=false;else if(!tag)shown++}
-  var open=out.match(/<span[^>]*>/g)||[],close=out.match(/<\/span>/g)||[];
-  for(var k=0;k<open.length-close.length;k++)out+='</span>';
-  el.innerHTML=html+out+'<span class="caret"></span>';
-  setTimeout(type,28);
-}
-type();
-var io=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting){x.target.classList.add('on');
-x.target.querySelectorAll('[data-n]').forEach(function(b){var t=+b.dataset.n,v=0,st=Math.max(1,Math.round(t/40));var h=setInterval(function(){v+=st;if(v>=t){v=t;clearInterval(h)}b.textContent=v+(t===50?'+':'')},30)});
-io.unobserve(x.target)}})},{threshold:.15});
-document.querySelectorAll('.rv').forEach(function(e){io.observe(e)});
-</script>
+<script src="app.js" defer></script>
 </body>
 </html>
