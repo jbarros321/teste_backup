@@ -1,0 +1,132 @@
+- generic [active] [ref=f2e1]:
+  - link "Pular para o conteúdo" [ref=f2e2] [cursor=pointer]:
+    - /url: "#conteudo"
+  - generic [ref=f2e3]:
+    - banner [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - link "SEA Logo Systems Enterprise Architect" [ref=f2e6] [cursor=pointer]:
+          - /url: /
+          - img "SEA Logo" [ref=f2e7]
+          - generic [ref=f2e8]: Systems Enterprise Architect
+        - navigation [ref=f2e9]:
+          - link "Início" [ref=f2e10] [cursor=pointer]:
+            - /url: /
+          - link "Experts" [ref=f2e14] [cursor=pointer]:
+            - /url: /experts
+          - link "Conexões" [ref=f2e23] [cursor=pointer]:
+            - /url: /conexoes
+          - link "University" [ref=f2e26] [cursor=pointer]:
+            - /url: /universidade
+        - button "Acessar o SEA" [ref=f2e31]
+    - region [ref=f2e36]:
+      - generic [ref=f2e37]:
+        - generic [ref=f2e38]: SEA University · Sankhya ERP
+        - heading "SEA-F01 — Fundamentos do Ecossistema Cognitivo no Sankhya ERP" [level=2] [ref=f2e42]
+        - paragraph [ref=f2e43]:
+          - text: "Curso gratuito para quem trabalha com Sankhya ERP: 4 módulos, 16 aulas e 6 horas, com certificado"
+          - strong [ref=f2e44]: SEA Practitioner — Fundamentos de Supervisão de IA
+          - text: . Escrito pelo especialista do domínio, com casos trabalhados a partir de situações reais do ERP.
+        - heading "Ementa" [level=3] [ref=f2e45]
+        - list [ref=f2e46]:
+          - listitem [ref=f2e47]:
+            - paragraph [ref=f2e48]: Módulo 1 · O que o SEA é — e o que ele não é
+            - list [ref=f2e49]:
+              - listitem [ref=f2e50]:
+                - generic [ref=f2e52]: "Anatomia do ecossistema: gateway, orquestrador e 26 especialistas"
+              - listitem [ref=f2e53]:
+                - generic [ref=f2e55]: "Iniciativa independente: escopo, isenções e responsabilidade de quem aplica"
+              - listitem [ref=f2e56]:
+                - generic [ref=f2e58]: Onde o SEA acelera o trabalho e onde ele atrapalha
+              - listitem [ref=f2e59]:
+                - generic [ref=f2e61]: "Lendo uma resposta: diagnóstico, evidência e recomendação são coisas distintas"
+          - listitem [ref=f2e62]:
+            - paragraph [ref=f2e63]: Módulo 2 · O Agent Core como porta de entrada
+            - list [ref=f2e64]:
+              - listitem [ref=f2e65]:
+                - generic [ref=f2e67]: Descrever o problema antes de escolher o especialista
+              - listitem [ref=f2e68]:
+                - generic [ref=f2e70]: Classificação de domínio, subdomínio e complexidade
+              - listitem [ref=f2e71]:
+                - generic [ref=f2e73]: Roteamento para o expert principal e os complementares
+              - listitem [ref=f2e74]:
+                - generic [ref=f2e76]: Interpretando a justificativa técnica do encaminhamento
+          - listitem [ref=f2e77]:
+            - paragraph [ref=f2e78]: Módulo 3 · Engenharia de contexto e evidências
+            - list [ref=f2e79]:
+              - listitem [ref=f2e80]:
+                - generic [ref=f2e82]: "O princípio “não invento, não assumo”: por que o expert cobra evidência"
+              - listitem [ref=f2e83]:
+                - generic [ref=f2e85]: "O que anexar: XML, log de runtime, retorno de SQL, versão e parametrização"
+              - listitem [ref=f2e86]:
+                - generic [ref=f2e88]: "LGPD na prática: anonimizar antes de colar dados de cliente no prompt"
+              - listitem [ref=f2e89]:
+                - generic [ref=f2e91]: A escala de nível de evidência e o que cada estrela significa
+          - listitem [ref=f2e92]:
+            - paragraph [ref=f2e93]: Módulo 4 · Validando antes de aplicar
+            - list [ref=f2e94]:
+              - listitem [ref=f2e95]:
+                - generic [ref=f2e97]: "Checklist de validação: da resposta ao ambiente de homologação"
+              - listitem [ref=f2e98]:
+                - generic [ref=f2e100]: Por que nenhuma resposta substitui teste em ambiente controlado
+              - listitem [ref=f2e101]:
+                - generic [ref=f2e103]: Reconhecendo os limites que o expert declara sobre si mesmo
+              - listitem [ref=f2e104]:
+                - generic [ref=f2e106]: Devolvendo o aprendizado para a Comunidade SEA
+      - article [ref=f2e107]:
+        - generic [ref=f2e108]: Primeira aula aberta
+        - 'heading "Anatomia do ecossistema: gateway, orquestrador e 26 especialistas" [level=2] [ref=f2e111]'
+        - generic [ref=f2e112]:
+          - generic [ref=f2e113]:
+            - paragraph [ref=f2e115]: "Você não opera o SEA como uma coleção de respostas isoladas. Você entra por uma camada transversal que recebe a demanda, preserva contexto, identifica os domínios envolvidos, verifica evidências e decide até onde consegue responder horizontalmente antes de recomendar aprofundamento especializado. Essa camada é o SEA Generalist: inteligência horizontal especializada no ecossistema Sankhya."
+            - generic [ref=f2e116]:
+              - heading "Gateway, orquestração e especialização" [level=3] [ref=f2e117]
+              - paragraph [ref=f2e118]: Pense em três responsabilidades diferentes.
+              - paragraph [ref=f2e119]: "O gateway representa a entrada: sua demanda precisa chegar com objetivo e contexto suficientes para ser compreendida."
+              - paragraph [ref=f2e120]: O orquestrador classifica a demanda, identifica dependências e decide qual conhecimento precisa participar.
+              - paragraph [ref=f2e121]: Os especialistas aprofundam domínios quando a análise horizontal deixa de ser suficiente.
+              - paragraph [ref=f2e122]: O Generalist atua principalmente na segunda responsabilidade e na análise transversal. Uma pergunta como "o pedido foi confirmado, mas não gerou financeiro" não pertence automaticamente a um único domínio. O expert pode precisar correlacionar documento comercial, TOP, versão histórica da TOP, runtime e financeiro. O documento comercial possui uma identidade como NUNOTA; o financeiro possui sua própria identidade, NUFIN. A ausência de NUFIN é evidência muito mais forte de que o título não foi gerado do que simplesmente "não apareceu na tela".
+            - generic [ref=f2e123]:
+              - heading "Onde o Generalist para" [level=3] [ref=f2e124]
+              - paragraph [ref=f2e125]: A IA cobre horizontalmente processos funcionais, estruturas de dados, APIs, integrações, SDK, banco, estoque, financeiro, fiscal, segurança, runtime, troubleshooting e arquitetura. A função dela é correlacionar essas camadas, encontrar a primeira divergência entre estado esperado e observado e orientar a validação.
+              - paragraph [ref=f2e126]: "Quando a demanda exige profundidade vertical — por exemplo, desenho tributário formal, investigação profunda de WMS ou revisão especializada de uma customização Java — o Generalist preserva o diagnóstico transversal e encaminha o aprofundamento. Não descarte o que veio antes: o encaminhamento deve levar contexto, evidências e hipóteses já construídas."
+            - generic [ref=f2e127]:
+              - generic [ref=f2e128]: Caso
+              - heading "o pedido que confirmou e não gerou financeiro" [level=3] [ref=f2e132]
+              - paragraph [ref=f2e133]: "Chega o relato: \"faturei a NUNOTA 84521 ontem às 14h32 e o financeiro não apareceu\"."
+              - paragraph [ref=f2e134]: "O Generalist não abre o financeiro primeiro. Ele estabelece a ordem dos fatos:"
+              - list [ref=f2e135]:
+                - listitem [ref=f2e136]:
+                  - generic [ref=f2e138]:
+                    - text: o documento existe? NUNOTA 84521 localizada —
+                    - strong [ref=f2e139]: fato
+                - listitem [ref=f2e140]:
+                  - generic [ref=f2e142]:
+                    - text: qual operação governou?
+                    - code [ref=f2e143]: CODTIPOPER
+                    - text: 1102, com
+                    - code [ref=f2e144]: DHTIPOPER
+                    - text: de 12/03 —
+                    - strong [ref=f2e145]: fato
+                - listitem [ref=f2e146]:
+                  - generic [ref=f2e148]:
+                    - text: a configuração vigente naquela data mandava gerar financeiro? sim —
+                    - strong [ref=f2e149]: fato
+                - listitem [ref=f2e150]:
+                  - generic [ref=f2e152]:
+                    - text: existe NUFIN vinculado? nenhum —
+                    - strong [ref=f2e153]: fato
+                - listitem [ref=f2e154]:
+                  - generic [ref=f2e156]:
+                    - text: logo, a falha está entre a confirmação e a materialização do título —
+                    - strong [ref=f2e157]: hipótese provável
+                    - text: ", ainda sem runtime"
+              - paragraph [ref=f2e158]: "Quatro fatos verificáveis sustentam uma hipótese classificada, e o próximo passo fica óbvio: o log da transação daquele horário. Sem esse encadeamento, a conversa começaria em \"será que é a TOP?\" e terminaria numa alteração de parametrização sem evidência de que a TOP tivesse qualquer participação."
+          - generic [ref=f2e162]:
+            - generic [ref=f2e163]: Leve para a prática
+            - paragraph [ref=f2e164]: Descreva primeiro o resultado de negócio esperado e deixe o SEA identificar quais especialidades precisam participar.
+        - generic [ref=f2e165]:
+          - link "Continuar o curso — conta gratuita" [ref=f2e166] [cursor=pointer]:
+            - /url: /?require_auth=1
+          - link "Ver todos os cursos de Sankhya" [ref=f2e167] [cursor=pointer]:
+            - /url: /universidade
+        - paragraph [ref=f2e168]: As demais aulas, as avaliações e o certificado ficam disponíveis após o cadastro. Iniciativa independente, sem vínculo oficial com a fornecedora do Sankhya ERP.

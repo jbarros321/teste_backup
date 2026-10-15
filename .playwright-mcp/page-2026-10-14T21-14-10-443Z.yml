@@ -1,0 +1,38 @@
+- generic [active] [ref=f1e1]:
+  - link "Pular para o conteúdo" [ref=f1e2] [cursor=pointer]:
+    - /url: "#conteudo"
+  - generic [ref=f1e3]:
+    - banner [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - link "SEA Logo Systems Enterprise Architect" [ref=f1e6] [cursor=pointer]:
+          - /url: /
+          - img "SEA Logo" [ref=f1e7]
+          - generic [ref=f1e8]: Systems Enterprise Architect
+        - navigation [ref=f1e9]:
+          - link "Início" [ref=f1e10] [cursor=pointer]:
+            - /url: /
+          - link "Experts" [ref=f1e14] [cursor=pointer]:
+            - /url: /experts
+          - link "Conexões" [ref=f1e23] [cursor=pointer]:
+            - /url: /conexoes
+          - link "University" [ref=f1e26] [cursor=pointer]:
+            - /url: /universidade
+        - button "Acessar o SEA" [ref=f1e31]
+    - main [ref=f1e33]:
+      - generic [ref=f1e35]:
+        - link "Voltar ao SEA" [ref=f1e36] [cursor=pointer]:
+          - /url: /
+        - generic [ref=f1e39]:
+          - heading "SEA University" [level=1] [ref=f1e44]
+          - paragraph [ref=f1e45]: Um curso para cada expert do ecossistema, escrito pelo próprio especialista. Aprenda quando acionar cada um, que evidência anexar e como validar o que ele entrega — e leve o certificado.
+        - generic [ref=f1e46]:
+          - paragraph [ref=f1e47]: O que você leva daqui não é só operar os agentes
+          - paragraph [ref=f1e48]:
+            - text: "O agente é o contexto; a formação é em método. Os 27 cursos certificam três competências que valem em qualquer ferramenta:"
+            - strong [ref=f1e49]: diagnóstico baseado em evidência
+            - text: (separar fato de hipótese, achar a primeira divergência, provar ganho com baseline),
+            - strong [ref=f1e50]: domínio técnico do Sankhya ERP
+            - text: (TOP, ciclo documental, NF-e e EFD, WMS, SDK, BI) e
+            - strong [ref=f1e51]: supervisão de sistemas de IA
+            - text: — validar a saída antes que ela chegue à produção, competência hoje exigida por regulação (EU AI Act, arts. 4 e 14) e por frameworks de risco (NIST AI RMF).
+  - alert [ref=f1e57]

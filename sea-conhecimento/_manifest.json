@@ -1,0 +1,569 @@
+[
+  {
+    "kind": "geral",
+    "url": "https://www.searchitect.pro/",
+    "file": "00-visao-geral/home.md",
+    "title": "SEA — Conhecimento Sankhya especializado para a sua IA, via MCP",
+    "chars": 22711
+  },
+  {
+    "kind": "grade",
+    "url": "https://www.searchitect.pro/universidade",
+    "file": "universidade/00-grade-completa.md",
+    "title": "Cursos de Sankhya ERP gratuitos, com certificado — SEA University — SEA",
+    "chars": 779
+  },
+  {
+    "kind": "experts",
+    "url": "https://www.searchitect.pro/experts",
+    "file": "experts/00-indice-experts.md",
+    "title": "Especialistas de IA em Sankhya ERP: fiscal, financeiro, WMS, SDK e mais — SEA",
+    "chars": 8065
+  },
+  {
+    "kind": "conexoes",
+    "url": "https://www.searchitect.pro/conexoes",
+    "file": "conexoes/00-indice-conexoes.md",
+    "title": "Conexões — leve o SEA para o Claude, ChatGPT, Copilot, Codex e mais — SEA",
+    "chars": 4183
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-F01",
+    "file": "universidade/00-fundamentos/SEA-F01.md",
+    "title": "Curso Fundamentos do Ecossistema Cognitivo no Sankhya ERP (SEA-F01)",
+    "chars": 5163
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-N01",
+    "file": "universidade/01-nucleo-erp/SEA-N01.md",
+    "title": "Curso Compliance Fiscal Assistido no Sankhya ERP (SEA-N01)",
+    "chars": 5167
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-N02",
+    "file": "universidade/01-nucleo-erp/SEA-N02.md",
+    "title": "Curso Arquitetura Financeira e Tesouraria no Sankhya ERP (SEA-N02)",
+    "chars": 5201
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-N03",
+    "file": "universidade/01-nucleo-erp/SEA-N03.md",
+    "title": "Curso Arquitetura Comercial e Pricing no Sankhya ERP (SEA-N03)",
+    "chars": 5157
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-N04",
+    "file": "universidade/01-nucleo-erp/SEA-N04.md",
+    "title": "Curso Governança Contábil e SPED no Sankhya ERP (SEA-N04)",
+    "chars": 5134
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-N05",
+    "file": "universidade/01-nucleo-erp/SEA-N05.md",
+    "title": "Curso Contratos e Faturamento Recorrente no Sankhya ERP (SEA-N05)",
+    "chars": 5167
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-O01",
+    "file": "universidade/02-logistica-operacoes/SEA-O01.md",
+    "title": "Curso Integridade de Estoque e Movimentações no Sankhya ERP (SEA-O01)",
+    "chars": 5081
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-O02",
+    "file": "universidade/02-logistica-operacoes/SEA-O02.md",
+    "title": "Curso Procurement do Pedido à Entrada Fiscal no Sankhya ERP (SEA-O02)",
+    "chars": 5234
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-O03",
+    "file": "universidade/02-logistica-operacoes/SEA-O03.md",
+    "title": "Curso PCP, Ordens de Produção e Custo Industrial no Sankhya ERP (SEA-O03)",
+    "chars": 4917
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-O04",
+    "file": "universidade/02-logistica-operacoes/SEA-O04.md",
+    "title": "Curso SGQ, Não Conformidades e CAPA no Sankhya ERP (SEA-O04)",
+    "chars": 5161
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-O05",
+    "file": "universidade/02-logistica-operacoes/SEA-O05.md",
+    "title": "Curso Gestão de Frotas e Manutenção Veicular no Sankhya ERP (SEA-O05)",
+    "chars": 5125
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-O06",
+    "file": "universidade/02-logistica-operacoes/SEA-O06.md",
+    "title": "Curso Logística Ponta a Ponta no Sankhya ERP (SEA-O06)",
+    "chars": 5173
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-O07",
+    "file": "universidade/02-logistica-operacoes/SEA-O07.md",
+    "title": "Curso Operação de Armazém com WMS no Sankhya ERP (SEA-O07)",
+    "chars": 4998
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-O08",
+    "file": "universidade/02-logistica-operacoes/SEA-O08.md",
+    "title": "Curso Transporte, Frete e Torre de Controle no Sankhya ERP (SEA-O08)",
+    "chars": 5190
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-O09",
+    "file": "universidade/02-logistica-operacoes/SEA-O09.md",
+    "title": "Curso Gestão de Ativos e Confiabilidade no Sankhya ERP (SEA-O09)",
+    "chars": 5206
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-O10",
+    "file": "universidade/02-logistica-operacoes/SEA-O10.md",
+    "title": "Curso Integração OT/IT e Chão de Fábrica no Sankhya ERP (SEA-O10)",
+    "chars": 5265
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-T01",
+    "file": "universidade/03-arquitetura-tecnologia/SEA-T01.md",
+    "title": "Curso Arquitetura de Integrações e APIs no Sankhya ERP (SEA-T01)",
+    "chars": 5103
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-T02",
+    "file": "universidade/03-arquitetura-tecnologia/SEA-T02.md",
+    "title": "Curso Desenvolvimento SDK e Runtime Java no Sankhya ERP (SEA-T02)",
+    "chars": 5198
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-T03",
+    "file": "universidade/03-arquitetura-tecnologia/SEA-T03.md",
+    "title": "Curso Metadados e Dicionário de Dados no Sankhya ERP (SEA-T03)",
+    "chars": 5018
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-T04",
+    "file": "universidade/03-arquitetura-tecnologia/SEA-T04.md",
+    "title": "Curso SQL, Performance e Analytics no Sankhya ERP (SEA-T04)",
+    "chars": 4871
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-T05",
+    "file": "universidade/03-arquitetura-tecnologia/SEA-T05.md",
+    "title": "Curso Construção de Telas e Runtime Visual no Sankhya ERP (SEA-T05)",
+    "chars": 5056
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-T06",
+    "file": "universidade/03-arquitetura-tecnologia/SEA-T06.md",
+    "title": "Curso Relatórios com JasperReports no Sankhya ERP (SEA-T06)",
+    "chars": 5004
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-P01",
+    "file": "universidade/04-pessoas-juridico/SEA-P01.md",
+    "title": "Curso Folha, eSocial e SST no Sankhya ERP (SEA-P01)",
+    "chars": 5092
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-P02",
+    "file": "universidade/04-pessoas-juridico/SEA-P02.md",
+    "title": "Curso Processos Trabalhistas e EFD-Reinf no Sankhya ERP (SEA-P02)",
+    "chars": 4914
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-G01",
+    "file": "universidade/05-estrategia-projetos/SEA-G01.md",
+    "title": "Curso Orquestração de Demandas com o Agent Core no Sankhya ERP (SEA-G01)",
+    "chars": 4984
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-G02",
+    "file": "universidade/05-estrategia-projetos/SEA-G02.md",
+    "title": "Curso Diagnóstico Multidomínio e RCA no Sankhya ERP (SEA-G02)",
+    "chars": 5099
+  },
+  {
+    "kind": "curso",
+    "url": "https://www.searchitect.pro/universidade/SEA-G03",
+    "file": "universidade/05-estrategia-projetos/SEA-G03.md",
+    "title": "Curso Governança de Projetos ERP no Sankhya ERP (SEA-G03)",
+    "chars": 5383
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-agent-core",
+    "file": "experts/sea-agent-core.md",
+    "title": "SEA Agent Core: orquestração dos especialistas de Sankhya ERP",
+    "chars": 1072
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-fiscal-expert",
+    "file": "experts/sea-fiscal-expert.md",
+    "title": "SEA - Fiscal Expert: IA especialista em Sankhya ERP",
+    "chars": 3432
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-financeiro-expert",
+    "file": "experts/sea-financeiro-expert.md",
+    "title": "SEA - Financeiro Expert: IA especialista em Sankhya ERP",
+    "chars": 3567
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-comercial-expert",
+    "file": "experts/sea-comercial-expert.md",
+    "title": "SEA - Comercial Expert: IA especialista em Sankhya ERP",
+    "chars": 3591
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-contabil-expert",
+    "file": "experts/sea-contabil-expert.md",
+    "title": "SEA - Contábil Expert: IA especialista em Sankhya ERP",
+    "chars": 3490
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-contratos-expert",
+    "file": "experts/sea-contratos-expert.md",
+    "title": "SEA - Contratos Expert: IA especialista em Sankhya ERP",
+    "chars": 3486
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-estoques-expert",
+    "file": "experts/sea-estoques-expert.md",
+    "title": "SEA - Estoques Expert: IA especialista em Sankhya ERP",
+    "chars": 3611
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-compras-expert",
+    "file": "experts/sea-compras-expert.md",
+    "title": "SEA - Compras Expert: IA especialista em Sankhya ERP",
+    "chars": 3655
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-producao-expert",
+    "file": "experts/sea-producao-expert.md",
+    "title": "SEA - Produção Expert: IA especialista em Sankhya ERP",
+    "chars": 3587
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-qualidade-expert",
+    "file": "experts/sea-qualidade-expert.md",
+    "title": "SEA - Qualidade Expert: IA especialista em Sankhya ERP",
+    "chars": 3366
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-logistica-expert",
+    "file": "experts/sea-logistica-expert.md",
+    "title": "SEA - Logística Expert: IA especialista em Sankhya ERP",
+    "chars": 3388
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-wms-expert",
+    "file": "experts/sea-wms-expert.md",
+    "title": "SEA - WMS Expert: IA especialista em Sankhya ERP",
+    "chars": 3458
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-tms-expert",
+    "file": "experts/sea-tms-expert.md",
+    "title": "SEA - TMS Expert: IA especialista em Sankhya ERP",
+    "chars": 3380
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-frotas-expert",
+    "file": "experts/sea-frotas-expert.md",
+    "title": "SEA - Frotas Expert: IA especialista em Sankhya ERP",
+    "chars": 3511
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-manutencao-expert",
+    "file": "experts/sea-manutencao-expert.md",
+    "title": "SEA - Manutenção Expert: IA especialista em Sankhya ERP",
+    "chars": 3522
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-automacao-industrial",
+    "file": "experts/sea-automacao-industrial.md",
+    "title": "SEA - Automação Industrial: IA especialista em Sankhya ERP",
+    "chars": 3436
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-integracoes-expert",
+    "file": "experts/sea-integracoes-expert.md",
+    "title": "SEA - Integrações Expert: IA especialista em Sankhya ERP",
+    "chars": 3505
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-sdk-expert",
+    "file": "experts/sea-sdk-expert.md",
+    "title": "SEA - SDK Expert: IA especialista em Sankhya ERP",
+    "chars": 3246
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-dicionario-de-dados",
+    "file": "experts/sea-dicionario-de-dados.md",
+    "title": "SEA - Dicionário de Dados: IA especialista em Sankhya ERP",
+    "chars": 3513
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-sql-bi-expert",
+    "file": "experts/sea-sql-bi-expert.md",
+    "title": "SEA - SQL/BI Expert: IA especialista em Sankhya ERP",
+    "chars": 3350
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-construtor-de-telas-expert",
+    "file": "experts/sea-construtor-de-telas-expert.md",
+    "title": "SEA - Construtor de Telas Expert: IA especialista em Sankhya ERP",
+    "chars": 3557
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-ireport-expert",
+    "file": "experts/sea-ireport-expert.md",
+    "title": "SEA - IReport Expert: IA especialista em Sankhya ERP",
+    "chars": 2940
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-rh-expert",
+    "file": "experts/sea-rh-expert.md",
+    "title": "SEA - RH Expert: IA especialista em Sankhya ERP",
+    "chars": 3222
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-juridico-expert",
+    "file": "experts/sea-juridico-expert.md",
+    "title": "SEA - Jurídico Expert: IA especialista em Sankhya ERP",
+    "chars": 2994
+  },
+  {
+    "kind": "expert",
+    "url": "https://www.searchitect.pro/experts/sea-projetos-expert",
+    "file": "experts/sea-projetos-expert.md",
+    "title": "SEA - Projetos Expert: IA especialista em Sankhya ERP",
+    "chars": 2942
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/amazon-q",
+    "file": "conexoes/amazon-q.md",
+    "title": "Conectar o SEA ao Amazon Q Developer — Sankhya ERP via MCP — SEA",
+    "chars": 4425
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/antigravity",
+    "file": "conexoes/antigravity.md",
+    "title": "Conectar o SEA ao Antigravity — Sankhya ERP via MCP — SEA",
+    "chars": 4058
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/aplicacoes-proprias",
+    "file": "conexoes/aplicacoes-proprias.md",
+    "title": "Conectar o SEA ao Aplicações próprias — Sankhya ERP via MCP — SEA",
+    "chars": 4980
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/chatgpt",
+    "file": "conexoes/chatgpt.md",
+    "title": "Conectar o SEA ao ChatGPT — Sankhya ERP via MCP — SEA",
+    "chars": 4155
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/claude-code",
+    "file": "conexoes/claude-code.md",
+    "title": "Conectar o SEA ao Claude Code — Sankhya ERP via MCP — SEA",
+    "chars": 4293
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/claude-web",
+    "file": "conexoes/claude-web.md",
+    "title": "Conectar o SEA ao Claude (web) — Sankhya ERP via MCP — SEA",
+    "chars": 4081
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/cline",
+    "file": "conexoes/cline.md",
+    "title": "Conectar o SEA ao Cline — Sankhya ERP via MCP — SEA",
+    "chars": 4073
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/codex",
+    "file": "conexoes/codex.md",
+    "title": "Conectar o SEA ao Codex — Sankhya ERP via MCP — SEA",
+    "chars": 4455
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/copilot-studio",
+    "file": "conexoes/copilot-studio.md",
+    "title": "Conectar o SEA ao Microsoft Copilot Studio — Sankhya ERP via MCP — SEA",
+    "chars": 4585
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/cursor",
+    "file": "conexoes/cursor.md",
+    "title": "Conectar o SEA ao Cursor — Sankhya ERP via MCP — SEA",
+    "chars": 3876
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/eclipse",
+    "file": "conexoes/eclipse.md",
+    "title": "Conectar o SEA ao Eclipse — Sankhya ERP via MCP — SEA",
+    "chars": 4137
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/foundry",
+    "file": "conexoes/foundry.md",
+    "title": "Conectar o SEA ao Microsoft Foundry — Sankhya ERP via MCP — SEA",
+    "chars": 4566
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/gemini",
+    "file": "conexoes/gemini.md",
+    "title": "Conectar o SEA ao Gemini — Sankhya ERP via MCP — SEA",
+    "chars": 4494
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/github",
+    "file": "conexoes/github.md",
+    "title": "Conectar o SEA ao GitHub Copilot (agente) — Sankhya ERP via MCP — SEA",
+    "chars": 4757
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/gitlab-duo",
+    "file": "conexoes/gitlab-duo.md",
+    "title": "Conectar o SEA ao GitLab Duo — Sankhya ERP via MCP — SEA",
+    "chars": 4489
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/jetbrains",
+    "file": "conexoes/jetbrains.md",
+    "title": "Conectar o SEA ao JetBrains — Sankhya ERP via MCP — SEA",
+    "chars": 4333
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/lovable",
+    "file": "conexoes/lovable.md",
+    "title": "Conectar o SEA ao Lovable — Sankhya ERP via MCP — SEA",
+    "chars": 4047
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/n8n",
+    "file": "conexoes/n8n.md",
+    "title": "Conectar o SEA ao n8n — Sankhya ERP via MCP — SEA",
+    "chars": 4415
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/replit",
+    "file": "conexoes/replit.md",
+    "title": "Conectar o SEA ao Replit — Sankhya ERP via MCP — SEA",
+    "chars": 3772
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/vercel-ai-sdk",
+    "file": "conexoes/vercel-ai-sdk.md",
+    "title": "Conectar o SEA ao Vercel AI SDK — Sankhya ERP via MCP — SEA",
+    "chars": 4593
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/vscode",
+    "file": "conexoes/vscode.md",
+    "title": "Conectar o SEA ao VS Code — Sankhya ERP via MCP — SEA",
+    "chars": 4237
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/windsurf",
+    "file": "conexoes/windsurf.md",
+    "title": "Conectar o SEA ao Windsurf — Sankhya ERP via MCP — SEA",
+    "chars": 3723
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/claude",
+    "file": "conexoes/claude.md",
+    "title": "Conectar o SEA ao Claude Desktop — Sankhya ERP via MCP — SEA",
+    "chars": 4118
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/copilot-cli",
+    "file": "conexoes/copilot-cli.md",
+    "title": "Conectar o SEA ao GitHub Copilot CLI — Sankhya ERP via MCP — SEA",
+    "chars": 4590
+  },
+  {
+    "kind": "conexao",
+    "url": "https://www.searchitect.pro/conexoes/outro",
+    "file": "conexoes/outro.md",
+    "title": "Conectar o SEA ao Outro cliente — Sankhya ERP via MCP — SEA",
+    "chars": 3453
+  }
+]

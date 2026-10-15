@@ -1,0 +1,160 @@
+- generic [active] [ref=f6e1]:
+  - link "Pular para o conteúdo" [ref=f6e2] [cursor=pointer]:
+    - /url: "#conteudo"
+  - generic [ref=f6e3]:
+    - banner [ref=f6e4]:
+      - generic [ref=f6e5]:
+        - link "SEA Logo Systems Enterprise Architect" [ref=f6e6] [cursor=pointer]:
+          - /url: /
+          - img "SEA Logo" [ref=f6e7]
+          - generic [ref=f6e8]: Systems Enterprise Architect
+        - navigation [ref=f6e9]:
+          - link "Início" [ref=f6e10] [cursor=pointer]:
+            - /url: /
+          - link "Experts" [ref=f6e14] [cursor=pointer]:
+            - /url: /experts
+          - link "Conexões" [ref=f6e23] [cursor=pointer]:
+            - /url: /conexoes
+          - link "University" [ref=f6e26] [cursor=pointer]:
+            - /url: /universidade
+        - button "Acessar o SEA" [ref=f6e31]
+    - region [ref=f6e36]:
+      - generic [ref=f6e37]:
+        - generic [ref=f6e38]: SEA University · Sankhya ERP
+        - heading "SEA-T04 — SQL, Performance e Analytics no Sankhya ERP" [level=2] [ref=f6e42]
+        - paragraph [ref=f6e43]:
+          - text: "Curso gratuito para quem trabalha com Sankhya ERP: 4 módulos, 16 aulas e 6 horas, com certificado"
+          - strong [ref=f6e44]: SEA Practitioner — SQL e BI
+          - text: na trilha Plataforma Técnica e Dados. Escrito pelo especialista do domínio, com casos trabalhados a partir de situações reais do ERP. Aprofunda o trabalho do
+          - link "SEA - SQL/BI Expert" [ref=f6e45] [cursor=pointer]:
+            - /url: /experts/sea-sql-bi-expert
+          - text: .
+        - heading "Ementa" [level=3] [ref=f6e46]
+        - list [ref=f6e47]:
+          - listitem [ref=f6e48]:
+            - paragraph [ref=f6e49]: Módulo 1 · Território do SQL/BI Expert
+            - list [ref=f6e50]:
+              - listitem [ref=f6e51]:
+                - generic [ref=f6e53]: "Cobertura: SQL ANSI, Oracle, SQL Server e PostgreSQL"
+              - listitem [ref=f6e54]:
+                - generic [ref=f6e56]: Dashboards, cubos analíticos e Dashboard Builder
+              - listitem [ref=f6e57]:
+                - generic [ref=f6e59]: Fronteira com Dicionário de Dados no modelo
+              - listitem [ref=f6e60]:
+                - generic [ref=f6e62]: "Limites: não otimiza consulta sem contexto de volume"
+          - listitem [ref=f6e63]:
+            - paragraph [ref=f6e64]: Módulo 2 · Perguntando com evidência de performance
+            - list [ref=f6e65]:
+              - listitem [ref=f6e66]:
+                - generic [ref=f6e68]: Anexando a consulta, o plano de execução e o tempo real
+              - listitem [ref=f6e69]:
+                - generic [ref=f6e71]: Informando volumetria, índices e estatísticas
+              - listitem [ref=f6e72]:
+                - generic [ref=f6e74]: Descrevendo a janela de execução e a concorrência
+              - listitem [ref=f6e75]:
+                - generic [ref=f6e77]: Separando lentidão de query de lentidão de infraestrutura
+          - listitem [ref=f6e78]:
+            - paragraph [ref=f6e79]: Módulo 3 · Casos de uso do dia a dia
+            - list [ref=f6e80]:
+              - listitem [ref=f6e81]:
+                - generic [ref=f6e83]: Revisão de SQL e leitura de plano de execução
+              - listitem [ref=f6e84]:
+                - generic [ref=f6e86]: Diagnóstico de dashboard lento
+              - listitem [ref=f6e87]:
+                - generic [ref=f6e89]: Modelagem de indicadores, KPIs e data marts
+              - listitem [ref=f6e90]:
+                - generic [ref=f6e92]: Uso de NativeSql e JdbcWrapper via SDK
+          - listitem [ref=f6e93]:
+            - paragraph [ref=f6e94]: Módulo 4 · Entregas, validação e governança
+            - list [ref=f6e95]:
+              - listitem [ref=f6e96]:
+                - generic [ref=f6e98]: Validando a SQL entregue antes de rodar em produção
+              - listitem [ref=f6e99]:
+                - generic [ref=f6e101]: Aplicando governança analítica sobre os indicadores
+              - listitem [ref=f6e102]:
+                - generic [ref=f6e104]: Medindo o ganho real após a otimização
+              - listitem [ref=f6e105]:
+                - generic [ref=f6e107]: Distinguindo hipótese de fato na análise
+      - article [ref=f6e108]:
+        - generic [ref=f6e109]: Primeira aula aberta
+        - 'heading "Cobertura: SQL ANSI, Oracle, SQL Server e PostgreSQL" [level=2] [ref=f6e112]'
+        - generic [ref=f6e113]:
+          - generic [ref=f6e114]:
+            - paragraph [ref=f6e116]: "Você aciona o SQL/BI Expert quando o problema exige SQL como parte de uma solução analítica: escrever ou revisar consultas, avaliar portabilidade, interpretar construções específicas do banco e separar uma decisão de modelagem de uma decisão de sintaxe. O ponto de partida dele é SQL ANSI; Oracle, SQL Server e PostgreSQL entram quando o ambiente exige comportamento específico. A documentação-base do expert adota exatamente essa ordem: ANSI primeiro, funções compatíveis depois e extensões proprietárias quando houver justificativa."
+            - generic [ref=f6e117]:
+              - heading "O banco faz parte da pergunta" [level=3] [ref=f6e118]
+              - paragraph [ref=f6e119]: Não entregue apenas "esta query está errada". Informe qual SGBD executará a consulta. Uma construção válida em Oracle pode não ser portátil para SQL Server ou PostgreSQL.
+              - paragraph [ref=f6e120]:
+                - text: No Oracle, por exemplo, você pode encontrar recursos como
+                - code [ref=f6e121]: NVL
+                - text: ","
+                - code [ref=f6e122]: DECODE
+                - text: ","
+                - code [ref=f6e123]: CONNECT BY
+                - text: e
+                - code [ref=f6e124]: LISTAGG
+                - text: . No SQL Server,
+                - code [ref=f6e125]: TOP
+                - text: ","
+                - code [ref=f6e126]: APPLY
+                - text: ","
+                - code [ref=f6e127]: PIVOT
+                - text: ","
+                - code [ref=f6e128]: TRY_CAST
+                - text: ","
+                - code [ref=f6e129]: TRY_CONVERT
+                - text: e
+                - code [ref=f6e130]: OFFSET
+                - text: /
+                - code [ref=f6e131]: FETCH
+                - text: são exemplos de recursos próprios ou característicos do dialeto. PostgreSQL possui recursos como
+                - code [ref=f6e132]: JSONB
+                - text: ", além de CTEs, Window Functions e materialized views. A presença de uma função proprietária não torna a consulta ruim; torna a dependência do banco explícita."
+              - paragraph [ref=f6e133]:
+                - text: Um exemplo oficial do próprio Construtor de Dashboards usa
+                - code [ref=f6e134]: TO_CHAR
+                - text: para formatar data e hora e alerta que aquela funcionalidade está contemplada apenas para Oracle. Esse é exatamente o tipo de detalhe que você precisa declarar quando pede a análise do expert.
+            - generic [ref=f6e135]:
+              - heading "O que você recebe do expert" [level=3] [ref=f6e136]
+              - paragraph [ref=f6e137]: "O expert pode separar:"
+              - list [ref=f6e138]:
+                - listitem [ref=f6e139]:
+                  - generic [ref=f6e141]: lógica relacional que pode permanecer em SQL ANSI
+                - listitem [ref=f6e142]:
+                  - generic [ref=f6e144]: trecho dependente do SGBD
+                - listitem [ref=f6e145]:
+                  - generic [ref=f6e147]: risco de portabilidade
+                - listitem [ref=f6e148]:
+                  - generic [ref=f6e150]: construção estruturalmente suspeita
+                - listitem [ref=f6e151]:
+                  - generic [ref=f6e153]: ponto que depende do modelo Sankhya e precisa de validação
+              - paragraph [ref=f6e154]:
+                - text: Não trate "funciona no meu banco" como sinônimo de "está correto para o negócio". O expert trabalha com SQL, mas a consulta continua subordinada ao grão, aos relacionamentos e à semântica dos dados. Quando uma tabela, campo ou relação não estiver comprovada,
+                - strong [ref=f6e155]: ele não completa a lacuna com um identificador plausível
+                - text: .
+            - generic [ref=f6e156]:
+              - generic [ref=f6e157]: Caso
+              - 'heading "`TO_CHAR` que só vale num banco" [level=3] [ref=f6e161]'
+              - paragraph [ref=f6e162]: A consulta funciona em Oracle e quebra em SQL Server.
+              - paragraph [ref=f6e163]:
+                - text: Um exemplo oficial do próprio Construtor de Dashboards usa
+                - code [ref=f6e164]: TO_CHAR
+                - text: para formatar data e hora — e alerta que aquela funcionalidade está contemplada
+                - strong [ref=f6e165]: apenas para Oracle
+                - text: .
+              - paragraph [ref=f6e166]: É exatamente o tipo de detalhe que precisa ser declarado ao pedir análise, porque muda o que pode ser recomendado.
+              - paragraph [ref=f6e167]:
+                - text: "A ordem de preferência é:"
+                - strong [ref=f6e168]: SQL ANSI primeiro
+                - text: ", funções compatíveis depois, extensões proprietárias quando houver justificativa."
+              - paragraph [ref=f6e169]: "E há uma armadilha de vocabulário: \"funciona no meu banco\" não é sinônimo de \"está correto para o negócio\". A consulta continua subordinada ao grão, aos relacionamentos e à semântica dos dados."
+              - paragraph [ref=f6e170]: Declarar o SGBD e quais trechos precisam permanecer portáveis evita receber uma solução elegante e inaplicável.
+          - generic [ref=f6e174]:
+            - generic [ref=f6e175]: Leve para a prática
+            - paragraph [ref=f6e176]: Ao enviar uma SQL ao expert, declare o SGBD e identifique quais trechos precisam permanecer portáveis antes de pedir qualquer adaptação de dialeto.
+        - generic [ref=f6e177]:
+          - link "Continuar o curso — conta gratuita" [ref=f6e178] [cursor=pointer]:
+            - /url: /?require_auth=1
+          - link "Ver todos os cursos de Sankhya" [ref=f6e179] [cursor=pointer]:
+            - /url: /universidade
+        - paragraph [ref=f6e180]: As demais aulas, as avaliações e o certificado ficam disponíveis após o cadastro. Iniciativa independente, sem vínculo oficial com a fornecedora do Sankhya ERP.

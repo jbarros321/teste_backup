@@ -1,0 +1,1261 @@
+- generic [active] [ref=f3e1]:
+  - link "Pular para o conteúdo" [ref=f3e2] [cursor=pointer]:
+    - /url: "#conteudo"
+  - generic [ref=f3e3]:
+    - banner [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - link "SEA Logo Systems Enterprise Architect" [ref=f3e6] [cursor=pointer]:
+          - /url: /
+          - img "SEA Logo" [ref=f3e7]
+          - generic [ref=f3e8]: Systems Enterprise Architect
+        - navigation [ref=f3e9]:
+          - link "Início" [ref=f3e10] [cursor=pointer]:
+            - /url: /
+          - link "Experts" [ref=f3e14] [cursor=pointer]:
+            - /url: /experts
+          - link "Conexões" [ref=f3e23] [cursor=pointer]:
+            - /url: /conexoes
+          - link "University" [ref=f3e26] [cursor=pointer]:
+            - /url: /universidade
+        - button "Acessar o SEA" [ref=f3e31]
+    - main [ref=f3e33]:
+      - navigation "Seções da página" [ref=f3e34]:
+        - generic [ref=f3e35]:
+          - generic: Início
+          - button "Início" [ref=f3e36]
+        - generic [ref=f3e41]:
+          - generic: O Cérebro do SEA
+          - button "O Cérebro do SEA" [ref=f3e42]
+        - generic [ref=f3e56]:
+          - generic: O Cérebro do Seu Projeto
+          - button "O Cérebro do Seu Projeto" [ref=f3e57]
+        - generic [ref=f3e64]:
+          - generic: Graph-First Intelligence
+          - button "Graph-First Intelligence" [ref=f3e65]
+        - generic [ref=f3e71]:
+          - generic: Context Efficiency
+          - button "Context Efficiency" [ref=f3e72]
+        - generic [ref=f3e77]:
+          - generic: Conexões
+          - button "Conexões" [ref=f3e78]
+        - generic [ref=f3e82]:
+          - generic: Especialistas
+          - button "Especialistas" [ref=f3e83]
+        - generic [ref=f3e90]:
+          - generic: University
+          - button "University" [ref=f3e91]
+        - generic [ref=f3e96]:
+          - generic: Gratuito
+          - button "Gratuito" [ref=f3e97]
+      - generic [ref=f3e103]:
+        - generic [ref=f3e106]:
+          - link "Comunidade no WhatsApp · veja e compartilhe casos de uso reais" [ref=f3e107] [cursor=pointer]:
+            - /url: https://chat.whatsapp.com/IdcRhSpBtAx5nKSbuNLOy7
+            - generic [ref=f3e110]:
+              - strong [ref=f3e111]: Comunidade no WhatsApp
+              - generic [ref=f3e112]: · veja e compartilhe casos de uso reais
+          - generic [ref=f3e115]: Camada de conhecimento especializado
+          - img "SEA - Systems Enterprise Architect" [ref=f3e119]
+          - heading "Conhecimento Sankhya especializado para a IA que você já usa." [level=1] [ref=f3e120]
+          - paragraph [ref=f3e121]: 24 especialistas coordenados por 1 Agent Core, conectados por MCP a agentes de IA, coding agents, IDEs e plataformas de automação.
+          - paragraph [ref=f3e122]:
+            - generic [ref=f3e123]: Especialistas por domínio
+            - generic [aria-hidden] [ref=f3e124]: ·
+            - generic [ref=f3e125]: Grafo de conhecimento
+            - generic [aria-hidden] [ref=f3e126]: ·
+            - generic [ref=f3e127]: Evidência governada
+          - paragraph [ref=f3e128]: O modelo de IA continua sendo o que você prefere. O SEA fornece conhecimento especializado, contexto, evidência e roteamento.
+          - generic [ref=f3e129]:
+            - generic [ref=f3e130]: Um único MCP · Vários agentes
+            - generic [ref=f3e131]:
+              - link "ChatGPT — Validado com restrições. Ver como conectar." [ref=f3e132] [cursor=pointer]:
+                - /url: /conexoes/chatgpt
+                - generic [ref=f3e133]: ChatGPT
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: OAuth
+                    - generic: App publicado
+                  - generic: Validado com restrições
+              - link "Claude — Validado. Ver como conectar." [ref=f3e134] [cursor=pointer]:
+                - /url: /conexoes/claude-web
+                - generic [ref=f3e135]: Claude
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: OAuth
+                  - generic: Validado
+              - link "Gemini — Validado com restrições. Ver como conectar." [ref=f3e136] [cursor=pointer]:
+                - /url: /conexoes/gemini
+                - generic [ref=f3e137]: Gemini
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: CLI
+                    - generic: API Key
+                  - generic: Validado com restrições
+              - link "Claude Code — Validado. Ver como conectar." [ref=f3e138] [cursor=pointer]:
+                - /url: /conexoes/claude-code
+                - generic [ref=f3e139]: Claude Code
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: CLI
+                    - generic: Via IDE
+                  - generic: Validado
+              - link "Codex — Validado. Ver como conectar." [ref=f3e140] [cursor=pointer]:
+                - /url: /conexoes/codex
+                - generic [ref=f3e141]: Codex
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: CLI
+                    - generic: Via IDE
+                  - generic: Validado
+              - link "GitHub Copilot — Compatibilidade a validar. Ver como conectar." [ref=f3e142] [cursor=pointer]:
+                - /url: /conexoes/github
+                - generic [ref=f3e143]: GitHub Copilot
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: API Key
+                    - generic: Conforme plano
+                  - generic: Compatibilidade a validar
+              - link "GitLab Duo — Depende do ambiente/plano. Ver como conectar." [ref=f3e144] [cursor=pointer]:
+                - /url: /conexoes/gitlab-duo
+                - generic [ref=f3e145]: GitLab Duo
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: API Key
+                    - generic: Via IDE
+                  - generic: Depende do ambiente/plano
+              - link "Amazon Q Developer — Compatibilidade a validar. Ver como conectar." [ref=f3e146] [cursor=pointer]:
+                - /url: /conexoes/amazon-q
+                - generic [ref=f3e147]: Amazon Q Developer
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: CLI
+                    - generic: Via IDE
+                  - generic: Compatibilidade a validar
+              - link "Cline — Compatibilidade a validar. Ver como conectar." [ref=f3e148] [cursor=pointer]:
+                - /url: /conexoes/cline
+                - generic [ref=f3e149]: Cline
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: Via IDE
+                    - generic: API Key
+                  - generic: Compatibilidade a validar
+              - link "Antigravity — Validado com restrições. Ver como conectar." [ref=f3e150] [cursor=pointer]:
+                - /url: /conexoes/antigravity
+                - generic [ref=f3e151]: Antigravity
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: Via IDE
+                    - generic: API Key
+                  - generic: Validado com restrições
+              - link "VS Code — Validado. Ver como conectar." [ref=f3e152] [cursor=pointer]:
+                - /url: /conexoes/vscode
+                - generic [ref=f3e153]: VS Code
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: Via IDE
+                    - generic: OAuth
+                  - generic: Validado
+              - link "JetBrains — Depende do ambiente/plano. Ver como conectar." [ref=f3e154] [cursor=pointer]:
+                - /url: /conexoes/jetbrains
+                - generic [ref=f3e155]: JetBrains
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: Via IDE
+                    - generic: API Key
+                  - generic: Depende do ambiente/plano
+              - link "Cursor — Compatibilidade a validar. Ver como conectar." [ref=f3e156] [cursor=pointer]:
+                - /url: /conexoes/cursor
+                - generic [ref=f3e157]: Cursor
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: Via IDE
+                    - generic: API Key
+                  - generic: Compatibilidade a validar
+              - link "Windsurf — Compatibilidade a validar. Ver como conectar." [ref=f3e158] [cursor=pointer]:
+                - /url: /conexoes/windsurf
+                - generic [ref=f3e159]: Windsurf
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: Via IDE
+                    - generic: API Key
+                  - generic: Compatibilidade a validar
+              - link "Eclipse — Compatibilidade a validar. Ver como conectar." [ref=f3e160] [cursor=pointer]:
+                - /url: /conexoes/eclipse
+                - generic [ref=f3e161]: Eclipse
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: Via IDE
+                    - generic: API Key
+                  - generic: Compatibilidade a validar
+              - link "Lovable — Depende do ambiente/plano. Ver como conectar." [ref=f3e162] [cursor=pointer]:
+                - /url: /conexoes/lovable
+                - generic [ref=f3e163]: Lovable
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: API Key
+                    - generic: Conforme plano
+                  - generic: Depende do ambiente/plano
+              - link "Replit — Depende do ambiente/plano. Ver como conectar." [ref=f3e164] [cursor=pointer]:
+                - /url: /conexoes/replit
+                - generic [ref=f3e165]: Replit
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: API Key
+                    - generic: Programático
+                  - generic: Depende do ambiente/plano
+              - link "Microsoft Copilot Studio — Depende do ambiente/plano. Ver como conectar." [ref=f3e166] [cursor=pointer]:
+                - /url: /conexoes/copilot-studio
+                - generic [ref=f3e167]: Microsoft Copilot Studio
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: API Key
+                    - generic: Conforme plano
+                  - generic: Depende do ambiente/plano
+              - link "Microsoft Foundry — Depende do ambiente/plano. Ver como conectar." [ref=f3e168] [cursor=pointer]:
+                - /url: /conexoes/foundry
+                - generic [ref=f3e169]: Microsoft Foundry
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: API Key
+                    - generic: Programático
+                  - generic: Depende do ambiente/plano
+              - link "n8n — Compatibilidade a validar. Ver como conectar." [ref=f3e170] [cursor=pointer]:
+                - /url: /conexoes/n8n
+                - generic [ref=f3e171]: n8n
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: API Key
+                  - generic: Compatibilidade a validar
+              - link "Vercel AI SDK — Compatibilidade a validar. Ver como conectar." [ref=f3e172] [cursor=pointer]:
+                - /url: /conexoes/vercel-ai-sdk
+                - generic [ref=f3e173]: Vercel AI SDK
+                - generic [aria-hidden]:
+                  - generic:
+                    - generic: MCP
+                    - generic: Programático
+                    - generic: API Key
+                  - generic: Compatibilidade a validar
+            - generic [ref=f3e174]:
+              - text: Conecte o SEA com os agentes e plataformas que você já usa. O tipo de integração varia por cliente — veja o status de cada um em
+              - link "Conexões" [ref=f3e175] [cursor=pointer]:
+                - /url: /conexoes
+              - text: .
+          - generic [ref=f3e176]:
+            - button "Cadastrar & Acessar" [ref=f3e177]
+            - link "Conhecer os 24 especialistas" [ref=f3e178] [cursor=pointer]:
+              - /url: /experts
+          - generic [ref=f3e179]:
+            - paragraph [ref=f3e1493]:
+              - strong [ref=f3e1497]: "12.667"
+              - text: interações com os experts
+            - paragraph [ref=f3e180]: Gratuito atualmente · Projeto independente, sem vínculo oficial com a Sankhya.
+        - dialog [ref=f3e1499]:
+          - button "Fechar" [ref=f3e1500]
+          - generic [ref=f3e1504]:
+            - heading "Autenticação Obrigatória" [level=2] [ref=f3e1509]
+            - paragraph [ref=f3e1510]: Cadastre-se ou entre com sua conta para acessar o ecossistema cognitivo SEA.
+          - generic [ref=f3e1511]:
+            - button "Cadastrar" [ref=f3e1512]
+            - button "Entrar" [ref=f3e1513]
+          - generic [ref=f3e1514]:
+            - generic [ref=f3e1515]:
+              - generic [ref=f3e1516]: E-mail
+              - textbox "E-mail" [ref=f3e1521]:
+                - /placeholder: exemplo@email.com
+                - text: jbarros213@icloud.com
+            - generic [ref=f3e1522]:
+              - generic [ref=f3e1523]: Senha
+              - textbox "Senha" [ref=f3e1528]:
+                - /placeholder: Mínimo 6 caracteres
+                - text: Diantedotrno
+              - button "Esqueci minha senha" [ref=f3e1530]
+            - alert [ref=f3e1541]:
+              - generic [ref=f3e1544]: E-mail ou senha incorretos
+            - button "Entrar & Acessar" [ref=f3e1531]
+          - generic [ref=f3e1532]:
+            - paragraph [ref=f3e1533]:
+              - generic [ref=f3e1536]:
+                - strong [ref=f3e1537]: "Aviso legal:"
+                - text: o SEA é um projeto independente criado por
+                - strong [ref=f3e1538]: Paulo Chagas de Castro Filho
+                - text: . Não é produto, suporte ou documentação oficial da Sankhya nem de outros fabricantes citados.
+            - paragraph [ref=f3e1539]: "As respostas são apoio técnico: valide qualquer recomendação em ambiente de teste antes de aplicar em produção."
+      - region [ref=f3e182]:
+        - generic [ref=f3e184]:
+          - generic [ref=f3e185]: Knowledge Engineering
+          - heading "O Cérebro do SEA" [level=2] [ref=f3e186]
+          - paragraph [ref=f3e187]: Conhecimento conectado, não apenas armazenado.
+          - list "Conceitos" [ref=f3e188]:
+            - listitem [ref=f3e189]: SEA Enterprise Knowledge Graph
+            - listitem [ref=f3e190]: GraphRAG
+        - generic [ref=f3e193]:
+          - generic [ref=f3e194]:
+            - generic "42.078 nós" [ref=f3e195]:
+              - term [ref=f3e196]:
+                - text: nós de conhecimento
+                - generic [ref=f3e197]: (42.078 nós)
+              - definition [ref=f3e198]: 42 mil+
+            - generic "117.425 relações" [ref=f3e199]:
+              - term [ref=f3e200]:
+                - text: relações
+                - generic [ref=f3e201]: (117.425 relações)
+              - definition [ref=f3e202]: 117 mil+
+            - generic "24 Specialist Experts" [ref=f3e203]:
+              - term [ref=f3e204]:
+                - text: especialistas
+                - generic [ref=f3e205]: (24 Specialist Experts)
+              - definition [ref=f3e206]: "24"
+            - generic "Coordena os especialistas" [ref=f3e207]:
+              - term [ref=f3e208]:
+                - text: Agent Core
+                - generic [ref=f3e209]: (Coordena os especialistas)
+              - definition [ref=f3e210]: "1"
+          - generic [ref=f3e211]:
+            - generic [ref=f3e212]:
+              - paragraph [ref=f3e213]: O conhecimento especializado do SEA não existe apenas como documentos isolados. Ele é organizado e conectado em uma grande rede de conceitos, domínios e relações que permite aos especialistas acessar contexto técnico e funcional de forma direcionada.
+              - paragraph [ref=f3e214]: Em vez de começar descobrindo o domínio, a IA pode começar trabalhando sobre conhecimento especializado.
+            - figure [ref=f3e215]:
+              - blockquote [ref=f3e228]:
+                - text: O SEA não tenta tornar o modelo maior.
+                - generic [ref=f3e229]: Torna o contexto melhor.
+          - generic [ref=f3e230]:
+            - paragraph [ref=f3e231]: "Conceitos como NF-e, SPED, CFOP, TOP, JAPE, OAuth, picking, inventário, eSocial, conciliação e JRXML não ficam isolados: cada um se conecta a regras, processos, dados e outros conceitos."
+            - paragraph [ref=f3e232]: Representação sintética e conceitual do SEA Enterprise Knowledge Graph. Não reproduz nós, relações nem a estrutura interna do grafo.
+      - region [ref=f3e234]:
+        - generic [ref=f3e236]:
+          - generic [ref=f3e237]:
+            - generic [ref=f3e238]: Context Engineering
+            - heading "O Cérebro do Seu Projeto" [level=2] [ref=f3e239]
+            - paragraph [ref=f3e240]: Seu contexto também pode virar conhecimento conectado.
+            - list "Conceitos" [ref=f3e241]:
+              - listitem [ref=f3e242]: Private Context Knowledge Graph
+              - listitem [ref=f3e243]: Graph-First
+            - paragraph [ref=f3e244]: Quando o agente possui acesso autorizado a projetos, repositórios, documentos e outros materiais, ele pode estruturar esse contexto em uma rede privada de relações para compreender dependências, decisões e fluxos sem precisar recomeçar a análise do zero.
+            - generic [ref=f3e245]:
+              - paragraph [ref=f3e246]: Private by design
+              - paragraph [ref=f3e250]:
+                - text: Construído no ambiente do usuário.
+                - generic [ref=f3e251]: Não armazenado pelo SEA.
+            - list [ref=f3e252]:
+              - listitem [ref=f3e253]: Seu projeto não precisa ser redescoberto a cada tarefa.
+              - listitem [ref=f3e259]: Estruture uma vez. Reutilize o entendimento conforme o projeto evolui.
+              - listitem [ref=f3e265]: O grafo privado permanece no ambiente controlado por você e pelo seu agente.
+              - listitem [ref=f3e272]: "Cada relação diz de onde veio: comprovada no arquivo e na linha, ou inferida por regra declarada."
+          - generic [ref=f3e278]:
+            - 'figure "Exemplo de grafo privado de projeto: 60 nós, 95 relações em 11 módulos" [ref=f3e279]':
+              - generic [ref=f3e280]:
+                - img "SEA" [ref=f3e281]
+                - generic [ref=f3e282]:
+                  - paragraph [ref=f3e283]: SEA Context Graph
+                  - paragraph [ref=f3e284]: Produtos + integração Sankhya · mixed · sea.context-graph/1
+                - generic [ref=f3e285]: Private Context Knowledge Graph · gerado no seu ambiente
+              - generic [ref=f3e290]:
+                - generic [ref=f3e291]:
+                  - term [ref=f3e292]: nós
+                  - definition [ref=f3e293]: "60"
+                - generic [ref=f3e294]:
+                  - term [ref=f3e295]: relações
+                  - definition [ref=f3e296]: "95"
+                - generic [ref=f3e297]:
+                  - term [ref=f3e298]: comprovadas
+                  - definition [ref=f3e299]: "83"
+                - generic [ref=f3e300]:
+                  - term [ref=f3e301]: inferidas
+                  - definition [ref=f3e302]: "12"
+                - generic [ref=f3e303]:
+                  - term [ref=f3e304]: módulos
+                  - definition [ref=f3e305]: "11"
+              - paragraph [aria-hidden] [ref=f3e308]: 11 módulos abertos · layout calculado uma vez e congelado
+            - generic [aria-hidden] [ref=f3e309]:
+              - generic [ref=f3e310]: Estrutura — repositório, pasta, arquivo
+              - generic [ref=f3e315]: Técnico — função, API, dado, configuração
+              - generic [ref=f3e320]: Semântico — requisito, decisão, evidência
+              - generic [ref=f3e325]: comprovada (arquivo#linha)
+              - generic [ref=f3e327]: inferida (regra declarada)
+            - group "Subgrafos relevantes por tarefa" [ref=f3e329]:
+              - button "Integrar produtos do Sankhya" [ref=f3e330]
+              - button "Tela de produtos" [ref=f3e331]
+              - button "Credenciais e fallback" [ref=f3e332]
+              - button "Decisões e evidências" [ref=f3e333]
+            - paragraph [ref=f3e334]
+            - paragraph [ref=f3e335]: "Exemplo ilustrativo: o grafo de um projeto Next.js integrado ao Sankhya, no visualizador que o agente grava em .sea/graph.html. A estrutura real depende do material que o seu agente analisa."
+      - region [ref=f3e337]:
+        - generic [ref=f3e338]:
+          - generic [ref=f3e339]:
+            - generic [ref=f3e340]: SEA Graph-First Intelligence
+            - heading "Conhecimento do domínio. Contexto do projeto." [level=2] [ref=f3e341]
+            - paragraph [ref=f3e342]: O Enterprise Knowledge Graph fornece conhecimento especializado. O Private Context Knowledge Graph fornece contexto relevante do usuário. O agente trabalha com ambos sem transformar o SEA em repositório dos dados privados do cliente.
+          - generic [ref=f3e343]:
+            - generic [ref=f3e344]:
+              - generic [ref=f3e345]:
+                - paragraph [ref=f3e346]: Knowledge Engineering
+                - heading "SEA Enterprise Knowledge Graph" [level=3] [ref=f3e347]
+                - list [ref=f3e348]:
+                  - listitem [ref=f3e349]: 42 mil+ nós
+                  - listitem [ref=f3e350]: 117 mil+ relações
+                  - listitem [ref=f3e351]: 24 especialistas · 1 Agent Core
+                - paragraph [ref=f3e352]: Infraestrutura do SEA
+              - generic [ref=f3e354]: ≠
+              - generic [ref=f3e355]:
+                - paragraph [ref=f3e356]: Context Engineering
+                - heading "Private Context Knowledge Graph" [level=3] [ref=f3e360]
+                - list [ref=f3e361]:
+                  - listitem [ref=f3e362]: contexto do projeto
+                  - listitem [ref=f3e363]: dependências e decisões
+                  - listitem [ref=f3e364]: grafo privado
+                - paragraph [ref=f3e365]: Ambiente do usuário
+            - paragraph [ref=f3e366]: Os dois grafos são estruturas diferentes e independentes. Eles se encontram apenas no agente do usuário.
+            - generic [ref=f3e370]:
+              - heading "Client Agent" [level=3] [ref=f3e375]
+              - paragraph [ref=f3e376]: A IA que você já usa. É aqui — e só aqui — que conhecimento e contexto se combinam.
+            - paragraph [ref=f3e377]: Os dois grafos não são fundidos no servidor, sincronizados, copiados nem enviados integralmente de um para o outro. A combinação acontece no contexto operacional do agente.
+          - figure [ref=f3e378]:
+            - blockquote [ref=f3e379]:
+              - text: O SEA conhece o domínio. Seu agente conhece o contexto.
+              - generic [ref=f3e380]: Juntos, trabalham com os dois.
+          - generic [ref=f3e381]:
+            - paragraph [ref=f3e382]: A engenharia por trás do SEA Graph-First Intelligence
+            - list [ref=f3e383]:
+              - listitem [ref=f3e384]:
+                - paragraph [ref=f3e397]: Knowledge Engineering
+                - heading "SEA Enterprise Knowledge Graph" [level=3] [ref=f3e398]
+                - paragraph [ref=f3e399]: Conhecimento especializado conectado em rede, com recuperação híbrida.
+              - listitem [ref=f3e400]:
+                - paragraph [ref=f3e406]: Context Engineering
+                - heading "Private Context Knowledge Graph" [level=3] [ref=f3e407]
+                - paragraph [ref=f3e408]: O contexto do seu projeto estruturado no seu ambiente.
+              - listitem [ref=f3e409]:
+                - paragraph [ref=f3e415]: Domain Engineering
+                - heading "24 Specialist Experts" [level=3] [ref=f3e416]
+                - paragraph [ref=f3e417]: Especialistas com fronteira de domínio e limites declarados.
+              - listitem [ref=f3e418]:
+                - paragraph [ref=f3e423]: Agent Engineering
+                - heading "Agent Core" [level=3] [ref=f3e424]
+                - paragraph [ref=f3e425]: Orquestração automática entre especialistas.
+              - listitem [ref=f3e426]:
+                - paragraph [ref=f3e430]: Evidence Governance
+                - heading "Disciplina de evidências" [level=3] [ref=f3e431]
+                - paragraph [ref=f3e432]: Evidências, cobertura e sinalização de lacunas.
+      - region [ref=f3e434]:
+        - generic [ref=f3e435]:
+          - generic [ref=f3e436]:
+            - generic [ref=f3e437]: Context Efficiency
+            - heading "Pare de começar do zero." [level=2] [ref=f3e438]
+            - paragraph [ref=f3e439]: Mais contexto útil. Menos contexto desperdiçado.
+            - paragraph [ref=f3e440]: Sem SEA, a IA precisa descobrir o domínio. Com SEA, ela parte do conhecimento. Com Graph-First, ela também parte do contexto.
+          - generic [ref=f3e441]:
+            - generic [ref=f3e442]:
+              - paragraph [ref=f3e443]: Knowledge acquisition
+              - paragraph [ref=f3e444]:
+                - text: O
+                - strong [ref=f3e445]: SEA
+                - text: resolve o custo de adquirir conhecimento especializado.
+            - generic [ref=f3e446]:
+              - paragraph [ref=f3e447]: Context reconstruction
+              - paragraph [ref=f3e448]:
+                - text: O
+                - strong [ref=f3e449]: Private Context Graph
+                - text: resolve o custo de reconstruir o contexto particular do usuário.
+          - generic [ref=f3e450]:
+            - heading "Sem SEA não significa documentação pronta e organizada." [level=3] [ref=f3e451]
+            - paragraph [ref=f3e452]:
+              - text: Uma IA genérica pode, de início, não saber o que é Sankhya — ou saber só superficialmente que é um ERP —, não conhecer ActionButtonsSP, JAPE ou resourceId, não saber onde procurar documentação, quais fontes estão atualizadas, qual área está envolvida nem quais conceitos se relacionam. Existe um custo de
+              - strong [ref=f3e453]: knowledge acquisition
+              - text: antes de qualquer resolução.
+          - generic [ref=f3e454]:
+            - paragraph [ref=f3e455]: Exemplo didático
+            - paragraph [ref=f3e456]:
+              - generic [ref=f3e457]: ActionButtonsSP.executeJava
+              - generic [ref=f3e459]:
+                - generic [aria-hidden] [ref=f3e460]: +
+                - generic [ref=f3e461]: OAuth
+              - generic [ref=f3e462]:
+                - generic [aria-hidden] [ref=f3e463]: +
+                - generic [ref=f3e464]: resourceId
+              - generic [ref=f3e465]:
+                - generic [aria-hidden] [ref=f3e466]: +
+                - generic [ref=f3e467]: doAction
+          - list [ref=f3e468]:
+            - listitem [ref=f3e469]:
+              - generic [ref=f3e470]:
+                - generic [ref=f3e471]: "01"
+                - generic [ref=f3e472]:
+                  - heading "Sem SEA" [level=3] [ref=f3e473]
+                  - paragraph [ref=f3e474]: Sem grafo cliente
+              - paragraph [ref=f3e475]: Modelo genérico + contexto privado bruto + Web.
+              - 'list "Fluxo: Sem SEA" [ref=f3e476]':
+                - listitem [ref=f3e477]:
+                  - generic [ref=f3e478]: Descobrir
+                - listitem [ref=f3e481]:
+                  - generic [ref=f3e482]: Pesquisar
+                - listitem [ref=f3e485]:
+                  - generic [ref=f3e486]: Aprender
+                - listitem [ref=f3e489]:
+                  - generic [ref=f3e490]: Comparar
+                - listitem [ref=f3e493]:
+                  - generic [ref=f3e494]: Entender projeto
+                - listitem [ref=f3e497]:
+                  - generic [ref=f3e498]: Resolver
+              - group [ref=f3e499]:
+                - 'generic "Ver: a investigação típica ▾" [ref=f3e500] [cursor=pointer]'
+            - listitem [ref=f3e502]:
+              - generic [ref=f3e503]:
+                - generic [ref=f3e504]: "02"
+                - generic [ref=f3e505]:
+                  - heading "SEA" [level=3] [ref=f3e506]
+                  - paragraph [ref=f3e507]: Sem grafo cliente
+              - paragraph [ref=f3e508]: Enterprise Knowledge Graph + 24 especialistas + Agent Core + governança de evidências.
+              - 'list "Fluxo: SEA" [ref=f3e509]':
+                - listitem [ref=f3e510]:
+                  - generic [ref=f3e511]: Conhecimento do domínio
+                - listitem [ref=f3e514]:
+                  - generic [ref=f3e515]: Entender projeto
+                - listitem [ref=f3e518]:
+                  - generic [ref=f3e519]: Resolver
+              - paragraph [ref=f3e520]: Respostas otimizadas para entregar conhecimento relevante com menor overhead contextual.
+              - group [ref=f3e521]:
+                - 'generic "Ver: com o sea ▾" [ref=f3e522] [cursor=pointer]'
+            - listitem [ref=f3e524]:
+              - generic [ref=f3e525]:
+                - generic [ref=f3e526]: "03"
+                - generic [ref=f3e527]:
+                  - heading "SEA + Grafo Cliente" [level=3] [ref=f3e528]
+                  - paragraph [ref=f3e529]: Knowledge + Context Engineering
+              - paragraph [ref=f3e530]: Conhecimento especializado Sankhya + contexto privado estruturado.
+              - 'list "Fluxo: SEA + Grafo Cliente" [ref=f3e531]':
+                - listitem [ref=f3e532]:
+                  - generic [ref=f3e533]: Conhecimento do domínio + contexto do projeto
+                - listitem [ref=f3e536]:
+                  - generic [ref=f3e537]: Resolver
+              - group [ref=f3e538]:
+                - 'generic "Ver: com sea + grafo cliente ▾" [ref=f3e539] [cursor=pointer]'
+          - generic [ref=f3e541]:
+            - generic [ref=f3e542]:
+              - heading "Contexto processado no cenário de referência" [level=3] [ref=f3e543]
+              - group [ref=f3e544]:
+                - generic "Sobre os valores" [ref=f3e545] [cursor=pointer]
+            - list [ref=f3e548]:
+              - listitem [ref=f3e549]:
+                - generic [ref=f3e550]:
+                  - generic [ref=f3e551]: SEM SEA / SEM GRAFO
+                  - generic [ref=f3e552]:
+                    - strong [ref=f3e553]: ~18k–25k
+                    - text: tokens estimados
+              - listitem [ref=f3e555]:
+                - generic [ref=f3e556]:
+                  - generic [ref=f3e557]: SEA / SEM GRAFO
+                  - generic [ref=f3e558]:
+                    - strong [ref=f3e559]: ~7,7k
+                    - text: tokens no cenário interno
+              - listitem [ref=f3e561]:
+                - generic [ref=f3e562]:
+                  - generic [ref=f3e563]: SEA + GRAFO CLIENTE
+                  - generic [ref=f3e564]:
+                    - strong [ref=f3e565]: ~2k
+                    - text: tokens no cenário interno
+            - list [ref=f3e567]:
+              - listitem [ref=f3e568]:
+                - strong [ref=f3e569]: ~57%–69%
+                - text: Em um cenário técnico interno, o uso do SEA reduziu o contexto estimado em aproximadamente 57%–69% em comparação com uma investigação do domínio iniciada do zero.
+              - listitem [ref=f3e570]:
+                - strong [ref=f3e571]: ~74%
+                - text: "Mesmo depois de resolver a aquisição de conhecimento através do SEA, Context Engineering pode reduzir significativamente o contexto privado que o agente precisa processar: de ~7,7k para ~2k tokens no mesmo cenário."
+              - listitem [ref=f3e572]:
+                - strong [ref=f3e573]: ~89%–92%
+                - text: Em um cenário técnico interno, a combinação entre SEA e Grafo Cliente reduziu o contexto estimado de aproximadamente 18k–25k tokens para cerca de 2k.
+              - listitem [ref=f3e574]:
+                - strong [ref=f3e575]: ~92,4%
+                - text: Em um benchmark interno específico, selecionar apenas o subgrafo relevante reduziu aproximadamente 92% do volume de contexto privado necessário para aquela tarefa (24.786 → 1.882 caracteres).
+            - paragraph [ref=f3e576]: Estimativa e benchmark interno de um cenário técnico específico. Resultados variam conforme modelo, tarefa, volume de contexto, conhecimento prévio e necessidade de pesquisa externa. Benchmark/estimativa interna para cenário específico. Resultados variam conforme tarefa, modelo, contexto e pesquisa externa. Nenhum percentual representa garantia.
+          - generic [ref=f3e577]:
+            - generic [ref=f3e578]:
+              - generic [ref=f3e579]: Benefícios
+              - heading "Economia de tokens é consequência. Não é o produto inteiro." [level=2] [ref=f3e580]
+              - paragraph [ref=f3e581]: Menos descoberta. Mais resolução.
+            - list [ref=f3e582]:
+              - listitem [ref=f3e583]:
+                - heading "Knowledge on demand" [level=3] [ref=f3e586]
+                - paragraph [ref=f3e587]: O agente acessa conhecimento técnico e funcional especializado conforme a necessidade.
+              - listitem [ref=f3e588]:
+                - heading "Less discovery" [level=3] [ref=f3e592]
+                - paragraph [ref=f3e593]: Menos tempo descobrindo o domínio, a terminologia, onde procurar e quais áreas se relacionam.
+              - listitem [ref=f3e594]:
+                - heading "Less research" [level=3] [ref=f3e598]
+                - paragraph [ref=f3e599]: O conhecimento especializado reduz a necessidade de reconstruir o domínio através de múltiplas pesquisas.
+              - listitem [ref=f3e600]:
+                - heading "Less repetition" [level=3] [ref=f3e606]
+                - paragraph [ref=f3e607]: O agente não precisa reaprender os mesmos conceitos em cada tarefa.
+              - listitem [ref=f3e608]:
+                - heading "Context reuse" [level=3] [ref=f3e615]
+                - paragraph [ref=f3e616]: Seu projeto não precisa ser redescoberto a cada conversa.
+              - listitem [ref=f3e617]:
+                - heading "Cross-domain context" [level=3] [ref=f3e623]
+                - paragraph [ref=f3e624]: Demandas que cruzam especialidades, sem você precisar saber antes qual especialista consultar.
+              - listitem [ref=f3e625]:
+                - heading "Evidence governance" [level=3] [ref=f3e629]
+                - paragraph [ref=f3e630]: Quando existe evidência, ela é priorizada. Quando existe lacuna, o SEA pode indicar que a informação precisa de validação.
+              - listitem [ref=f3e631]:
+                - heading "Model independence" [level=3] [ref=f3e635]
+                - paragraph [ref=f3e636]: O SEA não substitui sua IA. Ele fornece conhecimento especializado para a IA que você já utiliza.
+              - listitem [ref=f3e637]:
+                - heading "Um único MCP. Vários agentes." [level=3] [ref=f3e640]
+                - paragraph [ref=f3e641]: Compatível com clientes que suportam Model Context Protocol, conforme recursos disponíveis em cada plataforma.
+              - listitem [ref=f3e642]:
+                - heading "Private by design" [level=3] [ref=f3e646]
+                - paragraph [ref=f3e647]: Conhecimento SEA e contexto privado permanecem separados.
+              - listitem [ref=f3e648]:
+                - heading "Zero Customer Content Retention" [level=3] [ref=f3e653]
+                - paragraph [ref=f3e654]: O SEA processa o conteúdo necessário para responder, sem persistir o conteúdo da consulta ou resposta no runtime de conhecimento. Cada provedor de IA mantém a própria política.
+              - listitem [ref=f3e655]:
+                - paragraph [ref=f3e660]: O SEA não é outro modelo de IA. É uma camada de conhecimento e contexto especializado para os agentes que você já utiliza.
+            - list [ref=f3e661]:
+              - listitem [ref=f3e662]:
+                - heading "Para desenvolvedores" [level=3] [ref=f3e663]
+                - paragraph [ref=f3e668]: Menos tempo procurando como o ecossistema funciona. Mais tempo resolvendo o problema.
+                - list "Temas — Para desenvolvedores" [ref=f3e669]:
+                  - listitem [ref=f3e670]: SDK
+                  - listitem [ref=f3e671]: JAPE
+                  - listitem [ref=f3e672]: APIs
+                  - listitem [ref=f3e673]: OAuth
+                  - listitem [ref=f3e674]: Integrações
+                  - listitem [ref=f3e675]: SQL
+                  - listitem [ref=f3e676]: Dicionário de Dados
+                  - listitem [ref=f3e677]: Construtor de Telas
+                  - listitem [ref=f3e678]: IReport
+                  - listitem [ref=f3e679]: Troubleshooting
+              - listitem [ref=f3e680]:
+                - heading "Para consultores" [level=3] [ref=f3e681]
+                - paragraph [ref=f3e687]: Contexto funcional especializado disponível dentro do agente que você já utiliza.
+                - list "Temas — Para consultores" [ref=f3e688]:
+                  - listitem [ref=f3e689]: Fiscal
+                  - listitem [ref=f3e690]: Financeiro
+                  - listitem [ref=f3e691]: Comercial
+                  - listitem [ref=f3e692]: Estoques
+                  - listitem [ref=f3e693]: Compras
+                  - listitem [ref=f3e694]: Produção
+                  - listitem [ref=f3e695]: WMS
+                  - listitem [ref=f3e696]: TMS
+                  - listitem [ref=f3e697]: RH
+                  - listitem [ref=f3e698]: Contábil
+                  - listitem [ref=f3e699]: Contratos
+                  - listitem [ref=f3e700]: Projetos
+                  - listitem [ref=f3e701]: Logística
+              - listitem [ref=f3e702]:
+                - heading "Para troubleshooting" [level=3] [ref=f3e703]
+                - paragraph [ref=f3e708]: Do sintoma à investigação baseada em evidências.
+                - list "Temas — Para troubleshooting" [ref=f3e709]:
+                  - listitem [ref=f3e710]: Domínio
+                  - listitem [ref=f3e711]: Contexto
+                  - listitem [ref=f3e712]: Evidência
+                  - listitem [ref=f3e713]: Lacunas
+                  - listitem [ref=f3e714]: Hipóteses
+                  - listitem [ref=f3e715]: Investigação estruturada
+            - paragraph [ref=f3e716]: Governança de evidências e controles anti-alucinação — não uma promessa de resposta perfeita.
+      - region [ref=f3e721]:
+        - generic [ref=f3e722]:
+          - generic [ref=f3e723]:
+            - generic [ref=f3e724]: SEA em números
+            - heading "Escala, profundidade e governança." [level=2] [ref=f3e725]
+            - paragraph [ref=f3e727]: Não é mais uma IA. É a camada de conhecimento especializado que a IA que você já usa consulta antes de responder.
+          - generic [ref=f3e728]:
+            - generic [ref=f3e729]:
+              - term [ref=f3e730]:
+                - text: Especialistas
+                - generic: 24 Specialist Experts, cada um com fronteira própria de domínio.
+              - definition [ref=f3e731]: "24"
+            - generic [ref=f3e732]:
+              - term [ref=f3e733]:
+                - text: Agent Core
+                - generic: Orquestra os especialistas — 25 componentes ativos no total.
+              - definition [ref=f3e734]: "1"
+            - generic [ref=f3e735]:
+              - term [ref=f3e736]:
+                - text: unidades de conhecimento indexadas
+                - generic: 22.691 unidades indexadas.
+              - definition [ref=f3e737]: 22 mil+
+            - generic [ref=f3e738]:
+              - term [ref=f3e739]:
+                - text: nós de conhecimento
+                - generic: 42.078 nós no grafo de conhecimento.
+              - definition [ref=f3e740]: 42 mil+
+            - generic [ref=f3e741]:
+              - term [ref=f3e742]:
+                - text: relações
+                - generic: 117.425 relações entre conceitos.
+              - definition [ref=f3e743]: 117 mil+
+            - generic [ref=f3e744]:
+              - term [ref=f3e745]:
+                - text: ferramentas MCP públicas
+                - generic: sea_prepare · sea_search · sea_route · sea_experts · sea_version
+              - definition [ref=f3e746]: "5"
+            - generic [ref=f3e747]:
+              - term [ref=f3e748]:
+                - text: Customer Content Retention
+                - generic: O SEA processa a solicitação necessária para responder, mas não foi desenhado para persistir o conteúdo da consulta ou da resposta como base de conhecimento do serviço.
+              - definition [ref=f3e749]: Zero
+            - generic [ref=f3e750]:
+              - term [ref=f3e751]:
+                - text: atualmente
+                - generic: O acesso é gratuito no momento. Isso pode mudar no futuro, com aviso prévio.
+              - definition [ref=f3e752]: Gratuito
+      - generic [ref=f3e755]:
+        - generic [ref=f3e756]:
+          - generic [ref=f3e757]: SEA · Conexões
+          - heading "SEA Conexões" [level=2] [ref=f3e758]:
+            - img "SEA" [ref=f3e759]
+            - generic [ref=f3e760]: Conexões
+          - paragraph [ref=f3e761]: Um único MCP. Vários agentes.
+          - paragraph [ref=f3e762]:
+            - text: Conecte o conhecimento especializado do SEA ao ChatGPT, Claude, Codex, Gemini, GitHub Copilot, Microsoft Copilot, Amazon Q, JetBrains, Lovable, Replit, n8n e
+            - strong [ref=f3e763]: outros clientes compatíveis com Model Context Protocol
+            - text: . Um endereço, e o seu assistente passa a consultar os especialistas do SEA antes de responder sobre Sankhya — com evidência e roteamento pelo Agent Core.
+            - strong [ref=f3e764]: O modelo é o seu; a cota também.
+          - generic [ref=f3e766]:
+            - generic [ref=f3e767]: Endpoint
+            - code [ref=f3e768]: https://mcp.searchitect.pro/mcp
+        - generic [ref=f3e769]:
+          - generic [ref=f3e770]:
+            - generic [ref=f3e771]:
+              - heading "IA" [level=3] [ref=f3e772]
+              - paragraph [ref=f3e773]: Os assistentes de uso geral, no chat que a equipe já abre todo dia.
+            - generic [ref=f3e774]:
+              - 'link "ChatGPT: Validado com restrições. Ver como conectar." [ref=f3e775] [cursor=pointer]':
+                - /url: /conexoes/chatgpt
+                - generic [ref=f3e776]:
+                  - generic [ref=f3e777]: ChatGPT
+                  - generic [ref=f3e778]: Validado com restrições
+                  - generic [ref=f3e780]: MCP
+                  - generic [ref=f3e781]: OAuth
+                  - generic [ref=f3e782]: App publicado
+                  - generic [ref=f3e783]: Conforme plano
+              - 'link "Claude: Validado. Ver como conectar." [ref=f3e784] [cursor=pointer]':
+                - /url: /conexoes/claude-web
+                - generic [ref=f3e785]:
+                  - generic [ref=f3e786]: Claude
+                  - generic [ref=f3e787]: Validado
+                  - generic [ref=f3e789]: MCP
+                  - generic [ref=f3e790]: OAuth
+              - 'link "Gemini: Validado com restrições. Ver como conectar." [ref=f3e791] [cursor=pointer]':
+                - /url: /conexoes/gemini
+                - generic [ref=f3e792]:
+                  - generic [ref=f3e793]: Gemini
+                  - generic [ref=f3e794]: Validado com restrições
+                  - generic [ref=f3e796]: MCP
+                  - generic [ref=f3e797]: CLI
+                  - generic [ref=f3e798]: API Key
+                  - generic [ref=f3e799]: OAuth
+                  - generic [ref=f3e800]: App publicado
+          - generic [ref=f3e801]:
+            - generic [ref=f3e802]:
+              - heading "Coding Agents" [level=3] [ref=f3e803]
+              - paragraph [ref=f3e804]: O SEA consultado durante o trabalho, sem sair do agente que escreve o código.
+            - generic [ref=f3e805]:
+              - 'link "Claude Code: Validado. Ver como conectar." [ref=f3e806] [cursor=pointer]':
+                - /url: /conexoes/claude-code
+                - generic [ref=f3e807]:
+                  - generic [ref=f3e808]: Claude Code
+                  - generic [ref=f3e809]: Validado
+                  - generic [ref=f3e811]: MCP
+                  - generic [ref=f3e812]: CLI
+                  - generic [ref=f3e813]: Via IDE
+                  - generic [ref=f3e814]: OAuth
+                  - generic [ref=f3e815]: API Key
+              - 'link "Codex: Validado. Ver como conectar." [ref=f3e816] [cursor=pointer]':
+                - /url: /conexoes/codex
+                - generic [ref=f3e817]:
+                  - generic [ref=f3e818]: Codex
+                  - generic [ref=f3e819]: Validado
+                  - generic [ref=f3e821]: MCP
+                  - generic [ref=f3e822]: CLI
+                  - generic [ref=f3e823]: Via IDE
+                  - generic [ref=f3e824]: OAuth
+                  - generic [ref=f3e825]: API Key
+              - 'link "GitHub Copilot: Compatibilidade a validar. Ver como conectar." [ref=f3e826] [cursor=pointer]':
+                - /url: /conexoes/github
+                - generic [ref=f3e827]:
+                  - generic [ref=f3e828]: GitHub Copilot
+                  - generic [ref=f3e829]: Compatibilidade a validar
+                  - generic [ref=f3e831]: MCP
+                  - generic [ref=f3e832]: API Key
+                  - generic [ref=f3e833]: Conforme plano
+              - 'link "GitLab Duo: Depende do ambiente/plano. Ver como conectar." [ref=f3e834] [cursor=pointer]':
+                - /url: /conexoes/gitlab-duo
+                - generic [ref=f3e835]:
+                  - generic [ref=f3e836]: GitLab Duo
+                  - generic [ref=f3e837]: Depende do ambiente/plano
+                  - generic [ref=f3e839]: MCP
+                  - generic [ref=f3e840]: API Key
+                  - generic [ref=f3e841]: Via IDE
+                  - generic [ref=f3e842]: Conforme plano
+              - 'link "Amazon Q Developer: Compatibilidade a validar. Ver como conectar." [ref=f3e843] [cursor=pointer]':
+                - /url: /conexoes/amazon-q
+                - generic [ref=f3e844]:
+                  - generic [ref=f3e845]: Amazon Q Developer
+                  - generic [ref=f3e846]: Compatibilidade a validar
+                  - generic [ref=f3e848]: MCP
+                  - generic [ref=f3e849]: CLI
+                  - generic [ref=f3e850]: Via IDE
+                  - generic [ref=f3e851]: API Key
+              - 'link "Cline: Compatibilidade a validar. Ver como conectar." [ref=f3e852] [cursor=pointer]':
+                - /url: /conexoes/cline
+                - generic [ref=f3e853]:
+                  - generic [ref=f3e854]: Cline
+                  - generic [ref=f3e855]: Compatibilidade a validar
+                  - generic [ref=f3e857]: MCP
+                  - generic [ref=f3e858]: Via IDE
+                  - generic [ref=f3e859]: API Key
+              - 'link "Antigravity: Validado com restrições. Ver como conectar." [ref=f3e860] [cursor=pointer]':
+                - /url: /conexoes/antigravity
+                - generic [ref=f3e861]:
+                  - generic [ref=f3e862]: Antigravity
+                  - generic [ref=f3e863]: Validado com restrições
+                  - generic [ref=f3e865]: MCP
+                  - generic [ref=f3e866]: Via IDE
+                  - generic [ref=f3e867]: API Key
+          - generic [ref=f3e868]:
+            - generic [ref=f3e869]:
+              - heading "IDEs" [level=3] [ref=f3e870]
+              - paragraph [ref=f3e871]: Conhecimento especializado no editor, junto do projeto aberto.
+            - generic [ref=f3e872]:
+              - 'link "VS Code: Validado. Ver como conectar." [ref=f3e873] [cursor=pointer]':
+                - /url: /conexoes/vscode
+                - generic [ref=f3e874]:
+                  - generic [ref=f3e875]: VS Code
+                  - generic [ref=f3e876]: Validado
+                  - generic [ref=f3e878]: MCP
+                  - generic [ref=f3e879]: Via IDE
+                  - generic [ref=f3e880]: OAuth
+                  - generic [ref=f3e881]: API Key
+              - 'link "JetBrains: Depende do ambiente/plano. Ver como conectar." [ref=f3e882] [cursor=pointer]':
+                - /url: /conexoes/jetbrains
+                - generic [ref=f3e883]:
+                  - generic [ref=f3e884]: JetBrains
+                  - generic [ref=f3e885]: Depende do ambiente/plano
+                  - generic [ref=f3e887]: MCP
+                  - generic [ref=f3e888]: Via IDE
+                  - generic [ref=f3e889]: API Key
+                  - generic [ref=f3e890]: Conforme plano
+              - 'link "Cursor: Compatibilidade a validar. Ver como conectar." [ref=f3e891] [cursor=pointer]':
+                - /url: /conexoes/cursor
+                - generic [ref=f3e892]:
+                  - generic [ref=f3e893]: Cursor
+                  - generic [ref=f3e894]: Compatibilidade a validar
+                  - generic [ref=f3e896]: MCP
+                  - generic [ref=f3e897]: Via IDE
+                  - generic [ref=f3e898]: API Key
+              - 'link "Windsurf: Compatibilidade a validar. Ver como conectar." [ref=f3e899] [cursor=pointer]':
+                - /url: /conexoes/windsurf
+                - generic [ref=f3e900]:
+                  - generic [ref=f3e901]: Windsurf
+                  - generic [ref=f3e902]: Compatibilidade a validar
+                  - generic [ref=f3e904]: MCP
+                  - generic [ref=f3e905]: Via IDE
+                  - generic [ref=f3e906]: API Key
+              - 'link "Eclipse: Compatibilidade a validar. Ver como conectar." [ref=f3e907] [cursor=pointer]':
+                - /url: /conexoes/eclipse
+                - generic [ref=f3e908]:
+                  - generic [ref=f3e909]: Eclipse
+                  - generic [ref=f3e910]: Compatibilidade a validar
+                  - generic [ref=f3e912]: MCP
+                  - generic [ref=f3e913]: Via IDE
+                  - generic [ref=f3e914]: API Key
+          - generic [ref=f3e915]:
+            - generic [ref=f3e916]:
+              - heading "App Builders" [level=3] [ref=f3e917]
+              - paragraph [ref=f3e918]: Prototipagem e geração de aplicações com o contexto Sankhya correto desde o início.
+            - generic [ref=f3e919]:
+              - 'link "Lovable: Depende do ambiente/plano. Ver como conectar." [ref=f3e920] [cursor=pointer]':
+                - /url: /conexoes/lovable
+                - generic [ref=f3e921]:
+                  - generic [ref=f3e922]: Lovable
+                  - generic [ref=f3e923]: Depende do ambiente/plano
+                  - generic [ref=f3e925]: MCP
+                  - generic [ref=f3e926]: API Key
+                  - generic [ref=f3e927]: Conforme plano
+              - 'link "Replit: Depende do ambiente/plano. Ver como conectar." [ref=f3e928] [cursor=pointer]':
+                - /url: /conexoes/replit
+                - generic [ref=f3e929]:
+                  - generic [ref=f3e930]: Replit
+                  - generic [ref=f3e931]: Depende do ambiente/plano
+                  - generic [ref=f3e933]: MCP
+                  - generic [ref=f3e934]: API Key
+                  - generic [ref=f3e935]: Programático
+                  - generic [ref=f3e936]: Conforme plano
+          - generic [ref=f3e937]:
+            - generic [ref=f3e938]:
+              - heading "Agentes / Automação" [level=3] [ref=f3e939]
+              - paragraph [ref=f3e940]: "Onde o SEA sai do editor e entra no processo: agentes corporativos e automação empresarial."
+            - generic [ref=f3e941]:
+              - 'link "Microsoft Copilot Studio: Depende do ambiente/plano. Ver como conectar." [ref=f3e942] [cursor=pointer]':
+                - /url: /conexoes/copilot-studio
+                - generic [ref=f3e943]:
+                  - generic [ref=f3e944]: Microsoft Copilot Studio
+                  - generic [ref=f3e945]: Depende do ambiente/plano
+                  - generic [ref=f3e947]: MCP
+                  - generic [ref=f3e948]: API Key
+                  - generic [ref=f3e949]: Conforme plano
+              - 'link "Microsoft Foundry: Depende do ambiente/plano. Ver como conectar." [ref=f3e950] [cursor=pointer]':
+                - /url: /conexoes/foundry
+                - generic [ref=f3e951]:
+                  - generic [ref=f3e952]: Microsoft Foundry
+                  - generic [ref=f3e953]: Depende do ambiente/plano
+                  - generic [ref=f3e955]: MCP
+                  - generic [ref=f3e956]: API Key
+                  - generic [ref=f3e957]: Programático
+                  - generic [ref=f3e958]: Conforme plano
+              - 'link "n8n: Compatibilidade a validar. Ver como conectar." [ref=f3e959] [cursor=pointer]':
+                - /url: /conexoes/n8n
+                - generic [ref=f3e960]:
+                  - generic [ref=f3e961]: n8n
+                  - generic [ref=f3e962]: Compatibilidade a validar
+                  - generic [ref=f3e964]: MCP
+                  - generic [ref=f3e965]: API Key
+              - 'link "Vercel AI SDK: Compatibilidade a validar. Ver como conectar." [ref=f3e966] [cursor=pointer]':
+                - /url: /conexoes/vercel-ai-sdk
+                - generic [ref=f3e967]:
+                  - generic [ref=f3e968]: Vercel AI SDK
+                  - generic [ref=f3e969]: Compatibilidade a validar
+                  - generic [ref=f3e971]: MCP
+                  - generic [ref=f3e972]: Programático
+                  - generic [ref=f3e973]: API Key
+              - 'link "Aplicações próprias: Validado. Ver como conectar." [ref=f3e974] [cursor=pointer]':
+                - /url: /conexoes/aplicacoes-proprias
+                - generic [ref=f3e975]:
+                  - generic [ref=f3e976]: Aplicações próprias
+                  - generic [ref=f3e977]: Validado
+                  - generic [ref=f3e979]: MCP
+                  - generic [ref=f3e980]: Programático
+                  - generic [ref=f3e981]: API Key
+        - list [ref=f3e982]:
+          - listitem [ref=f3e983]: Validado
+          - listitem [ref=f3e985]: Validado com restrições
+          - listitem [ref=f3e987]: Depende do ambiente/plano
+          - listitem [ref=f3e989]: Experimental
+          - listitem [ref=f3e991]: Compatibilidade a validar
+        - paragraph [ref=f3e993]:
+          - text: Outros clientes compatíveis com
+          - strong [ref=f3e994]: Model Context Protocol (MCP)
+          - text: também podem se conectar pelo mesmo endpoint. Os logos indicam compatibilidade, não parceria ou afiliação com as marcas.
+        - paragraph [ref=f3e995]:
+          - text: Em clientes com
+          - strong [ref=f3e996]: login OAuth
+          - text: — como Claude, ChatGPT, Codex e VS Code — você entra com a conta Searchitect no próprio searchitect.pro, sem colar chave. Nos demais, a
+          - strong [ref=f3e997]: SEA API Key
+          - text: vai no cabeçalho — gerada em Minha Conta, revogável a qualquer momento.
+        - generic [ref=f3e998]:
+          - generic [ref=f3e999]: sea_prepare
+          - generic [ref=f3e1000]: sea_search
+          - generic [ref=f3e1001]: sea_route
+          - generic [ref=f3e1002]: sea_experts
+          - generic [ref=f3e1003]: sea_version
+        - generic [ref=f3e1004]:
+          - paragraph [ref=f3e1005]: "Escolha o seu sistema: cada um tem passo a passo, comandos prontos e um caso de uso."
+          - link "Conectar o SEA" [ref=f3e1006] [cursor=pointer]:
+            - /url: /conexoes
+      - generic [ref=f3e1011]:
+        - generic [ref=f3e1012]:
+          - generic [ref=f3e1013]: Como funciona
+          - heading "Sua IA raciocina. O SEA sabe." [level=2] [ref=f3e1014]
+          - paragraph [ref=f3e1015]: O agente escolhido pelo usuário continua fazendo o raciocínio. O SEA fornece o conhecimento especializado, o contexto e a evidência.
+        - list [ref=f3e1016]:
+          - listitem [ref=f3e1017]:
+            - generic [ref=f3e1018]:
+              - heading "Sua IA" [level=3] [ref=f3e1023]
+              - paragraph [ref=f3e1024]: ChatGPT, Claude, Codex, Gemini, Copilot…
+          - listitem [ref=f3e1027]:
+            - generic [ref=f3e1028]:
+              - heading "MCP" [level=3] [ref=f3e1032]
+              - paragraph [ref=f3e1033]: Um único endpoint, o mesmo para todos os agentes.
+          - listitem [ref=f3e1036]:
+            - generic [ref=f3e1037]:
+              - heading "SEA" [level=3] [ref=f3e1043]
+              - paragraph [ref=f3e1044]: A camada de conhecimento especializado.
+          - listitem [ref=f3e1047]:
+            - generic [ref=f3e1048]:
+              - heading "Agent Core" [level=3] [ref=f3e1054]
+              - paragraph [ref=f3e1055]: Identifica o domínio e aciona quem sabe.
+          - listitem [ref=f3e1058]:
+            - generic [ref=f3e1059]:
+              - heading "24 especialistas" [level=3] [ref=f3e1066]
+              - paragraph [ref=f3e1067]: Cada um com fronteira própria de domínio.
+          - listitem [ref=f3e1070]:
+            - generic [ref=f3e1071]:
+              - heading "Conhecimento especializado" [level=3] [ref=f3e1076]
+              - paragraph [ref=f3e1077]: Contexto e evidência de volta para a sua IA.
+        - paragraph [ref=f3e1078]: "O modelo de IA continua sendo o que você já prefere. O SEA não substitui o seu agente: entrega a ele conhecimento especializado, contexto, evidência e roteamento para o especialista certo."
+      - generic [ref=f3e1081]:
+        - generic [ref=f3e1082]:
+          - generic [ref=f3e1083]: O diferencial
+          - heading "Não é um chatbot genérico." [level=2] [ref=f3e1084]
+          - paragraph [ref=f3e1085]: Uma camada de especialistas que a sua IA consulta antes de responder — com fronteira de domínio, política de evidência comum e o modelo que você já usa.
+        - generic [ref=f3e1086]:
+          - heading "Nosso objetivo não foi substituir a documentação pública. Foi:" [level=3] [ref=f3e1087]
+          - generic [ref=f3e1088]:
+            - generic [ref=f3e1089]:
+              - heading "centralizar conhecimento" [level=4] [ref=f3e1095]
+              - paragraph [ref=f3e1096]: Todo o conhecimento técnico organizado e acessível em um só lugar.
+            - generic [ref=f3e1097]:
+              - heading "reduzir alucinação técnica" [level=4] [ref=f3e1107]
+              - paragraph [ref=f3e1108]: "Evidência antes da conclusão: cada resposta separa documentação oficial, comportamento observado e inferência, e declara o nível de confiança."
+            - generic [ref=f3e1109]:
+              - heading "e acelerar o desenvolvimento" [level=4] [ref=f3e1113]
+              - paragraph [ref=f3e1114]: Mais agilidade, menos retrabalho e mais segurança nas entregas.
+        - generic [ref=f3e1115]:
+          - generic [ref=f3e1116]:
+            - generic [ref=f3e1117]:
+              - heading "Respostas Técnicas" [level=4] [ref=f3e1123]
+              - paragraph [ref=f3e1124]: Precisão e profundidade para o dia a dia
+            - generic [ref=f3e1125]:
+              - heading "Menos Tempo Perdido" [level=4] [ref=f3e1130]
+              - paragraph [ref=f3e1131]: Diagnósticos mais rápidos e assertivos
+            - generic [ref=f3e1132]:
+              - heading "Decisões Melhores" [level=4] [ref=f3e1137]
+              - paragraph [ref=f3e1138]: Mais segurança para integrar e parametrizar
+            - generic [ref=f3e1139]:
+              - heading "Mais Performance" [level=4] [ref=f3e1143]
+              - paragraph [ref=f3e1144]: Arquitetura, dados e processos otimizados
+          - generic [ref=f3e1145]:
+            - generic [ref=f3e1146]:
+              - paragraph [ref=f3e1147]: Conhecimento centralizado.
+              - paragraph [ref=f3e1148]: Decisões mais rápidas.
+              - paragraph [ref=f3e1149]: Desenvolvimento com confiança.
+            - generic [ref=f3e1151]:
+              - paragraph [ref=f3e1152]: Menos dúvidas.
+              - paragraph [ref=f3e1153]: Menos retrabalho.
+              - paragraph [ref=f3e1154]: Mais entrega.
+      - generic [ref=f3e1157]:
+        - generic [ref=f3e1158]:
+          - generic [ref=f3e1159]: Searchitect AI Ecosystem
+          - heading "24 especialistas. 1 Agent Core." [level=2] [ref=f3e1160]
+          - paragraph [ref=f3e1161]:
+            - text: "Não são assistentes genéricos: cada especialista tem fronteira própria de domínio, e o Agent Core decide quem responde. São"
+            - strong [ref=f3e1162]: 25 componentes ativos
+            - text: trabalhando para a IA que você já usa.
+        - generic [ref=f3e1169]:
+          - paragraph [ref=f3e1170]: Orquestração
+          - heading "SEA — Agent Core" [level=3] [ref=f3e1171]
+          - paragraph [ref=f3e1172]: "Recebe a solicitação vinda do seu agente, identifica o domínio e aciona os especialistas adequados. Não responde como especialista: orquestra."
+        - paragraph [ref=f3e1173]: Especialização
+        - generic [ref=f3e1174]:
+          - generic [ref=f3e1175]:
+            - heading "Núcleo ERP" [level=3] [ref=f3e1181]
+            - generic [ref=f3e1182]: 5 especialistas
+            - paragraph [ref=f3e1183]: "Os módulos que sustentam a operação: fiscal, financeiro, comercial, contábil e contratos."
+            - paragraph [ref=f3e1184]: Fiscal · Financeiro · Comercial · Contábil · Contratos
+          - generic [ref=f3e1185]:
+            - heading "Logística e Operações" [level=3] [ref=f3e1189]
+            - generic [ref=f3e1190]: 10 especialistas
+            - paragraph [ref=f3e1191]: Da compra à entrega, do armazém ao chão de fábrica.
+            - paragraph [ref=f3e1192]: Estoques · Compras · Produção · Qualidade · Logística · WMS · TMS · Frotas · Manutenção · Automação Industrial
+          - generic [ref=f3e1193]:
+            - heading "Arquitetura e Integrações" [level=3] [ref=f3e1199]
+            - generic [ref=f3e1200]: 5 especialistas
+            - paragraph [ref=f3e1201]: Estrutura de dados, customização, telas e integração com outros sistemas.
+            - paragraph [ref=f3e1202]: Integrações · SDK · Dicionário de Dados · SQL/BI · Construtor de Telas
+          - generic [ref=f3e1203]:
+            - heading "Plataforma Técnica" [level=3] [ref=f3e1208]
+            - generic [ref=f3e1209]: 1 especialista
+            - paragraph [ref=f3e1210]: Relatórios formatados e componentes técnicos da plataforma.
+            - paragraph [ref=f3e1211]: IReport
+          - generic [ref=f3e1212]:
+            - heading "Pessoas" [level=3] [ref=f3e1219]
+            - generic [ref=f3e1220]: 2 especialistas
+            - paragraph [ref=f3e1221]: Folha, ponto, eSocial e processos trabalhistas.
+            - paragraph [ref=f3e1222]: RH · Jurídico
+          - generic [ref=f3e1223]:
+            - heading "Estratégia e Projetos" [level=3] [ref=f3e1229]
+            - generic [ref=f3e1230]: 1 especialista
+            - paragraph [ref=f3e1231]: Implantação, rollout e evolução do ERP.
+            - paragraph [ref=f3e1232]: Projetos
+        - generic [ref=f3e1233]:
+          - link "Explorar os especialistas" [ref=f3e1234] [cursor=pointer]:
+            - /url: /experts
+          - button "Acessar o SEA" [ref=f3e1235]
+      - generic [ref=f3e1238]:
+        - generic [ref=f3e1239]:
+          - generic [ref=f3e1240]: SEA University
+          - heading "SEA University" [level=2] [ref=f3e1241]:
+            - img "SEA" [ref=f3e1242]
+            - generic [ref=f3e1243]: University
+          - paragraph [ref=f3e1244]: Não é um manual dos agentes. É uma formação em método.
+          - paragraph [ref=f3e1245]:
+            - text: Cada curso foi escrito pelo próprio especialista sobre a operação que ele conhece. O que você leva não é a habilidade de conversar com um agente — é investigar com evidência, dominar o ERP e supervisionar o que a IA entrega.
+            - strong [ref=f3e1246]: Isso vale em qualquer ferramenta.
+        - generic [ref=f3e1247]:
+          - generic [ref=f3e1248]:
+            - generic [ref=f3e1253]: Você para de adivinhar
+            - heading "Investigar com evidência" [level=3] [ref=f3e1254]
+            - paragraph [ref=f3e1255]: "Oito regras que atravessam a grade inteira e valem em qualquer sistema, não só no Sankhya:"
+            - list [ref=f3e1256]:
+              - listitem [ref=f3e1257]:
+                - generic [ref=f3e1259]: separar fato de hipótese de inferência, com nível de confiança explícito
+              - listitem [ref=f3e1260]:
+                - generic [ref=f3e1262]: configuração declarada não é runtime observado
+              - listitem [ref=f3e1263]:
+                - generic [ref=f3e1265]: sucesso visual não é efeito de negócio
+              - listitem [ref=f3e1266]:
+                - generic [ref=f3e1268]: achar a primeira divergência em vez de corrigir onde o sintoma apareceu
+              - listitem [ref=f3e1269]:
+                - generic [ref=f3e1271]: uma variável por teste
+              - listitem [ref=f3e1272]:
+                - generic [ref=f3e1274]: correlação não é causa
+              - listitem [ref=f3e1275]:
+                - generic [ref=f3e1277]: correção da causa não é recuperação do dado
+              - listitem [ref=f3e1278]:
+                - generic [ref=f3e1280]: baseline antes e depois para provar ganho
+          - generic [ref=f3e1281]:
+            - generic [ref=f3e1286]: Você passa a responder
+            - heading "Domínio real do Sankhya ERP" [level=3] [ref=f3e1287]
+            - paragraph [ref=f3e1288]: "Nada de exemplo genérico: os casos são do ERP que você opera. Ao final, com evidência na mão:"
+            - list [ref=f3e1289]:
+              - listitem [ref=f3e1290]:
+                - generic [ref=f3e1292]:
+                  - text: por que a nota confirmou e não gerou financeiro
+                  - generic [ref=f3e1293]: TOP e versão histórica
+              - listitem [ref=f3e1294]:
+                - generic [ref=f3e1296]:
+                  - text: onde o pedido parou entre estoque, fiscal e financeiro
+                  - generic [ref=f3e1297]: ciclo documental
+              - listitem [ref=f3e1298]:
+                - generic [ref=f3e1300]:
+                  - text: por que a SEFAZ rejeitou — lendo o retorno, não adivinhando
+                  - generic [ref=f3e1301]: NF-e e EFD
+              - listitem [ref=f3e1302]:
+                - generic [ref=f3e1304]:
+                  - text: por que o saldo do armazém diverge do ERP
+                  - generic [ref=f3e1305]: WMS
+              - listitem [ref=f3e1306]:
+                - generic [ref=f3e1308]:
+                  - text: o que a customização Java faz dentro da transação
+                  - generic [ref=f3e1309]: JAPE e SDK
+              - listitem [ref=f3e1310]:
+                - generic [ref=f3e1312]:
+                  - text: por que o relatório imprime a mesma nota três vezes
+                  - generic [ref=f3e1313]: JasperReports
+              - listitem [ref=f3e1314]:
+                - generic [ref=f3e1316]:
+                  - text: quais tabelas sustentam a informação — provado no metadado
+                  - generic [ref=f3e1317]: Dicionário de Dados
+          - generic [ref=f3e1318]:
+            - generic [ref=f3e1322]: Você chega antes
+            - heading "Supervisionar o que a IA entrega" [level=3] [ref=f3e1323]
+            - paragraph [ref=f3e1324]: "A competência que o mercado vai cobrar e quase ninguém tem no currículo. Não “sei escrever prompt”, mas:"
+            - paragraph [ref=f3e1325]: “sei validar a saída de um sistema de IA antes que ela chegue à produção”
+            - list [ref=f3e1326]:
+              - listitem [ref=f3e1327]:
+                - generic [ref=f3e1329]: "tem nome estabelecido: human oversight e AI literacy"
+              - listitem [ref=f3e1330]:
+                - generic [ref=f3e1332]: já é exigência regulatória — EU AI Act, arts. 4 e 14
+              - listitem [ref=f3e1333]:
+                - generic [ref=f3e1335]: e função de gestão de risco — NIST AI RMF, função Manage
+              - listitem [ref=f3e1336]:
+                - generic [ref=f3e1338]: engenharia de prompt envelhece com o modelo; critério de validação, não
+        - generic [ref=f3e1339]:
+          - generic [ref=f3e1340]:
+            - generic [ref=f3e1341]:
+              - generic [ref=f3e1342]: "27"
+              - generic [ref=f3e1343]: cursos
+            - generic [ref=f3e1344]:
+              - generic [ref=f3e1345]: "432"
+              - generic [ref=f3e1346]: aulas
+            - generic [ref=f3e1347]:
+              - generic [ref=f3e1348]: "540"
+              - generic [ref=f3e1349]: questões
+            - generic [ref=f3e1350]:
+              - generic [ref=f3e1351]: 135h
+              - generic [ref=f3e1352]: carga total
+          - generic [ref=f3e1353]:
+            - paragraph [ref=f3e1354]: Certificado por curso, por trilha concluída, e com a grade no verso.
+            - link "Conhecer a universidade" [ref=f3e1355] [cursor=pointer]:
+              - /url: /universidade
+      - generic [ref=f3e1360]:
+        - generic [ref=f3e1361]:
+          - generic [ref=f3e1362]: Gratuito atualmente
+          - heading "Liberado gratuitamente para a comunidade" [level=2] [ref=f3e1363]
+          - paragraph [ref=f3e1364]: O acesso é gratuito no momento. Se isso mudar, o aviso vem antes.
+        - generic [ref=f3e1365]:
+          - heading "Desenvolvedores" [level=3] [ref=f3e1372]
+          - heading "Consultores" [level=3] [ref=f3e1380]
+          - heading "Arquitetos" [level=3] [ref=f3e1387]
+          - heading "Integradores" [level=3] [ref=f3e1392]
+          - heading "Analistas" [level=3] [ref=f3e1397]
+          - heading "Comunidade" [level=3] [ref=f3e1404]
+        - generic [ref=f3e1405]:
+          - generic [ref=f3e1411]:
+            - paragraph [ref=f3e1412]: Colaboração aberta.
+            - paragraph [ref=f3e1413]: Conhecimento compartilhado.
+            - paragraph [ref=f3e1414]: Juntos, tornando o ecossistema mais forte.
+          - generic [ref=f3e1420]:
+            - paragraph [ref=f3e1421]: Mais testes.
+            - paragraph [ref=f3e1422]: Mais feedbacks.
+            - paragraph [ref=f3e1423]: Melhores respostas para todos.
+        - generic [ref=f3e1424]:
+          - button "Criar conta gratuita" [ref=f3e1425]
+          - paragraph [ref=f3e1426]:
+            - text: Sem cartão. O modelo e a cota são os da sua IA —
+            - link "veja como conectar ao seu sistema" [ref=f3e1427] [cursor=pointer]:
+              - /url: /conexoes
+      - generic [ref=f3e1432]:
+        - heading "Comece a usar agora" [level=2] [ref=f3e1433]
+        - paragraph [ref=f3e1434]:
+          - text: Acesso
+          - strong [ref=f3e1435]: gratuito atualmente
+          - text: . Crie a conta, conecte o SEA à IA que você já usa e consulte os especialistas.
+        - button "Acessar o SEA" [ref=f3e1437]
+        - generic [ref=f3e1438]:
+          - paragraph [ref=f3e1453]: Um único MCP, vários agentes — ChatGPT, Claude, Gemini, Codex, GitHub Copilot, Amazon Q, JetBrains, Lovable, n8n e outros clientes compatíveis com MCP
+          - link "Ver as conexões disponíveis →" [ref=f3e1454] [cursor=pointer]:
+            - /url: /conexoes
+      - generic [ref=f3e1456]:
+        - generic [ref=f3e1457]:
+          - img "SEA Logo" [ref=f3e1459]
+          - generic [ref=f3e1461]:
+            - paragraph [ref=f3e1462]: Criado por
+            - generic [ref=f3e1463]:
+              - img "Paulo Chagas de Castro F." [ref=f3e1466]
+              - generic [ref=f3e1467]:
+                - heading "Paulo Chagas de Castro F." [level=3] [ref=f3e1468]
+                - paragraph [ref=f3e1469]: Arquiteto de Soluções e Plataformas | Integrações ERP, IA Aplicada e Arquitetura Escalável
+                - link "Conectar no LinkedIn" [ref=f3e1471] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/in/paulo-chagas-de-castro-filho
+        - generic [ref=f3e1477]:
+          - generic [ref=f3e1478]:
+            - link "Início" [ref=f3e1479] [cursor=pointer]:
+              - /url: /
+            - link "Especialistas" [ref=f3e1480] [cursor=pointer]:
+              - /url: /experts
+            - link "Conexões" [ref=f3e1481] [cursor=pointer]:
+              - /url: /conexoes
+          - generic [ref=f3e1482]:
+            - generic [ref=f3e1483]: SEA
+            - generic [ref=f3e1484]: Systems Enterprise Architect
+          - paragraph [ref=f3e1485]: 24 especialistas · 1 Agent Core · acesso via MCP · Zero Customer Content Retention · gratuito atualmente
+          - generic [ref=f3e1486]:
+            - link "Termos de Uso" [ref=f3e1487] [cursor=pointer]:
+              - /url: /terms
+            - generic [aria-hidden] [ref=f3e1488]: ·
+            - link "Política de Privacidade" [ref=f3e1489] [cursor=pointer]:
+              - /url: /privacy
+          - paragraph [ref=f3e1490]: © 2026 Paulo C. de C. Filho — Todos os direitos reservados.
+          - paragraph [ref=f3e1492]: O SEA — Systems Enterprise Architect é um projeto independente. Não é produto, suporte ou documentação oficial da Sankhya. Sankhya e as demais marcas citadas pertencem aos seus respectivos titulares; a presença de logos indica compatibilidade ou interoperabilidade, não afiliação, parceria ou patrocínio.
+  - alert [ref=f3e1540]

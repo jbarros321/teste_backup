@@ -1,0 +1,20 @@
+- generic [active] [ref=f7e1]:
+  - link "Pular para o conteúdo" [ref=f7e2] [cursor=pointer]:
+    - /url: "#conteudo"
+  - banner [ref=f7e4]:
+    - generic [ref=f7e5]:
+      - link "SEA Logo Systems Enterprise Architect" [ref=f7e6] [cursor=pointer]:
+        - /url: /
+        - img "SEA Logo" [ref=f7e7]
+        - generic [ref=f7e8]: Systems Enterprise Architect
+      - navigation [ref=f7e9]:
+        - link "Início" [ref=f7e10] [cursor=pointer]:
+          - /url: /
+        - link "Experts" [ref=f7e14] [cursor=pointer]:
+          - /url: /experts
+        - link "Conexões" [ref=f7e23] [cursor=pointer]:
+          - /url: /conexoes
+        - link "University" [ref=f7e26] [cursor=pointer]:
+          - /url: /universidade
+      - button "Acessar o SEA" [ref=f7e31]
+  - alert [ref=f7e36]

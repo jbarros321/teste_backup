@@ -1,0 +1,24 @@
+- generic [active] [ref=e1]:
+  - link "Pular para o conteúdo" [ref=e2] [cursor=pointer]:
+    - /url: "#conteudo"
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - link "SEA Logo Systems Enterprise Architect" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - img "SEA Logo" [ref=e7]
+          - generic [ref=e8]: Systems Enterprise Architect
+        - navigation [ref=e9]:
+          - link "Início" [ref=e10] [cursor=pointer]:
+            - /url: /
+          - link "Experts" [ref=e14] [cursor=pointer]:
+            - /url: /experts
+          - link "Conexões" [ref=e23] [cursor=pointer]:
+            - /url: /conexoes
+          - link "University" [ref=e26] [cursor=pointer]:
+            - /url: /universidade
+        - button "Acessar o SEA" [ref=e31]
+    - generic [ref=e34]:
+      - heading "404" [level=1] [ref=e35]
+      - heading "This page could not be found." [level=2] [ref=e37]
+  - alert [ref=e38]

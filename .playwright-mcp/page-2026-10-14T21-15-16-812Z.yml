@@ -1,0 +1,421 @@
+- generic [active] [ref=f4e1]:
+  - link "Pular para o conteúdo" [ref=f4e2] [cursor=pointer]:
+    - /url: "#conteudo"
+  - generic [ref=f4e3]:
+    - banner [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - link "SEA Logo Systems Enterprise Architect" [ref=f4e6] [cursor=pointer]:
+          - /url: /
+          - img "SEA Logo" [ref=f4e7]
+          - generic [ref=f4e8]: Systems Enterprise Architect
+        - navigation [ref=f4e9]:
+          - link "Início" [ref=f4e10] [cursor=pointer]:
+            - /url: /
+          - link "Experts" [ref=f4e14] [cursor=pointer]:
+            - /url: /experts
+          - link "Conexões" [ref=f4e23] [cursor=pointer]:
+            - /url: /conexoes
+          - link "University" [ref=f4e26] [cursor=pointer]:
+            - /url: /universidade
+        - button "Acessar o SEA" [ref=f4e31]
+    - generic [ref=f4e33]:
+      - banner [ref=f4e36]:
+        - generic [ref=f4e37]:
+          - generic [ref=f4e38]:
+            - generic [ref=f4e39]: Searchitect AI Ecosystem
+            - heading "Especialistas do SEA" [level=1] [ref=f4e49]
+            - paragraph [ref=f4e50]: 24 especialistas coordenados por 1 Agent Core. Analise o domínio, os problemas típicos e os limites de cada um — e conecte todos de uma vez pelo MCP.
+          - link "Voltar ao Início" [ref=f4e51] [cursor=pointer]:
+            - /url: /
+      - main [ref=f4e52]:
+        - tablist "Seções do diretório" [ref=f4e53]:
+          - tab "Especialistas (24)" [selected] [ref=f4e54]
+          - tab "Como trabalham" [ref=f4e58]
+        - generic [ref=f4e62]:
+          - region [ref=f4e63]:
+            - generic [ref=f4e70]:
+              - paragraph [ref=f4e71]: Orquestração · Hub de orquestração
+              - heading "SEA — Agent Core" [level=2] [ref=f4e72]
+              - paragraph [ref=f4e73]: "Recebe a solicitação vinda do seu agente, identifica o domínio e aciona os especialistas adequados. Não responde como especialista: orquestra."
+              - generic [ref=f4e74]:
+                - list [ref=f4e75]:
+                  - listitem [ref=f4e76]: Entende a intenção e o domínio da pergunta
+                  - listitem [ref=f4e79]: Aciona o especialista principal e, quando a demanda cruza domínios, especialistas de apoio
+                  - listitem [ref=f4e82]: Pede esclarecimento quando nenhum especialista cobre o assunto, em vez de improvisar
+                  - listitem [ref=f4e85]: Aplica a mesma política de evidência a todas as respostas
+                - list [ref=f4e88]:
+                  - listitem [ref=f4e89]: Não responde como especialista técnico
+                  - listitem [ref=f4e93]: Não inventa cobertura que o SEA não tem
+                  - listitem [ref=f4e97]: Não substitui validação no seu ambiente
+              - link "Sobre o Agent Core" [ref=f4e101] [cursor=pointer]:
+                - /url: /experts/sea-agent-core
+          - generic [ref=f4e104]:
+            - generic [ref=f4e105]:
+              - searchbox "Pesquisar especialista" [ref=f4e110]
+              - paragraph [ref=f4e111]: Mostrando 24 de 24 especialistas
+            - generic [ref=f4e112]:
+              - paragraph [ref=f4e113]: Filtrar por categoria
+              - generic [ref=f4e114]:
+                - button "Todos" [pressed] [ref=f4e115] [cursor=pointer]
+                - button "Núcleo ERP" [ref=f4e116] [cursor=pointer]
+                - button "Logística e Operações" [ref=f4e117] [cursor=pointer]
+                - button "Arquitetura e Integrações" [ref=f4e118] [cursor=pointer]
+                - button "Plataforma Técnica" [ref=f4e119] [cursor=pointer]
+                - button "Pessoas" [ref=f4e120] [cursor=pointer]
+                - button "Estratégia e Projetos" [ref=f4e121] [cursor=pointer]
+          - region [ref=f4e122]:
+            - generic [ref=f4e123]:
+              - heading "Núcleo ERP 5" [level=2] [ref=f4e124]:
+                - text: Núcleo ERP
+                - generic [ref=f4e129]: "5"
+              - paragraph [ref=f4e130]: "Os módulos que sustentam a operação: fiscal, financeiro, comercial, contábil e contratos."
+            - generic [ref=f4e131]:
+              - article [ref=f4e132]:
+                - generic [ref=f4e133]: Núcleo ERP
+                - heading "Fiscal" [level=3] [ref=f4e140]
+                - paragraph [ref=f4e141]: Documentos fiscais eletrônicos, tributação e obrigações acessórias.
+                - paragraph [ref=f4e142]: Problemas típicos
+                - list [ref=f4e143]:
+                  - listitem [ref=f4e144]: Rejeição SEFAZ sem causa aparente
+                  - listitem [ref=f4e146]: CFOP, CST ou CSOSN divergente entre TOP e XML
+                  - listitem [ref=f4e148]: Diferença na apuração ou no SPED Fiscal
+                - generic [ref=f4e151]:
+                  - button "Analisar o especialista Fiscal" [ref=f4e152]: Analisar
+                  - link "Página completa" [ref=f4e153] [cursor=pointer]:
+                    - /url: /experts/sea-fiscal-expert
+              - article [ref=f4e156]:
+                - generic [ref=f4e157]: Núcleo ERP
+                - heading "Financeiro" [level=3] [ref=f4e164]
+                - paragraph [ref=f4e165]: Contas a pagar e a receber, tesouraria, conciliação e integrações bancárias.
+                - paragraph [ref=f4e166]: Problemas típicos
+                - list [ref=f4e167]:
+                  - listitem [ref=f4e168]: Título que não baixa ou liquidação que falha
+                  - listitem [ref=f4e170]: Retorno CNAB ou PIX que não concilia
+                  - listitem [ref=f4e172]: Fluxo de caixa que não fecha com o banco
+                - generic [ref=f4e175]:
+                  - button "Analisar o especialista Financeiro" [ref=f4e176]: Analisar
+                  - link "Página completa" [ref=f4e177] [cursor=pointer]:
+                    - /url: /experts/sea-financeiro-expert
+              - article [ref=f4e180]:
+                - generic [ref=f4e181]: Núcleo ERP
+                - heading "Comercial" [level=3] [ref=f4e188]
+                - paragraph [ref=f4e189]: Pedidos, faturamento, preço, comissão e política comercial.
+                - paragraph [ref=f4e190]: Problemas típicos
+                - list [ref=f4e191]:
+                  - listitem [ref=f4e192]: Pedido que não fatura ou fatura com valor errado
+                  - listitem [ref=f4e194]: Regra de preço, desconto ou margem inconsistente
+                  - listitem [ref=f4e196]: Comissão diferente do esperado
+                - generic [ref=f4e199]:
+                  - button "Analisar o especialista Comercial" [ref=f4e200]: Analisar
+                  - link "Página completa" [ref=f4e201] [cursor=pointer]:
+                    - /url: /experts/sea-comercial-expert
+              - article [ref=f4e204]:
+                - generic [ref=f4e205]: Núcleo ERP
+                - heading "Contábil" [level=3] [ref=f4e212]
+                - paragraph [ref=f4e213]: Contabilização, plano de contas, integrações entre módulos, ECD e ECF.
+                - paragraph [ref=f4e214]: Problemas típicos
+                - list [ref=f4e215]:
+                  - listitem [ref=f4e216]: Lançamento que não contabiliza ou sai duplicado
+                  - listitem [ref=f4e218]: Diferença entre o módulo de origem e o razão
+                  - listitem [ref=f4e220]: Rejeição no PVA da ECD ou da ECF
+                - generic [ref=f4e223]:
+                  - button "Analisar o especialista Contábil" [ref=f4e224]: Analisar
+                  - link "Página completa" [ref=f4e225] [cursor=pointer]:
+                    - /url: /experts/sea-contabil-expert
+              - article [ref=f4e228]:
+                - generic [ref=f4e229]: Núcleo ERP
+                - heading "Contratos" [level=3] [ref=f4e236]
+                - paragraph [ref=f4e237]: Faturamento recorrente, reajustes, renovações, provisões e NFS-e de contratos.
+                - paragraph [ref=f4e238]: Problemas típicos
+                - list [ref=f4e239]:
+                  - listitem [ref=f4e240]: Contrato que não fatura na data prevista
+                  - listitem [ref=f4e242]: Reajuste aplicado sobre a base errada
+                  - listitem [ref=f4e244]: NFS-e do contrato rejeitada
+                - generic [ref=f4e247]:
+                  - button "Analisar o especialista Contratos" [ref=f4e248]: Analisar
+                  - link "Página completa" [ref=f4e249] [cursor=pointer]:
+                    - /url: /experts/sea-contratos-expert
+          - region [ref=f4e252]:
+            - generic [ref=f4e253]:
+              - heading "Logística e Operações 10" [level=2] [ref=f4e254]:
+                - text: Logística e Operações
+                - generic [ref=f4e257]: "10"
+              - paragraph [ref=f4e258]: Da compra à entrega, do armazém ao chão de fábrica.
+            - generic [ref=f4e259]:
+              - article [ref=f4e260]:
+                - generic [ref=f4e261]: Logística e Operações
+                - heading "Estoques" [level=3] [ref=f4e266]
+                - paragraph [ref=f4e267]: Movimentação, saldo, inventário, lote e custo de estoque.
+                - paragraph [ref=f4e268]: Problemas típicos
+                - list [ref=f4e269]:
+                  - listitem [ref=f4e270]: Saldo do sistema diferente do físico
+                  - listitem [ref=f4e272]: Movimentação gerada pela TOP errada
+                  - listitem [ref=f4e274]: Inventário que não fecha ou lote sem rastreio
+                - generic [ref=f4e277]:
+                  - button "Analisar o especialista Estoques" [ref=f4e278]: Analisar
+                  - link "Página completa" [ref=f4e279] [cursor=pointer]:
+                    - /url: /experts/sea-estoques-expert
+              - article [ref=f4e282]:
+                - generic [ref=f4e283]: Logística e Operações
+                - heading "Compras" [level=3] [ref=f4e288]
+                - paragraph [ref=f4e289]: "Do pedido ao recebimento: cotação, aprovação, XML de entrada e reflexos fiscais."
+                - paragraph [ref=f4e290]: Problemas típicos
+                - list [ref=f4e291]:
+                  - listitem [ref=f4e292]: Nota de entrada que não gera financeiro ou estoque
+                  - listitem [ref=f4e294]: Fluxo de aprovação travado
+                  - listitem [ref=f4e296]: XML do fornecedor que não importa
+                - generic [ref=f4e299]:
+                  - button "Analisar o especialista Compras" [ref=f4e300]: Analisar
+                  - link "Página completa" [ref=f4e301] [cursor=pointer]:
+                    - /url: /experts/sea-compras-expert
+              - article [ref=f4e304]:
+                - generic [ref=f4e305]: Logística e Operações
+                - heading "Produção" [level=3] [ref=f4e310]
+                - paragraph [ref=f4e311]: PCP, ordens de produção, apontamentos, MRP e custo industrial.
+                - paragraph [ref=f4e312]: Problemas típicos
+                - list [ref=f4e313]:
+                  - listitem [ref=f4e314]: OP que não baixa insumos ou não gera acabado
+                  - listitem [ref=f4e316]: Apontamento que distorce o custo
+                  - listitem [ref=f4e318]: MRP sugerindo compra ou produção indevida
+                - generic [ref=f4e321]:
+                  - button "Analisar o especialista Produção" [ref=f4e322]: Analisar
+                  - link "Página completa" [ref=f4e323] [cursor=pointer]:
+                    - /url: /experts/sea-producao-expert
+              - article [ref=f4e326]:
+                - generic [ref=f4e327]: Logística e Operações
+                - heading "Qualidade" [level=3] [ref=f4e332]
+                - paragraph [ref=f4e333]: Não conformidades, ações corretivas, auditorias, lotes e rastreabilidade.
+                - paragraph [ref=f4e334]: Problemas típicos
+                - list [ref=f4e335]:
+                  - listitem [ref=f4e336]: Não conformidade sem rastreio até o lote
+                  - listitem [ref=f4e338]: Inspeção que não bloqueia material reprovado
+                  - listitem [ref=f4e340]: Indicadores de qualidade sem base confiável
+                - generic [ref=f4e343]:
+                  - button "Analisar o especialista Qualidade" [ref=f4e344]: Analisar
+                  - link "Página completa" [ref=f4e345] [cursor=pointer]:
+                    - /url: /experts/sea-qualidade-expert
+              - article [ref=f4e348]:
+                - generic [ref=f4e349]: Logística e Operações
+                - heading "Logística" [level=3] [ref=f4e354]
+                - paragraph [ref=f4e355]: "A visão ponta a ponta: expedição, formação de carga, distribuição e frete."
+                - paragraph [ref=f4e356]: Problemas típicos
+                - list [ref=f4e357]:
+                  - listitem [ref=f4e358]: Ordem de carga que não fecha
+                  - listitem [ref=f4e360]: Gargalo entre separação, conferência e expedição
+                  - listitem [ref=f4e362]: Frete sem reflexo correto no fiscal ou no financeiro
+                - generic [ref=f4e365]:
+                  - button "Analisar o especialista Logística" [ref=f4e366]: Analisar
+                  - link "Página completa" [ref=f4e367] [cursor=pointer]:
+                    - /url: /experts/sea-logistica-expert
+              - article [ref=f4e370]:
+                - generic [ref=f4e371]: Logística e Operações
+                - heading "WMS" [level=3] [ref=f4e376]
+                - paragraph [ref=f4e377]: "Armazém: recebimento, endereçamento, armazenagem, picking e expedição."
+                - paragraph [ref=f4e378]: Problemas típicos
+                - list [ref=f4e379]:
+                  - listitem [ref=f4e380]: Saldo do WMS diferente do ERP
+                  - listitem [ref=f4e382]: Picking ou conferência travada
+                  - listitem [ref=f4e384]: Endereçamento que derruba a produtividade
+                - generic [ref=f4e387]:
+                  - button "Analisar o especialista WMS" [ref=f4e388]: Analisar
+                  - link "Página completa" [ref=f4e389] [cursor=pointer]:
+                    - /url: /experts/sea-wms-expert
+              - article [ref=f4e392]:
+                - generic [ref=f4e393]: Logística e Operações
+                - heading "TMS" [level=3] [ref=f4e398]
+                - paragraph [ref=f4e399]: "Transporte: tabelas de frete, cargas, viagens, CT-e, MDF-e e entregas."
+                - paragraph [ref=f4e400]: Problemas típicos
+                - list [ref=f4e401]:
+                  - listitem [ref=f4e402]: CT-e ou MDF-e rejeitado
+                  - listitem [ref=f4e404]: Tabela de frete calculando errado
+                  - listitem [ref=f4e406]: Ocorrências e SLA de entrega sem visibilidade
+                - generic [ref=f4e409]:
+                  - button "Analisar o especialista TMS" [ref=f4e410]: Analisar
+                  - link "Página completa" [ref=f4e411] [cursor=pointer]:
+                    - /url: /experts/sea-tms-expert
+              - article [ref=f4e414]:
+                - generic [ref=f4e415]: Logística e Operações
+                - heading "Frotas" [level=3] [ref=f4e420]
+                - paragraph [ref=f4e421]: Veículos, motoristas, manutenção, pneus, abastecimento e custo de frota.
+                - paragraph [ref=f4e422]: Problemas típicos
+                - list [ref=f4e423]:
+                  - listitem [ref=f4e424]: Custo por veículo que não bate
+                  - listitem [ref=f4e426]: Manutenção preventiva fora do plano
+                  - listitem [ref=f4e428]: Abastecimento sem conciliação
+                - generic [ref=f4e431]:
+                  - button "Analisar o especialista Frotas" [ref=f4e432]: Analisar
+                  - link "Página completa" [ref=f4e433] [cursor=pointer]:
+                    - /url: /experts/sea-frotas-expert
+              - article [ref=f4e436]:
+                - generic [ref=f4e437]: Logística e Operações
+                - heading "Manutenção" [level=3] [ref=f4e442]
+                - paragraph [ref=f4e443]: "Gestão de ativos e PCM: preventiva, corretiva, ordens de serviço e confiabilidade."
+                - paragraph [ref=f4e444]: Problemas típicos
+                - list [ref=f4e445]:
+                  - listitem [ref=f4e446]: Plano preventivo que não gera OS
+                  - listitem [ref=f4e448]: MTBF e MTTR sem base confiável
+                  - listitem [ref=f4e450]: Peça de manutenção desconectada de estoque e compras
+                - generic [ref=f4e453]:
+                  - button "Analisar o especialista Manutenção" [ref=f4e454]: Analisar
+                  - link "Página completa" [ref=f4e455] [cursor=pointer]:
+                    - /url: /experts/sea-manutencao-expert
+              - article [ref=f4e458]:
+                - generic [ref=f4e459]: Logística e Operações
+                - heading "Automação Industrial" [level=3] [ref=f4e464]
+                - paragraph [ref=f4e465]: "A ponte entre chão de fábrica e ERP: OT/IT, apontamento automático e OEE."
+                - paragraph [ref=f4e466]: Problemas típicos
+                - list [ref=f4e467]:
+                  - listitem [ref=f4e468]: Apontamento perdido entre a máquina e o ERP
+                  - listitem [ref=f4e470]: OEE sem dado confiável de paradas
+                  - listitem [ref=f4e472]: Integração PLC, SCADA ou MES sem rastreio
+                - generic [ref=f4e475]:
+                  - button "Analisar o especialista Automação Industrial" [ref=f4e476]: Analisar
+                  - link "Página completa" [ref=f4e477] [cursor=pointer]:
+                    - /url: /experts/sea-automacao-industrial
+          - region [ref=f4e480]:
+            - generic [ref=f4e481]:
+              - heading "Arquitetura e Integrações 5" [level=2] [ref=f4e482]:
+                - text: Arquitetura e Integrações
+                - generic [ref=f4e487]: "5"
+              - paragraph [ref=f4e488]: Estrutura de dados, customização, telas e integração com outros sistemas.
+            - generic [ref=f4e489]:
+              - article [ref=f4e490]:
+                - generic [ref=f4e491]: Arquitetura e Integrações
+                - heading "Integrações" [level=3] [ref=f4e498]
+                - paragraph [ref=f4e499]: APIs, gateway, webhooks e mensageria entre o Sankhya e outros sistemas.
+                - paragraph [ref=f4e500]: Problemas típicos
+                - list [ref=f4e501]:
+                  - listitem [ref=f4e502]: Integração que responde sucesso e não grava
+                  - listitem [ref=f4e504]: Falha de autenticação ou de contrato de API
+                  - listitem [ref=f4e506]: Fila ou webhook perdendo eventos
+                - generic [ref=f4e509]:
+                  - button "Analisar o especialista Integrações" [ref=f4e510]: Analisar
+                  - link "Página completa" [ref=f4e511] [cursor=pointer]:
+                    - /url: /experts/sea-integracoes-expert
+              - article [ref=f4e514]:
+                - generic [ref=f4e515]: Arquitetura e Integrações
+                - heading "SDK" [level=3] [ref=f4e522]
+                - paragraph [ref=f4e523]: "Customização Java: add-ons, listeners, services, botões de ação e JAPE."
+                - paragraph [ref=f4e524]: Problemas típicos
+                - list [ref=f4e525]:
+                  - listitem [ref=f4e526]: Listener que não dispara ou dispara duas vezes
+                  - listitem [ref=f4e528]: Rollback ou deadlock em customização
+                  - listitem [ref=f4e530]: Add-on que funciona em teste e quebra em produção
+                - generic [ref=f4e533]:
+                  - button "Analisar o especialista SDK" [ref=f4e534]: Analisar
+                  - link "Página completa" [ref=f4e535] [cursor=pointer]:
+                    - /url: /experts/sea-sdk-expert
+              - article [ref=f4e538]:
+                - generic [ref=f4e539]: Arquitetura e Integrações
+                - heading "Dicionário de Dados" [level=3] [ref=f4e546]
+                - paragraph [ref=f4e547]: "A estrutura do Sankhya: tabelas, campos, relacionamentos e metadados."
+                - paragraph [ref=f4e548]: Problemas típicos
+                - list [ref=f4e549]:
+                  - listitem [ref=f4e550]: Descobrir onde uma informação é gravada
+                  - listitem [ref=f4e552]: Relacionamento entre tabelas sem documentação
+                  - listitem [ref=f4e554]: Impacto de um campo adicional na estrutura
+                - generic [ref=f4e557]:
+                  - button "Analisar o especialista Dicionário de Dados" [ref=f4e558]: Analisar
+                  - link "Página completa" [ref=f4e559] [cursor=pointer]:
+                    - /url: /experts/sea-dicionario-de-dados
+              - article [ref=f4e562]:
+                - generic [ref=f4e563]: Arquitetura e Integrações
+                - heading "SQL/BI" [level=3] [ref=f4e570]
+                - paragraph [ref=f4e571]: Consultas SQL, desempenho, indicadores e dashboards.
+                - paragraph [ref=f4e572]: Problemas típicos
+                - list [ref=f4e573]:
+                  - listitem [ref=f4e574]: Consulta ou dashboard lento
+                  - listitem [ref=f4e576]: Indicador que não bate com o relatório
+                  - listitem [ref=f4e578]: KPI sem modelo de dados confiável
+                - generic [ref=f4e581]:
+                  - button "Analisar o especialista SQL/BI" [ref=f4e582]: Analisar
+                  - link "Página completa" [ref=f4e583] [cursor=pointer]:
+                    - /url: /experts/sea-sql-bi-expert
+              - article [ref=f4e586]:
+                - generic [ref=f4e587]: Arquitetura e Integrações
+                - heading "Construtor de Telas" [level=3] [ref=f4e594]
+                - paragraph [ref=f4e595]: "Telas personalizadas: componentes, eventos, mestre-detalhe e ações."
+                - paragraph [ref=f4e596]: Problemas típicos
+                - list [ref=f4e597]:
+                  - listitem [ref=f4e598]: Tela personalizada que não salva ou não valida
+                  - listitem [ref=f4e600]: Evento ou botão de ação sem efeito
+                  - listitem [ref=f4e602]: Tela lenta com muitos registros
+                - generic [ref=f4e605]:
+                  - button "Analisar o especialista Construtor de Telas" [ref=f4e606]: Analisar
+                  - link "Página completa" [ref=f4e607] [cursor=pointer]:
+                    - /url: /experts/sea-construtor-de-telas-expert
+          - region [ref=f4e610]:
+            - generic [ref=f4e611]:
+              - heading "Plataforma Técnica 1" [level=2] [ref=f4e612]:
+                - text: Plataforma Técnica
+                - generic [ref=f4e616]: "1"
+              - paragraph [ref=f4e617]: Relatórios formatados e componentes técnicos da plataforma.
+            - article [ref=f4e619]:
+              - generic [ref=f4e620]: Plataforma Técnica
+              - heading "IReport" [level=3] [ref=f4e626]
+              - paragraph [ref=f4e627]: "Relatórios formatados em JasperReports/iReport: JRXML, datasets e subrelatórios."
+              - paragraph [ref=f4e628]: Problemas típicos
+              - list [ref=f4e629]:
+                - listitem [ref=f4e630]: Relatório repetindo a mesma linha
+                - listitem [ref=f4e632]: Subrelatório ou parâmetro voltando vazio
+                - listitem [ref=f4e634]: Exportação que quebra o layout
+              - generic [ref=f4e637]:
+                - button "Analisar o especialista IReport" [ref=f4e638]: Analisar
+                - link "Página completa" [ref=f4e639] [cursor=pointer]:
+                  - /url: /experts/sea-ireport-expert
+          - region [ref=f4e642]:
+            - generic [ref=f4e643]:
+              - heading "Pessoas 2" [level=2] [ref=f4e644]:
+                - text: Pessoas
+                - generic [ref=f4e650]: "2"
+              - paragraph [ref=f4e651]: Folha, ponto, eSocial e processos trabalhistas.
+            - generic [ref=f4e652]:
+              - article [ref=f4e653]:
+                - generic [ref=f4e654]: Pessoas
+                - heading "RH" [level=3] [ref=f4e662]
+                - paragraph [ref=f4e663]: Folha, ponto, benefícios, saúde e segurança do trabalho e eSocial.
+                - paragraph [ref=f4e664]: Problemas típicos
+                - list [ref=f4e665]:
+                  - listitem [ref=f4e666]: Evento do eSocial rejeitado
+                  - listitem [ref=f4e668]: Rubrica com incidência errada na folha
+                  - listitem [ref=f4e670]: Ponto ou banco de horas inconsistente
+                - generic [ref=f4e673]:
+                  - button "Analisar o especialista RH" [ref=f4e674]: Analisar
+                  - link "Página completa" [ref=f4e675] [cursor=pointer]:
+                    - /url: /experts/sea-rh-expert
+              - article [ref=f4e678]:
+                - generic [ref=f4e679]: Pessoas
+                - heading "Jurídico" [level=3] [ref=f4e687]
+                - paragraph [ref=f4e688]: Processos trabalhistas e seus reflexos no eSocial e na EFD-Reinf.
+                - paragraph [ref=f4e689]: Problemas típicos
+                - list [ref=f4e690]:
+                  - listitem [ref=f4e691]: Eventos de processo trabalhista rejeitados
+                  - listitem [ref=f4e693]: Reflexo do processo na folha e nos tributos
+                  - listitem [ref=f4e695]: Conformidade trabalhista sem evidência
+                - generic [ref=f4e698]:
+                  - button "Analisar o especialista Jurídico" [ref=f4e699]: Analisar
+                  - link "Página completa" [ref=f4e700] [cursor=pointer]:
+                    - /url: /experts/sea-juridico-expert
+          - region [ref=f4e703]:
+            - generic [ref=f4e704]:
+              - heading "Estratégia e Projetos 1" [level=2] [ref=f4e705]:
+                - text: Estratégia e Projetos
+                - generic [ref=f4e710]: "1"
+              - paragraph [ref=f4e711]: Implantação, rollout e evolução do ERP.
+            - article [ref=f4e713]:
+              - generic [ref=f4e714]: Estratégia e Projetos
+              - heading "Projetos" [level=3] [ref=f4e721]
+              - paragraph [ref=f4e722]: "Implantação e evolução: discovery, fit/gap, migração, go-live e hypercare."
+              - paragraph [ref=f4e723]: Problemas típicos
+              - list [ref=f4e724]:
+                - listitem [ref=f4e725]: Go-live sem critério de prontidão
+                - listitem [ref=f4e727]: Migração de dados mestres sem validação
+                - listitem [ref=f4e729]: Parametrização desalinhada do processo real
+              - generic [ref=f4e732]:
+                - button "Analisar o especialista Projetos" [ref=f4e733]: Analisar
+                - link "Página completa" [ref=f4e734] [cursor=pointer]:
+                  - /url: /experts/sea-projetos-expert
+          - generic [ref=f4e737]:
+            - paragraph [ref=f4e738]: Pelo MCP, a sua IA consulta todos os especialistas de uma vez — o Agent Core escolhe quem responde.
+            - link "Conectar o SEA à minha IA" [ref=f4e739] [cursor=pointer]:
+              - /url: /conexoes
