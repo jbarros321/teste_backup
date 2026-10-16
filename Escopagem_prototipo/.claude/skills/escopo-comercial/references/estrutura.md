@@ -1,6 +1,6 @@
 # Estrutura do escopo comercial — 12 capítulos
 
-Padrão extraído de `Escopo_Comercial_Baluarte.docx`. Mantenha a ordem. Capítulo
+Mantenha a ordem dos capítulos. Capítulo
 sem insumo: escreva o que há e marque "a confirmar no detalhamento", nunca omita
 silenciosamente os capítulos 4.2, 7 e 11.
 

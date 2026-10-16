@@ -1,0 +1,196 @@
+/* Identidade visual Neuon — derivada de https://neuonagentes.netlify.app/
+   Paleta e tipografia do site. Usada no HTML intermediário que vira PDF. */
+
+:root {
+  --primary:        #2563eb;
+  --primary-bg:     #eff6ff;
+  --bg:             #f8fafc;
+  --surface:        #ffffff;
+  --surface-2:      #f1f5f9;
+  --text:           #0f172a;
+  --text-secondary: #475569;
+  --border:         #e2e8f0;
+}
+
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm 16mm;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 10pt;
+  line-height: 1.55;
+  color: var(--text);
+  background: var(--surface);
+  margin: 0;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ---------- Capa ---------- */
+
+/* O pandoc injeta um bloco de titulo a partir do metadata; nao pertence ao
+   documento comercial, que ja tem a propria capa escrita no markdown. */
+#title-block-header,
+header.title-block,
+h1.title, p.author, p.date { display: none !important; }
+
+/* Barra de acento da marca no topo da capa */
+body::before {
+  content: "";
+  display: block;
+  width: 28mm;
+  height: 1.6mm;
+  background: var(--primary);
+  margin: 0 0 6mm 0;
+}
+
+/* O primeiro h1 do documento é o selo "PROPOSTA DE ESCOPO" */
+h1:first-of-type {
+  font-size: 9pt;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--primary);
+  border: 0;
+  margin: 0 0 6mm 0;
+  padding: 0;
+}
+
+h1:first-of-type + h2 {
+  font-size: 23pt;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text);
+  border: 0;
+  margin: 0 0 1mm 0;
+  padding: 0;
+}
+
+h1:first-of-type + h2 + h3 {
+  font-size: 13pt;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0 0 4mm 0;
+}
+
+/* ---------- Títulos ---------- */
+
+h1 {
+  font-size: 15pt;
+  font-weight: 700;
+  color: var(--text);
+  margin: 10mm 0 3mm;
+  padding-bottom: 2mm;
+  border-bottom: 2px solid var(--primary);
+  page-break-after: avoid;
+}
+
+h2 {
+  font-size: 13pt;
+  font-weight: 700;
+  color: var(--text);
+  margin: 8mm 0 3mm;
+  padding-bottom: 1.5mm;
+  border-bottom: 1px solid var(--border);
+  page-break-after: avoid;
+}
+
+h3 {
+  font-size: 11pt;
+  font-weight: 600;
+  color: var(--primary);
+  margin: 6mm 0 2mm;
+  page-break-after: avoid;
+}
+
+h4 {
+  font-size: 10pt;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 4mm 0 2mm;
+  page-break-after: avoid;
+}
+
+p { margin: 0 0 3mm; }
+
+strong { font-weight: 600; color: var(--text); }
+
+/* ---------- Tabelas ---------- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 3mm 0 5mm;
+  font-size: 9pt;
+  page-break-inside: auto;
+}
+
+thead { display: table-header-group; }
+tr { page-break-inside: avoid; }
+
+th {
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 600;
+  text-align: left;
+  padding: 2.2mm 2.6mm;
+  border: 1px solid var(--primary);
+  font-size: 8.5pt;
+  letter-spacing: .01em;
+}
+
+td {
+  padding: 2mm 2.6mm;
+  border: 1px solid var(--border);
+  vertical-align: top;
+  color: var(--text-secondary);
+}
+
+tbody tr:nth-child(even) td { background: var(--surface-2); }
+
+/* Linha de total: última linha em negrito pela marcação ** do markdown */
+td strong { color: var(--text); }
+
+/* Coluna de horas: números à direita quando a célula é só número */
+td:last-child { white-space: nowrap; }
+
+/* ---------- Listas ---------- */
+
+ul, ol { margin: 0 0 4mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; color: var(--text-secondary); }
+li strong { color: var(--text); }
+
+/* ---------- Separador e rodapé ---------- */
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 7mm 0;
+}
+
+/* Assinatura em itálico ao final */
+em { color: var(--text-secondary); }
+
+blockquote {
+  margin: 3mm 0;
+  padding: 2mm 0 2mm 4mm;
+  border-left: 3px solid var(--primary);
+  background: var(--primary-bg);
+  color: var(--text-secondary);
+}
+
+code {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 8.5pt;
+  background: var(--surface-2);
+  padding: .4mm 1mm;
+  border-radius: 2px;
+  color: var(--text);
+}
+
+/* Quebra de página antes do Anexo */
+h1#anexo-a, h2#anexo-a { page-break-before: always; }

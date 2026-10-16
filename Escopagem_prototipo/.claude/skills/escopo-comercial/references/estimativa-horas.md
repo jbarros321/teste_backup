@@ -15,7 +15,10 @@ horas da onda   = Σ módulos da onda + migração da onda + treinamento da onda
 total           = Σ ondas + GP + homologação
 ```
 
-Arredonde cada item para a hora cheia e cada módulo para múltiplo de 4 h.
+**Granularidade:** siga a do cliente. Se existe documento anterior, use a mesma
+unidade dele — meia hora ou hora cheia. Sem referência, use 0,5 h em projeto de
+dezenas de horas e hora cheia em projeto de centenas. A granularidade
+precisa ser fina o bastante para a diluição da regra 2 fechar o total exato.
 
 ## Catálogo de referência (horas por item)
 

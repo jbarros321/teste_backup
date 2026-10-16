@@ -1,5 +1,25 @@
 # Fases e ciclos de entrega
 
+## Antes de tudo: o modelo de fases é do cliente, não da skill
+
+Se já existe documento anterior deste cliente, **mantenha o modelo de fases dele** e
+encaixe o escopo novo nesse formato. Trocar o vocabulário que o cliente já aprovou
+custa confiança e não entrega nada. Pergunte ao usuário qual é esse modelo e
+reproduza os nomes de fase dele. Dois formatos que aparecem com frequência:
+
+- **Projeto de dezenas de horas, com piloto em campo** — Planejamento ·
+  Desenvolvimento · Teste em campo · Refino · Implantação.
+- **Projeto de centenas de horas, multi-módulo** — ondas de implantação, cada uma
+  com as 7 fases abaixo.
+
+Diga no próprio documento que o modelo foi mantido e por quê ("já é o adotado com o
+cliente"). As 7 fases a seguir são o **default para projeto novo**, não um padrão a
+ser imposto sobre um histórico que já existe. Quando o modelo do cliente não tem
+fase de entrada em produção, a estabilização é absorvida pela fase de implantação
+ou de entrega — nunca como fase extra com percentual exposto.
+
+## O ciclo completo (default para projeto novo)
+
 Cada onda do roadmap é um **ciclo de entrega completo**: começa em detalhamento e
 termina em produção assistida. Nenhuma onda entrega sem passar pelas 7 fases.
 
