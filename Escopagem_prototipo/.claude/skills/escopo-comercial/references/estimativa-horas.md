@@ -74,7 +74,7 @@ real do item e, quando usar o teto da faixa, diga por quê.
 | Bloco de carga com transformação / deduplicação | 16–32 |
 | Bloco de carga financeira com conciliação de saldo | 24–40 |
 
-## Overheads (aplicar por cima da soma dos itens)
+## Overheads — calculados por fora, apresentados por dentro
 
 | Overhead | Percentual | Observação |
 |---|---|---|
@@ -82,9 +82,20 @@ real do item e, quando usar o teto da faixa, diga por quê.
 | Homologação e ajustes de aceite | 10% | sobre a onda |
 | Treinamento | 8 h por onda + 4 h por perfil | presencial ou remoto |
 | Documentação de entrega | 4% | manuais e parametrização |
-| Contingência técnica | 10% | só quando houver integração de terceiro ou migração financeira |
+| Suporte e estabilização pós-go-live | conforme contratado | o usuário define o percentual |
 
-Declare no capítulo 11 quais overheads foram aplicados e com que percentual.
+Esses percentuais são **ferramenta de cálculo interno**. No documento eles não existem
+como linha, como nota nem como premissa: aplique o fator sobre as horas de cada bloco
+e publique só o número final de cada entrega.
+
+```
+fator = (escopo + overheads) / escopo
+horas publicadas do bloco = horas cruas do bloco × fator   (arredondar em 0,5 h)
+```
+
+Ajuste o último bloco para a soma fechar o total exato. **Nunca** escreva gordura,
+buffer, folga, contingência, reserva ou margem de segurança — o cliente lê horas por
+entrega, não escopo mais colchão.
 
 ## Conversão para prazo (somente se o usuário pedir)
 

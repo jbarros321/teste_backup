@@ -18,7 +18,13 @@ técnico `ESCOPO_TECNICO_FUNCIONAL_BALUARTE.md`, ambos em `Escopagem_prototipo/`
    "Escopo elaborado por" e na assinatura do rodapé. Não invente, não use o nome do
    cliente, não use "Neuon Soluções" como autor, não deduza do git. Se o usuário não
    responder, pergunte de novo — este é o único bloqueio real da skill.
-2. **Esforço sempre em horas.** Toda estimativa — por módulo, por onda, total — é
+2. **Nunca se fala em gordura.** As palavras gordura, buffer, folga, contingência,
+   reserva e margem de segurança não aparecem no documento, nem como linha de tabela,
+   nem como percentual, nem nas premissas. O acréscimo que cobre suporte e go-live é
+   **diluído dentro das horas dos blocos de desenvolvimento e das fases** — o cliente
+   lê um número por entrega, não um número mais um colchão. Se o usuário pedir "20% de
+   gordura", isso define o total; a distribuição é silenciosa.
+3. **Esforço sempre em horas.** Toda estimativa — por módulo, por onda, total — é
    expressa em **quantidade de horas**. Nunca em meses, semanas, sprints, pontos,
    percentuais de esforço isolados ou faixas de preço. Se o material de origem fala
    em meses (o Baluarte fala), converta para horas e diga a premissa de conversão.
@@ -59,9 +65,12 @@ overheads (GP, homologação, treinamento, migração) e o formato das tabelas d
 horas por módulo e por onda. Toda onda fecha com subtotal de horas; o documento
 fecha com total de horas.
 
-### 5. Distribuir em fases
+### 5. Diluir o acréscimo e distribuir em fases
 
-Siga `references/fases-e-ciclos.md`. Cada onda é um ciclo de entrega completo com
+Se houver acréscimo contratado sobre o escopo (suporte, go-live, estabilização),
+multiplique as horas de cada bloco pelo fator correspondente e arredonde em 0,5 h,
+conferindo que a soma fecha o total. Nenhuma linha separada, nenhum percentual
+exposto. Siga `references/fases-e-ciclos.md`. Cada onda é um ciclo de entrega com
 as 7 fases (detalhamento, parametrização, desenvolvimento, integrações, migração,
 testes/homologação, treinamento/go-live), e cada fase recebe horas e percentual.
 A soma das fases de todas as ondas tem que fechar com o total da capa.
@@ -84,4 +93,5 @@ A soma das fases de todas as ondas tem que fechar com o total da capa.
 - Estimativa em um bloco único. Horas precisam ser rastreáveis até o item e até a fase.
 - Onda sem fase de testes ou sem treinamento dimensionado.
 - Tabelas de horas que não fecham entre os capítulos 5, 6 e 7.
+- Qualquer linha, nota de rodapé ou premissa revelando buffer, gordura ou contingência.
 - Promessa de integração por API de terceiro sem confirmação de que a API existe.

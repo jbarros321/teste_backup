@@ -1,0 +1,88 @@
+﻿<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><title>Escopo - Permissões de Despesas</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+<style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#0f172a} h1{font-size:20pt;color:#2563eb} h2{font-size:14pt;color:#1e293b;border-bottom:1px solid #cbd5e1;padding-bottom:4px;margin-top:22px}</style>
+</head><body>
+  <h1>Escopo do Projeto — Permissões de Despesas</h1>
+  <p><b>Sistema:</b> Mobilidade Comercial<br/><b>Data:</b> 16/10/2026<br/><b>Estimativa total:</b> 35h</p>
+  <h2>1. Objetivo</h2>
+  <p>Criar o controle de despesas permitidas para a equipe comercial: quais tipos de despesa cada vendedor pode lançar, quais os limites de valor (por lançamento, por dia e por mês) e como o sistema valida, alerta ou bloqueia o lançamento na tela de Despesas, garantindo aderência à política da empresa.</p>
+  <h2>2. Resumo de horas por fase</h2>
+  <table style="border-collapse:collapse;width:100%">
+    <tr><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left">Fase</th><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left" width="90">Horas</th><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left" width="90">% do total</th></tr>
+    <tr><td style="padding:6px;border:1px solid #cbd5e1">Planejamento</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">3h</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">9%</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Desenvolvimento</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">24h</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">69%</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Teste em campo</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">4h</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">11%</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Refino</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">3h</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">9%</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Implantação</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1h</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">3%</td></tr>
+    <tr><td style="padding:6px;border:1px solid #cbd5e1"><b>Total</b></td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right"><b>35h</b></td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right"><b>100%</b></td></tr>
+  </table>
+  <h2>3. Etapas e atividades</h2>
+  
+    <h3 style="color:#1e293b;margin-top:18px">1. Levantamento e desenho da solução — Planejamento (3h)</h3>
+    <p><b>Objetivo:</b> Alinhar a política de despesas da empresa e desenhar regras, telas e fluxo de validação.</p>
+    <table style="border-collapse:collapse;width:100%">
+      <tr><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left">Atividade</th><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left" width="80">Horas</th></tr>
+      <tr><td style="padding:6px;border:1px solid #cbd5e1">Reunião de alinhamento da política de despesas (tipos, limites, exceções)</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1,5h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Desenho das regras de limite (por lançamento, por dia, por mês, por vendedor/equipe)</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Protótipo da tela de Permissões de Despesas e validação com o gestor</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">0,5h</td></tr>
+    </table>
+    <p><b>Entregáveis:</b> Regras de negócio documentadas; Protótipo aprovado</p>
+    <h3 style="color:#1e293b;margin-top:18px">2. Estrutura de dados e regras (backend) — Desenvolvimento (6h)</h3>
+    <p><b>Objetivo:</b> Criar a base que armazena tipos de despesa, permissões e limites, e as funções de consulta e gravação.</p>
+    <table style="border-collapse:collapse;width:100%">
+      <tr><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left">Atividade</th><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left" width="80">Horas</th></tr>
+      <tr><td style="padding:6px;border:1px solid #cbd5e1">Cadastro de tipos de despesa (Combustível, Alimentação, Hospedagem, Pedágio, Estacionamento, Transporte, Outros)</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1,5h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Tabela de permissões por vendedor/equipe com limites por lançamento, por dia e por mês</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">2h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Regras adicionais: comprovante obrigatório, valor por km rodado, dias da semana permitidos</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Funções de consulta de saldo disponível e validação do lançamento</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1,5h</td></tr>
+    </table>
+    <p><b>Entregáveis:</b> Tabelas criadas; Funções de validação e saldo prontas</p>
+    <h3 style="color:#1e293b;margin-top:18px">3. Tela de Permissões de Despesas — Desenvolvimento (8h)</h3>
+    <p><b>Objetivo:</b> Tela para o gestor configurar os tipos de despesa permitidos e os limites de cada vendedor ou equipe.</p>
+    <table style="border-collapse:collapse;width:100%">
+      <tr><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left">Atividade</th><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left" width="80">Horas</th></tr>
+      <tr><td style="padding:6px;border:1px solid #cbd5e1">Cadastro e manutenção dos tipos de despesa (ativar/inativar, ícone, exige comprovante)</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">2h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Matriz de permissões: vendedor/equipe x tipo de despesa permitido</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">2,5h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Configuração de limites: valor máximo por lançamento, por dia e por mês</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">2h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Aplicar configuração em lote (copiar regra de um vendedor para outros / para a equipe)</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Histórico de alterações das permissões (quem alterou e quando)</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">0,5h</td></tr>
+    </table>
+    <p><b>Entregáveis:</b> Tela de Permissões de Despesas funcional; Restrição de acesso ao perfil gestor</p>
+    <h3 style="color:#1e293b;margin-top:18px">4. Validação no lançamento de despesas — Desenvolvimento (5h)</h3>
+    <p><b>Objetivo:</b> Aplicar as permissões na tela de Despesas usada pelo vendedor.</p>
+    <table style="border-collapse:collapse;width:100%">
+      <tr><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left">Atividade</th><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left" width="80">Horas</th></tr>
+      <tr><td style="padding:6px;border:1px solid #cbd5e1">Exibir ao vendedor somente os tipos de despesa permitidos para ele</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1,5h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Validar o valor contra os limites (bloqueio ou alerta conforme configuração)</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1,5h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Mostrar saldo disponível do dia e do mês por tipo de despesa</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Exigir comprovante quando o tipo de despesa estiver configurado assim</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1h</td></tr>
+    </table>
+    <p><b>Entregáveis:</b> Lançamento de despesas respeitando as permissões e limites</p>
+    <h3 style="color:#1e293b;margin-top:18px">5. Acompanhamento e exceções — Desenvolvimento (3h)</h3>
+    <p><b>Objetivo:</b> Dar visibilidade ao gestor sobre o consumo dos limites e tratar despesas fora da regra.</p>
+    <table style="border-collapse:collapse;width:100%">
+      <tr><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left">Atividade</th><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left" width="80">Horas</th></tr>
+      <tr><td style="padding:6px;border:1px solid #cbd5e1">Solicitação de exceção pelo vendedor quando o limite for ultrapassado</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1,5h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Aprovação ou recusa da exceção pelo gestor</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Painel de consumo dos limites por vendedor e por tipo de despesa</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">0,5h</td></tr>
+    </table>
+    <p><b>Entregáveis:</b> Fluxo de exceção; Painel de consumo de limites</p>
+    <h3 style="color:#1e293b;margin-top:18px">6. Testes internos — Desenvolvimento (2h)</h3>
+    <p><b>Objetivo:</b> Garantir que regras, limites e permissões funcionam antes de ir a campo.</p>
+    <table style="border-collapse:collapse;width:100%">
+      <tr><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left">Atividade</th><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left" width="80">Horas</th></tr>
+      <tr><td style="padding:6px;border:1px solid #cbd5e1">Roteiro de testes com cenários de limite (dentro, no limite, acima, sem permissão)</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Testes de acesso por perfil (vendedor x gestor) e correções</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1h</td></tr>
+    </table>
+    <p><b>Entregáveis:</b> Roteiro de testes executado; Correções aplicadas</p>
+    <h3 style="color:#1e293b;margin-top:18px">7. Teste em campo — Teste em campo (4h)</h3>
+    <p><b>Objetivo:</b> Validar a solução no dia a dia com um grupo piloto de vendedores.</p>
+    <table style="border-collapse:collapse;width:100%">
+      <tr><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left">Atividade</th><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left" width="80">Horas</th></tr>
+      <tr><td style="padding:6px;border:1px solid #cbd5e1">Preparação do piloto: configuração das permissões dos vendedores participantes</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Acompanhamento do uso em campo (lançamentos reais, celular, conexão)</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">2h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Coleta de feedback dos vendedores e do gestor</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1h</td></tr>
+    </table>
+    <p><b>Entregáveis:</b> Relatório do piloto com ajustes identificados</p>
+    <h3 style="color:#1e293b;margin-top:18px">8. Refino — Refino (3h)</h3>
+    <p><b>Objetivo:</b> Aplicar os ajustes identificados no teste em campo.</p>
+    <table style="border-collapse:collapse;width:100%">
+      <tr><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left">Atividade</th><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left" width="80">Horas</th></tr>
+      <tr><td style="padding:6px;border:1px solid #cbd5e1">Ajustes de usabilidade e textos apontados pelos vendedores</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1,5h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Ajustes de regras e limites apontados pelo gestor</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1h</td></tr><tr><td style="padding:6px;border:1px solid #cbd5e1">Revalidação dos cenários alterados</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">0,5h</td></tr>
+    </table>
+    <p><b>Entregáveis:</b> Versão refinada aprovada pelo gestor</p>
+    <h3 style="color:#1e293b;margin-top:18px">9. Implantação e treinamento — Implantação (1h)</h3>
+    <p><b>Objetivo:</b> Liberar para toda a equipe e orientar gestores e vendedores.</p>
+    <table style="border-collapse:collapse;width:100%">
+      <tr><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left">Atividade</th><th style="background:#1e293b;color:#ffffff;padding:6px;border:1px solid #cbd5e1;text-align:left" width="80">Horas</th></tr>
+      <tr><td style="padding:6px;border:1px solid #cbd5e1">Configuração das permissões para toda a equipe e treinamento rápido</td><td style="padding:6px;border:1px solid #cbd5e1;text-align:right">1h</td></tr>
+    </table>
+    <p><b>Entregáveis:</b> Solução liberada para toda a equipe</p>
+  <h2>4. Premissas</h2>
+  <ul><li>A política de despesas (tipos e limites) será fornecida pela empresa na etapa de levantamento</li><li>Um grupo piloto de vendedores estará disponível para o teste em campo</li><li>Ajustes que surgirem no teste em campo e mudem o escopo serão estimados à parte</li><li>Os perfis de acesso (vendedor e gestor) serão definidos pela empresa</li></ul>
+  <h2>5. Fora do escopo</h2>
+  <ul><li>Integração das despesas com o financeiro do ERP (reembolso automático)</li><li>Leitura automática do comprovante (OCR)</li><li>Cálculo de rota/quilometragem por GPS</li><li>Alterações em outros módulos (Pedidos, Campanhas, Agenda, Ranking, Remuneração)</li></ul>
+  <h2>6. Aprovação</h2>
+  <p><br/>_______________________________________<br/>Responsável pela empresa</p>
+  <p><br/>_______________________________________<br/>Responsável pelo desenvolvimento</p>
+</body></html>

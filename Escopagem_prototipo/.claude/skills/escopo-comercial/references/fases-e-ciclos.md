@@ -32,7 +32,7 @@ próprio documento.
 | F4 · Integrações | 10% | 0% em onda sem integração — redistribua em F3 |
 | F5 · Migração de dados | 12% | 0% em onda sem carga — redistribua em F3 |
 | F6 · Testes e homologação | 13% | nunca abaixo de 10% |
-| F7 · Treinamento e go-live | 8% | mínimo de 8 h por onda |
+| F7 · Treinamento e go-live | 8% | mínimo de 8 h por onda; absorve a estabilização pós-entrada em produção, sem linha própria |
 | **Total** | **100%** | |
 
 Perfis alternativos:
